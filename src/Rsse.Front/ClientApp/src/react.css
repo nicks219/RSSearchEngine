@@ -1,0 +1,258 @@
+#renderContainer1 {
+	position: relative;
+	width: 43rem;
+	padding-left: 1rem;
+	padding-top: 7rem;
+	margin-top: 6rem;
+	margin-left: 1rem;
+	background-color: #ffe;
+}
+
+body {
+	background-color: slategrey;
+}
+
+/*header {*/
+	/*position: fixed;*/
+	/*top: 12rem;
+	left: 0rem;
+	z-index: 5;
+}*/
+
+#renderContainer {
+	position: relative;
+	width: 43rem;
+	padding-left: 1rem;
+	padding-top: 1rem;
+	margin-top: 6rem;
+	margin-left: 1rem;
+	background-color: #ffe;
+}
+
+#header, #login, #loginMessage {
+	width: 43rem;
+	padding: 1rem;
+	margin-left: 1rem;
+	margin-top: 0rem;
+	background-color: #e9ecee;
+}
+
+	#loginMessage {
+		margin-left: 1rem;
+	}
+
+	#login {
+		padding: 0.2rem;
+		position: fixed;
+		bottom: 1rem;
+		left: 0rem;
+		z-index: 5;
+	}
+
+#header {
+	position: fixed;
+	top: 1rem;
+	left: 0rem;
+	z-index: 5;
+}
+
+#searchButton1 {
+	position: fixed;
+	left: 2rem;
+	top: 7rem;
+	z-index: 10;
+}
+
+#messageBox {
+	/*ðåçóëüòàò â ñî÷åòàíèè ñ relative ïðåäêà (renderContainer)*/
+	position: absolute;
+	left: 0rem;
+	top: 1rem;
+	/*òåêñò áóäåò "äàëüøå", ÷åì label îò checkbox*/
+	z-index: 0;
+	white-space: pre-wrap;
+	user-select: none;
+}
+
+#songTitle {
+	padding-left: 10rem;
+	padding-top: 0rem;
+	font-size: 2rem;
+	font-weight: bold;
+	z-index: 0;
+}
+
+#songBody {
+	width: 43rem;
+	margin-left: 0;
+	margin-top: 1rem;
+	padding-left: 10rem;
+	font-size: 1.4rem;
+	font-weight: bold;
+	z-index: 0;
+	background-color: #ffe;
+}
+
+#catalogTable{
+	width: 43rem;
+}
+
+button.act {
+	background-color: #E94F37;/* #4cff00;*/ /*crimson;*/
+	width: 9rem;
+	border-radius: 15px;
+	margin: 5px;
+	outline: none;
+	border: solid 1px;
+	transition: all 0.5s 0.1s;
+	font-weight: bold;
+}
+
+button.pas {
+	background-color: greenyellow; /*#4cff00;*/ /*darkseagreen;*/
+	width: 9rem;
+	border-radius: 15px;
+	margin: 5px;
+	outline: none;
+	border: solid 1px;
+	transition: all 0.5s 0.1s;
+	font-weight: bold;
+}
+
+.regular-checkbox {
+	display: none;
+}
+
+	.regular-checkbox + label {
+		user-select: none;
+		background-color: #ffd800; /*#fafafa;*/
+		border: 1px solid #cacece;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+		padding: 9px;
+		border-radius: 10px;
+		display: inline-block;
+		position: relative;
+		transition: color 0.5s 0.1s;
+		z-index: 1;
+		opacity: 1;
+		border: 0;
+		font-weight: bold;
+		/*font-size: 1.1rem;*/
+		font-size: 1.4rem;/*3vh;àäåêâàòíî äëÿ ìîåãî ñîòîâîãî*/
+	}
+
+.regular-checkbox + label:active, .regular-checkbox:checked + label:active {
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 2px 3px 6px rgba(0,0,0,0.1);
+}
+
+	.regular-checkbox:checked + label {
+		background-color: #4cff00; /*#e9ecee;*/
+		border: 1px solid #adb8c0;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+		color: #99a1a7;
+		transition: all 0.5s 0.1s;
+		border: 0;
+	}
+
+	.regular-checkbox:checked + label:after {
+		content: '\2714';
+		/*content: '\274C';*/
+		font-size: 14px;
+		position: absolute;
+		top: 0px;
+		left: 3px;
+		color: #99a1a7;
+		transition: all 0.5s 0.1s;
+		/*transform: rotate(0.5turn);*/
+	}
+
+#submitStyle {
+	/*padding: 13px;
+	margin: 1px;
+	display: inline;
+	background-color: #E94F37;
+	border-radius: 1em;
+	transition: all 0.5s 0.1s;
+	font-weight: bold;*/
+	/*font-size: 2rem;*/
+	/*border: solid 0px;*/
+	display: inline;
+}
+
+#submitStyleGreen {
+	padding: 13px;
+	margin: 1px;
+	display: inline;
+	background-color: #4cff00;
+	border-radius: 2em;
+	transition: all 1s 0.1s;
+	font-weight: bold;
+	/*font-size: 2rem;*/
+	border: solid 0px;
+}
+
+#email, #password {
+	border: 0px;
+}
+
+#checkboxStyle {
+	padding: 13px;
+	margin: 1px;
+	display: inline;
+	background-color: #e9ecee;/*#ffd800;*/ /*#85FFC7;*/
+	border: solid 0px;
+	border-radius: 45%;
+	z-index: 5;
+}
+
+#loginButton[type="checkbox"] + label {
+	background-color: #E94F37;
+	border: solid 1px black;
+	color: white;
+	font-weight: bold;
+	font-size: 1rem;
+	border-radius: 15px;
+	margin-left: 1rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+#submitButton[type="checkbox"] + label {
+	background-color: #E94F37;
+	border: solid 1px black;
+	color: white;
+	font-weight: bold;
+	font-size: 2rem;
+	border-radius: 1em;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+#submitButtonGreen[type="checkbox"] + label {
+	background-color: #4cff00;
+	border: solid 1px black;
+	color: white;
+	font-weight: bold;
+	font-size: 2rem;
+	border-radius: 1em;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+	/*	#checkboxStyle::after {
+		background-color: crimson;
+	}
+
+	#checkboxStyle:hover {
+		padding: 13px;
+		margin: 1px;
+		display: inline;
+		background-color: #85FFC7;
+		border-radius: 50%;
+		transition: border-radius 0.5s 0.1s;
+	}
+
+
+.regular-checkbox:hover + label {
+		color: #ff0000;
+		transition: color 0.5s 0.1s;
+	}*/

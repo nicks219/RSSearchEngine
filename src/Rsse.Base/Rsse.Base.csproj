@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <UserSecretsId>89325659-56d0-436e-993a-e44aa19ed5e7</UserSecretsId>
+        <Platforms>AnyCPU;x64</Platforms>
+        <Authors>Nikolay Medvedev</Authors>
+        <Company>Nick219</Company>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>RandomSongSearchEngine</RootNamespace>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="ClientApp\build_\asset-manifest.json" />
+      <_ContentIncludedByDefault Remove="ClientApp\build_\manifest.json" />
+    </ItemGroup>
+
+</Project>
