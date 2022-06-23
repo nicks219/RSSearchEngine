@@ -16,10 +16,11 @@ public class DataRepository : IDataRepository
         _context = serviceProvider.GetRequiredService<RsseContext>();
     }
     
-    public IQueryable<string> ReadAllSongs()
+    public IQueryable<TextEntity> ReadAllSongs()
     {
         var songs = _context.Text!
-            .Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
+            //.Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
+            .Select(s => s)
             .AsNoTracking();
         
         return songs;

@@ -20,7 +20,7 @@ public class TestHost<T> where T : class
 
     // Connection String для MsSql: private readonly string _connectionString = "Data Source=DESKTOP-I5CODE\\SSDSQL;Initial Catalog=rsse;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
-    private const string ConnectionString = @"Server=localhost;Database=rsse;Uid=1;Pwd=1;";
+    private const string ConnectionString = @"Server=localhost;Database=tagit;Uid=1;Pwd=1;";
 
     public TestHost(bool stubRepository = false)
     {

@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Infrastructure.Cache;
 using RandomSongSearchEngine.Tests.Infrastructure;
 
@@ -74,7 +75,8 @@ public class CacheTests
         var def = cache.GetDefinedCache();
         var undef = cache.GetUndefinedCache();
         
-        cache.Update(1, TestDataRepository.SecondSong);
+        //cache.Update(1, TestDataRepository.SecondSong);
+        cache.Update(1, new TextEntity{Title =TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSong});
 
         def.ElementAt(0)
             .Value
@@ -94,7 +96,8 @@ public class CacheTests
         var def = cache.GetDefinedCache();
         var undef = cache.GetUndefinedCache();
         
-        cache.Create(2, TestDataRepository.SecondSong);
+       // cache.Create(2, TestDataRepository.SecondSong);
+        cache.Create(2,   new TextEntity{Title =TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSong});
 
         def.ElementAt(1)
             .Value

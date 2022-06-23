@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using RandomSongSearchEngine.Data;
 
 namespace RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 
@@ -10,9 +11,9 @@ public interface ICacheRepository
 
     public void Delete(int id);
 
-    public void Create(int id, string text);
+    public void Create(int id, TextEntity text);
 
-    public void Update(int id, string text);
+    public void Update(int id, TextEntity text);
 
     public void Initialize();
 }

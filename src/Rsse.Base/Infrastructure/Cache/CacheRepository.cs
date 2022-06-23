@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Infrastructure.Engine;
@@ -53,7 +54,7 @@ public class CacheRepository : ICacheRepository
         _lockSlim.ExitWriteLock();
     }
 
-    public void Create(int id, string text)
+    public void Create(int id, TextEntity text)
     {
         _lockSlim.EnterReadLock();
 
@@ -76,7 +77,7 @@ public class CacheRepository : ICacheRepository
         _lockSlim.ExitReadLock();
     }
 
-    public void Update(int id, string text)
+    public void Update(int id, TextEntity text)
     {
         _lockSlim.EnterReadLock();
 
@@ -158,26 +159,30 @@ public class CacheRepository : ICacheRepository
         }
     }
 
-    private static (List<int> Def, List<int> Undef, int Num) CreateCacheLine(ITextProcessor processor, string text)
+    private static (List<int> Def, List<int> Undef, int Num) CreateCacheLine(ITextProcessor processor, TextEntity text)
     {
         // undefined hash line
         processor.Setup(ConsonantChain.Undefined);
 
-        var song = processor.ConvertStringToText(text);
+        //var song = processor.ConvertStringToText(text);
 
-        song.Title.ForEach(t => song.Words.Add(t));
+        //song.Title.ForEach(t => song.Words.Add(t));
+        
+        var song = processor.CleanUpString(text.Song + ' ' + text.Title);
 
-        var undefinedHashLine = processor.GetHashSetFromStrings(song.Words);
+        var undefinedHashLine = processor.GetHashSetFromStrings(song);
 
         // defined hash line
         processor.Setup(ConsonantChain.Defined);
 
-        song = processor.ConvertStringToText(text);
+        //song = processor.ConvertStringToText(text);
 
-        song.Title.ForEach(t => song.Words.Add(t));
+        //song.Title.ForEach(t => song.Words.Add(t));
+        
+        song = processor.CleanUpString(text.Song + ' ' + text.Title);
 
-        var definedHashLine = processor.GetHashSetFromStrings(song.Words);
+        var definedHashLine = processor.GetHashSetFromStrings(song);
 
-        return (Def: definedHashLine, Undef: undefinedHashLine, Num: song.Number);
+        return (Def: definedHashLine, Undef: undefinedHashLine, Num: text.TextId);
     }
 }

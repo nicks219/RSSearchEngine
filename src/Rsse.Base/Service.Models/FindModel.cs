@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Infrastructure.Engine;
@@ -30,6 +31,9 @@ public class FindModel
 
     public Dictionary<int, double> Find(string text)
     {
+        //var bytes = Encoding.Default.GetBytes(text);
+        //text = Encoding.UTF8.GetString(bytes);
+        
         var result = new Dictionary<int, double>();
 
         // I. defined поиск: 0.8D

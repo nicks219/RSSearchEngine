@@ -1,4 +1,5 @@
-﻿using RandomSongSearchEngine.Data.DTO;
+﻿using System.Text;
+using RandomSongSearchEngine.Data.DTO;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 
 namespace RandomSongSearchEngine.Service.Models;
@@ -55,6 +56,11 @@ public class CreateModel
                 
                 return errorDto;
             }
+
+            //var bytes = Encoding.Default.GetBytes(createdSong.Text);
+            //createdSong.Text = Encoding.UTF8.GetString(bytes);
+            
+            //createdSong.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdSong.Text)).ToString();
 
             createdSong.Title = createdSong.Title.Trim();
             

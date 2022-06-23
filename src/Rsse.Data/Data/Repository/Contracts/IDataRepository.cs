@@ -4,7 +4,7 @@ namespace RandomSongSearchEngine.Data.Repository.Contracts
 {
     public interface IDataRepository : IAsyncDisposable, IDisposable
     {
-        IQueryable<string> ReadAllSongs();
+        IQueryable<TextEntity> ReadAllSongs();
         string ReadSongTitleById(int id);
 
         int FindIdByName(string name);

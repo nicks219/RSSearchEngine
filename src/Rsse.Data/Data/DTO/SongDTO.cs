@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text;
+using System.Text.Json.Serialization;
 
 namespace RandomSongSearchEngine.Data.DTO;
 
@@ -12,7 +13,7 @@ public record SongDto
     public string? Title { get; set; }
 
     [JsonPropertyName("textJs")] 
-    public string? Text { get; init; }
+    public string? Text { get; set; }
 
     // response
     [JsonPropertyName("textCS")] 

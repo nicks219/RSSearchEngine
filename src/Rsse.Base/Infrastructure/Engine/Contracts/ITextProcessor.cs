@@ -2,9 +2,9 @@ namespace RandomSongSearchEngine.Infrastructure.Engine.Contracts;
 
 public interface ITextProcessor : IDisposable
 {
-    public IEnumerable<Text> GetTextsFromDump(string dump);
+    //public IEnumerable<Text> GetTextsFromDump(string dump);
     
-    public Text ConvertStringToText(string sentence);
+    //public Text ConvertStringToText(string sentence);
 
     public List<string> CleanUpString(string sentence);
 

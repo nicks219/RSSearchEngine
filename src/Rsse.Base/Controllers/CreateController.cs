@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Data.DTO;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Service.Models;
@@ -39,6 +41,9 @@ public class CreateController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SongDto>> CreateSongAsync([FromBody] SongDto dto)
     {
+        //var bytes = Encoding.Default.GetBytes(dto.Text);
+        //dto.Text = Encoding.UTF8.GetString(bytes);
+        
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
@@ -48,7 +53,8 @@ public class CreateController : ControllerBase
             if (string.IsNullOrEmpty(result.ErrorMessageResponse))
             {
                 var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
-                cache.Create(result.Id, string.Concat(result.Id, " '", dto.Title!, "' '", dto.Text!, "'"));
+                // cache.Create(result.Id, string.Concat(result.Id, " '", dto.Title!, "' '", dto.Text!, "'"));
+                cache.Create(result.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
             }
 
             return result;

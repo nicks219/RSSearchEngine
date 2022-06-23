@@ -19,17 +19,20 @@ public sealed class TextProcessor : ITextProcessor
     // может, заменять сецсимволы на пробелы?
     
     // нужен переход по найденному на фронте
-    
+
+    private const string Specials = "#";
     private const string Numbers = "0123456789";
     private const string UndefinedEnglish = "qwrtpsdfghjklzxcvbnm";
-    private const string DefinedEnglish = UndefinedEnglish + /*"eyuioa" +*/ Numbers;
+    private const string DefinedEnglish = UndefinedEnglish + /*"eyuioa" +*/ Numbers + Specials;
     
     private const string UndefinedChainConsonant = "цкнгшщзхфвпрлджчсмтб" + UndefinedEnglish; // + "яыоайуеиюэъьё"
     private const string DefinedChainConsonant =   "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish;// + "ёъь"
+    // + "#" для поиска по тегам - или сделать отдельный словарь ? искать тож с тэгом придется
+    // [TODO] убери ограничение на 10 результатов, ну или 15..20 хоть сделай
     
-    private static readonly Regex SongPattern = new(@"\(\d+,'[^']+','[^']+'\)", RegexOptions.Compiled);
-    private static readonly Regex NumberPattern = new(@"\d+", RegexOptions.Compiled);
-    private static readonly Regex TitlePattern = new(@"'[^']+'", RegexOptions.Compiled);
+    // private static readonly Regex SongPattern = new(@"\(\d+,'[^']+','[^']+'\)", RegexOptions.Compiled);
+    // private static readonly Regex NumberPattern = new(@"\d+", RegexOptions.Compiled);
+    // private static readonly Regex TitlePattern = new(@"'[^']+'", RegexOptions.Compiled);
     private string? _consonantChain;
 
     public void Setup(ConsonantChain consonantChain)
@@ -42,7 +45,7 @@ public sealed class TextProcessor : ITextProcessor
         };
     }
     
-    public IEnumerable<Text> GetTextsFromDump(string dump)
+    /*public IEnumerable<Text> GetTextsFromDump(string dump)
     {
         var matches = SongPattern.Matches(dump);
 
@@ -65,7 +68,7 @@ public sealed class TextProcessor : ITextProcessor
         var text = CleanUpString(matches.ElementAt(1).Value);
 
         return new Text(number, title, text);
-    }
+    }*/
 
     public List<string> CleanUpString(string sentence)
     {
@@ -75,7 +78,10 @@ public sealed class TextProcessor : ITextProcessor
         stringBuilder = stringBuilder.Replace((char)13, ' '); // @"\r"
         stringBuilder = stringBuilder.Replace((char)10, ' '); // @"\n"
         stringBuilder = stringBuilder.Replace('ё', 'е');
-        stringBuilder = stringBuilder.Replace(':', ' '); // делим ссылки (а стоит ли?)
+        // делим ссылки (а стоит ли?)
+        stringBuilder = stringBuilder.Replace(':', ' ');
+        stringBuilder = stringBuilder.Replace('/', ' ');
+        stringBuilder = stringBuilder.Replace('.', ' ');
 
         var words = stringBuilder.ToString().Split(" ");
 

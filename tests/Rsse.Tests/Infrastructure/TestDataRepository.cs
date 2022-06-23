@@ -15,15 +15,17 @@ public class TestDataRepository : IDataRepository
     
     private Dictionary<int, Tuple<string, string>> _dictionary = new();
 
-    private const string FirstSong = "1,'Розенбаум - Вечерняя застольная'," +
-                                "'Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n'";
-    
-    public const string SecondSong = "2,'Шаинский - Облака'," +
-                                "'Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n'";
+    private const string FirstSong = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
 
-    public IQueryable<string> ReadAllSongs()
+    private const string FirstSongTitle = "Розенбаум - Вечерняя застольная";
+    
+    public const string SecondSong =  "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
+
+    public const string SecondSongTitle = "Шаинский - Облака";
+
+    public IQueryable<TextEntity> ReadAllSongs()
     {
-        var songs = new List<string> {FirstSong}.AsQueryable();
+        var songs = new List<TextEntity> {new() {Song = FirstSong, Title = FirstSongTitle, TextId = 1}}.AsQueryable();
 
         return songs;
     }

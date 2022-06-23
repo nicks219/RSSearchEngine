@@ -10,10 +10,15 @@ INSERT Users(Email, Password) VALUES
 
 INSERT Genre(Genre) VALUES 
 (N'Build Tasks'),
+(N'Confluence'),
+(N'Docs'),
 (N'Duty'),
+(N'Etcd'),
 (N'Gitlab'),
 (N'K8s'),
+(N'Kafka'),
 (N'Learning'),
+(N'LE'),
 (N'Memcached'),
 (N'MR'),
 (N'Postgre'),

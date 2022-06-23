@@ -76,6 +76,12 @@ public class TestController : Controller
     
     #endregion
 
+    [HttpGet("version")]
+    public ActionResult GetVersion()
+    {
+        return Ok("v1");
+    }
+    
     [HttpGet("gc")]
     public ActionResult GcCall()
     {
