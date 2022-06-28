@@ -103,6 +103,8 @@ class WithLinks extends React.Component<IWithLinks> {
     render() {
         let res: any = [];
 
+        // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
+        // [TODO] такую ссылку парсит некорректно, съедает ).
         this.props.text && this.props.text.replace(
             /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim, 
             (m, link, text) => {

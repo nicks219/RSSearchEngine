@@ -20,13 +20,13 @@ public sealed class TextProcessor : ITextProcessor
     
     // нужен переход по найденному на фронте
 
-    private const string Specials = "#";
+    private const string Specials = "@";
     private const string Numbers = "0123456789";
     private const string UndefinedEnglish = "qwrtpsdfghjklzxcvbnm";
-    private const string DefinedEnglish = UndefinedEnglish + /*"eyuioa" +*/ Numbers + Specials;
+    private const string DefinedEnglish = UndefinedEnglish + /*"eyuioa" +*/ Numbers;
     
     private const string UndefinedChainConsonant = "цкнгшщзхфвпрлджчсмтб" + UndefinedEnglish; // + "яыоайуеиюэъьё"
-    private const string DefinedChainConsonant =   "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish;// + "ёъь"
+    private const string DefinedChainConsonant =   "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish + Specials;// + "ёъь"
     // + "#" для поиска по тегам - или сделать отдельный словарь ? искать тож с тэгом придется
     // [TODO] убери ограничение на 10 результатов, ну или 15..20 хоть сделай
     
