@@ -7,14 +7,14 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class LoginModel
 {
-    private readonly IServiceScope _scope;
+    private readonly IDataRepository _repo;
     private readonly ILogger<LoginModel> _logger;
 
     public LoginModel(IServiceScope scope)
     {
-        _scope = scope;
+        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
         
-        _logger = _scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
+        _logger = scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
     }
 
     public async Task<ClaimsIdentity?> TryLogin(LoginDto login)
@@ -26,9 +26,7 @@ public class LoginModel
                 return null;
             }
 
-            await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-            
-            var user = await repo.GetUser(login);
+            var user = await _repo.GetUser(login);
             
             if (user == null)
             {

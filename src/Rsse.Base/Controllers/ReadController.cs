@@ -52,13 +52,13 @@ public class ReadController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SongDto>> GetRandomSongAsync([FromBody] SongDto? dto)
     {
-        if (dto?.SongGenres?.Count == 0)
-        {
-            dto.SongGenres = Enumerable.Range(1, 44).ToList();
-        }
-
         try
         {
+            if (dto?.SongGenres?.Count == 0)
+            {
+                dto.SongGenres = Enumerable.Range(1, 44).ToList();
+            }
+            
             using var scope = _serviceScopeFactory.CreateScope();
             return await new ReadModel(scope).ReadRandomSongAsync(dto);
         }

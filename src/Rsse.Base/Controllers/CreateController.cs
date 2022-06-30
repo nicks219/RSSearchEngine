@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Data.DTO;
@@ -21,7 +20,7 @@ public class CreateController : ControllerBase
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<SongDto>> OnGetGenreListAsync()
     {
@@ -41,19 +40,20 @@ public class CreateController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SongDto>> CreateSongAsync([FromBody] SongDto dto)
     {
-        //var bytes = Encoding.Default.GetBytes(dto.Text);
-        //dto.Text = Encoding.UTF8.GetString(bytes);
         
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
+
             var result =  await model.CreateSongAsync(dto);
-            
+
             if (string.IsNullOrEmpty(result.ErrorMessageResponse))
             {
+                await model.CreateGenreAsync(dto); // [CREATE GENRE]
+                
                 var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
-                // cache.Create(result.Id, string.Concat(result.Id, " '", dto.Title!, "' '", dto.Text!, "'"));
+                
                 cache.Create(result.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
             }
 

@@ -14,8 +14,9 @@ using RandomSongSearchEngine.Infrastructure.Logger;
 
 namespace RandomSongSearchEngine;
 
-// RSSE: v3
+// TagIt: v1
 // фронт после билда копируем руками из FrontRepository/ClientApp/build в Rsse.Base/ClientApp/build
+// [TODO] поправь нейминг, это не RSSE
 
 public class Startup
 {
@@ -38,9 +39,7 @@ public class Startup
         {
             services.AddCors();
         }
-
-        services.AddScoped<IDataRepository, DataRepository>();
-
+        
         services.AddSingleton<ICacheRepository, CacheRepository>();
 
         services.AddTransient<ITextProcessor, TextProcessor>();
@@ -63,6 +62,8 @@ public class Startup
         };
 
         services.AddDbContext<RsseContext>(dbOptions);
+        
+        services.AddScoped<IDataRepository, DataRepository>();
 
         services.AddMemoryCache(); // это нужно?
 

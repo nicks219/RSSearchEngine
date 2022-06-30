@@ -1,13 +1,19 @@
-# Random Song Search Engine 
-* [DOTNET-1] : небольшой рефакторинг   
-* [DOTNET-2] : добавлен нечеткий тестковый поиск  
+# TAG IT 
+#### Организация и поиск небольших заметок (база знаний)
+#### Разрабатывается для личной эксплуатации
+#### Чтобы не утонуть в море мудрости и знаний =)
+
+* Нечеткий тестковый поиск (запрос с ошибками): 
   ```bash
   /api/find/{string} вернет json {res: [id, weight]}
-  ```  
-* [DOTNET-3] : актуальные поисковые индексы для N > 1 реплик (в разработке)
-
-Бизнес-требования заказчика: сервис рассчитан на высокую нагрузку по чтению, 
-нагрузка по изменению данных незначительна (этим обусловлена *простая* работа с синхронизацией)
+  ```
+* Организация заметок "всё под рукой" по категориям
+* Распознаёт ссылки 
+* Для тэгов применяйте ```@``` (больший вес слова при поиске)
+* По выбранным категориям идёт с round robin
+* Работа с локальными поисковыми индексами учитывает необходимость 
+синхронизации индексов на подах
+* Для добавления тега - используйте в названии прямоугольные скобки
 
 # Технологии
 * ```bash
@@ -22,18 +28,19 @@
   ```npm start``` из папки ```Rsse.Front/ClientApp/build```  
 * В каталоге есть ```docker-compose.yml``` и ```Dockerfile```
 * В папке Rsse.Data/Dump есть MySql-дамп на 389 песен
+* Некоторая информация есть в папке ```docs```
 
 # Деплой
 * Пример скрипта доставки (компоуз должен быть поднят), не забудьте указать свой registry:
 ```bash
-cd /mnt/f/rsse/RSSE_REACT/src && \
+cd /mnt/f/tagit/src && \
 docker-compose down && \
-docker image rm nick219nick/rsse:v3 && \
-docker-compose build && \
-docker-compose up -d && \
-R_C_HASH=`docker ps | grep rsse | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v3 ${R_C_HASH} nick219nick/rsse:v3 && \
-docker push nick219nick/rsse:v3;
+docker image rm nick219nick/tagit:v1 && \
+docker-compose -f docker-compose-build.yml build && \
+docker-compose -f docker-compose-build.yml up -d && \
+R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
+docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v1 && \
+docker push nick219nick/tagit:v1;
 ```
 
 # Описание API

@@ -45,7 +45,6 @@ public class UpdateController : ControllerBase
             using var scope = _serviceScopeFactory.CreateScope();
             
             var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
-            //cache.Update(dto.Id, string.Concat(dto.Id, " '", dto.Title!, "' '", dto.Text!,"'"));
             cache.Update(dto.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
             
             return await new UpdateModel(scope).UpdateSongAsync(dto);

@@ -12,27 +12,25 @@ public class CatalogModel
     private const int Backward = 1;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
-    private readonly IServiceScope _scope;
+    private readonly IDataRepository _repo;
     private readonly ILogger<CatalogModel> _logger;
 
     #endregion
 
     public CatalogModel(IServiceScope serviceScope)
     {
-        _scope = serviceScope;
+        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
         
-        _logger = _scope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
+        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
     public async Task<CatalogDto> ReadCatalogPageAsync(int pageNumber)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
-            var songsCount = await repo.ReadTextsCountAsync();
+            var songsCount = await _repo.ReadTextsCountAsync();
             
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
             
             return CreateCatalogDto(pageNumber, songsCount, catalogPage);
         }
@@ -46,18 +44,17 @@ public class CatalogModel
 
     public async Task<CatalogDto> NavigateCatalogAsync(CatalogDto catalog)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
         try
         {
             var direction = catalog.Direction();
             
             var pageNumber = catalog.PageNumber;
             
-            var songsCount = await repo.ReadTextsCountAsync();
+            var songsCount = await _repo.ReadTextsCountAsync();
             
             pageNumber = NavigateCatalogPages(direction, pageNumber, songsCount);
             
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
             
             return CreateCatalogDto(pageNumber, songsCount, catalogPage);
         }
@@ -71,11 +68,9 @@ public class CatalogModel
 
     public async Task<CatalogDto> DeleteSongAsync(int songId, int pageNumber)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
-            await repo.DeleteSongAsync(songId);
+            await _repo.DeleteSongAsync(songId);
             
             return await ReadCatalogPageAsync(pageNumber);
         }

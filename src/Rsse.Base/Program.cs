@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using MySqlConnector;
 using RandomSongSearchEngine;
 
 var builder = Host.CreateDefaultBuilder(args)
@@ -25,4 +26,11 @@ var builder = Host.CreateDefaultBuilder(args)
 
 var app = builder.Build();
 
- app.Run();
+try
+{
+    app.Run();
+}
+catch (InvalidOperationException ex)
+{
+    throw new Exception("[DB FAILURE] turn on database server please");
+}

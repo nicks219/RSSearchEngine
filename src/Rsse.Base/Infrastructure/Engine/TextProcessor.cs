@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.RegularExpressions;
 using RandomSongSearchEngine.Infrastructure.Engine.Contracts;
 
 namespace RandomSongSearchEngine.Infrastructure.Engine;
@@ -11,15 +10,6 @@ public enum ConsonantChain
 }
 public sealed class TextProcessor : ITextProcessor
 {
-    // в rsse были только буквы русской локализации
-    // тут нужны цифры и анлийские буквы - но какие ? надо обкатать на практике
-    
-    // надо обеспечить особый поиск по ТЕРМИНАМ (тэгам?) - нужны кейсы
-    // поиск по ссылкам и по английским буквам (терминам) должен быть особым
-    // может, заменять сецсимволы на пробелы?
-    
-    // нужен переход по найденному на фронте
-
     private const string Specials = "@";
     private const string Numbers = "0123456789";
     private const string UndefinedEnglish = "qwrtpsdfghjklzxcvbnm";
@@ -27,8 +17,9 @@ public sealed class TextProcessor : ITextProcessor
     
     private const string UndefinedChainConsonant = "цкнгшщзхфвпрлджчсмтб" + UndefinedEnglish; // + "яыоайуеиюэъьё"
     private const string DefinedChainConsonant =   "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish + Specials;// + "ёъь"
-    // + "#" для поиска по тегам - или сделать отдельный словарь ? искать тож с тэгом придется
+    
     // [TODO] убери ограничение на 10 результатов, ну или 15..20 хоть сделай
+    // [TODO] тэг у меня сейчас @ - решетка # не взлеьела из-за фронта =)
     
     // private static readonly Regex SongPattern = new(@"\(\d+,'[^']+','[^']+'\)", RegexOptions.Compiled);
     // private static readonly Regex NumberPattern = new(@"\d+", RegexOptions.Compiled);
@@ -44,31 +35,6 @@ public sealed class TextProcessor : ITextProcessor
             _ => throw new NotImplementedException("Unknown consonant chain")
         };
     }
-    
-    /*public IEnumerable<Text> GetTextsFromDump(string dump)
-    {
-        var matches = SongPattern.Matches(dump);
-
-        var texts = matches.Select(match => match.Value).ToList();
-
-        var result = texts.Select(ConvertStringToText).ToList();
-
-        return result;
-    }
-
-    public Text ConvertStringToText(string sentence)
-    {
-        var number = int.Parse(NumberPattern.Match(sentence).Value);
-
-        // TODO: название можно соединить с текстом
-        var matches = TitlePattern.Matches(sentence);
-
-        var title = CleanUpString(matches.ElementAt(0).Value);
-
-        var text = CleanUpString(matches.ElementAt(1).Value);
-
-        return new Text(number, title, text);
-    }*/
 
     public List<string> CleanUpString(string sentence)
     {

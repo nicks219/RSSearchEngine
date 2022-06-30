@@ -12,17 +12,36 @@ public class DataRepository : IDataRepository
 
     public DataRepository(IServiceProvider serviceProvider)
     {
-        // контекст точно диспозится?
         _context = serviceProvider.GetRequiredService<RsseContext>();
     }
-    
+
+    public async Task CreateGenreIfNotExistsAsync(string tag)
+    {
+        tag = tag.ToUpper();
+        
+        var exists = await _context.Genre!.AnyAsync(entity => entity.Genre == tag);
+
+        if (exists)
+        {
+            return;
+        }
+        
+        var maxId = await _context.Genre!.Select(entity => entity.GenreId).MaxAsync();
+
+        var genre = new GenreEntity {Genre = tag, GenreId = ++maxId};
+
+        await _context.Genre!.AddAsync(genre);
+
+        await _context.SaveChangesAsync();
+    }
+
     public IQueryable<TextEntity> ReadAllSongs()
     {
         var songs = _context.Text!
             //.Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
             .Select(s => s)
             .AsNoTracking();
-        
+
         return songs;
     }
 
@@ -52,7 +71,7 @@ public class DataRepository : IDataRepository
         var songsForRandomizer = _context.Text!
             .Where(a => a.GenreTextInText!.Any(c => checkedGenres.Contains(c.GenreId)))
             .Select(a => a.TextId);
-        
+
         return songsForRandomizer;
     }
 
@@ -74,7 +93,7 @@ public class DataRepository : IDataRepository
             .Where(p => p.TextId == textId)
             .Select(s => new Tuple<string, string>(s.Song!, s.Title!))
             .AsNoTracking();
-        
+
         return titleAndText;
     }
 
@@ -83,7 +102,7 @@ public class DataRepository : IDataRepository
         var songGenres = _context.GenreText!
             .Where(p => p.TextInGenreText!.TextId == textId)
             .Select(s => s.GenreId);
-        
+
         return songGenres;
     }
 
@@ -100,7 +119,10 @@ public class DataRepository : IDataRepository
 
     public async Task<List<string>> ReadGenreListAsync()
     {
-        var genreList = await ReadGenreList().ToListAsync();
+        var genreList = await _context.Genre!
+            .OrderBy(g => g.GenreId) // борьба с магией сортировки по Genre по дефолту
+            .Select(g => new Tuple<string, int>(g.Genre!, g.GenreTextInGenre!.Count))
+            .ToListAsync();
 
         return genreList.Select(genreAndAmount => genreAndAmount.Item2 > 0
                 ? genreAndAmount.Item1 + ": " + genreAndAmount.Item2
@@ -111,13 +133,13 @@ public class DataRepository : IDataRepository
     public async Task UpdateSongAsync(IEnumerable<int> originalCheckboxes, SongDto song)
     {
         var forAddition = song.SongGenres!.ToHashSet();
-        
+
         var forDelete = originalCheckboxes.ToHashSet();
-        
+
         var except = forAddition.Intersect(forDelete).ToList();
-        
+
         forAddition.ExceptWith(except);
-        
+
         forDelete.ExceptWith(except);
 
         if (await CheckGenresExistsErrorAsync(song.Id, forAddition))
@@ -163,7 +185,7 @@ public class DataRepository : IDataRepository
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                
+
                 throw new Exception("[UpdateSongAsync: Repo]", ex);
             }
         }
@@ -175,9 +197,9 @@ public class DataRepository : IDataRepository
         {
             return song.Id;
         }
-        
+
         await using var transaction = await _context.Database.BeginTransactionAsync();
-            
+
         try
         {
             var addition = new TextEntity {Title = song.Title, Song = song.Text};
@@ -218,22 +240,22 @@ public class DataRepository : IDataRepository
     public async Task<int> DeleteSongAsync(int songId)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
-        
+
         try
         {
             var result = 0;
-            
+
             var song = await _context.Text!.FindAsync(songId);
 
             if (song == null)
             {
                 return result;
             }
-            
+
             _context.Text.Remove(song);
-            
+
             result = await _context.SaveChangesAsync();
-            
+
             await transaction.CommitAsync();
 
             return result;
@@ -241,7 +263,7 @@ public class DataRepository : IDataRepository
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            
+
             throw new Exception("[DeleteSongAsync: Repo]", ex);
         }
     }
@@ -249,13 +271,19 @@ public class DataRepository : IDataRepository
     public async ValueTask DisposeAsync()
     {
         await _context.DisposeAsync().ConfigureAwait(false);
+
+        //context = null;
+
         GC.SuppressFinalize(this);
     }
 
+    // на старте отрабатывает четыре раза
     void IDisposable.Dispose()
     {
         _context.Dispose();
-        
+
+        //context = null;
+
         GC.SuppressFinalize(this);
     }
 
@@ -270,23 +298,12 @@ public class DataRepository : IDataRepository
         {
             return true;
         }
-        
+
         if (await _context.GenreText!.AnyAsync(p => p.TextId == textId && p.GenreId == forAddition.First()))
         {
             throw new DataExistsException("[Global Error: Genre Exists Error]");
         }
 
         return true;
-    }
-
-    // Выборка названий жанров и количества песен в каждом из них
-    private IQueryable<Tuple<string, int>> ReadGenreList()
-    {
-        var genreList = _context.Genre!
-            .OrderBy(g => g.GenreId) // борьба с магией сортировки по Genre по дефолту
-            .Select(g => new Tuple<string, int>(g.Genre!, g.GenreTextInGenre!.Count))
-            .AsNoTracking();
-        
-        return genreList;
     }
 }

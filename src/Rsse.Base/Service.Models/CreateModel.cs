@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.Text.RegularExpressions;
 using RandomSongSearchEngine.Data.DTO;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 
@@ -6,23 +6,21 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class CreateModel
 {
-    private readonly IServiceScope _scope;
+    private readonly IDataRepository _repo;
     private readonly ILogger<CreateModel> _logger;
 
     public CreateModel(IServiceScope serviceScope)
     {
-        _scope = serviceScope;
+        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
         
-        _logger = _scope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
+        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
     }
 
     public async Task<SongDto> ReadGenreListAsync()
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
-            var genreListResponse = await repo.ReadGenreListAsync();
+            var genreListResponse = await _repo.ReadGenreListAsync();
             
             return new SongDto(genreListResponse);
         }
@@ -36,8 +34,6 @@ public class CreateModel
     
     public async Task<SongDto> CreateSongAsync(SongDto createdSong)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
             if (createdSong.SongGenres == null || string.IsNullOrEmpty(createdSong.Text)
@@ -57,14 +53,11 @@ public class CreateModel
                 return errorDto;
             }
 
-            //var bytes = Encoding.Default.GetBytes(createdSong.Text);
-            //createdSong.Text = Encoding.UTF8.GetString(bytes);
-            
             //createdSong.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdSong.Text)).ToString();
 
             createdSong.Title = createdSong.Title.Trim();
             
-            var newSongId = await repo.CreateSongAsync(createdSong);
+            var newSongId = await _repo.CreateSongAsync(createdSong);
             
             if (newSongId == 0)
             {
@@ -101,5 +94,20 @@ public class CreateModel
             
             return new SongDto() {ErrorMessageResponse = "[CreateModel: OnPost Error]"};
         }
+    }
+    
+    // \[([^\[\]]+)\]
+    private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
+    
+    public Task CreateGenreAsync(SongDto? dto)
+    {
+        if (dto?.Title == null)
+        {
+            return Task.CompletedTask;
+        }
+        
+        var tag = TitlePattern.Match(dto.Title).Value.Trim("[]".ToCharArray());
+
+        return !string.IsNullOrEmpty(tag) ? _repo.CreateGenreIfNotExistsAsync(tag) : Task.CompletedTask;
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Infrastructure.Engine;
@@ -9,31 +8,30 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class FindModel
 {
-    private readonly IServiceScope _scope;
+    private readonly IDataRepository _repo;
+    private readonly ITextProcessor _processor;
+    
     private readonly ConcurrentDictionary<int, List<int>> _undefinedCache;
     private readonly ConcurrentDictionary<int, List<int>> _definedCache;
 
     public FindModel(IServiceScope scope)
     {
-        _scope = scope;
+        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        _processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        
         _undefinedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetUndefinedCache();
         _definedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetDefinedCache();
     }
 
     public int FindIdByName(string name)
     {
-        using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
-        var id = repo.FindIdByName(name);
+        var id = _repo.FindIdByName(name);
 
         return id;
     }
 
     public Dictionary<int, double> Find(string text)
     {
-        //var bytes = Encoding.Default.GetBytes(text);
-        //text = Encoding.UTF8.GetString(bytes);
-        
         var result = new Dictionary<int, double>();
 
         // I. defined поиск: 0.8D
@@ -43,11 +41,9 @@ public class FindModel
 
         var undefinedSearch = true;
 
-        var processor = _scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        _processor.Setup(ConsonantChain.Defined);
 
-        processor.Setup(ConsonantChain.Defined);
-
-        var hash = processor.CleanUpString(text);
+        var hash = _processor.CleanUpString(text);
 
         if (hash.Count == 0)
         {
@@ -55,11 +51,11 @@ public class FindModel
             return result;
         }
 
-        var item = processor.GetHashSetFromStrings(hash);
+        var item = _processor.GetHashSetFromStrings(hash);
 
         foreach (var (key, value) in _definedCache)
         {
-            var metric = processor.GetComparisionMetric(value, item);
+            var metric = _processor.GetComparisionMetric(value, item);
 
             // I. 100% совпадение defined, undefined можно не искать
             if (metric == item.Count)
@@ -83,11 +79,11 @@ public class FindModel
             return result;
         }
 
-        processor.Setup(ConsonantChain.Undefined);
+        _processor.Setup(ConsonantChain.Undefined);
 
-        hash = processor.CleanUpString(text);
+        hash = _processor.CleanUpString(text);
 
-        item = processor.GetHashSetFromStrings(hash);
+        item = _processor.GetHashSetFromStrings(hash);
         
         if (hash.Count == 0)
         {
@@ -100,7 +96,7 @@ public class FindModel
 
         foreach (var (key, value) in _undefinedCache)
         {
-            var metric = processor.GetComparisionMetric(value, item);
+            var metric = _processor.GetComparisionMetric(value, item);
 
             // III. 100% совпадение undefined
             if (metric == item.Count)

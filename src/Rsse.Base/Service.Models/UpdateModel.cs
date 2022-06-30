@@ -6,28 +6,26 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class UpdateModel
 {
-    private readonly IServiceScope _scope;
+    private readonly IDataRepository _repo;
     
     private readonly ILogger<UpdateModel> _logger;
 
     public UpdateModel(IServiceScope scope)
     {
-        _scope = scope;
+        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
         _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
     }
 
     public async Task<SongDto> ReadOriginalSongAsync(int originalSongId)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
         try
         {
             string textResponse;
 
             var titleResponse = "";
 
-            var song = await repo
+            var song = await _repo
                 .ReadSong(originalSongId)
                 .ToListAsync();
 
@@ -42,9 +40,9 @@ public class UpdateModel
                 textResponse = "[Song: Always Deleted. Select another pls]";
             }
 
-            var genreListResponse = await repo.ReadGenreListAsync();
+            var genreListResponse = await _repo.ReadGenreListAsync();
 
-            var songGenres = await repo
+            var songGenres = await _repo
                 .ReadSongGenres(originalSongId)
                 .ToListAsync();
 
@@ -72,8 +70,6 @@ public class UpdateModel
 
     public async Task<SongDto> UpdateSongAsync(SongDto updatedSong)
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
         try
         {
             if (updatedSong.SongGenres == null
@@ -84,11 +80,11 @@ public class UpdateModel
                 return await ReadOriginalSongAsync(updatedSong.Id);
             }
 
-            var originalGenres = await repo
+            var originalGenres = await _repo
                 .ReadSongGenres(updatedSong.Id)
                 .ToListAsync();
 
-            await repo.UpdateSongAsync(originalGenres, updatedSong);
+            await _repo.UpdateSongAsync(originalGenres, updatedSong);
 
             return await ReadOriginalSongAsync(updatedSong.Id);
         }

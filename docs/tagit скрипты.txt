@@ -1,20 +1,20 @@
 I.	коммит rsse образа из билда (залогинься в Docker Desktop)
 cd src =)  папка с ямлом, запуск из-под wsl
 
-cd /mnt/f/tagit/src && \
+cd /mnt/c/Users/nick/source/repos/tagit/src && \
 docker-compose down && \
-docker image rm nick219nick/tagit:v1 && \
+docker image rm nick219nick/tagit:v2 && \
 docker-compose -f docker-compose-build.yml build && \
 docker-compose -f docker-compose-build.yml up -d && \
 R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v1 && \
-docker push nick219nick/tagit:v1;
+docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v2 && \
+docker push nick219nick/tagit:v2;
 
 II.	подъем образа на хосте:
 cd scr =) папка с ямлом
 
 docker compose down && \
-docker image rm nick219nick/tagit:v1 && \
+docker image rm nick219nick/tagit:v2 && \
 docker compose up -d;
 
 III. 	тестовые сценарии:

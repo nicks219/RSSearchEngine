@@ -23,13 +23,17 @@ export class LoginRequired {
     // [TODO] сейчас у компонентов нет component.url - их надо докидывать отдельно
     static ContinueLoading() {
         let component = window.temp;
+        
         if (component) {
-            if (component.url === Loader.updateUrl) {
+            // login для update
+            if (window.url === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
                 Loader.getDataById(component, window.textId, window.url);
-            } else if (component.url === Loader.catalogUrl){
+                // login для catalog
+            } else if (window.url === Loader.catalogUrl){
                 Loader.getDataById(component, component.state.data.pageNumber, window.url);
             }
+            // login для всего остального
             else {
                 Loader.getData(component, window.url);
             }

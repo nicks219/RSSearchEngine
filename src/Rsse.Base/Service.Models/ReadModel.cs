@@ -7,24 +7,22 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class ReadModel
 {
-    private readonly IServiceScope _scope;
-    
     private readonly ILogger<ReadModel> _logger;
+
+    private readonly IDataRepository _repo;
 
     public ReadModel(IServiceScope serviceScope)
     {
-        _scope = serviceScope;
+        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
         
-        _logger = _scope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
     }
 
     public string? ReadSongTitleById(int id)
     {
-        using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
         try
         {
-            var res = repo.ReadSongTitleById(id);
+            var res = _repo.ReadSongTitleById(id);
             
             return res;
         }
@@ -38,11 +36,9 @@ public class ReadModel
 
     public async Task<SongDto> ReadGenreListAsync()
     {
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
-            var genreListResponse = await repo.ReadGenreListAsync();
+            var genreListResponse = await _repo.ReadGenreListAsync();
             
             return new SongDto(genreListResponse);
         }
@@ -62,17 +58,15 @@ public class ReadModel
         
         var songId = 0;
         
-        await using var repo = _scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         try
         {
             if (request is {SongGenres: { }} && request.SongGenres.Count != 0)
             {
-                songId = await repo.ReadRandomIdAsync(request.SongGenres);
+                songId = await _repo.ReadRandomIdAsync(request.SongGenres);
                 
                 if (songId != 0)
                 {
-                    var song = await repo
+                    var song = await _repo
                         .ReadSong(songId)
                         .ToListAsync();
                     
@@ -85,7 +79,7 @@ public class ReadModel
                 }
             }
 
-            var genreListResponse = await repo.ReadGenreListAsync();
+            var genreListResponse = await _repo.ReadGenreListAsync();
             
             return new SongDto(genreListResponse, songId, textResponse, titleResponse);
         }

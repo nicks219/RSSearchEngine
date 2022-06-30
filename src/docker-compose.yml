@@ -17,7 +17,7 @@ services:
       - mysql-volume:/var/lib/mysql
 
   tagit:
-    image: nick219nick/tagit:v1
+    image: nick219nick/tagit:v2
     container_name: tagit
     restart: always
     ports:

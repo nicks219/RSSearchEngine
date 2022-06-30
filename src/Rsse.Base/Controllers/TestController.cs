@@ -79,7 +79,7 @@ public class TestController : Controller
     [HttpGet("version")]
     public ActionResult GetVersion()
     {
-        return Ok("v1");
+        return Ok("v2: add tags");
     }
     
     [HttpGet("gc")]

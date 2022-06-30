@@ -13,6 +13,8 @@ public class TestDataRepository : IDataRepository
 {
     private int _id;
     
+    public async Task CreateGenreIfNotExistsAsync(string tag){}
+    
     private Dictionary<int, Tuple<string, string>> _dictionary = new();
 
     private const string FirstSong = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";

@@ -91,7 +91,6 @@ export default class Menu extends React.Component<IProps, IState> {
                 {this.menu[i]}</button>);
         }
 
-        // TODO: список жанров точно один на всю сессию (кол-во песен в них будет отличаться) - зачем его грузить каждый раз?
         // TODO: экран некрасиво мигает при переключении пунктов меню
 
         return (
