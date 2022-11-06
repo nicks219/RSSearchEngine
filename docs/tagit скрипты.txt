@@ -25,8 +25,13 @@ ab -n10 -c1 http://45.95.202.39:5000/testmega?id=true
 IV.	снять дамп: выделит первое слово до пробела и создаст дамп на хосте по пути ./rsse:
         
 DB_HASH=`docker ps | grep mysql | grep -E -o "^\S+"` && \
-docker exec -it $DB_HASH mysqldump --host=localhost --user=root --password=1 rsse > ./rsse.dump 
+docker exec -it $DB_HASH mysqldump --host=localhost --user=root --password=1 tagit > ./tagit.dump 
 
 V.	подъем локально:
 
 docker-compose -f docker-compose-up.yml up -d
+
+VI.	накатить дамп:
+
+DB_HASH=`docker ps | grep mysql | grep -E -o "^\S+"` && \
+docker exec -i $DB_HASH mysql --host=localhost --user=root --password=1 tagit < tagit.dump 

@@ -21,7 +21,7 @@ services:
     container_name: tagit
     restart: always
     ports:
-      - 5100:5000
+      - 5000:5000
 
 volumes:
   mysql-volume:
