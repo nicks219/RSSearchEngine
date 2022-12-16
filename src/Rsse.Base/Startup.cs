@@ -73,7 +73,7 @@ public class Startup
 
         Action<DbContextOptionsBuilder> dbOptions = sqlServerType switch
         {
-            "mysql" => options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 26))),
+            "mysql" => options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 31))),
             // b=> b.MigrationsAssembly("Rsse.Data")
             // _ => options => options.UseSqlServer(connectionString),
             _ => throw new NotImplementedException("[unsupported db]")
@@ -100,7 +100,7 @@ public class Startup
         if (_env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            
+        
             app.UseSwagger();
             
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nick V1"); });

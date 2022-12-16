@@ -31,5 +31,5 @@ try
 }
 catch (InvalidOperationException ex)
 {
-    throw new Exception("[DB FAILURE] turn on database server please");
+    throw new Exception("[DB FAILURE] turn on database server please", ex);
 }

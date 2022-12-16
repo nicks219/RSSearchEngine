@@ -3,18 +3,18 @@ cd src =)  папка с ямлом, запуск из-под wsl
 
 cd /mnt/c/Users/nick/source/repos/tagit/src && \
 docker-compose down && \
-docker image rm nick219nick/tagit:v2 && \
+docker image rm nick219nick/tagit:v3 && \
 docker-compose -f docker-compose-build.yml build && \
 docker-compose -f docker-compose-build.yml up -d && \
 R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v2 && \
-docker push nick219nick/tagit:v2;
+docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v3 && \
+docker push nick219nick/tagit:v3;
 
 II.	подъем образа на хосте:
 cd scr =) папка с ямлом
 
 docker compose down && \
-docker image rm nick219nick/tagit:v2 && \
+docker image rm nick219nick/tagit:v3 && \
 docker compose up -d;
 
 III. 	тестовые сценарии:
@@ -24,7 +24,7 @@ ab -n10 -c1 http://45.95.202.39:5000/testmega?id=true
 
 IV.	снять дамп: выделит первое слово до пробела и создаст дамп на хосте по пути ./rsse:
         
-DB_HASH=`docker ps | grep mysql | grep -E -o "^\S+"` && \
+DB_HASH=`docker ps | grep mysql_t | grep -E -o "^\S+"` && \
 docker exec -it $DB_HASH mysqldump --host=localhost --user=root --password=1 tagit > ./tagit.dump 
 
 V.	подъем локально:
@@ -33,5 +33,9 @@ docker-compose -f docker-compose-up.yml up -d
 
 VI.	накатить дамп:
 
-DB_HASH=`docker ps | grep mysql | grep -E -o "^\S+"` && \
+DB_HASH=`docker ps | grep mysql_t | grep -E -o "^\S+"` && \
 docker exec -i $DB_HASH mysql --host=localhost --user=root --password=1 tagit < tagit.dump 
+
+VII. 	сбилдить образ:
+
+docker build -t nick219nick/tagit:v3 .

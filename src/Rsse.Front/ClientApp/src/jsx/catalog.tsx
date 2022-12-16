@@ -38,6 +38,16 @@ class CatalogView extends React.Component<IProps, IState> {
         let requestBody = JSON.stringify(item);
         Loader.postData(this, requestBody, Loader.catalogUrl);
     }
+
+    createDump = (e: any) => {
+        e.preventDefault();
+        Loader.getData(this, Loader.backupCreateUrl);
+    }
+
+    restoreDump = (e: any) => {
+        e.preventDefault();
+        Loader.getData(this, Loader.backupRestoreUrl);
+    }
     
     logout = (e: any) => {
         e.preventDefault();
@@ -68,21 +78,39 @@ class CatalogView extends React.Component<IProps, IState> {
         }
         
         let songs = [];
-        for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {
+        if(this.state.data.res)
+        {
             songs.push(
-                <tr key={"song " + i} className="bg-warning">
+                <tr key={"song "} className="bg-warning">
                     <td></td>
-                    <td>
-                        <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2}
-                            onClick={this.redirect}>{this.state.data.titlesAndIds[i].item1}
-                        </button>
-                    </td>
-                    <td>
-                        <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2} onClick={this.delete}>
-                            &#10060;
-                        </button>
-                    </td>
+                    <td>{this.state.data.res}</td>
                 </tr>);
+
+            const link = document.createElement('a');
+            link.href = this.state.data.res;
+            link.download = this.state.data.res;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        else {
+            for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {
+                songs.push(
+                    <tr key={"song " + i} className="bg-warning">
+                        <td></td>
+                        <td>
+                            <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2}
+                                    onClick={this.redirect}>{this.state.data.titlesAndIds[i].item1}
+                            </button>
+                        </td>
+                        <td>
+                            <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2}
+                                    onClick={this.delete}>
+                                &#10060;
+                            </button>
+                        </td>
+                    </tr>);
+            }
         }
 
         return (
@@ -109,6 +137,13 @@ class CatalogView extends React.Component<IProps, IState> {
                                     &nbsp;
                                     <button id="js-logout" className="btn btn-outline-light" onClick={this.logout}>
                                         &lt;LogOut&gt;
+                                    </button>
+                                    <button id="js-logout" className="btn btn-outline-light" onClick={this.createDump}>
+                                        &lt;Create&gt;
+                                    </button>
+                                        {/* <a href={this.state.data.res} download={this.state.data.res}>&lt;Download&gt;</a>*/}
+                                    <button id="js-logout" className="btn btn-outline-light" onClick={this.restoreDump}>
+                                        &lt;Restore&gt;
                                     </button>
                                 </form>
                             </th>

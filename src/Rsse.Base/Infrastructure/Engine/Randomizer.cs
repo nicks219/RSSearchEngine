@@ -9,7 +9,7 @@ public static class Randomizer
     private static uint _id;
 
     /// <summary> Возвращает Id случайно выбранной песни из заданных категорий </summary>
-    public static async Task<int> GetBalancedIdAsync(this IDataRepository repo, List<int> songGenresRequest, bool isRandom = false)
+    public static async Task<int> GetBalancedIdAsync(this IDataRepository repo, List<int> songGenresRequest, bool isRandom = true)
     {
         var checkedGenres = songGenresRequest.ToArray();
         

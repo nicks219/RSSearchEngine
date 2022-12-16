@@ -4,7 +4,7 @@ namespace RandomSongSearchEngine.Infrastructure;
 
 public class MysqlBackup : IMysqlBackup
 {
-    private const string Directory = "Backup";
+    private const string Directory = "ClientApp/build";
     private readonly IConfiguration _configuration;
     private readonly int _maxVersion;
     private int _version;
@@ -20,8 +20,8 @@ public class MysqlBackup : IMysqlBackup
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
         
         var file = string.IsNullOrEmpty(fileName) 
-            ? Path.Combine(Directory, $"backup_{_version}.sql")
-            : Path.Combine(Directory, $"_{fileName}_.sql");
+            ? Path.Combine(Directory, $"backup_{_version}.txt")
+            : Path.Combine(Directory, $"_{fileName}_.txt");
 
         _version = (_version + 1) % _maxVersion;
         
@@ -54,8 +54,8 @@ public class MysqlBackup : IMysqlBackup
         }
         
         var file = string.IsNullOrEmpty(fileName) 
-            ? Path.Combine(Directory, $"backup_{version}.sql")
-            : Path.Combine(Directory, $"_{fileName}_.sql");
+            ? Path.Combine(Directory, $"backup_{version}.txt")
+            : Path.Combine(Directory, $"_{fileName}_.txt");
 
         using var conn = new MySqlConnection(connectionString);
         

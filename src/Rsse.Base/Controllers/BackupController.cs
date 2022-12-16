@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RandomSongSearchEngine.Infrastructure;
 
 namespace RandomSongSearchEngine.Controllers;
 
-[ApiController]
+[Authorize]
 [Route("backup")]
+[ApiController]
+
 public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
@@ -22,12 +25,33 @@ public class BackupController : ControllerBase
         try
         {
             var result = _backup.Backup(fileName);
-            return Ok(new {result});
+            /*var response = _context.HttpContext?.Response;
+
+            if (response != null)
+            {
+                response.Clear();
+                var contentType = "text/plain";
+                //contentType = "application/octet-stream";
+
+                //response.ContentType = contentType;
+                
+                //response.Headers.Add("Content-Disposition", "attachment; filename=" + result + ";");
+
+                //response.SendFileAsync(result).GetAwaiter().GetResult();
+                var path = Path.GetFullPath(result);
+                var name = Path.GetFileName(path);
+                
+                return File(System.IO.File.ReadAllBytes(path), contentType, name);
+
+                //return new PhysicalFileResult(path, contentType);// EmptyResult();
+            }*/
+
+            return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "[Backup Controller] create error");
-            return BadRequest("[Backup Controller] create error");
+            return BadRequest($"[Backup Controller] create error {exception}");
         }
     }
     
@@ -37,12 +61,12 @@ public class BackupController : ControllerBase
         try
         {
             var result = _backup.Restore(fileName);
-            return Ok(new {result});
+            return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "[Backup Controller] restore error");
-            return BadRequest("[Backup Controller] restore error");
+            return BadRequest($"[Backup Controller] restore error {exception}");
         }
     }
 }

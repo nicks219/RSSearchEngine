@@ -11,6 +11,9 @@ export class Loader {
     static loginUrl: string = "/account/login";
     static logoutUrl: string = "/account/logout";
     static findUrl: string = "/api/find";
+
+    static backupCreateUrl:string = "/create";
+    static backupRestoreUrl:string = "/restore";
     
     // для прода:
     static credos: "omit" | "same-origin" | "include" = "same-origin"; 

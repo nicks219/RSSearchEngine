@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0.31
     container_name: mysql_t
     environment:
       - MYSQL_USER=1
@@ -17,7 +17,7 @@ services:
       - mysql-volume:/var/lib/mysql
 
   tagit:
-    image: nick219nick/tagit:v2
+    image: nick219nick/tagit:v3
     container_name: tagit
     restart: always
     ports:
