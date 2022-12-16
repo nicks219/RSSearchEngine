@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using MySqlConnector;
 using RandomSongSearchEngine;
 
 var builder = Host.CreateDefaultBuilder(args)

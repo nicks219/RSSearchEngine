@@ -13,6 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MySqlBackup.NET" Version="2.3.7" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
     </ItemGroup>
 
@@ -23,6 +24,10 @@
     <ItemGroup>
       <_ContentIncludedByDefault Remove="ClientApp\build_\asset-manifest.json" />
       <_ContentIncludedByDefault Remove="ClientApp\build_\manifest.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Backup" />
     </ItemGroup>
 
 </Project>

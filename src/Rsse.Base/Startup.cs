@@ -18,6 +18,20 @@ namespace RandomSongSearchEngine;
 // фронт после билда копируем руками из FrontRepository/ClientApp/build в Rsse.Base/ClientApp/build
 // [TODO] поправь нейминг, это не RSSE
 
+// TODO миграции
+// export DOTNET_ROLL_FORWARD=LatestMajor
+// Microsoft.EntityFrameworkCore.Design
+// dotnet new tool-manifest 
+// dotnet tool update dotnet-ef (7.0.1)
+// dotnet ef dbcontext list
+// dotnet ef migrations list
+// из папки RsseBase: dotnet ef migrations add Init -s "./" -p "../Rsse.Data"
+// зафигачило миграцию в Rsse.Data
+
+// TODO - удали каменты, отрефактори и сделай новую верстку:
+// нейминг методов, async-await в js, роутер вместо моего "меню".
+// по-хорошему переделать схему бд или хотя бы DTO.
+
 public class Startup
 {
     private readonly IConfiguration _configuration;
@@ -44,6 +58,8 @@ public class Startup
 
         services.AddTransient<ITextProcessor, TextProcessor>();
 
+        services.AddSingleton<IMysqlBackup, MysqlBackup>();
+
         services.AddHttpContextAccessor();
 
         services.AddSwaggerGen(swaggerGenOptions =>
@@ -58,7 +74,9 @@ public class Startup
         Action<DbContextOptionsBuilder> dbOptions = sqlServerType switch
         {
             "mysql" => options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 26))),
-            _ => options => options.UseSqlServer(connectionString),
+            // b=> b.MigrationsAssembly("Rsse.Data")
+            // _ => options => options.UseSqlServer(connectionString),
+            _ => throw new NotImplementedException("[unsupported db]")
         };
 
         services.AddDbContext<RsseContext>(dbOptions);
