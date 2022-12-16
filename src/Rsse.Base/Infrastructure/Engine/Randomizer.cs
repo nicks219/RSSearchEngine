@@ -9,7 +9,7 @@ public static class Randomizer
     private static uint _id;
 
     /// <summary> Возвращает Id случайно выбранной песни из заданных категорий </summary>
-    public static async Task<int> ReadRandomIdAsync(this IDataRepository repo, List<int> songGenresRequest)
+    public static async Task<int> GetBalancedIdAsync(this IDataRepository repo, List<int> songGenresRequest, bool isRandom = false)
     {
         var checkedGenres = songGenresRequest.ToArray();
         
@@ -22,7 +22,7 @@ public static class Randomizer
         }
 
         // Random
-        /*var coin = GetRandom(howManySongs);
+        /*var coin = GetRandomInRange(howManySongs);
         var randomResult = await repo.SelectAllSongsInGenres(checkedGenres)
             //[WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
             // without an 'OrderBy' operator.
@@ -34,10 +34,12 @@ public static class Randomizer
         // RoundRobin
         Interlocked.Increment(ref _id);
         
-        var coin = (int)(_id % howManySongs);
+        // Or Random
+        // TODO isRandom должен настраиваться через конфигурацию.
+        var coin = isRandom ? GetRandomInRange(howManySongs) : (int)(_id % howManySongs);
 
         var roundRobinResult = await allSongsInGenres
-            //[WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
+            // [WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
             // without an 'OrderBy' operator.
             .OrderBy(s => s)
             .Skip(coin)
@@ -52,7 +54,7 @@ public static class Randomizer
     /// </summary>
     /// <param name="howMany">Количество песен, доступных для выборки</param>
     /// <returns></returns>
-    private static int GetRandom(int howMany)
+    private static int GetRandomInRange(int howMany)
     {
         lock (Random)
         {

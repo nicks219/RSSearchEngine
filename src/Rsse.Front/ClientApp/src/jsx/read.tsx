@@ -16,6 +16,8 @@ interface IProps {
 export class HomeView extends React.Component<IState> {
     formId: any;
     mounted: boolean;
+    
+    readFromCatalog: boolean;
 
     public state: IState = {
         data: null
@@ -24,16 +26,30 @@ export class HomeView extends React.Component<IState> {
     mainForm: React.RefObject<HTMLFormElement>;
 
     constructor(props: any) {
+        // из "каталога" я попаду в этот конструктор, а потом в DidMount, id песни { data: 1 } будет в props.
         super(props);
+
         this.formId = null;
         this.mounted = true;
+        this.readFromCatalog = false;
 
         this.mainForm = React.createRef();
     }
 
     componentDidMount() {
         this.formId = this.mainForm.current;
-        Loader.getData(this, Loader.readUrl);
+        
+        // если песня "заказана из каталога", то не обновляем содержимое компонента.
+        if (!this.readFromCatalog) {
+            Loader.getData(this, Loader.readUrl);
+        }
+        else{
+            // убираем чекбоксы и логин если "из каталога".
+            this.formId.style.display = "none";
+            (document.getElementById("login")as HTMLElement).style.display = "none";
+        }
+        
+        this.readFromCatalog = false;
     }
 
     componentDidUpdate() {
@@ -52,6 +68,18 @@ export class HomeView extends React.Component<IState> {
     }
 
     render() {
+        // читаем "песню из каталога":
+        if (this.props.data) {
+            console.log(this.props.data);
+
+            const item = { CheckedCheckboxesJS: [] };
+            let requestBody = JSON.stringify(item);
+            let id = this.props.data;
+            this.readFromCatalog = true;
+            
+            Loader.postData(this, requestBody, Loader.readUrl, id);
+        }
+        
         let checkboxes = [];
         if (this.state.data != null) {
             for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {

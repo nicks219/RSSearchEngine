@@ -10,8 +10,8 @@ import { Login } from "./login";
 declare global {
     interface Window { textId: number }
 }
-window.textId = 0;
 
+window.textId = 0;
 interface IProps {
     visibilityCss: string[];
     visibilityFlag: boolean[];
@@ -73,9 +73,10 @@ export default class Menu extends React.Component<IProps, IState> {
     }
 
     render() {
-        // костыль: переключаемся из catalog на changeText
+        // костыль: переключаемся из catalog и create (поиска) на changeText. Вместо ShoulUpdate - render
         if (this.state.id) {
-            this.visibilityFlag = [false, true, false, false];
+            // this.visibilityFlag = [false, true, false, false]; // change text
+            this.visibilityFlag = [true, false, false, false]; // view text: true - true выведет несколько компонентов.
             window.textId = this.state.id;
         }
 
@@ -101,7 +102,7 @@ export default class Menu extends React.Component<IProps, IState> {
                 {/*первый пункт меню*/}
                 {this.visibilityFlag[0] &&
                     <div id="renderContainer1">
-                        <HomeView data={null}/>
+                        <HomeView data={this.state.id}/>
                     </div>
                 }
                 {/*второй пункт меню*/}

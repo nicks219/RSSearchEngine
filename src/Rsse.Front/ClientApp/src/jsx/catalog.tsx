@@ -49,6 +49,7 @@ class CatalogView extends React.Component<IProps, IState> {
     }
 
     redirect = (e: any) => {
+        // listener это меню.
         e.preventDefault();
         let id = Number(e.target.id);
         this.props.listener.setState({ id: id });

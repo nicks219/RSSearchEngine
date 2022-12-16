@@ -67,7 +67,7 @@ export class Loader {
     }
 
     // POST request: /api/controller
-    static postData(component: any, requestBody: any, url: any) {
+    static postData(component: any, requestBody: any, url: any, id: any = null) {
         // [obsolte] из 1го цикла: при пустых areChecked чекбоксах внешний вид компонента <Сheckboxes> не менялся (после "ошибки" POST)
         // при этом все данные были  правильные и рендеринг/обновление проходили успешно (в компоненте <UpdateView>)
         // решение: уникальный key <Checkbox key={"checkbox " + i + this.state.time} ...>
@@ -78,7 +78,7 @@ export class Loader {
         // url = this.corsAddress + url;
         
         try {
-            window.fetch(this.corsAddress + url, {
+            window.fetch(this.corsAddress + url + "?id=" + String(id), {
                 method: "POST",
                 headers: { 'Content-Type': "application/json;charset=utf-8" },
                 body: requestBody,

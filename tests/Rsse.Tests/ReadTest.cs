@@ -88,7 +88,7 @@ public class ReadTest
 
         var readController = new ReadController(fakeServiceScopeFactory, mockLogger);
 
-        _ = await readController.GetRandomSongAsync(null!);
+        _ = await readController.GetRandomSongAsync(null!, null!);
 
         mockLogger.Received().LogError(Arg.Any<Exception>(), "[ReadController: OnPost Error]");
     }
@@ -100,7 +100,7 @@ public class ReadTest
         var factory = new CustomServiceScopeFactory(new TestHost<ReadModel>().ServiceProvider);
         var readController = new ReadController(factory, logger);
 
-        var response = (await readController.GetRandomSongAsync(null!)).Value;
+        var response = (await readController.GetRandomSongAsync(null!, null!)).Value;
 
         Assert.AreEqual("", response?.TitleResponse);
     }

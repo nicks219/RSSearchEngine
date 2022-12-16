@@ -45,7 +45,8 @@ class CreateView extends React.Component<IProps, IState> {
     }
 
     componentDidUpdate() {
-        
+
+        // listener это меню.
         if (this.state.menuListener){
             console.log("FUCK YEAHH " + this.state.menuListener);
             this.props.listener.setState({id: this.state.menuListener});
@@ -170,7 +171,8 @@ class SubmitButton extends React.Component<IProps> {
             
             let title = e.target.innerText;
             let id = e.target.attributes.about.nodeValue;
-            
+
+            // listener это компонент create.
             console.log("Oh yeahh: " + SubmitButton.state + " " + title + " " + id);
             SubmitButton.listener.setState({menuListener: id});
         }

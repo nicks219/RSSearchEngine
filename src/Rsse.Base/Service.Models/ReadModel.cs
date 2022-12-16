@@ -50,7 +50,7 @@ public class ReadModel
         }
     }
 
-    public async Task<SongDto> ReadRandomSongAsync(SongDto? request)
+    public async Task<SongDto> ReadRandomSongAsync(SongDto? request, string? id = null)
     {
         var textResponse = "";
         
@@ -62,8 +62,11 @@ public class ReadModel
         {
             if (request is {SongGenres: { }} && request.SongGenres.Count != 0)
             {
-                songId = await _repo.ReadRandomIdAsync(request.SongGenres);
-                
+                if (!int.TryParse(id, out songId))
+                {
+                    songId = await _repo.GetBalancedIdAsync(request.SongGenres);
+                }
+
                 if (songId != 0)
                 {
                     var song = await _repo

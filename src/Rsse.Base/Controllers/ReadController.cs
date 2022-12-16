@@ -50,8 +50,9 @@ public class ReadController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<SongDto>> GetRandomSongAsync([FromBody] SongDto? dto)
+    public async Task<ActionResult<SongDto>> GetRandomSongAsync([FromBody] SongDto? dto, [FromQuery] string? id)
     {
+        // сейчас код идёт раунд-робином. сделай явную настройку варианта выбора текста.
         try
         {
             if (dto?.SongGenres?.Count == 0)
@@ -60,7 +61,8 @@ public class ReadController : ControllerBase
             }
             
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new ReadModel(scope).ReadRandomSongAsync(dto);
+            var model = await new ReadModel(scope).ReadRandomSongAsync(dto, id);
+            return model;
         }
         catch (Exception ex)
         {
