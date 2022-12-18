@@ -9,6 +9,7 @@ namespace RandomSongSearchEngine.Controllers;
 
 public class ReadController : ControllerBase
 {
+    private static bool _randomElection = true;
     private readonly ILogger<ReadController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -16,6 +17,13 @@ public class ReadController : ControllerBase
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
+    }
+
+    [HttpGet("election")]
+    public ActionResult ChangeTextElectionMethod()
+    {
+        _randomElection = !_randomElection;
+        return Ok(new { RandomElection = _randomElection });
     }
 
     [HttpGet("title")]
@@ -50,9 +58,8 @@ public class ReadController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<SongDto>> GetRandomSongAsync([FromBody] SongDto? dto, [FromQuery] string? id)
+    public async Task<ActionResult<SongDto>> ElectTextAsync([FromBody] SongDto? dto, [FromQuery] string? id)
     {
-        // сейчас код идёт раунд-робином. сделай явную настройку варианта выбора текста.
         try
         {
             if (dto?.SongGenres?.Count == 0)
@@ -61,7 +68,7 @@ public class ReadController : ControllerBase
             }
             
             using var scope = _serviceScopeFactory.CreateScope();
-            var model = await new ReadModel(scope).ReadRandomSongAsync(dto, id);
+            var model = await new ReadModel(scope).ElectTextAsync(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)

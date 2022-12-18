@@ -50,7 +50,7 @@ public class ReadModel
         }
     }
 
-    public async Task<SongDto> ReadRandomSongAsync(SongDto? request, string? id = null)
+    public async Task<SongDto> ElectTextAsync(SongDto? request, string? id = null, bool randomElection = true)
     {
         var textResponse = "";
         
@@ -64,7 +64,7 @@ public class ReadModel
             {
                 if (!int.TryParse(id, out songId))
                 {
-                    songId = await _repo.GetBalancedIdAsync(request.SongGenres);
+                    songId = await _repo.ElectTextIdAsync(request.SongGenres, randomElection);
                 }
 
                 if (songId != 0)

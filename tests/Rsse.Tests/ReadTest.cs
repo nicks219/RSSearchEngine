@@ -48,7 +48,7 @@ public class ReadTest
         // интеграционные тесты следует проводить на тестовой бд в docker'е
         var request = new SongDto {SongGenres = new List<int> {11}};
 
-        var response = await _readModel!.ReadRandomSongAsync(request);
+        var response = await _readModel!.ElectTextAsync(request);
 
         Assert.AreEqual("test title", response.TitleResponse);
     }
@@ -58,7 +58,7 @@ public class ReadTest
     {
         var frontRequest = new SongDto {SongGenres = new List<int> {1000}};
 
-        var result = await _readModel!.ReadRandomSongAsync(frontRequest);
+        var result = await _readModel!.ElectTextAsync(frontRequest);
 
         Assert.AreEqual("", result.TitleResponse);
     }
@@ -66,7 +66,7 @@ public class ReadTest
     [TestMethod]
     public async Task ModelNullRequest_ShouldLoggingErrorInsideModel()
     {
-        _ = await _readModel!.ReadRandomSongAsync(null!);
+        _ = await _readModel!.ElectTextAsync(null!);
 
         Assert.AreNotEqual("[IndexModel: OnPost Error]", FakeLoggerErrors.LogErrorMessage);
     }
@@ -74,7 +74,7 @@ public class ReadTest
     [TestMethod]
     public async Task ModelNullRequest_ShouldResponseEmptyTitleTest()
     {
-        var response = await _readModel!.ReadRandomSongAsync(null!);
+        var response = await _readModel!.ElectTextAsync(null!);
 
         Assert.AreEqual("", response.TitleResponse);
     }
@@ -88,7 +88,7 @@ public class ReadTest
 
         var readController = new ReadController(fakeServiceScopeFactory, mockLogger);
 
-        _ = await readController.GetRandomSongAsync(null!, null!);
+        _ = await readController.ElectTextAsync(null!, null!);
 
         mockLogger.Received().LogError(Arg.Any<Exception>(), "[ReadController: OnPost Error]");
     }
@@ -100,7 +100,7 @@ public class ReadTest
         var factory = new CustomServiceScopeFactory(new TestHost<ReadModel>().ServiceProvider);
         var readController = new ReadController(factory, logger);
 
-        var response = (await readController.GetRandomSongAsync(null!, null!)).Value;
+        var response = (await readController.ElectTextAsync(null!, null!)).Value;
 
         Assert.AreEqual("", response?.TitleResponse);
     }
@@ -130,7 +130,7 @@ public class ReadTest
 
             _readModel = new ReadModel(host.ServiceScope);
 
-            var response = await _readModel!.ReadRandomSongAsync(request);
+            var response = await _readModel!.ElectTextAsync(request);
 
             var id = response.Id!;
 

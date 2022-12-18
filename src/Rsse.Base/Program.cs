@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using RandomSongSearchEngine;
 
+// TODO: переименуй с учетом, что речь идёт не о "песнях", а о "текстах" или "заметках".
+
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>
     {

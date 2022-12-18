@@ -25,7 +25,7 @@ export class Loader {
             this.credos = "include";
             // для разработки:
             // куки чувствительны к Origin ('localhost' != '127.0.0.1')
-            this.corsAddress = "http://localhost:5000";
+            this.corsAddress = "http://127.0.0.1:5000";
         }
     }
     
