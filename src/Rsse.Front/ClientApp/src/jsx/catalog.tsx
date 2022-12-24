@@ -55,7 +55,7 @@ class CatalogView extends React.Component<IProps, IState> {
         
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
         
-        Loader.getWithQuery(Loader.logoutUrl, "", callback, this);
+        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, this);
     }
 
     redirect = (e: any) => {

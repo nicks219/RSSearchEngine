@@ -155,7 +155,7 @@ public class DataRepository : IDataRepository
 
                 if (text == null)
                 {
-                    throw new Exception("[UpdateNote: Null in Text]");
+                    throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
                 }
 
                 text.Title = note.Title;

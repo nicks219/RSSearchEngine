@@ -86,7 +86,7 @@ export class Login extends React.Component<IProps, IState> {
         let query = "?email=" + String(email) + "&password=" + String(password);
         let callback = (response: Response) => response.ok ? this.loginOk() : this.loginErr();
 
-        Loader.getWithQuery(Loader.loginUrl, query, callback, null);
+        Loader.fireAndForgetWithQuery(Loader.loginUrl, query, callback, null);
     }
     
     loginErr = () => {
