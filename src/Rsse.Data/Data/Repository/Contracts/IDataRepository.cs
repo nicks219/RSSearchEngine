@@ -1,4 +1,4 @@
-﻿using RandomSongSearchEngine.Data.DTO;
+﻿using RandomSongSearchEngine.Data.Dto;
 
 namespace RandomSongSearchEngine.Data.Repository.Contracts;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 using RandomSongSearchEngine.Data.Repository.Exceptions;
 

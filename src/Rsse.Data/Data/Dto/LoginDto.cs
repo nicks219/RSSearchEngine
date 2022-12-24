@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace RandomSongSearchEngine.Data.DTO;
+namespace RandomSongSearchEngine.Data.Dto;
 
 public record LoginDto
 {

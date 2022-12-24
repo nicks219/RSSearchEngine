@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 
 namespace RandomSongSearchEngine.Service.Models;

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Service.Models;
 
 namespace RandomSongSearchEngine.Controllers;

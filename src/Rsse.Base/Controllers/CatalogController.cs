@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Service.Models;
 

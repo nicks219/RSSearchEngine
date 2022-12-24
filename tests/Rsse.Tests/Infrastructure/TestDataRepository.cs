@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using RandomSongSearchEngine.Data;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Data.Repository.Contracts;
 
 namespace RandomSongSearchEngine.Tests.Infrastructure;

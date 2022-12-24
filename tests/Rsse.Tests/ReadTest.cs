@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using RandomSongSearchEngine.Controllers;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Service.Models;
 using RandomSongSearchEngine.Tests.Infrastructure;
 

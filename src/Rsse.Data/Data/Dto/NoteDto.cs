@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace RandomSongSearchEngine.Data.DTO;
+namespace RandomSongSearchEngine.Data.Dto;
 
 public record NoteDto
 {

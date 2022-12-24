@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RandomSongSearchEngine.Data.DTO;
+using RandomSongSearchEngine.Data.Dto;
 using RandomSongSearchEngine.Infrastructure.Cache;
 using RandomSongSearchEngine.Service.Models;
 using RandomSongSearchEngine.Tests.Infrastructure;
