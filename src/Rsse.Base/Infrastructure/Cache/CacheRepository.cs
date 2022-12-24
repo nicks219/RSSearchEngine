@@ -130,7 +130,7 @@ public class CacheRepository : ICacheRepository
 
             _definedCache.Clear();
 
-            var texts = repo.ReadAllSongs();
+            var texts = repo.ReadAllNotes();
 
             foreach (var text in texts)
             {

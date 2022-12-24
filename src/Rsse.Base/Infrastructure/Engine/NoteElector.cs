@@ -4,28 +4,27 @@ using RandomSongSearchEngine.Data.Repository.Contracts;
 
 namespace RandomSongSearchEngine.Infrastructure.Engine;
 
-public static class Randomizer
+public static class NoteElector
 {
     private static readonly Random Random = new();
     private static uint _id;
 
     /// <summary> Возвращает Id выбранной случайно или раунд-робином песни из заданных категорий </summary>
-    public static async Task<int> ElectTextIdAsync(this IDataRepository repo, List<int> songGenresRequest,
-        bool randomElection = true)
+    public static async Task<int> ElectNoteId(this IDataRepository repo, List<int> checkedTagsList, bool randomElection = true)
     {
-        var checkedGenres = songGenresRequest.ToArray();
+        var checkedTags = checkedTagsList.ToArray();
 
-        var allSongsInGenres = repo.SelectAllSongsInGenres(checkedGenres);
-        var howManySongs = await allSongsInGenres.CountAsync();
+        var allElectableNotes = repo.ReadAllNotesTaggedBy(checkedTags);
+        var howManyNotes = await allElectableNotes.CountAsync();
 
-        if (howManySongs == 0)
+        if (howManyNotes == 0)
         {
             return 0;
         }
 
         // Random
         /*var coin = GetRandomInRange(howManySongs);
-        var randomResult = await repo.SelectAllSongsInGenres(checkedGenres)
+        var randomResult = await repo.ReadAllNotesTaggedBy(checkedGenres)
             //[WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
             // without an 'OrderBy' operator.
             .OrderBy(s => s)
@@ -36,13 +35,13 @@ public static class Randomizer
         Interlocked.Increment(ref _id);
 
         // RoundRobin Or Random
-        var coin = randomElection ? GetRandomInRange(howManySongs) : (int) (_id % howManySongs);
+        var coin = randomElection ? GetRandomInRange(howManyNotes) : (int) (_id % howManyNotes);
         
         //var random = RandomNumberGenerator.Create();
         var result = randomElection switch
         {
             // [original random]
-            true => await allSongsInGenres
+            true => await allElectableNotes
                 // [WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
                 // without an 'OrderBy' operator.
                 //.ToList().Shuffle(random) // - дополнительное перемешивание
@@ -53,7 +52,7 @@ public static class Randomizer
                 .FirstAsync(),
 
             // [round robin]
-            _ => await allSongsInGenres
+            _ => await allElectableNotes
                 // [WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
                 // without an 'OrderBy' operator.
                 .OrderBy(s => s)

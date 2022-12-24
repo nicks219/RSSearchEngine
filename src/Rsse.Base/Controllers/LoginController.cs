@@ -28,16 +28,16 @@ public class LoginController : ControllerBase
             return Unauthorized("Authorize please");
         }
 
-        var loginModel = new LoginDto(email, password);
-        var response = await Login(loginModel);
-        return response == "[Ok]" ? "[LoginController: Login Ok]" : Unauthorized(response);
+        var loginDto = new LoginDto(email, password);
+        var response = await Login(loginDto);
+        return response == "[Ok]" ? $"[{nameof(LoginController)}: {nameof(Login)} Ok]" : Unauthorized(response);
     }
 
     [HttpGet("logout")]
     public async Task<ActionResult<string>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return "[LoginController: Logout]";
+        return $"[{nameof(LoginController)}: {nameof(Logout)}]";
     }
 
     private async Task<string> Login(LoginDto model)
@@ -45,20 +45,20 @@ public class LoginController : ControllerBase
         using var scope = _scope.CreateScope();
         try
         {
-            ClaimsIdentity? id = await new LoginModel(scope).TryLogin(model);
-            if (id != null)
+            var id = await new LoginModel(scope).TryLogin(model);
+            
+            if (id == null)
             {
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(id));
-                return "[Ok]";
+                return $"[{nameof(LoginController)}: Data error]";
             }
-
-            return "[LoginController: Data Error]";
+            
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+            return "[Ok]";
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[LoginController: System Error]");
-            return "[LoginController: System Error]";
+            _logger.LogError(ex, $"[{nameof(LoginController)}: System error]");
+            return $"[{nameof(LoginController)}: System error]";
         }
     }
 }

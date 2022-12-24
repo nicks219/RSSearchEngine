@@ -1,3 +1,7 @@
+GRANT ALL PRIVILEGES ON *.* TO '1'@'%';
+SET PASSWORD FOR '1'@'%' = '1';
+FLUSH PRIVILEGIES;
+
 I.	коммит rsse образа из билда (залогинься в Docker Desktop)
 cd src =)  папка с ямлом, запуск из-под wsl
 

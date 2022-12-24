@@ -22,23 +22,23 @@ public class CreateController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<SongDto>> OnGetGenreListAsync()
+    public async Task<ActionResult<NoteDto>> OnGetGenreListAsync()
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
-            return await model.ReadGenreListAsync();
+            return await model.ReadGeneralTagList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CreateController: OnGet Error]");
-            return new SongDto() {ErrorMessageResponse = "[CreateController: OnGet Error]"};
+            _logger.LogError(ex, $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]" };
         }
     }
 
     [HttpPost]
-    public async Task<ActionResult<SongDto>> CreateSongAsync([FromBody] SongDto dto)
+    public async Task<ActionResult<NoteDto>> CreateNoteAsync([FromBody] NoteDto dto)
     {
         
         try
@@ -46,11 +46,11 @@ public class CreateController : ControllerBase
             using var scope = _serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
 
-            var result =  await model.CreateSongAsync(dto);
+            var result =  await model.CreateNote(dto);
 
             if (string.IsNullOrEmpty(result.ErrorMessageResponse))
             {
-                await model.CreateGenreAsync(dto); // [CREATE GENRE]
+                await model.CreateTag(dto); // [CREATE GENRE]
                 
                 var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
                 
@@ -61,8 +61,8 @@ public class CreateController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CreateController: OnPost Error]");
-            return new SongDto() {ErrorMessageResponse = "[CreateController: OnPost Error]"};
+            _logger.LogError(ex, $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]" };
         }
     }
 }

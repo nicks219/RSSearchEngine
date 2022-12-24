@@ -1,9 +1,8 @@
-﻿using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace RandomSongSearchEngine.Data.DTO;
 
-public record SongDto
+public record NoteDto
 {
     // request
     [JsonPropertyName("checkedCheckboxesJs")]
@@ -34,11 +33,11 @@ public record SongDto
     [JsonPropertyName("savedTextId")] 
     public int Id { get; set; }
 
-    public SongDto()
+    public NoteDto()
     {
     }
 
-    public SongDto(
+    public NoteDto(
         List<string> genreListCs, 
         int savedTextId = 0, 
         string textCs = "", 

@@ -50,8 +50,8 @@ public class BackupController : ControllerBase
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "[Backup Controller] create error");
-            return BadRequest($"[Backup Controller] create error {exception}");
+            _logger.LogError(exception, $"[{nameof(BackupController)}] {nameof(CreateBackup)} error");
+            return BadRequest($"[{nameof(BackupController)}] {nameof(CreateBackup)} error: {exception}");
         }
     }
     
@@ -65,8 +65,8 @@ public class BackupController : ControllerBase
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "[Backup Controller] restore error");
-            return BadRequest($"[Backup Controller] restore error {exception}");
+            _logger.LogError(exception, $"[{nameof(BackupController)}] {nameof(RestoreFromBackup)} error");
+            return BadRequest($"[{nameof(BackupController)}] {nameof(RestoreFromBackup)} error: {exception}");
         }
     }
 }

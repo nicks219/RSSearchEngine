@@ -20,38 +20,38 @@ public class CatalogController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<CatalogDto>> OnGetCatalogPageAsync(int id)
+    public async Task<ActionResult<CatalogDto>> ReadCatalogPage(int id)
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new CatalogModel(scope).ReadCatalogPageAsync(id);
+            return await new CatalogModel(scope).ReadCatalogPage(id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogController: OnGet Error]");
-            return new CatalogDto() {ErrorMessage = "[CatalogController: OnGet Error]"};
+            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]");
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]" };
         }
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogDto>> NavigateCatalogAsync([FromBody] CatalogDto dto)
+    public async Task<ActionResult<CatalogDto>> NavigateCatalog([FromBody] CatalogDto dto)
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new CatalogModel(scope).NavigateCatalogAsync(dto);
+            return await new CatalogModel(scope).NavigateCatalog(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogController: OnPost Error]");
-            return new CatalogDto() {ErrorMessage = "[CatalogController: OnGet Error]"};
+            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]");
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]" };
         }
     }
 
     [Authorize]
     [HttpDelete]
-    public async Task<ActionResult<CatalogDto>> OnDeleteSongAsync(int id, int pg)
+    public async Task<ActionResult<CatalogDto>> DeleteNote(int id, int pg)
     {
         try
         {
@@ -60,12 +60,12 @@ public class CatalogController : ControllerBase
             var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
             cache.Delete(id);
             
-            return await new CatalogModel(scope).DeleteSongAsync(id, pg);
+            return await new CatalogModel(scope).DeleteNote(id, pg);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogController: OnDelete Error]");
-            return new CatalogDto() {ErrorMessage = "[CatalogController: OnDelete Error]"};
+            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]");
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]" };
         }
     }
 }

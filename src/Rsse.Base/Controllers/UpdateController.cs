@@ -22,23 +22,23 @@ public class UpdateController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<SongDto>> OnGetOriginalSongAsync(int id)
+    public async Task<ActionResult<NoteDto>> GetInitialNote(int id)
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new UpdateModel(scope).ReadOriginalSongAsync(id);
+            return await new UpdateModel(scope).GetInitialNote(id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[UpdateController: OnGet Error]");
-            return new SongDto() {ErrorMessageResponse = "[UpdateController: OnGet Error]"};
+            _logger.LogError(ex, $"[{nameof(UpdateController)}: {nameof(GetInitialNote)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(UpdateController)}: {nameof(GetInitialNote)} error]" };
         }
     }
 
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult<SongDto>> UpdateSongAsync([FromBody] SongDto dto)
+    public async Task<ActionResult<NoteDto>> UpdateNote([FromBody] NoteDto dto)
     {
         try
         {
@@ -47,12 +47,12 @@ public class UpdateController : ControllerBase
             var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
             cache.Update(dto.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
             
-            return await new UpdateModel(scope).UpdateSongAsync(dto);
+            return await new UpdateModel(scope).UpdateNote(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[UpdateController: OnPost Error]");
-            return new SongDto() {ErrorMessageResponse = "[UpdateController: OnPost Error]"};
+            _logger.LogError(ex, $"[{nameof(UpdateController)}: {nameof(UpdateNote)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(UpdateController)}: {nameof(UpdateNote)} error]" };
         }
     }
 }

@@ -29,7 +29,7 @@ public class CreateTest
     [TestMethod]
     public async Task Model_ShouldReports44Genres()
     {
-        var response = await _createModel!.ReadGenreListAsync();
+        var response = await _createModel!.ReadGeneralTagList();
         
         Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
     }
@@ -37,16 +37,16 @@ public class CreateTest
     [TestMethod]
     public async Task Model_ShouldCreate()
     {
-        var song = new SongDto()
+        var song = new NoteDto()
         {
             Title = "test title",
             Text = "test text",
             SongGenres = new List<int> {1, 2, 3, 4, 11}
         };
-        var response = await _createModel!.CreateSongAsync(song);
+        var response = await _createModel!.CreateNote(song);
         
         var expected = await new UpdateModel(new TestHost<UpdateModel>().ServiceScope)
-            .ReadOriginalSongAsync(response.Id);
+            .GetInitialNote(response.Id);
         
         Assert.AreEqual(expected.Title, response.Title);
     }

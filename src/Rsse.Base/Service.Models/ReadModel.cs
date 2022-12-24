@@ -18,79 +18,79 @@ public class ReadModel
         _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
     }
 
-    public string? ReadSongTitleById(int id)
+    public string? ReadTitleByNoteId(int id)
     {
         try
         {
-            var res = _repo.ReadSongTitleById(id);
+            var res = _repo.ReadTitleByNoteId(id);
             
             return res;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadModel: ReadSongTitleById error]");
+            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ReadTitleByNoteId)} error]");
             
             return null;
         }
     }
 
-    public async Task<SongDto> ReadGenreListAsync()
+    public async Task<NoteDto> ReadTagList()
     {
         try
         {
-            var genreListResponse = await _repo.ReadGenreListAsync();
+            var tagList = await _repo.ReadGeneralTagList();
             
-            return new SongDto(genreListResponse);
+            return new NoteDto(tagList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadModel: OnGet Error]");
+            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]");
             
-            return new SongDto() {ErrorMessageResponse = "[ReadModel: OnGet Error]"};
+            return new NoteDto {ErrorMessageResponse = $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]"};
         }
     }
 
-    public async Task<SongDto> ElectTextAsync(SongDto? request, string? id = null, bool randomElection = true)
+    public async Task<NoteDto> ElectNote(NoteDto? request, string? id = null, bool randomElection = true)
     {
-        var textResponse = "";
+        var text = "";
         
-        var titleResponse = "";
+        var title = "";
         
-        var songId = 0;
+        var noteId = 0;
         
         try
         {
             if (request is {SongGenres: { }} && request.SongGenres.Count != 0)
             {
-                if (!int.TryParse(id, out songId))
+                if (!int.TryParse(id, out noteId))
                 {
-                    songId = await _repo.ElectTextIdAsync(request.SongGenres, randomElection);
+                    noteId = await _repo.ElectNoteId(request.SongGenres, randomElection);
                 }
 
-                if (songId != 0)
+                if (noteId != 0)
                 {
                     var song = await _repo
-                        .ReadSong(songId)
+                        .ReadNote(noteId)
                         .ToListAsync();
                     
                     if (song.Count > 0)
                     {
-                        textResponse = song[0].Item1;
+                        text = song[0].Item1;
                         
-                        titleResponse = song[0].Item2;
+                        title = song[0].Item2;
                     }
                 }
             }
 
-            var genreListResponse = await _repo.ReadGenreListAsync();
+            var genreListResponse = await _repo.ReadGeneralTagList();
             
-            return new SongDto(genreListResponse, songId, textResponse, titleResponse);
+            return new NoteDto(genreListResponse, noteId, text, title);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadModel: OnPost Error]");
+            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ElectNote)} error]");
             
-            return new SongDto() {ErrorMessageResponse = "[ReadModel: OnPost Error]"};
+            return new NoteDto {ErrorMessageResponse = $"[{nameof(ReadModel)}: {nameof(ElectNote)} error]"};
         }
     }
 }

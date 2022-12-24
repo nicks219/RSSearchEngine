@@ -37,7 +37,7 @@ public class ReadTest
     [TestMethod]
     public async Task Model_ShouldReports44Genres()
     {
-        var response = await _readModel!.ReadGenreListAsync();
+        var response = await _readModel!.ReadTagList();
 
         Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
     }
@@ -46,9 +46,9 @@ public class ReadTest
     public async Task Model_ShouldReadRandomSong()
     {
         // интеграционные тесты следует проводить на тестовой бд в docker'е
-        var request = new SongDto {SongGenres = new List<int> {11}};
+        var request = new NoteDto {SongGenres = new List<int> {11}};
 
-        var response = await _readModel!.ElectTextAsync(request);
+        var response = await _readModel!.ElectNote(request);
 
         Assert.AreEqual("test title", response.TitleResponse);
     }
@@ -56,9 +56,9 @@ public class ReadTest
     [TestMethod]
     public async Task ModelInvalidRequest_ShouldResponseEmptyTitle()
     {
-        var frontRequest = new SongDto {SongGenres = new List<int> {1000}};
+        var frontRequest = new NoteDto {SongGenres = new List<int> {1000}};
 
-        var result = await _readModel!.ElectTextAsync(frontRequest);
+        var result = await _readModel!.ElectNote(frontRequest);
 
         Assert.AreEqual("", result.TitleResponse);
     }
@@ -66,7 +66,7 @@ public class ReadTest
     [TestMethod]
     public async Task ModelNullRequest_ShouldLoggingErrorInsideModel()
     {
-        _ = await _readModel!.ElectTextAsync(null!);
+        _ = await _readModel!.ElectNote(null!);
 
         Assert.AreNotEqual("[IndexModel: OnPost Error]", FakeLoggerErrors.LogErrorMessage);
     }
@@ -74,7 +74,7 @@ public class ReadTest
     [TestMethod]
     public async Task ModelNullRequest_ShouldResponseEmptyTitleTest()
     {
-        var response = await _readModel!.ElectTextAsync(null!);
+        var response = await _readModel!.ElectNote(null!);
 
         Assert.AreEqual("", response.TitleResponse);
     }
@@ -88,7 +88,7 @@ public class ReadTest
 
         var readController = new ReadController(fakeServiceScopeFactory, mockLogger);
 
-        _ = await readController.ElectTextAsync(null!, null!);
+        _ = await readController.ElectNote(null!, null!);
 
         mockLogger.Received().LogError(Arg.Any<Exception>(), "[ReadController: OnPost Error]");
     }
@@ -100,7 +100,7 @@ public class ReadTest
         var factory = new CustomServiceScopeFactory(new TestHost<ReadModel>().ServiceProvider);
         var readController = new ReadController(factory, logger);
 
-        var response = (await readController.ElectTextAsync(null!, null!)).Value;
+        var response = (await readController.ElectNote(null!, null!)).Value;
 
         Assert.AreEqual("", response?.TitleResponse);
     }
@@ -118,7 +118,7 @@ public class ReadTest
 
         var expectedSongsCount = Math.Min(songsCount, count) * coefficient;
 
-        var request = new SongDto {SongGenres = new List<int>()};
+        var request = new NoteDto {SongGenres = new List<int>()};
 
         request.SongGenres = Enumerable.Range(1, 44).ToList();
 
@@ -130,7 +130,7 @@ public class ReadTest
 
             _readModel = new ReadModel(host.ServiceScope);
 
-            var response = await _readModel!.ElectTextAsync(request);
+            var response = await _readModel!.ElectNote(request);
 
             var id = response.Id!;
 

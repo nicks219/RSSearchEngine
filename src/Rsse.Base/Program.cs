@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using RandomSongSearchEngine;
 
 // TODO: переименуй с учетом, что речь идёт не о "песнях", а о "текстах" или "заметках".
+// 1. нейминг в программе.
+// 2. async-await в JS.
+// 3. нейминг в DTO и сущностях бд.
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>

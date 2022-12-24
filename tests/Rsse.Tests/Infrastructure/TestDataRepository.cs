@@ -13,7 +13,7 @@ public class TestDataRepository : IDataRepository
 {
     private int _id;
     
-    public async Task CreateGenreIfNotExistsAsync(string tag){}
+    public async Task CreateTagIfNotExists(string tag){}
     
     private Dictionary<int, Tuple<string, string>> _dictionary = new();
 
@@ -25,24 +25,24 @@ public class TestDataRepository : IDataRepository
 
     public const string SecondSongTitle = "Шаинский - Облака";
 
-    public IQueryable<TextEntity> ReadAllSongs()
+    public IQueryable<TextEntity> ReadAllNotes()
     {
         var songs = new List<TextEntity> {new() {Song = FirstSong, Title = FirstSongTitle, TextId = 1}}.AsQueryable();
 
         return songs;
     }
 
-    public string ReadSongTitleById(int id)
+    public string ReadTitleByNoteId(int id)
     {
         throw new NotImplementedException();
     }
 
-    public int FindIdByName(string name)
+    public int FindNoteIdByTitle(string noteTitle)
     {
         throw new NotImplementedException();
     }
 
-    public Task<int> CreateSongAsync(SongDto? dt)
+    public Task<int> CreateNote(NoteDto? dt)
     {
         if (dt?.Title == null || dt.Text == null)
         {
@@ -54,9 +54,9 @@ public class TestDataRepository : IDataRepository
         return new Task<int>(() => _id - 1);
     }
 
-    public Task<int> DeleteSongAsync(int songId)
+    public Task<int> DeleteNote(int noteId)
     {
-        var res = _dictionary.Remove(songId);
+        var res = _dictionary.Remove(noteId);
         return new Task<int>(() => Convert.ToInt32(res));
     }
 
@@ -87,24 +87,24 @@ public class TestDataRepository : IDataRepository
         return q.AsQueryable();
     }
 
-    public Task<List<string>> ReadGenreListAsync()
+    public Task<List<string>> ReadGeneralTagList()
     {
         return new Task<List<string>>(() => new List<string>() {"Rock", "Pop", "Jazz"});
     }
 
-    public IQueryable<Tuple<string, string>> ReadSong(int textId)
+    public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
         var q = new List<Tuple<string, string>>
         {
-            _dictionary[textId]
+            _dictionary[noteId]
         };
         return q.AsQueryable();
     }
 
-    public IQueryable<int> ReadSongGenres(int textId)
+    public IQueryable<int> ReadNoteTags(int noteId)
     {
         var l = new List<int>();
-        var r = _dictionary[textId];
+        var r = _dictionary[noteId];
         if (r == null)
         {
             l.Add(1);
@@ -114,18 +114,18 @@ public class TestDataRepository : IDataRepository
         return l.AsQueryable();
     }
 
-    public Task<int> ReadTextsCountAsync()
+    public Task<int> ReadNotesCount()
     {
         return new Task<int>(() => _dictionary.Count);
     }
 
-    public IQueryable<int> SelectAllSongsInGenres(IEnumerable<int> checkedGenres)
+    public IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags)
     {
         var l = new List<int> {1, 2, 3};
         return l.AsQueryable();
     }
 
-    public Task UpdateSongAsync(IEnumerable<int> originalCheckboxes, SongDto? dt)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto? dt)
     {
         if (dt?.Title == null || dt.Text == null)
         {

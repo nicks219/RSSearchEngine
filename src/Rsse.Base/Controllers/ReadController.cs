@@ -27,38 +27,38 @@ public class ReadController : ControllerBase
     }
 
     [HttpGet("title")]
-    public ActionResult GetTitleById(string id)
+    public ActionResult ReadTitleByNoteId(string id)
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            var res = new ReadModel(scope).ReadSongTitleById(int.Parse(id));
+            var res = new ReadModel(scope).ReadTitleByNoteId(int.Parse(id));
             return Ok(new {res});
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadController: OnGetTitle Error]");
-            return BadRequest("[ReadController: OnGetTitle Error]");
+            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]");
+            return BadRequest($"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]");
         }
     }
 
     [HttpGet]
-    public async Task<ActionResult<SongDto>> OnGetGenreListAsync()
+    public async Task<ActionResult<NoteDto>> ReadTagList()
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new ReadModel(scope).ReadGenreListAsync();
+            return await new ReadModel(scope).ReadTagList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadController: OnGet Error]");
-            return new SongDto() {ErrorMessageResponse = "[ReadController: OnGet Error]"};
+            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]" };
         }
     }
 
     [HttpPost]
-    public async Task<ActionResult<SongDto>> ElectTextAsync([FromBody] SongDto? dto, [FromQuery] string? id)
+    public async Task<ActionResult<NoteDto>> ElectNote([FromBody] NoteDto? dto, [FromQuery] string? id)
     {
         try
         {
@@ -68,13 +68,13 @@ public class ReadController : ControllerBase
             }
             
             using var scope = _serviceScopeFactory.CreateScope();
-            var model = await new ReadModel(scope).ElectTextAsync(dto, id, _randomElection);
+            var model = await new ReadModel(scope).ElectNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ReadController: OnPost Error]");
-            return new SongDto() {ErrorMessageResponse = "[ReadController: OnPost Error]"};
+            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ElectNote)} error]");
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(ReadController)}: {nameof(ElectNote)} error]" };
         }
     }
 

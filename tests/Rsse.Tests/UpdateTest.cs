@@ -40,7 +40,7 @@ public class UpdateTest
     [TestMethod]
     public async Task Model_ShouldReports44Genres()
     {
-        var response = await _updateModel!.ReadOriginalSongAsync(1);
+        var response = await _updateModel!.GetInitialNote(1);
         
         Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
     }
@@ -48,7 +48,7 @@ public class UpdateTest
     [TestMethod]
     public async Task Model_ShouldUpdate()
     {
-        var song = new SongDto
+        var song = new NoteDto
         {
             Title = TestName,
             Text = TestText,
@@ -56,7 +56,7 @@ public class UpdateTest
             Id = _testSongId
         };
         
-        var response = await _updateModel!.UpdateSongAsync(song);
+        var response = await _updateModel!.UpdateNote(song);
         
         Assert.AreEqual(TestText, response.TextResponse);
     }

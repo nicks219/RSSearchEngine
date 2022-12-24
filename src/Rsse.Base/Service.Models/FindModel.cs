@@ -25,7 +25,7 @@ public class FindModel
 
     public int FindIdByName(string name)
     {
-        var id = _repo.FindIdByName(name);
+        var id = _repo.FindNoteIdByTitle(name);
 
         return id;
     }

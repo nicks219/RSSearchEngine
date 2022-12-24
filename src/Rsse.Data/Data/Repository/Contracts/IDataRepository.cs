@@ -4,21 +4,24 @@ namespace RandomSongSearchEngine.Data.Repository.Contracts;
 
 public interface IDataRepository : IDisposable, IAsyncDisposable
 {
-    Task CreateGenreIfNotExistsAsync(string tag);
-    IQueryable<TextEntity> ReadAllSongs();
-    string ReadSongTitleById(int id);
-
-    int FindIdByName(string name);
-
+    // crud:
     // [TODO]: перепиши async на IQueryable<T>
-    Task<int> CreateSongAsync(SongDto dt);
-    IQueryable<Tuple<string, string>> ReadSong(int textId);
-    Task UpdateSongAsync(IEnumerable<int> originalCheckboxes, SongDto dt);
-    Task<int> DeleteSongAsync(int songId);
-    Task<UserEntity?> GetUser(LoginDto dt);
+    Task<int> CreateNote(NoteDto dt);
+    IQueryable<Tuple<string, string>> ReadNote(int noteId);
+    Task UpdateNote(IEnumerable<int> initialTags, NoteDto dt);
+    Task<int> DeleteNote(int noteId);
+    
+    // common:
+    Task<List<string>> ReadGeneralTagList();
+    Task<int> ReadNotesCount();
+    IQueryable<TextEntity> ReadAllNotes();
+    IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags);
+    string ReadTitleByNoteId(int id);
+    int FindNoteIdByTitle(string noteTitle);
+    IQueryable<int> ReadNoteTags(int noteId);
+    
+    // additional:
     IQueryable<Tuple<string, int>> ReadCatalogPage(int lastPage, int pageSize);
-    Task<List<string>> ReadGenreListAsync();
-    Task<int> ReadTextsCountAsync();
-    IQueryable<int> ReadSongGenres(int textId);
-    IQueryable<int> SelectAllSongsInGenres(IEnumerable<int> checkedGenres);
+    Task<UserEntity?> GetUser(LoginDto dt);
+    Task CreateTagIfNotExists(string tag);
 }

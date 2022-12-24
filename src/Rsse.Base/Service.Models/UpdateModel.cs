@@ -17,82 +17,82 @@ public class UpdateModel
         _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
     }
 
-    public async Task<SongDto> ReadOriginalSongAsync(int originalSongId)
+    public async Task<NoteDto> GetInitialNote(int initialNoteId)
     {
         try
         {
-            string textResponse;
+            string text;
 
-            var titleResponse = "";
+            var title = "";
 
-            var song = await _repo
-                .ReadSong(originalSongId)
+            var notes = await _repo
+                .ReadNote(initialNoteId)
                 .ToListAsync();
 
-            if (song.Count > 0)
+            if (notes.Count > 0)
             {
-                textResponse = song[0].Item1;
+                text = notes[0].Item1;
 
-                titleResponse = song[0].Item2;
+                title = notes[0].Item2;
             }
             else
             {
-                textResponse = "[Song: Always Deleted. Select another pls]";
+                text = "[Note: Always Deleted. Select another pls]";
             }
 
-            var genreListResponse = await _repo.ReadGenreListAsync();
+            var tagList = await _repo.ReadGeneralTagList();
 
-            var songGenres = await _repo
-                .ReadSongGenres(originalSongId)
+            var noteTags = await _repo
+                .ReadNoteTags(initialNoteId)
                 .ToListAsync();
 
-            var songGenresResponse = new List<string>();
+            var checkboxes = new List<string>();
 
-            for (var i = 0; i < genreListResponse.Count; i++)
+            for (var i = 0; i < tagList.Count; i++)
             {
-                songGenresResponse.Add("unchecked");
+                checkboxes.Add("unchecked");
             }
 
-            foreach (var i in songGenres)
+            foreach (var i in noteTags)
             {
-                songGenresResponse[i - 1] = "checked";
+                checkboxes[i - 1] = "checked";
             }
 
-            return new SongDto(genreListResponse, originalSongId, textResponse, titleResponse, songGenresResponse);
+            return new NoteDto(tagList, initialNoteId, text, title, checkboxes);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ChangeTextModel: OnGet Error]");
+            _logger.LogError(ex, $"[{nameof(UpdateModel)}: {nameof(GetInitialNote)} error]");
 
-            return new SongDto() {ErrorMessageResponse = "[ChangeTextModel: OnGet Error]"};
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(UpdateModel)}: {nameof(GetInitialNote)} error]" };
         }
     }
 
-    public async Task<SongDto> UpdateSongAsync(SongDto updatedSong)
+    public async Task<NoteDto> UpdateNote(NoteDto updatedNote)
     {
         try
         {
-            if (updatedSong.SongGenres == null
-                || string.IsNullOrEmpty(updatedSong.Text)
-                || string.IsNullOrEmpty(updatedSong.Title)
-                || updatedSong.SongGenres.Count == 0)
+            if (updatedNote.SongGenres == null
+                || string.IsNullOrEmpty(updatedNote.Text)
+                || string.IsNullOrEmpty(updatedNote.Title)
+                || updatedNote.SongGenres.Count == 0)
             {
-                return await ReadOriginalSongAsync(updatedSong.Id);
+                return await GetInitialNote(updatedNote.Id);
             }
 
-            var originalGenres = await _repo
-                .ReadSongGenres(updatedSong.Id)
+            var initialNoteTags = await _repo
+                .ReadNoteTags(updatedNote.Id)
                 .ToListAsync();
 
-            await _repo.UpdateSongAsync(originalGenres, updatedSong);
+            await _repo.UpdateNote(initialNoteTags, updatedNote);
 
-            return await ReadOriginalSongAsync(updatedSong.Id);
+            return await GetInitialNote(updatedNote.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[ChangeTextModel: OnPost Error]");
+            _logger.LogError(ex, $"[{nameof(UpdateModel)}: {nameof(UpdateNote)} error]");
 
-            return new SongDto() {ErrorMessageResponse = "[ChangeTextModel: OnPost Error]"};
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(UpdateModel)}: {nameof(UpdateNote)} error]" };
         }
     }
 }

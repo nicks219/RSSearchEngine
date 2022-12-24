@@ -54,8 +54,8 @@ public class FindController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[FindController: OnGet Error - Search Indices May Failed !]");
-            return new BadRequestObjectResult("[FindController: OnGet Error - Search Indices May Failed !]");
+            _logger.LogError(ex, $"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]");
+            return new BadRequestObjectResult($"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]");
         }
     }
 }

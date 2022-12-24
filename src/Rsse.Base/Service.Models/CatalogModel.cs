@@ -6,7 +6,7 @@ namespace RandomSongSearchEngine.Service.Models;
 
 public class CatalogModel
 {
-    #region Fields
+    #region Defaults
 
     private const int Forward = 2;
     private const int Backward = 1;
@@ -24,25 +24,25 @@ public class CatalogModel
         _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
-    public async Task<CatalogDto> ReadCatalogPageAsync(int pageNumber)
+    public async Task<CatalogDto> ReadCatalogPage(int pageNumber)
     {
         try
         {
-            var songsCount = await _repo.ReadTextsCountAsync();
+            var notesCount = await _repo.ReadNotesCount();
             
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
             
-            return CreateCatalogDto(pageNumber, songsCount, catalogPage);
+            return CreateCatalogDto(pageNumber, notesCount, catalogPage);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogModel: OnGet Error]");
+            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(ReadCatalogPage)} error]");
             
-            return new CatalogDto() {ErrorMessage = "[CatalogModel: OnGet Error]"};
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(ReadCatalogPage)} error]" };
         }
     }
 
-    public async Task<CatalogDto> NavigateCatalogAsync(CatalogDto catalog)
+    public async Task<CatalogDto> NavigateCatalog(CatalogDto catalog)
     {
         try
         {
@@ -50,35 +50,35 @@ public class CatalogModel
             
             var pageNumber = catalog.PageNumber;
             
-            var songsCount = await _repo.ReadTextsCountAsync();
+            var notesCount = await _repo.ReadNotesCount();
             
-            pageNumber = NavigateCatalogPages(direction, pageNumber, songsCount);
+            pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
             
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
             
-            return CreateCatalogDto(pageNumber, songsCount, catalogPage);
+            return CreateCatalogDto(pageNumber, notesCount, catalogPage);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogModel: OnPost Error]");
+            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]");
             
-            return new CatalogDto() {ErrorMessage = "[CatalogModel: OnPost Error]"};
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]" };
         }
     }
 
-    public async Task<CatalogDto> DeleteSongAsync(int songId, int pageNumber)
+    public async Task<CatalogDto> DeleteNote(int noteId, int pageNumber)
     {
         try
         {
-            await _repo.DeleteSongAsync(songId);
+            await _repo.DeleteNote(noteId);
             
-            return await ReadCatalogPageAsync(pageNumber);
+            return await ReadCatalogPage(pageNumber);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CatalogModel: OnDelete Error]");
+            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]");
             
-            return new CatalogDto() {ErrorMessage = "[CatalogModel: OnDelete Error]"};
+            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]" };
         }
     }
 

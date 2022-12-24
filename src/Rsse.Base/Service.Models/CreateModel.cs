@@ -16,90 +16,92 @@ public class CreateModel
         _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
     }
 
-    public async Task<SongDto> ReadGenreListAsync()
+    public async Task<NoteDto> ReadGeneralTagList()
     {
         try
         {
-            var genreListResponse = await _repo.ReadGenreListAsync();
+            var tagList = await _repo.ReadGeneralTagList();
             
-            return new SongDto(genreListResponse);
+            return new NoteDto(tagList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CreateModel: OnGet Error]");
+            _logger.LogError(ex, $"[{nameof(CreateModel)}: {nameof(ReadGeneralTagList)} error]");
             
-            return new SongDto() {ErrorMessageResponse = "[CreateModel: OnGet Error]"};
+            return new NoteDto() {ErrorMessageResponse = $"[{nameof(CreateModel)}: {nameof(ReadGeneralTagList)} error]"};
         }
     }
     
-    public async Task<SongDto> CreateSongAsync(SongDto createdSong)
+    public async Task<NoteDto> CreateNote(NoteDto createdNote)
     {
         try
         {
-            if (createdSong.SongGenres == null || string.IsNullOrEmpty(createdSong.Text)
-                                               || string.IsNullOrEmpty(createdSong.Title) ||
-                                               createdSong.SongGenres.Count == 0)
+            if (createdNote.SongGenres == null || string.IsNullOrEmpty(createdNote.Text)
+                                               || string.IsNullOrEmpty(createdNote.Title) ||
+                                               createdNote.SongGenres.Count == 0)
             {
-                var errorDto = await ReadGenreListAsync();
+                var errorDto = await ReadGeneralTagList();
                 
-                errorDto.ErrorMessageResponse = "[CreateModel: OnPost Error - empty data]";
+                errorDto.ErrorMessageResponse = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error: empty data]";
 
-                if (!string.IsNullOrEmpty(createdSong.Text))
+                if (string.IsNullOrEmpty(createdNote.Text))
                 {
-                    errorDto.TextResponse = createdSong.Text;
-                    errorDto.TitleResponse = createdSong.Title;
+                    return errorDto;
                 }
                 
+                errorDto.TextResponse = createdNote.Text;
+                errorDto.TitleResponse = createdNote.Title;
+
                 return errorDto;
             }
 
-            //createdSong.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdSong.Text)).ToString();
+            //createdNote.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdNote.Text)).ToString();
 
-            createdSong.Title = createdSong.Title.Trim();
+            createdNote.Title = createdNote.Title.Trim();
             
-            var newSongId = await _repo.CreateSongAsync(createdSong);
+            var newNoteId = await _repo.CreateNote(createdNote);
             
-            if (newSongId == 0)
+            if (newNoteId == 0)
             {
-                var errorDto = await ReadGenreListAsync();
+                var errorDto = await ReadGeneralTagList();
                 
-                errorDto.ErrorMessageResponse = "[CreateModel: OnPost Error - create unsuccessful]";
+                errorDto.ErrorMessageResponse = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error: create unsuccessful]";
                 
                 errorDto.TitleResponse = "[Already Exist]";
                 
                 return errorDto;
             }
 
-            var updatedDto = await ReadGenreListAsync();
+            var updatedDto = await ReadGeneralTagList();
             
-            var updatedGenreList = updatedDto.GenreListResponse!;
+            var updatedTagList = updatedDto.GenreListResponse!;
             
-            var songGenresResponse = new List<string>();
+            var checkboxes = new List<string>();
             
-            for (var i = 0; i < updatedGenreList.Count; i++)
+            for (var i = 0; i < updatedTagList.Count; i++)
             {
-                songGenresResponse.Add("unchecked");
+                checkboxes.Add("unchecked");
             }
 
-            foreach (var i in createdSong.SongGenres)
+            foreach (var i in createdNote.SongGenres)
             {
-                songGenresResponse[i - 1] = "checked";
+                checkboxes[i - 1] = "checked";
             }
 
-            return new SongDto(updatedGenreList, newSongId, "", "[OK]", songGenresResponse);
+            return new NoteDto(updatedTagList, newNoteId, "", "[OK]", checkboxes);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CreateModel: OnPost Error]");
+            _logger.LogError(ex, $"[{nameof(CreateModel)}: {nameof(CreateNote)} error]");
             
-            return new SongDto() {ErrorMessageResponse = "[CreateModel: OnPost Error]"};
+            return new NoteDto { ErrorMessageResponse = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error]" };
         }
     }
     
     // \[([^\[\]]+)\]
     private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
     
-    public Task CreateGenreAsync(SongDto? dto)
+    public Task CreateTag(NoteDto? dto)
     {
         if (dto?.Title == null)
         {
@@ -108,6 +110,6 @@ public class CreateModel
         
         var tag = TitlePattern.Match(dto.Title).Value.Trim("[]".ToCharArray());
 
-        return !string.IsNullOrEmpty(tag) ? _repo.CreateGenreIfNotExistsAsync(tag) : Task.CompletedTask;
+        return !string.IsNullOrEmpty(tag) ? _repo.CreateTagIfNotExists(tag) : Task.CompletedTask;
     }
 }

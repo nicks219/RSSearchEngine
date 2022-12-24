@@ -37,14 +37,14 @@ public class CatalogTest
         
         var repo = host.ServiceProvider.GetRequiredService<IDataRepository>();
         
-        _songsCount = repo.ReadAllSongs().Count();
+        _songsCount = repo.ReadAllNotes().Count();
     }
 
     [TestMethod]
     public async Task Model_ShouldReadCatalogPage()
     {
         // [TODO]: поднять для тестов хост с тестовой бд
-        var response = await _catalogModel!.ReadCatalogPageAsync(1);
+        var response = await _catalogModel!.ReadCatalogPage(1);
 
         Assert.AreEqual( SonsPerPage, response.CatalogPage?.Count);
         Assert.AreEqual( _songsCount, response.SongsCount);
@@ -57,7 +57,7 @@ public class CatalogTest
         const int forwardConst = 2;
         
         var request = new CatalogDto {NavigationButtons = new List<int> {forwardConst}, PageNumber = page};
-        var response = await _catalogModel!.NavigateCatalogAsync(request);
+        var response = await _catalogModel!.NavigateCatalog(request);
 
         response.PageNumber
             .Should()
@@ -68,7 +68,7 @@ public class CatalogTest
     public async Task ModelInvalidRequest_ShouldLoggingError()
     {
         var frontRequest = new CatalogDto {NavigationButtons = new List<int> {1000, 2000}};
-        var result = await _catalogModel!.NavigateCatalogAsync(frontRequest);
+        var result = await _catalogModel!.NavigateCatalog(frontRequest);
 
         Assert.AreEqual("[CatalogModel: OnPost Error]", result.ErrorMessage);
     }
@@ -76,7 +76,7 @@ public class CatalogTest
     [TestMethod]
     public async Task ModelNullRequest_ShouldLoggingError()
     {
-        _ = await _catalogModel!.NavigateCatalogAsync(null!);
+        _ = await _catalogModel!.NavigateCatalog(null!);
         
         Assert.AreEqual("[CatalogModel: OnPost Error]", FakeLoggerErrors.LogErrorMessage);
     }
@@ -84,7 +84,7 @@ public class CatalogTest
     [TestMethod]
     public async Task ModelInvalidRequest_ShouldResponseZeroSongs()
     {
-        var response = await _catalogModel!.DeleteSongAsync(-300, -200);
+        var response = await _catalogModel!.DeleteNote(-300, -200);
         
         Assert.AreEqual(0, response.SongsCount);
     }
@@ -97,7 +97,7 @@ public class CatalogTest
         fakeServiceScopeFactory.When(s => s.CreateScope()).Do(i => throw new Exception());
         var catalogController = new CatalogController(fakeServiceScopeFactory, mockLogger);
 
-        _ = await catalogController.NavigateCatalogAsync(null!);
+        _ = await catalogController.NavigateCatalog(null!);
 
         mockLogger.Received().LogError(Arg.Any<Exception>(), "[CatalogController: OnPost Error]");
     }
@@ -109,7 +109,7 @@ public class CatalogTest
         var factory = new CustomServiceScopeFactory(new TestHost<CatalogModel>().ServiceProvider);
         var catalogController = new CatalogController(factory, logger);
 
-        var response = (await catalogController.OnDeleteSongAsync(-300, -200)).Value;
+        var response = (await catalogController.DeleteNote(-300, -200)).Value;
 
         Assert.AreEqual(null, response?.CatalogPage);
     }
