@@ -30,9 +30,29 @@
 * В папке Rsse.Data/Dump есть MySql-дамп на 389 песен
 * Некоторая информация есть в папке ```docs```
 
-# WELL KNOWN BUGS
+# WELL KNOWN BUGS AND TRICKS
 * Используй node.js версии 16.20.2. Последняя версия уронила билд с ошибкой SSL:
 `error:0308010C:digital envelope routines::unsupported`. (8-21-2023)
+* Закрыть на ubuntu бд из докера от доступа "снаружи" сервиса, дело в цепочке правил DOCKER-USER:
+```json
+iptables -I DOCKER-USER -s 172.19.0.3 -d 172.19.0.2 -p tcp --dport 3306 -j ACCEPT //выглядит лишним, но бог с ним
+iptables -I DOCKER-USER -p tcp --dport 3306 -j DROP
+iptables -I DOCKER-USER -s 172.19.0.3 -d 0.0.0.0/0 -p tcp --dport 3306 -j RETURN
+
+ufw тож включен: 3306 и 3306/tcp заблокированы. результат выглядит так: netstat -ntlp или iptables -S
+
+Chain DOCKER-USER (1 references)
+num   pkts bytes target     prot opt in     out     source               destination
+1       31  3136 RETURN     tcp  --  *      *       172.19.0.3           0.0.0.0/0            tcp dpt:3306
+2       25  1460 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:3306
+3        3   183 ACCEPT     tcp  --  *      *       172.19.0.3           172.19.0.2           tcp dpt:3306
+4      107 27639 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+```
+* При первом (в т.ч. локальном) запуске будет создана бд `tagit` с таблицей авторизации, при ошибке проверь корректность юзера и пароля в `appsettings`.
+* При локальном запуске не забывай, что `localohost` != `127.0.0.1`, иначе не залогинишься.
+* Если при запуске в `Rsse.Base/ClientApp/build` будет лежать файл `backup_9.txt` с дампом, то можно запустить команду **Catalog>Restore**.
+  Для его появления в этой папке после деплоя положи файл в `Rsse.Base/ClientApp/build` перед сборкой образа. В VCS, скорее всего, находится 
+  файл с 883 песнями.
 
 # Деплой
 * Пример скрипта доставки (компоуз должен быть поднят), не забудьте указать свой registry:
