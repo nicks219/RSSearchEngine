@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <UserSecretsId>89325659-56d0-436e-993a-e44aa19ed5e7</UserSecretsId>
         <Platforms>AnyCPU;x64</Platforms>
         <Authors>Nikolay Medvedev</Authors>

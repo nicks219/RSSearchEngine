@@ -81,7 +81,7 @@ public class CustomServiceScopeFactory : IServiceScopeFactory
 
 public class FakeLogger<TReadModel> : ILogger<TReadModel>
 {
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         throw new NotImplementedException();
     }

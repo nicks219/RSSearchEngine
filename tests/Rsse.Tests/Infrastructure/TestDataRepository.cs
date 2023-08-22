@@ -12,8 +12,8 @@ namespace RandomSongSearchEngine.Tests.Infrastructure;
 public class TestDataRepository : IDataRepository
 {
     private int _id;
-    
-    public async Task CreateTagIfNotExists(string tag){}
+
+    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestDataRepository));
     
     private Dictionary<int, Tuple<string, string>> _dictionary = new();
 

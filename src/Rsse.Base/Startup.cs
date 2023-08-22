@@ -69,7 +69,7 @@ public class Startup
 
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-        var sqlServerType = connectionString.Contains("Data Source") ? "mssql" : "mysql";
+        var sqlServerType = connectionString?.Contains("Data Source") == true ? "mssql" : "mysql";
 
         Action<DbContextOptionsBuilder> dbOptions = sqlServerType switch
         {
