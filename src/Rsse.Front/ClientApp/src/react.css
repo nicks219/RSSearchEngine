@@ -21,12 +21,17 @@ body {
 }*/
 
 #renderContainer {
-	position: relative;
+	position: absolute;
+	top: 0;
+	left: 0;
+	
 	width: 43rem;
 	padding-left: 1rem;
-	padding-top: 1rem;
-	margin-top: 6rem;
-	margin-left: 1rem;
+	padding-right: 1rem;
+	margin-left: 0;
+	padding-top: 0;
+	margin-top: 1rem;
+	
 	background-color: #ffe;
 	overflow-wrap: break-word;
 }
@@ -35,8 +40,25 @@ body {
 	width: 43rem;
 	padding: 1rem;
 	margin-left: 1rem;
-	margin-top: 0rem;
+	margin-top: 0;
+	
 	background-color: #e9ecee;
+}
+
+#header li {
+	display: inline;
+}
+
+#header li a {
+	color: #ffffff;
+	background-color: #111;
+	font-weight: bold;
+	font-size: 1.3rem;
+	padding: 1rem;
+}
+
+#header li a.active {
+	background-color: #0099FF;
 }
 
 	#loginMessage {

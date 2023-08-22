@@ -62,7 +62,9 @@ class CatalogView extends React.Component<IProps, IState> {
         // listener это меню.
         e.preventDefault();
         let id = Number(e.target.id);
-        this.props.listener.setState({ id: id });
+        // Menu:
+        // this.props.listener.setState({ id: id });
+        Loader.redirectToMenu("/#/read/" + id);
     }
 
     delete = (e: any) => {
@@ -114,7 +116,7 @@ class CatalogView extends React.Component<IProps, IState> {
         }
 
         return (
-            <div className="row">
+            <div className="row" id="renderContainer">
                 <p style={{ marginLeft: 12 + '%' }}>
                     Всего песен: {this.state.data.songsCount} &nbsp;
                     Страница: {this.state.data.pageNumber} &nbsp;

@@ -2,6 +2,7 @@
 import * as ReactDOM from 'react-dom';
 import { Loader } from "./loader";
 import { hideMenu } from "./hideMenu";
+import { RouteComponentProps } from 'react-router';
 
 interface IState {
     data: any;
@@ -13,9 +14,18 @@ interface IProps {
     id: any;
 }
 
-export class HomeView extends React.Component<IState> {
+interface IMatchParams {
+    textId: string;
+}
+
+interface IMatchedProps extends RouteComponentProps<IMatchParams> {
+}
+
+//export class HomeView extends React.Component<IMatchParams, IState> {
+export class HomeView extends React.Component<RouteComponentProps<{textId: string}>, IState> {
     formId: any;
     mounted: boolean;
+    displayed: boolean;
     
     readFromCatalog: boolean;
 
@@ -31,6 +41,8 @@ export class HomeView extends React.Component<IState> {
 
         this.formId = null;
         this.mounted = true;
+        this.displayed = false;
+        
         this.readFromCatalog = false;
 
         this.mainForm = React.createRef();
@@ -65,19 +77,27 @@ export class HomeView extends React.Component<IState> {
 
     componentWillUnmount() {
         this.mounted = false;
+        // убираем отображение кнопки "Поиск":
+        ReactDOM.render(
+            <div>
+            </div>,
+            document.querySelector("#searchButton1")
+        );
     }
 
     render() {
         // читаем "песню из каталога":
-        if (this.props.data) {
-            console.log(this.props.data);
+        if (this.props.match.params.textId && !this.displayed) {//1. old: this.props.data 2. wrapped: this.props.textId
+            console.log(this.props.match.params.textId);//this.props.data
 
             const item = { CheckedCheckboxesJS: [] };
             let requestBody = JSON.stringify(item);
-            let id = this.props.data;
+            let id = this.props.match.params.textId;//this.props.data
             this.readFromCatalog = true;
             
             Loader.postData(this, requestBody, Loader.readUrl, id);
+            //
+            this.displayed = true;
         }
         
         let checkboxes = [];

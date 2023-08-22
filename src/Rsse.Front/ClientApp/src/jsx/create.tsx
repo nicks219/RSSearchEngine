@@ -72,7 +72,7 @@ class CreateView extends React.Component<IProps, IState> {
         }
 
         return (
-            <div>
+            <div id="renderContainer">
                 <form ref={this.mainForm}
                     id="dizzy">
                     {checkboxes}

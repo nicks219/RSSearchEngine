@@ -51,7 +51,7 @@ class UpdateView extends React.Component<IProps, IState> {
         }
 
         return (
-            <div>
+            <div id="renderContainer">
                 <form ref={this.mainForm} id="dizzy">
                     {checkboxes}
                     {this.state != null && this.state.data != null &&

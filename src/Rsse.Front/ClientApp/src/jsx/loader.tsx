@@ -27,6 +27,17 @@ export class Loader {
             this.corsAddress = "http://127.0.0.1:5000";
         }
     }
+    
+    static redirectToMenu(url: string) {
+        Loader.setDevelopmentCredos();
+        LoginRequired.MessageOff();
+        
+        try {
+            window.location.href = "http://" + window.location.host + url;
+        } catch {
+            console.log("Loader: redirect exception");
+        }   
+    }
 
     //GET request: /api/controller
     static async getData(component: any, url: any) {
