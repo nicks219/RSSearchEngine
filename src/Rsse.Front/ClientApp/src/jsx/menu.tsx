@@ -102,7 +102,7 @@ export default class Menu extends React.Component<IProps, IState> {
                 {/*первый пункт меню*/}
                 {this.visibilityFlag[0] &&
                     <div id="renderContainer1">
-                        <HomeView textId="1"/> {/* data={this.state.id} */}
+                        {/*<HomeView textId="1"/>*/} {/* data={this.state.id} */}
                     </div>
                 }
                 {/*второй пункт меню*/}

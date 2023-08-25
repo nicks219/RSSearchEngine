@@ -31,9 +31,11 @@ export class Loader {
     static redirectToMenu(url: string) {
         Loader.setDevelopmentCredos();
         LoginRequired.MessageOff();
-        
+        // todo: проверить рабоспособность редиректа на хостинге
         try {
-            window.location.href = "http://" + window.location.host + url;
+            let redirectTo = "http://" + window.location.host + url;
+            console.log("Redirect to: " + redirectTo);
+            window.location.href = redirectTo;
         } catch {
             console.log("Loader: redirect exception");
         }   

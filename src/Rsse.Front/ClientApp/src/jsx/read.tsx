@@ -88,7 +88,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     render() {
         // читаем "песню из каталога":
         if (this.props.match.params.textId && !this.displayed) {//1. old: this.props.data 2. wrapped: this.props.textId
-            console.log(this.props.match.params.textId);//this.props.data
+            console.log("Get text id from path params: " + this.props.match.params.textId);//this.props.data
 
             const item = { CheckedCheckboxesJS: [] };
             let requestBody = JSON.stringify(item);
