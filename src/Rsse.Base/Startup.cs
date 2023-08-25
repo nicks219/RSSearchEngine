@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Runtime;
+using RandomSongSearchEngine.Configuration;
 using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Data.Repository;
 using RandomSongSearchEngine.Data.Repository.Contracts;
@@ -66,6 +67,8 @@ public class Startup
         {
             swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title = "Nick", Version = "v1"});
         });
+
+        services.Configure<TagItCommonOptions>(_configuration.GetSection(nameof(TagItCommonOptions)));
 
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 

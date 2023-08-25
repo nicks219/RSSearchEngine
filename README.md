@@ -51,7 +51,7 @@ num   pkts bytes target     prot opt in     out     source               destina
 * При первом (в т.ч. локальном) запуске будет создана бд `tagit` с таблицей авторизации, при ошибке проверь корректность юзера и пароля в `appsettings`.
 * При локальном запуске не забывай, что `localohost` != `127.0.0.1`, иначе не залогинишься.
 * Если при запуске в `Rsse.Base/ClientApp/build` будет лежать файл `backup_9.txt` с дампом, то можно запустить команду **Catalog>Restore**.
-  Для его появления в этой папке после деплоя положи файл в `Rsse.Base/ClientApp/build` перед сборкой образа. В VCS, скорее всего, находится 
+  Для его появления в этой папке после деплоя скопируй файл в `Rsse.Base/ClientApp/build` перед сборкой docker-образа. В VCS, скорее всего, находится 
   файл с 883 песнями.
 
 # Деплой
@@ -59,13 +59,14 @@ num   pkts bytes target     prot opt in     out     source               destina
 ```bash
 cd /mnt/f/tagit/src && \
 docker-compose down && \
-docker image rm nick219nick/tagit:v1 && \
+docker image rm nick219nick/tagit:v4 && \
 docker-compose -f docker-compose-build.yml build && \
 docker-compose -f docker-compose-build.yml up -d && \
 R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v1 && \
-docker push nick219nick/tagit:v1;
+docker commit -a Nick219 -m v4 ${R_C_HASH} nick219nick/tagit:v4 && \
+docker push nick219nick/tagit:v4;
 ```
+* Также хэш контейнера можно получить из docker desktop или выполнив `docker ps --no-trunc`.
 
 # Описание API
 

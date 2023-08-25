@@ -21,9 +21,4 @@
       <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
     </ItemGroup>
 
-    <!--<ItemGroup>
-      <_ContentIncludedByDefault Remove="ClientApp\build_\asset-manifest.json" />
-      <_ContentIncludedByDefault Remove="ClientApp\build_\manifest.json" />
-    </ItemGroup>-->
-
 </Project>

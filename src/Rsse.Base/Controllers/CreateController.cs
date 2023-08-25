@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using RandomSongSearchEngine.Configuration;
 using RandomSongSearchEngine.Data;
 using RandomSongSearchEngine.Data.Dto;
+using RandomSongSearchEngine.Infrastructure;
 using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
 using RandomSongSearchEngine.Service.Models;
 
@@ -12,13 +15,23 @@ namespace RandomSongSearchEngine.Controllers;
 [ApiController]
 public class CreateController : ControllerBase
 {
+    private const string BackupFileName = "last_backup";
+    
     private readonly ILogger<CreateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IMysqlBackup _backup;
+    private readonly TagItCommonOptions _options;
 
-    public CreateController(IServiceScopeFactory serviceScopeFactory, ILogger<CreateController> logger)
+    public CreateController(
+        IServiceScopeFactory serviceScopeFactory, 
+        ILogger<CreateController> logger, 
+        IMysqlBackup backup, 
+        IOptions<TagItCommonOptions> options)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
+        _backup = backup;
+        _options = options.Value;
     }
 
     [HttpGet]
@@ -40,7 +53,6 @@ public class CreateController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<NoteDto>> CreateNoteAsync([FromBody] NoteDto dto)
     {
-        
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
@@ -55,6 +67,12 @@ public class CreateController : ControllerBase
                 var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
                 
                 cache.Create(result.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
+                
+                // создадим бэкап при выставленном флаге CreateBackupForNewSong:
+                if (_options.CreateBackupForNewSong)
+                {
+                    _backup.Backup(BackupFileName);
+                }
             }
 
             return result;

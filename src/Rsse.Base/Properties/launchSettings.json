@@ -26,13 +26,14 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
+        // run me locally:
         "DevelopmentWithoutBrowser": {
             "commandName": "Project",
             "launchBrowser": false,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
-            } ,
-            "applicationUrl": "http://127.0.0.1:5000/swagger/index.html"
+            } 
+            // "applicationUrl": "http://127.0.0.1:5000/swagger/index.html"
         },
         "Production": {
             "commandName": "Project",
