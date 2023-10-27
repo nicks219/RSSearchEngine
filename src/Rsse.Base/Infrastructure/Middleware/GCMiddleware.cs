@@ -1,4 +1,8 @@
-﻿namespace RandomSongSearchEngine.Infrastructure.Middleware;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+
+namespace SearchEngine.Infrastructure.Middleware;
 
 /// <summary>
 /// Настройка сборщика мусора на частое освобождение памяти
@@ -15,9 +19,9 @@ public class GcMiddleware
     public async Task Invoke(HttpContext httpContext)
     {
         await _next(httpContext);
-        
+
         GC.Collect(2, GCCollectionMode.Forced, true);
-        
+
         GC.WaitForPendingFinalizers();
     }
 }

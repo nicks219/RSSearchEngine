@@ -1,18 +1,23 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using RandomSongSearchEngine.Service.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [Route("api/find")]
 public class FindController : ControllerBase
 {
+    private const string FindError = $"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]";
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<FindController> _logger;
 
     public FindController(IServiceScopeFactory scopeFactory, ILogger<FindController> logger)
     {
         _scopeFactory = scopeFactory;
-        
         _logger = logger;
     }
 
@@ -21,9 +26,9 @@ public class FindController : ControllerBase
     {
         if (string.IsNullOrEmpty(text))
         {
-            return Ok(new{});
+            return Ok(new { });
         }
-        
+
         try
         {
             using var scope = _scopeFactory.CreateScope();
@@ -34,8 +39,8 @@ public class FindController : ControllerBase
             switch (result.Count)
             {
                 case 0:
-                    return Ok(new{});
-                
+                    return Ok(new { });
+
                 // нулевой вес не стоит учитывать если результатов много
                 case > 10:
                     result = result
@@ -48,14 +53,14 @@ public class FindController : ControllerBase
                 .OrderByDescending(x => x.Value)
                 .ToDictionary(x => x.Key, x => x.Value);
 
-            var resp = new OkObjectResult(new{Res = result});
+            var resp = new OkObjectResult(new { Res = result });
 
             return resp;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]");
-            return new BadRequestObjectResult($"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]");
+            _logger.LogError(ex, FindError);
+            return new BadRequestObjectResult(FindError);
         }
     }
 }

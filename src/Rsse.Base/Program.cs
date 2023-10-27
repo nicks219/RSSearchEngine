@@ -1,5 +1,8 @@
+using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using RandomSongSearchEngine;
+using Microsoft.Extensions.Hosting;
+using SearchEngine;
 
 // TODO: переименуй с учетом, что речь идёт не о "песнях", а о "текстах" или "заметках"
 // 1.    [+] нейминг в программе
@@ -23,6 +26,8 @@ using RandomSongSearchEngine;
 // 6.    [ ] дополни dockerfile чтобы фронт самому не билдить. [-] по ходу FROM: node.js - разберись в целесообразности
 // 7.    [ ] добавь готовый editorconfig
 
+// 8.    [ ] EPIC: перейди на pg, интегрируйся с jira и ci (реши, где запускать раннеры и что делать с артефактами)
+
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>
     {
@@ -34,13 +39,13 @@ var builder = Host.CreateDefaultBuilder(args)
             // MinRequestBodyDataRate = 240b/s grace 00:00:05
             // MinResponseDataRate = 240b/s grace 00:00:05
             // MaxConcurrentConnections = null
-            
+
             var kestrelLimits = options.Limits;
-            
+
             kestrelLimits.MinResponseDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
-            
+
             kestrelLimits.MinRequestBodyDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
-            
+
             // options.Listen(new IPEndPoint(new IPAddress(new byte[]{127,0,0,1}), 5000));
         });
     });

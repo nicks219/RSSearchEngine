@@ -1,6 +1,6 @@
-﻿using RandomSongSearchEngine.Data.Dto;
+using SearchEngine.Data.Dto;
 
-namespace RandomSongSearchEngine.Data.Repository.Contracts;
+namespace SearchEngine.Data.Repository.Contracts;
 
 public interface IDataRepository : IDisposable, IAsyncDisposable
 {
@@ -10,7 +10,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     IQueryable<Tuple<string, string>> ReadNote(int noteId);
     Task UpdateNote(IEnumerable<int> initialTags, NoteDto dt);
     Task<int> DeleteNote(int noteId);
-    
+
     // common:
     Task<List<string>> ReadGeneralTagList();
     Task<int> ReadNotesCount();
@@ -19,9 +19,9 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     string ReadTitleByNoteId(int id);
     int FindNoteIdByTitle(string noteTitle);
     IQueryable<int> ReadNoteTags(int noteId);
-    
+
     // additional:
-    IQueryable<Tuple<string, int>> ReadCatalogPage(int lastPage, int pageSize);
+    IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize);
     Task<UserEntity?> GetUser(LoginDto dt);
     Task CreateTagIfNotExists(string tag);
 }

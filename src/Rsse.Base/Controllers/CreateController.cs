@@ -1,37 +1,44 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RandomSongSearchEngine.Configuration;
-using RandomSongSearchEngine.Data;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Infrastructure;
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
-using RandomSongSearchEngine.Service.Models;
+using SearchEngine.Configuration;
+using SearchEngine.Data;
+using SearchEngine.Data.Dto;
+using SearchEngine.Infrastructure;
+using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [Authorize]
 [Route("api/create")]
 [ApiController]
 public class CreateController : ControllerBase
 {
+    private const string CreateNoteError = $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]";
+    private const string OnGetGenreListError = $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]";
+
     private const string BackupFileName = "last_backup";
-    
+
     private readonly ILogger<CreateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMysqlBackup _backup;
-    private readonly TagItCommonOptions _options;
+    private readonly CommonBaseOptions _baseOptions;
 
     public CreateController(
-        IServiceScopeFactory serviceScopeFactory, 
-        ILogger<CreateController> logger, 
-        IMysqlBackup backup, 
-        IOptions<TagItCommonOptions> options)
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<CreateController> logger,
+        IMysqlBackup backup,
+        IOptions<CommonBaseOptions> options)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
         _backup = backup;
-        _options = options.Value;
+        _baseOptions = options.Value;
     }
 
     [HttpGet]
@@ -41,12 +48,12 @@ public class CreateController : ControllerBase
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
-            return await model.ReadGeneralTagList();
+            return await model.ReadTagList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]");
-            return new NoteDto { ErrorMessageResponse = $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]" };
+            _logger.LogError(ex, OnGetGenreListError);
+            return new NoteDto { ErrorMessageResponse = OnGetGenreListError };
         }
     }
 
@@ -58,18 +65,18 @@ public class CreateController : ControllerBase
             using var scope = _serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
 
-            var result =  await model.CreateNote(dto);
+            var result = await model.CreateNote(dto);
 
             if (string.IsNullOrEmpty(result.ErrorMessageResponse))
             {
                 await model.CreateTag(dto); // [CREATE GENRE]
-                
+
                 var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
-                
-                cache.Create(result.Id, new TextEntity{Title = dto.Title, Song = dto.Text});
-                
+
+                cache.Create(result.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
+
                 // создадим бэкап при выставленном флаге CreateBackupForNewSong:
-                if (_options.CreateBackupForNewSong)
+                if (_baseOptions.CreateBackupForNewSong)
                 {
                     _backup.Backup(BackupFileName);
                 }
@@ -79,8 +86,8 @@ public class CreateController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]");
-            return new NoteDto { ErrorMessageResponse = $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]" };
+            _logger.LogError(ex, CreateNoteError);
+            return new NoteDto { ErrorMessageResponse = CreateNoteError };
         }
     }
 }

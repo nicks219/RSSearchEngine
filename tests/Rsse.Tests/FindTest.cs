@@ -7,53 +7,65 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NSubstitute;
-using RandomSongSearchEngine.Controllers;
-using RandomSongSearchEngine.Infrastructure.Cache;
-using RandomSongSearchEngine.Tests.Infrastructure;
+using SearchEngine.Controllers;
+using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Tests.Infrastructure;
 
-namespace RandomSongSearchEngine.Tests;
+namespace SearchEngine.Tests;
 
 [TestClass]
 public class FindTest
 {
-    private const string Text = "аблака белагривыи лашатки";
-    
+    // private const string Text = "аблака белагривыи лашатки";
+    // private const string Text = "Чёрт с ними! За столом сидим, поём, пляшем…";
+    private const string Text = "чорт з ным зо сталом";
+
     [TestMethod]
-    // тест проходит на актуальной бд и его ответ зависит от наличия дампа
-    public void ControllerDeleteInvalidRequest_ShouldResponseNull()
+    // public void ControllerDeleteInvalidRequest_ShouldResponseNull()
+    public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
     {
+        // arrange:
+        var useStub = true;
         var logger = Substitute.For<ILogger<FindController>>();
-        var factory = new CustomServiceScopeFactory(new TestHost<CacheRepository>().ServiceProvider);
+        var factory = new TestServiceScopeFactory(new TestServiceProvider<CacheRepository>(useStubDataRepository: useStub).ServiceProvider);
         var findController = new FindController(factory, logger);
 
-        var response = findController.Find(Text) as OkObjectResult;
+        // act:
+        var response = (OkObjectResult)findController.Find(Text);
+        var serialized = JsonConvert.SerializeObject(response);
+        var deserialized = JsonConvert.DeserializeObject<Response>(serialized);
 
-        response.Should().NotBeNull();
-        var json = JsonConvert.SerializeObject(response);
-        var obj = JsonConvert.DeserializeObject<AnonymousResponse>(json);
-        
+        // надо обдумать, какой пример вообще пригоден для этого теста:
+
+        // assert:
+        deserialized.Value.Should().NotBeNull();
+        deserialized.Value?.Res.Should().NotBeNull();
+
         // {"Value":{"Res":{"270":0.031746031746031744,"228":0.0273972602739726}},"Formatters":[],"ContentTypes":[],"DeclaredType":null,"StatusCode":200}
-
-        obj.Value!.Res?.Keys
+        deserialized.Value?.Res?
+            .Keys
             .ElementAt(0)
             .Should()
-            .Be("270");
-        
-        obj.Value!.Res?.Keys
-            .ElementAt(1)
+            .Be("1");
+
+        deserialized.Value?.Res?
+            .Values
+            .ElementAt(0)
             .Should()
-            .Be("228");
+            .Be(2.3529411764705883D);
+    }
+
+    public class Response
+    {
+        [JsonPropertyName("Value")]
+        public Value? Value { get; init; }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class Value
+    {
+        [JsonPropertyName("Res")]
+        public Dictionary<string, double>? Res { get; init; }
     }
 }
 
-public class AnonymousResponse
-{
-    [JsonPropertyName("Value")]
-    public Value? Value { get; init; }
-}
-
-public class Value
-{
-    [JsonPropertyName("Res")]
-    public Dictionary<string, double>? Res { get; init; }
-}

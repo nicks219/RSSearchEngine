@@ -1,11 +1,18 @@
+using System;
 using System.Collections.Concurrent;
-using RandomSongSearchEngine.Data;
-using RandomSongSearchEngine.Data.Repository.Contracts;
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
-using RandomSongSearchEngine.Infrastructure.Engine;
-using RandomSongSearchEngine.Infrastructure.Engine.Contracts;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SearchEngine.Configuration;
+using SearchEngine.Data;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Engine;
+using SearchEngine.Infrastructure.Engine.Contracts;
 
-namespace RandomSongSearchEngine.Infrastructure.Cache;
+namespace SearchEngine.Infrastructure.Cache;
 
 public class CacheRepository : ICacheRepository
 {
@@ -16,14 +23,16 @@ public class CacheRepository : ICacheRepository
     private readonly ConcurrentDictionary<int, List<int>> _definedCache;
     private readonly ReaderWriterLockSlim _lockSlim;
     private readonly ILogger<CacheRepository> _logger;
+    private readonly bool _isEnabled;
 
-    public CacheRepository(IServiceScopeFactory factory, ILogger<CacheRepository> logger)
+    public CacheRepository(IServiceScopeFactory factory, IOptions<CommonBaseOptions> options, ILogger<CacheRepository> logger)
     {
         _factory = factory;
         _undefinedCache = new ConcurrentDictionary<int, List<int>>();
         _definedCache = new ConcurrentDictionary<int, List<int>>();
         _logger = logger;
         _lockSlim = new ReaderWriterLockSlim();
+        _isEnabled = options.Value.TokenizerIsEnable;// TODO добавь завязку на флаг
 
         Initialize();
     }
@@ -40,6 +49,8 @@ public class CacheRepository : ICacheRepository
 
     public void Delete(int id)
     {
+        if (!_isEnabled) return;
+
         _lockSlim.EnterWriteLock();
 
         var res1 = _undefinedCache.TryRemove(id, out _);
@@ -56,6 +67,8 @@ public class CacheRepository : ICacheRepository
 
     public void Create(int id, TextEntity text)
     {
+        if (!_isEnabled) return;
+
         _lockSlim.EnterReadLock();
 
         using var scope = _factory.CreateScope();
@@ -79,6 +92,8 @@ public class CacheRepository : ICacheRepository
 
     public void Update(int id, TextEntity text)
     {
+        if (!_isEnabled) return;
+
         _lockSlim.EnterReadLock();
 
         using var scope = _factory.CreateScope();
@@ -116,6 +131,8 @@ public class CacheRepository : ICacheRepository
 
     public void Initialize()
     {
+        if (!_isEnabled) return;
+
         _lockSlim.EnterWriteLock();
 
         using var scope = _factory.CreateScope();
@@ -167,7 +184,7 @@ public class CacheRepository : ICacheRepository
         //var song = processor.ConvertStringToText(text);
 
         //song.Title.ForEach(t => song.Words.Add(t));
-        
+
         var song = processor.CleanUpString(text.Song + ' ' + text.Title);
 
         var undefinedHashLine = processor.GetHashSetFromStrings(song);
@@ -178,7 +195,7 @@ public class CacheRepository : ICacheRepository
         //song = processor.ConvertStringToText(text);
 
         //song.Title.ForEach(t => song.Words.Add(t));
-        
+
         song = processor.CleanUpString(text.Song + ' ' + text.Title);
 
         var definedHashLine = processor.GetHashSetFromStrings(song);

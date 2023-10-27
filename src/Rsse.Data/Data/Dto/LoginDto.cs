@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace RandomSongSearchEngine.Data.Dto;
+namespace SearchEngine.Data.Dto;
 
 public record LoginDto
 {
@@ -14,7 +14,7 @@ public record LoginDto
     public LoginDto(string email, string password)
     {
         Email = email;
-        
+
         Password = password;
     }
 }

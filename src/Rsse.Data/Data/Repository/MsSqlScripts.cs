@@ -1,4 +1,4 @@
-﻿namespace RandomSongSearchEngine.Data.Repository;
+namespace SearchEngine.Data.Repository;
 
 public static class MsSqlScripts
 {

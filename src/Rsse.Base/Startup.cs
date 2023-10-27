@@ -1,19 +1,28 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
+using System;
 using System.Globalization;
+using System.IO;
 using System.Runtime;
-using RandomSongSearchEngine.Configuration;
-using RandomSongSearchEngine.Data;
-using RandomSongSearchEngine.Data.Repository;
-using RandomSongSearchEngine.Data.Repository.Contracts;
-using RandomSongSearchEngine.Infrastructure;
-using RandomSongSearchEngine.Infrastructure.Cache;
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
-using RandomSongSearchEngine.Infrastructure.Engine;
-using RandomSongSearchEngine.Infrastructure.Engine.Contracts;
-using RandomSongSearchEngine.Infrastructure.Logger;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Configuration;
+using SearchEngine.Data;
+using SearchEngine.Data.Repository;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Infrastructure;
+using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Engine;
+using SearchEngine.Infrastructure.Engine.Contracts;
+using SearchEngine.Infrastructure.Logger;
 
-namespace RandomSongSearchEngine;
+namespace SearchEngine;
 
 // TagIt: v1
 // фронт после билда копируем руками из FrontRepository/ClientApp/build в Rsse.Base/ClientApp/build
@@ -22,7 +31,7 @@ namespace RandomSongSearchEngine;
 // TODO миграции
 // export DOTNET_ROLL_FORWARD=LatestMajor
 // Microsoft.EntityFrameworkCore.Design
-// dotnet new tool-manifest 
+// dotnet new tool-manifest
 // dotnet tool update dotnet-ef (7.0.1)
 // dotnet ef dbcontext list
 // dotnet ef migrations list
@@ -35,26 +44,30 @@ namespace RandomSongSearchEngine;
 
 public class Startup
 {
+    private const string MsSqlServer = "mssql";
+    private const string MySqlServer = "mysql";
+    private const string DefaultConnectionKey = "DefaultConnection";
+    private const string DataSourceKey = "Data Source";
+
     private readonly IConfiguration _configuration;
-    
     private readonly IWebHostEnvironment _env;
-    
+
     public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         _configuration = configuration;
-        
+
         _env = env;
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHostedService<CacheActivatorService>();
-        
         // if (_env.IsDevelopment())
         {
             services.AddCors();
         }
-        
+
+        services.AddHostedService<CacheActivatorService>();
+
         services.AddSingleton<ICacheRepository, CacheRepository>();
 
         services.AddTransient<ITextProcessor, TextProcessor>();
@@ -65,25 +78,29 @@ public class Startup
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
-            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title = "Nick", Version = "v1"});
+            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Nick", Version = "v1" });
         });
 
-        services.Configure<TagItCommonOptions>(_configuration.GetSection(nameof(TagItCommonOptions)));
+        services.Configure<CommonBaseOptions>(_configuration.GetSection(nameof(CommonBaseOptions)));
 
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var connectionString = GetConnectionString();
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new NullReferenceException("Invalid connection string");
+        }
 
-        var sqlServerType = connectionString?.Contains("Data Source") == true ? "mssql" : "mysql";
+        var sqlServerType = connectionString.Contains(DataSourceKey) ? MsSqlServer : MySqlServer;
 
         Action<DbContextOptionsBuilder> dbOptions = sqlServerType switch
         {
-            "mysql" => options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 31))),
+            MySqlServer => options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 31))),
             // b=> b.MigrationsAssembly("Rsse.Data")
             // _ => options => options.UseSqlServer(connectionString),
             _ => throw new NotImplementedException("[unsupported db]")
         };
 
         services.AddDbContext<RsseContext>(dbOptions);
-        
+
         services.AddScoped<IDataRepository, DataRepository>();
 
         services.AddMemoryCache(); // это нужно?
@@ -103,22 +120,22 @@ public class Startup
         if (_env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-        
+
             app.UseSwagger();
-            
+
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nick V1"); });
         }
         else
         {
             app.UseExceptionHandler("/Error");
         }
-        
+
         app.UseDefaultFiles();
-        
+
         app.UseStaticFiles();
 
         // app.UseHttpsRedirection();
-        
+
         app.UseRouting();
 
         // if (_env.IsDevelopment())
@@ -137,30 +154,25 @@ public class Startup
         }
 
         app.UseAuthentication();
-        
+
         app.UseAuthorization();
-        
+
         app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
+        // логируем техническую информацию на старте:
         loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "logger.txt"));
-        
         var logger = loggerFactory.CreateLogger(typeof(FileLogger));
-        
         logger.LogInformation(
-            "Application started at {Date}, is 64-bit process: {Process}", 
-            DateTime.Now.ToString(CultureInfo.InvariantCulture), 
+            "Application started at {Date}, is 64-bit process: {Process}",
+            DateTime.Now.ToString(CultureInfo.InvariantCulture),
             Environment.Is64BitProcess.ToString());
-        
+
         logger.LogInformation("IsDevelopment: {IsDev}", env.IsDevelopment().ToString());
-        
         logger.LogInformation("IsProduction: {IsProd}", env.IsProduction().ToString());
-        
-        logger.LogInformation(
-            "Connection string here: {ConnectionString}", 
-            _configuration.GetConnectionString("DefaultConnection"));
-        
+        logger.LogInformation("Connection string here: {ConnectionString}", GetConnectionString());
         logger.LogInformation("Server GC: {IsServer}", GCSettings.IsServerGC);
-        
         logger.LogInformation("CPU: {Cpus}", Environment.ProcessorCount);
     }
+
+    private string? GetConnectionString() => _configuration.GetConnectionString(DefaultConnectionKey);
 }

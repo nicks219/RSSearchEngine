@@ -1,4 +1,4 @@
-﻿namespace RandomSongSearchEngine.Infrastructure;
+namespace SearchEngine.Infrastructure;
 
 public interface IMysqlBackup
 {

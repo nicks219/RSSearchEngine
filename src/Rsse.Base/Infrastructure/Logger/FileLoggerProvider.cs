@@ -1,4 +1,7 @@
-﻿namespace RandomSongSearchEngine.Infrastructure.Logger;
+using System;
+using Microsoft.Extensions.Logging;
+
+namespace SearchEngine.Infrastructure.Logger;
 
 public class FileLoggerProvider : ILoggerProvider
 {

@@ -4,20 +4,20 @@ using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using React.AspNet;
 
-namespace RandomSongSearchEngine.Front;
+namespace SearchEngine.Front;
 
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddMemoryCache(); // ?
-        
+
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        
+
         services.AddReact();
-        
+
         services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName).AddChakraCore();
-        
+
         services.AddSpaStaticFiles(configuration =>
         {
             configuration.RootPath = "ClientApp/build";
@@ -32,11 +32,11 @@ public class Startup
         // options.DefaultFileNames.Add(Configuration.GetValue<string>("StartFile"));
         // app.UseDefaultFiles(options);
         // app.UseReact(config => { }); // еще такое есть, но тут не нужно
-        
+
         app.UseSpaStaticFiles();
-        
+
         // app.UseRouting();
-        
+
         app.UseSpa(spa =>
         {
             spa.Options.SourcePath = "ClientApp";
@@ -53,7 +53,7 @@ public class Startup
             }
         });
     }
-    
+
     private void YarnRunBuild()
     {
         if (!Directory.Exists("./ClientApp/node_modules"))
@@ -70,17 +70,17 @@ public class Startup
         {
             return;
         }
-        
+
         // yarn add --dev @types/react
-            
+
         const string strCmdText = "/C cd ./ClientApp && npm run build";
-            
+
         // using {Process}
-            
+
         var cmd = Process.Start("CMD.exe", strCmdText);
-            
+
         cmd.WaitForExit();
-            
+
         // ProcessStartInfo cmdsi = new ProcessStartInfo("cmd.exe");
         // String command = @"/k java -jar myJava.jar";
         // cmdsi.Arguments = command;

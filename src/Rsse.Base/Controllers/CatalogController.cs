@@ -1,15 +1,23 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
-using RandomSongSearchEngine.Service.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Dto;
+using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [Route("api/catalog")]
 [ApiController]
 public class CatalogController : ControllerBase
 {
+    public const string NavigateCatalogError = $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]";
+    private const string ReadCatalogPageError = $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]";
+    private const string DeleteNoteError = $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]";
+
     private readonly ILogger<CatalogController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -29,8 +37,8 @@ public class CatalogController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]");
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]" };
+            _logger.LogError(ex, ReadCatalogPageError);
+            return new CatalogDto { ErrorMessage = ReadCatalogPageError };
         }
     }
 
@@ -44,8 +52,8 @@ public class CatalogController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]");
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]" };
+            _logger.LogError(ex, NavigateCatalogError);
+            return new CatalogDto { ErrorMessage = NavigateCatalogError };
         }
     }
 
@@ -56,16 +64,16 @@ public class CatalogController : ControllerBase
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            
+
             var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
             cache.Delete(id);
-            
+
             return await new CatalogModel(scope).DeleteNote(id, pg);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]");
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]" };
+            _logger.LogError(ex, DeleteNoteError);
+            return new CatalogDto { ErrorMessage = DeleteNoteError };
         }
     }
 }

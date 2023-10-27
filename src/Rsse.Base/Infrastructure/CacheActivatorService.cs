@@ -1,6 +1,10 @@
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Infrastructure.Cache.Contracts;
 
-namespace RandomSongSearchEngine.Infrastructure;
+namespace SearchEngine.Infrastructure;
 
 public class CacheActivatorService : BackgroundService
 {
@@ -19,7 +23,7 @@ public class CacheActivatorService : BackgroundService
         _cache = cache;
         _logger = logger;
     }
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -27,15 +31,15 @@ public class CacheActivatorService : BackgroundService
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("[cache activator service] activate {Count}", _count);
-                
+
                 // для MySql отслеживание реализуется через триггеры:
-                // CREATE TRIGGER articles_log_update AFTER update ON articles 
-                // FOR EACH ROW BEGIN 
-                // INSERT articles_logs (action, row_id, `date`) VALUES ("update", new.id, NOW()); 
+                // CREATE TRIGGER articles_log_update AFTER update ON articles
+                // FOR EACH ROW BEGIN
+                // INSERT articles_logs (action, row_id, `date`) VALUES ("update", new.id, NOW());
                 // END
-                
+
                 _count++;
-                
+
                 _cache.Initialize();
 
                 await Task.Delay(TimeWait, stoppingToken);

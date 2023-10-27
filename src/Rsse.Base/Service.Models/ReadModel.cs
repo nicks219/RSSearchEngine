@@ -1,20 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Data.Repository.Contracts;
-using RandomSongSearchEngine.Infrastructure.Engine;
+using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Infrastructure.Engine;
 
-namespace RandomSongSearchEngine.Service.Models;
+namespace SearchEngine.Service.Models;
 
 public class ReadModel
 {
-    private readonly ILogger<ReadModel> _logger;
+    public const string ElectNoteError = $"[{nameof(ReadModel)}: {nameof(ElectNote)} error]";
+    private const string ReadTitleByNoteIdError = $"[{nameof(ReadModel)}: {nameof(ReadTitleByNoteId)} error]";
+    private const string ReadTagListError = $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]";
 
+    private readonly ILogger<ReadModel> _logger;
     private readonly IDataRepository _repo;
 
     public ReadModel(IServiceScope serviceScope)
     {
         _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
-        
         _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
     }
 
@@ -23,13 +29,13 @@ public class ReadModel
         try
         {
             var res = _repo.ReadTitleByNoteId(id);
-            
+
             return res;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ReadTitleByNoteId)} error]");
-            
+            _logger.LogError(ex, ReadTitleByNoteIdError);
+
             return null;
         }
     }
@@ -39,28 +45,26 @@ public class ReadModel
         try
         {
             var tagList = await _repo.ReadGeneralTagList();
-            
+
             return new NoteDto(tagList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]");
-            
-            return new NoteDto {ErrorMessageResponse = $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]"};
+            _logger.LogError(ex, ReadTagListError);
+
+            return new NoteDto { ErrorMessageResponse = ReadTagListError };
         }
     }
 
     public async Task<NoteDto> ElectNote(NoteDto? request, string? id = null, bool randomElection = true)
     {
-        var text = "";
-        
-        var title = "";
-        
+        var text = string.Empty;
+        var title = string.Empty;
         var noteId = 0;
-        
+
         try
         {
-            if (request is {SongGenres: { }} && request.SongGenres.Count != 0)
+            if (request is { SongGenres: not null } && request.SongGenres.Count != 0)
             {
                 if (!int.TryParse(id, out noteId))
                 {
@@ -72,25 +76,25 @@ public class ReadModel
                     var song = await _repo
                         .ReadNote(noteId)
                         .ToListAsync();
-                    
+
                     if (song.Count > 0)
                     {
                         text = song[0].Item1;
-                        
+
                         title = song[0].Item2;
                     }
                 }
             }
 
             var genreListResponse = await _repo.ReadGeneralTagList();
-            
+
             return new NoteDto(genreListResponse, noteId, text, title);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadModel)}: {nameof(ElectNote)} error]");
-            
-            return new NoteDto {ErrorMessageResponse = $"[{nameof(ReadModel)}: {nameof(ElectNote)} error]"};
+            _logger.LogError(ex, ElectNoteError);
+
+            return new NoteDto { ErrorMessageResponse = ElectNoteError };
         }
     }
 }

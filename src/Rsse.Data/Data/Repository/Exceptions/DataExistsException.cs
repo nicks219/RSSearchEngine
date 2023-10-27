@@ -1,4 +1,4 @@
-﻿namespace RandomSongSearchEngine.Data.Repository.Exceptions;
+namespace SearchEngine.Data.Repository.Exceptions;
 
 /// <summary>
 /// Моё исключение

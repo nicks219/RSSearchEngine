@@ -1,4 +1,4 @@
-﻿namespace RandomSongSearchEngine.Data;
+namespace SearchEngine.Data;
 
 public class UserEntity
 {

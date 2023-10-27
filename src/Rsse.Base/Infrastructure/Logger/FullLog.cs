@@ -1,6 +1,8 @@
-﻿using RandomSongSearchEngine.Service.Models;
+using System;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Infrastructure.Logger;
+namespace SearchEngine.Infrastructure.Logger;
 
 public static class FullLog
 {
@@ -12,13 +14,13 @@ public static class FullLog
     public static void LogId(this ILogger logger, ReadModel model)
     {
         var modelId = model.GetHashCode();
-        
+
         // костыли - у модели сейчас нет контекста
         // model.HttpContext.GetHashCode();
         const string httpContextId = "MockContext";
-        
+
         var threadId = Environment.CurrentManagedThreadId;
-        
+
         logger.LogInformation("[Model ID: {Model} Thread ID: {Thread} HttpContextID: {Context}]", modelId, threadId, httpContextId);
     }
 }

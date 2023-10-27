@@ -1,16 +1,25 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Service.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [ApiController]
 [Route("account")]
 public class LoginController : ControllerBase
 {
+    private const string LoginError = $"[{nameof(LoginController)}: {nameof(Login)} system error]";
+    private const string DataError = $"[{nameof(LoginController)}: Data error]";
+    private const string LogOutMessage = $"[{nameof(LoginController)}: Data error]";
+    private const string LoginOkMessage = $"[{nameof(LoginController)}: {nameof(Login)} Ok]";
+
     private readonly ILogger<LoginController> _logger;
     private readonly IServiceScopeFactory _scope;
 
@@ -30,14 +39,14 @@ public class LoginController : ControllerBase
 
         var loginDto = new LoginDto(email, password);
         var response = await Login(loginDto);
-        return response == "[Ok]" ? $"[{nameof(LoginController)}: {nameof(Login)} Ok]" : Unauthorized(response);
+        return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
 
     [HttpGet("logout")]
     public async Task<ActionResult<string>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return $"[{nameof(LoginController)}: {nameof(Logout)}]";
+        return LogOutMessage;
     }
 
     private async Task<string> Login(LoginDto model)
@@ -46,19 +55,19 @@ public class LoginController : ControllerBase
         try
         {
             var id = await new LoginModel(scope).TryLogin(model);
-            
+
             if (id == null)
             {
-                return $"[{nameof(LoginController)}: Data error]";
+                return DataError;
             }
-            
+
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
             return "[Ok]";
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(LoginController)}: System error]");
-            return $"[{nameof(LoginController)}: System error]";
+            _logger.LogError(ex, LoginError);
+            return LoginError;
         }
     }
 }

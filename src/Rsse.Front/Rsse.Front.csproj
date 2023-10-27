@@ -4,25 +4,25 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>RandomSongSearchEngine.Front</RootNamespace>
+        <RootNamespace>SearchEngine.Front</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-    <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" Version="3.9.1" />
-        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="3.9.1" />
-        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="3.9.1" />
-        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="3.9.1" />
-        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" Version="3.9.1" />
-        <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" Version="3.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.16" />
-        <PackageReference Include="React.AspNet" Version="5.2.11" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.4.2">
+    <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" />
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" />
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" />
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" />
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" />
+        <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+        <PackageReference Include="React.AspNet" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" >
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     </ItemGroup>
 
-    <!-- 
+    <!--
     <ItemGroup>
       <None Include="ClientApp\src\index.tsx" />
       <None Include="ClientApp\src\jsx\catalog.tsx" />

@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RandomSongSearchEngine.Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using SearchEngine.Data.Repository;
 
-namespace RandomSongSearchEngine.Data;
+namespace SearchEngine.Data;
 
 /// <summary>
 /// Контекст (таблицы) базы данных
@@ -10,7 +10,7 @@ public sealed class RsseContext : DbContext
 {
     private readonly object _obj = new();
     private static volatile bool _init;
-    
+
     /// <summary>
     /// Конфигурируем контекст базы данных
     /// </summary>
@@ -30,19 +30,19 @@ public sealed class RsseContext : DbContext
         lock (_obj)
         {
             _init = true;
-            
+
             var res = Database.EnsureCreated();
-            
+
             switch (Database.ProviderName)
             {
                 case "Pomelo.EntityFrameworkCore.MySql":
                     if (res) Database.ExecuteSqlRaw(MySqlScripts.CreateGenresScript);
                     break;
-                
+
                 case "Microsoft.EntityFrameworkCore.SqlServer":
                     if (res) Database.ExecuteSqlRaw(MsSqlScripts.CreateGenresScript);
                     break;
-                
+
                 default:
                     //"Microsoft.EntityFrameworkCore.InMemory" например
                     break;
@@ -77,29 +77,29 @@ public sealed class RsseContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.Entity<TextEntity>()
             .HasKey(k => k.TextId);
-        
+
         //CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<TextEntity>()
             .HasAlternateKey(k => k.Title);
 
         modelBuilder.Entity<GenreEntity>()
             .HasKey(k => k.GenreId);
-        
+
         //CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<GenreEntity>()
             .HasAlternateKey(k => k.Genre);
 
         modelBuilder.Entity<GenreTextEntity>()
-            .HasKey(k => new {GenreID = k.GenreId, TextID = k.TextId});
-        
+            .HasKey(k => new { GenreID = k.GenreId, TextID = k.TextId });
+
         modelBuilder.Entity<GenreTextEntity>()
             .HasOne(g => g.GenreInGenreText)
             .WithMany(m => m!.GenreTextInGenre)
             .HasForeignKey(k => k.GenreId);
-        
+
         modelBuilder.Entity<GenreTextEntity>()
             .HasOne(t => t.TextInGenreText)
             .WithMany(m => m!.GenreTextInText)

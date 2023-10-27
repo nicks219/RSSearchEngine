@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using RandomSongSearchEngine.Data;
+using System.Collections.Generic;
+using SearchEngine.Data;
 
-namespace RandomSongSearchEngine.Infrastructure.Cache.Contracts;
+namespace SearchEngine.Infrastructure.Cache.Contracts;
 
 public interface ICacheRepository
 {
     public ConcurrentDictionary<int, List<int>> GetUndefinedCache();
-    
+
     public ConcurrentDictionary<int, List<int>> GetDefinedCache();
 
     public void Delete(int id);

@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace RandomSongSearchEngine.Data.Dto;
+namespace SearchEngine.Data.Dto;
 
 public record NoteDto
 {
@@ -8,29 +8,29 @@ public record NoteDto
     [JsonPropertyName("checkedCheckboxesJs")]
     public List<int>? SongGenres { get; set; }
 
-    [JsonPropertyName("titleJs")] 
+    [JsonPropertyName("titleJs")]
     public string? Title { get; set; }
 
-    [JsonPropertyName("textJs")] 
+    [JsonPropertyName("textJs")]
     public string? Text { get; set; }
 
     // response
-    [JsonPropertyName("textCS")] 
+    [JsonPropertyName("textCS")]
     public string? TextResponse { get; set; }
 
-    [JsonPropertyName("titleCS")] 
+    [JsonPropertyName("titleCS")]
     public string? TitleResponse { get; set; }
 
-    [JsonPropertyName("isGenreCheckedCS")] 
+    [JsonPropertyName("isGenreCheckedCS")]
     public List<string>? SongGenresResponse { get; init; }
 
-    [JsonPropertyName("genresNamesCS")] 
+    [JsonPropertyName("genresNamesCS")]
     public List<string>? GenreListResponse { get; init; }
 
     public string? ErrorMessageResponse { get; set; }
 
     // request and response
-    [JsonPropertyName("savedTextId")] 
+    [JsonPropertyName("savedTextId")]
     public int Id { get; set; }
 
     public NoteDto()
@@ -38,9 +38,9 @@ public record NoteDto
     }
 
     public NoteDto(
-        List<string> genreListCs, 
-        int savedTextId = 0, 
-        string textCs = "", 
+        List<string> genreListCs,
+        int savedTextId = 0,
+        string textCs = "",
         string titleCs = "",
         List<string>? checkedCheckboxesCs = null)
     {

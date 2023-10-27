@@ -1,54 +1,52 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Service.Models;
-using RandomSongSearchEngine.Tests.Infrastructure;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.Models;
+using SearchEngine.Tests.Infrastructure;
+using SearchEngine.Tests.Infrastructure.DAL;
 
-namespace RandomSongSearchEngine.Tests;
+namespace SearchEngine.Tests;
 
 [TestClass]
 public class CreateTest
 {
-    private const int GenresCount = 44;
-    
     private CreateModel? _createModel;
 
     [TestInitialize]
     public void Initialize()
     {
-        FakeLoggerErrors.ExceptionMessage = "";
-        
-        FakeLoggerErrors.LogErrorMessage = "";
-        
-        var host = new TestHost<CreateModel>();
-        
+        var host = new TestServiceProvider<CreateModel>(useStubDataRepository: true);
         _createModel = new CreateModel(host.ServiceScope);
     }
 
     [TestMethod]
-    public async Task Model_ShouldReports44Genres()
+    public async Task ModelTagListTest_ShouldReports_ExpectedGenreCount()
     {
-        var response = await _createModel!.ReadGeneralTagList();
-        
-        Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
+        // arrange & act:
+        var result = await _createModel!.ReadTagList();
+
+        // assert:
+        Assert.AreEqual(TestDataRepository.TagList.Count, result.GenreListResponse?.Count);
     }
 
     [TestMethod]
-    public async Task Model_ShouldCreate()
+    public async Task ModelCreateTest_ShouldCreatNote_Correctly()
     {
-        var song = new NoteDto()
+        // arrange:
+        var song = new NoteDto
         {
             Title = "test title",
             Text = "test text",
-            SongGenres = new List<int> {1, 2, 3, 4, 11}
+            SongGenres = new List<int> { 1, 2, 3, 4, 11 }
         };
-        var response = await _createModel!.CreateNote(song);
-        
-        var expected = await new UpdateModel(new TestHost<UpdateModel>().ServiceScope)
-            .GetInitialNote(response.Id);
-        
-        Assert.AreEqual(expected.Title, response.Title);
+
+        // act:
+        var result = await _createModel!.CreateNote(song);
+        var expected = await new UpdateModel(new TestServiceProvider<UpdateModel>(useStubDataRepository: true).ServiceScope).GetOriginalNote(result.Id);
+
+        // assert:
+        Assert.AreEqual(expected.Title, result.Title);
     }
 
     [TestCleanup]

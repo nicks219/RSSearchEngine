@@ -1,20 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SearchEngine.Data.Options;
 
-namespace RandomSongSearchEngine.Data;
+namespace SearchEngine.Data;
 
 /// <summary>
 /// Строка таблицы бд с текстами песен
 /// </summary>
 public class TextEntity
 {
-    [Column("TextID")] 
+    [Column("TextID")]
     public int TextId { get; set; }
 
-    [MaxLength(50)] 
+    [MaxLength(CommonDataOptions.MaxTitleLength)]
     public string? Title { get; set; }
 
-    [MaxLength(4000)] 
+    [MaxLength(CommonDataOptions.MaxTextLenght)]
     public string? Song { get; set; }
 
     public ICollection<GenreTextEntity>? GenreTextInText { get; set; }

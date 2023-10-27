@@ -8,131 +8,154 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using RandomSongSearchEngine.Controllers;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Service.Models;
-using RandomSongSearchEngine.Tests.Infrastructure;
+using SearchEngine.Controllers;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Service.Models;
+using SearchEngine.Tests.Infrastructure;
+using SearchEngine.Tests.Infrastructure.DAL;
 
-namespace RandomSongSearchEngine.Tests;
+namespace SearchEngine.Tests;
 
 [TestClass]
 public class ReadTest
 {
-    private const int GenresCount = 44;
+    private readonly int _genresCount = TestDataRepository.TagList.Count;
 
-    private ReadModel? _readModel;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private ReadModel _readModel;
+    private TestServiceProvider<ReadModel> _serviceProvider;
+    private TestLogger<ReadModel> _logger;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     [TestInitialize]
     public void Initialize()
     {
-        FakeLoggerErrors.ExceptionMessage = "";
-
-        FakeLoggerErrors.LogErrorMessage = "";
-
-        var host = new TestHost<ReadModel>();
-
-        _readModel = new ReadModel(host.ServiceScope);
+        _serviceProvider = new TestServiceProvider<ReadModel>(useStubDataRepository: true);
+        _readModel = new ReadModel(_serviceProvider.ServiceScope);
+        _logger = (TestLogger<ReadModel>)_serviceProvider.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
     }
 
     [TestMethod]
-    public async Task Model_ShouldReports44Genres()
+    public async Task ModelTagListTest_ShouldReports_ExpectedGenreCount()
     {
-        var response = await _readModel!.ReadTagList();
+        // arrange & act:
+        var response = await _readModel.ReadTagList();
 
-        Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
+        // assert:
+        Assert.AreEqual(_genresCount, response.GenreListResponse?.Count);
     }
 
     [TestMethod]
-    public async Task Model_ShouldReadRandomSong()
+    public async Task ModelElectionTest_OnValidRequest_ShouldReturnNote()
     {
-        // интеграционные тесты следует проводить на тестовой бд в docker'е
-        var request = new NoteDto {SongGenres = new List<int> {11}};
+        // arrange:
+        var request = new NoteDto { SongGenres = new List<int> { 2 } };
 
-        var response = await _readModel!.ElectNote(request);
+        // act:
+        var response = await _readModel.ElectNote(request, null, false);
 
-        Assert.AreEqual("test title", response.TitleResponse);
+        // assert:
+        Assert.AreEqual(_logger.ErrorMessage, string.Empty);
+        Assert.AreEqual(TestDataRepository.FirstSongText, response.TitleResponse);
     }
 
     [TestMethod]
-    public async Task ModelInvalidRequest_ShouldResponseEmptyTitle()
+    public async Task ModelElectionTest_OnInvalidRequest_ShouldReturnErrorMessageResponse()
     {
-        var frontRequest = new NoteDto {SongGenres = new List<int> {1000}};
+        // arrange:
+        // var readModel = new ReadModel(_serviceProvider.ServiceScope);
+        var logger = (TestLogger<ReadModel>)_serviceProvider.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+        var request = new NoteDto { SongGenres = new List<int> { 2500 } };
 
-        var result = await _readModel!.ElectNote(frontRequest);
+        // act:
+        var result = await _readModel.ElectNote(request);
 
-        Assert.AreEqual("", result.TitleResponse);
+        // asserts:
+        Assert.AreEqual(ReadModel.ElectNoteError, result.ErrorMessageResponse);
+        Assert.AreEqual(ReadModel.ElectNoteError, logger.ErrorMessage);
     }
 
     [TestMethod]
-    public async Task ModelNullRequest_ShouldLoggingErrorInsideModel()
+    public async Task ModelElectionTest_OnNullRequest_ShouldReturnEmptyResponse_ShouldNotLogError()
     {
-        _ = await _readModel!.ElectNote(null!);
+        // arrange & act:
+        var response = await _readModel.ElectNote(null);
 
-        Assert.AreNotEqual("[IndexModel: OnPost Error]", FakeLoggerErrors.LogErrorMessage);
+        // asserts:
+        Assert.AreEqual(string.Empty, response.TitleResponse);
+        Assert.AreEqual(string.Empty, _logger.ErrorMessage);
     }
 
     [TestMethod]
-    public async Task ModelNullRequest_ShouldResponseEmptyTitleTest()
+    public async Task ControllerErrorLogTest_OnThrow_ShouldLogError()
     {
-        var response = await _readModel!.ElectNote(null!);
-
-        Assert.AreEqual("", response.TitleResponse);
-    }
-
-    [TestMethod]
-    public async Task ControllerThrowsException_ShouldLogError()
-    {
-        var mockLogger = Substitute.For<ILogger<ReadController>>();
-        var fakeServiceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        fakeServiceScopeFactory.When(s => s.CreateScope()).Do(i => throw new Exception());
-
-        var readController = new ReadController(fakeServiceScopeFactory, mockLogger);
-
-        _ = await readController.ElectNote(null!, null!);
-
-        mockLogger.Received().LogError(Arg.Any<Exception>(), "[ReadController: OnPost Error]");
-    }
-
-    [TestMethod]
-    public async Task ControllerNullRequest_ShouldResponseEmptyTitle()
-    {
+        // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new CustomServiceScopeFactory(new TestHost<ReadModel>().ServiceProvider);
+        var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
+        serviceScopeFactory
+            .When(s => s.CreateScope())
+            .Do(i => throw new Exception());
+
+        // act:
+        var readController = new ReadController(serviceScopeFactory, logger);
+        _ = await readController.ElectNote(null, null);
+
+        // assert:
+        logger
+            .Received()
+            .LogError(Arg.Any<Exception>(), ReadController.ElectNoteError);
+    }
+
+    [TestMethod]
+    public async Task ControllerElectionTest_OnNullRequest_ShouldReturnEmptyTitle()
+    {
+        // arrange:
+        var logger = Substitute.For<ILogger<ReadController>>();
+        var factory = new TestServiceScopeFactory(_serviceProvider.ServiceProvider);
         var readController = new ReadController(factory, logger);
 
-        var response = (await readController.ElectNote(null!, null!)).Value;
+        // act:
+        var response = (await readController.ElectNote(null, null)).Value;
 
-        Assert.AreEqual("", response?.TitleResponse);
+        // assert:
+        Assert.AreEqual(string.Empty, response?.TitleResponse);
     }
 
     [TestMethod]
-    public async Task RandomizerDistributionTest()
+    // это не тест, а демонстрация распределения в текущем алгоритме выбора:
+    public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
+        var __ = _serviceProvider.ServiceProvider.GetRequiredService<IDataRepository>();
+        TestDataRepository.CreateStubData(400);
+
+        // TODO сделай метод, добавляющий N случайных заметок для проведения теста:
         const double coefficient = 0.7D;
 
         const int songsCount = 389;
-        
+
         var count = 100;
 
         var tempCount = count;
 
         var expectedSongsCount = Math.Min(songsCount, count) * coefficient;
 
-        var request = new NoteDto {SongGenres = new List<int>()};
+        var request = new NoteDto { SongGenres = new List<int>() };
 
+        // жанров в стабе так себе, 44 точно нет =) скорректируй
         request.SongGenres = Enumerable.Range(1, 44).ToList();
 
         var result = new Dictionary<int, int>();
 
         while (count-- > 0)
         {
-            var host = new TestHost<ReadModel>();
+            var host = new TestServiceProvider<ReadModel>(useStubDataRepository: true);
 
             _readModel = new ReadModel(host.ServiceScope);
 
-            var response = await _readModel!.ElectNote(request);
+            var response = await _readModel.ElectNote(request);
 
-            var id = response.Id!;
+            var id = response.Id;
 
             if (result.ContainsKey(id))
             {
@@ -154,7 +177,7 @@ public class ReadTest
 
         result.Count
             .Should()
-            .BeGreaterThan((int) expectedSongsCount);
+            .BeGreaterThan((int)expectedSongsCount);
 
         Console.WriteLine("[get: {0} from: {1} by: {2} calls with songs > {3} repeats:]", result.Count, songsCount, tempCount, max);
 

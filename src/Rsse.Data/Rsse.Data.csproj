@@ -4,11 +4,11 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>RandomSongSearchEngine</RootNamespace>
+        <RootNamespace>SearchEngine</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
     </ItemGroup>
 
 </Project>

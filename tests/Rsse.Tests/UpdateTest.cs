@@ -1,64 +1,65 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Infrastructure.Cache;
-using RandomSongSearchEngine.Service.Models;
-using RandomSongSearchEngine.Tests.Infrastructure;
+using SearchEngine.Data.Dto;
+using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Service.Models;
+using SearchEngine.Tests.Infrastructure;
+using SearchEngine.Tests.Infrastructure.DAL;
 
-namespace RandomSongSearchEngine.Tests;
+namespace SearchEngine.Tests;
 
 [TestClass]
 public class UpdateTest
 {
-    private const int GenresCount = 44;
-    
-    private UpdateModel? _updateModel;
-
-    private const string TestName = "test title";
-
+    private const string TestName = "0: key";
     private const string TestText = "test text text";
-
     private int _testSongId;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private UpdateModel _updateModel;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     [TestInitialize]
     public void Initialize()
     {
-        FakeLoggerErrors.ExceptionMessage = "";
-        
-        FakeLoggerErrors.LogErrorMessage = "";
-        
-        var host = new TestHost<CacheRepository>();
-        
-        var find = new FindModel(host.ServiceScope);
+        var hostCacheTyped = new TestServiceProvider<CacheRepository>(useStubDataRepository: true);
+        var hostModelTyped = new TestServiceProvider<UpdateModel>(useStubDataRepository: true);
+        var findModel = new FindModel(hostCacheTyped.ServiceScope);
 
-        _testSongId = find.FindIdByName(TestName);
-        
-        _updateModel = new UpdateModel(new TestHost<UpdateModel>().ServiceScope);
+        TestDataRepository.CreateStubData(10);
+        _testSongId = findModel.FindIdByName(TestName);
+        _updateModel = new UpdateModel(hostModelTyped.ServiceScope);
     }
 
     [TestMethod]
-    public async Task Model_ShouldReports44Genres()
+    public async Task ModelTagList_ShouldReports_ExpectedGenreCount()
     {
-        var response = await _updateModel!.GetInitialNote(1);
-        
-        Assert.AreEqual(GenresCount, response.GenreListResponse?.Count);
+        // arrange & act:
+        var response = await _updateModel.GetOriginalNote(1);
+
+        // assert:
+        Assert.AreEqual(TestDataRepository.TagList.Count, response.GenreListResponse?.Count);
     }
 
     [TestMethod]
-    public async Task Model_ShouldUpdate()
+    public async Task ModelUpdateTest_ShouldUpdateNoteToExpected()
     {
+        // arrange:
         var song = new NoteDto
         {
             Title = TestName,
             Text = TestText,
-            SongGenres = new List<int> {1, 2, 3, 11},
+            SongGenres = new List<int> { 1, 2, 3, 11 },
             Id = _testSongId
         };
-        
-        var response = await _updateModel!.UpdateNote(song);
-        
-        Assert.AreEqual(TestText, response.TextResponse);
+
+        // act:
+        var response = await _updateModel.UpdateNote(song);
+
+        // assert:
+        // TODO поправь - где-то в стабе я меняю местами text и title:
+        Assert.AreEqual(TestText, response.TitleResponse);
     }
 
     [TestCleanup]

@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Data.Repository.Contracts;
-using RandomSongSearchEngine.Data.Repository.Exceptions;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Data.Repository.Exceptions;
 
-namespace RandomSongSearchEngine.Data.Repository;
+namespace SearchEngine.Data.Repository;
 
 public class DataRepository : IDataRepository
 {
@@ -18,17 +18,17 @@ public class DataRepository : IDataRepository
     public async Task CreateTagIfNotExists(string tag)
     {
         tag = tag.ToUpper();
-        
+
         var exists = await _context.Genre!.AnyAsync(entity => entity.Genre == tag);
 
         if (exists)
         {
             return;
         }
-        
+
         var maxId = await _context.Genre!.Select(entity => entity.GenreId).MaxAsync();
 
-        var genre = new GenreEntity {Genre = tag, GenreId = ++maxId};
+        var genre = new GenreEntity { Genre = tag, GenreId = ++maxId };
 
         await _context.Genre!.AddAsync(genre);
 
@@ -75,11 +75,11 @@ public class DataRepository : IDataRepository
         return songsForRandomizer;
     }
 
-    public IQueryable<Tuple<string, int>> ReadCatalogPage(int lastPage, int pageSize)
+    public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
     {
         var titlesAndIdsList = _context.Text!
             .OrderBy(s => s.Title)
-            .Skip((lastPage - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(s => new Tuple<string, int>(s.Title!, s.TextId))
             .AsNoTracking();
@@ -172,7 +172,7 @@ public class DataRepository : IDataRepository
                 await _context.GenreText
                     .AddRangeAsync(forAddition
                         .Select(genre => new GenreTextEntity
-                            {TextId = note.Id, GenreId = genre}));
+                        { TextId = note.Id, GenreId = genre }));
 
                 await _context.SaveChangesAsync();
 
@@ -202,7 +202,7 @@ public class DataRepository : IDataRepository
 
         try
         {
-            var addition = new TextEntity {Title = note.Title, Song = note.Text};
+            var addition = new TextEntity { Title = note.Title, Song = note.Text };
 
             await _context.Text!.AddAsync(addition);
 
@@ -211,7 +211,7 @@ public class DataRepository : IDataRepository
             await _context.GenreText!
                 .AddRangeAsync(note.SongGenres!
                     .Select(genre => new GenreTextEntity
-                        {TextId = addition.TextId, GenreId = genre}));
+                    { TextId = addition.TextId, GenreId = genre }));
 
             await _context.SaveChangesAsync();
 

@@ -1,8 +1,13 @@
-﻿using System.Security.Cryptography;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using RandomSongSearchEngine.Data.Repository.Contracts;
+using SearchEngine.Data.Repository.Contracts;
 
-namespace RandomSongSearchEngine.Infrastructure.Engine;
+namespace SearchEngine.Infrastructure.Engine;
 
 public static class NoteElector
 {
@@ -22,22 +27,11 @@ public static class NoteElector
             return 0;
         }
 
-        // Random
-        /*var coin = GetRandomInRange(howManySongs);
-        var randomResult = await repo.ReadAllNotesTaggedBy(checkedGenres)
-            //[WARNING] [Microsoft.EntityFrameworkCore.Query]  The query uses a row limiting operator ('Skip'/'Take')
-            // without an 'OrderBy' operator.
-            .OrderBy(s => s)
-            .Skip(coin)
-            .Take(1)
-            .FirstAsync();*/
-
         Interlocked.Increment(ref _id);
 
-        // RoundRobin Or Random
-        var coin = randomElection ? GetRandomInRange(howManyNotes) : (int) (_id % howManyNotes);
-        
-        //var random = RandomNumberGenerator.Create();
+        // round robin or random:
+        var coin = randomElection ? GetRandomInRange(howManyNotes) : (int)(_id % howManyNotes);
+
         var result = randomElection switch
         {
             // [original random]
@@ -74,11 +68,27 @@ public static class NoteElector
         lock (Random)
         {
             var coin = Random.Next(0, howMany);
-            
+
             return coin;
         }
     }
-    
+
+    /// <summary>
+    /// Перемешивание списка, качество зависит от RNG.
+    /// </summary>
+    private static IList<T> Shuffle<T>(this IList<T> list, RandomNumberGenerator rng)
+    {
+        var n = list.Count;
+        while (n > 1)
+        {
+            // var k = rng.Next(n--);
+            var k = GetNextInt32(rng) % n--;
+            (list[n], list[k]) = (list[k], list[n]);
+        }
+
+        return list;
+    }
+
     /// <summary>
     /// Использование криптостойкого RNG для генерации.
     /// </summary>
@@ -87,21 +97,5 @@ public static class NoteElector
         var randomInt = new byte[4];
         rnd.GetBytes(randomInt);
         return Convert.ToInt32(randomInt[0]);
-    }
-    
-    /// <summary>
-    /// Перемешивание списка, качество зависит от RNG.
-    /// </summary>
-    private static IList<T> Shuffle<T> (this IList<T> list, RandomNumberGenerator rng)
-    {
-        var n = list.Count;
-        while (n > 1) 
-        {
-            // var k = rng.Next(n--);
-            var k = GetNextInt32(rng) % n--;
-            (list[n], list[k]) = (list[k], list[n]);
-        }
-
-        return list;
     }
 }

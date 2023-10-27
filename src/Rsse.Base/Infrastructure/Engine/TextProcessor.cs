@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using RandomSongSearchEngine.Infrastructure.Engine.Contracts;
+using SearchEngine.Infrastructure.Engine.Contracts;
 
-namespace RandomSongSearchEngine.Infrastructure.Engine;
+namespace SearchEngine.Infrastructure.Engine;
 
 public enum ConsonantChain
 {
@@ -14,13 +17,13 @@ public sealed class TextProcessor : ITextProcessor
     private const string Numbers = "0123456789";
     private const string UndefinedEnglish = "qwrtpsdfghjklzxcvbnm";
     private const string DefinedEnglish = UndefinedEnglish + /*"eyuioa" +*/ Numbers;
-    
+
     private const string UndefinedChainConsonant = "цкнгшщзхфвпрлджчсмтб" + UndefinedEnglish; // + "яыоайуеиюэъьё"
-    private const string DefinedChainConsonant =   "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish + Specials;// + "ёъь"
-    
+    private const string DefinedChainConsonant = "цкнгшщзхфвпрлджчсмтб" + "яыоайуеиюэ" + DefinedEnglish + Specials;// + "ёъь"
+
     // [TODO] убери ограничение на 10 результатов, ну или 15..20 хоть сделай
     // [TODO] тэг у меня сейчас @ - решетка # не взлеьела из-за фронта =)
-    
+
     // private static readonly Regex SongPattern = new(@"\(\d+,'[^']+','[^']+'\)", RegexOptions.Compiled);
     // private static readonly Regex NumberPattern = new(@"\d+", RegexOptions.Compiled);
     // private static readonly Regex TitlePattern = new(@"'[^']+'", RegexOptions.Compiled);
@@ -66,7 +69,7 @@ public sealed class TextProcessor : ITextProcessor
                     currentWord += letter;
                 }
             }
-            
+
             if (currentWord != "")
             {
                 res.Add(currentWord);
@@ -79,9 +82,9 @@ public sealed class TextProcessor : ITextProcessor
     public List<int> GetHashSetFromStrings(IEnumerable<string> text)
     {
         const int mult = 31;
-        
+
         var result = new List<int>();
-        
+
         foreach (var word in text)
         {
             var hash = 0;
@@ -110,7 +113,7 @@ public sealed class TextProcessor : ITextProcessor
             _ => throw new NotImplementedException("Unknown compare method")
         };
     }
-    
+
     private static int GetUndefinedChainMetric(IEnumerable<int> baseHash, IEnumerable<int> searchHash)
     {
         // нечеткий поиск без последовательности
@@ -133,7 +136,7 @@ public sealed class TextProcessor : ITextProcessor
         var startIndex = 0;
 
         // foreach (var intersectionIndex in searchHash.Select(hash => baseHash.IndexOf(hash)).Where(intersectionIndex => intersectionIndex != -1 && intersectionIndex >= startIndex))
-        
+
         foreach (var hash in searchHash)
         {
             var intersectionIndex = baseHash.IndexOf(hash, startIndex);
