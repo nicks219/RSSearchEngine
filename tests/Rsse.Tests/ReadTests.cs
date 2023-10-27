@@ -18,22 +18,22 @@ using SearchEngine.Tests.Infrastructure.DAL;
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class ReadTest
+public class ReadTests
 {
     private readonly int _genresCount = TestDataRepository.TagList.Count;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private ReadModel _readModel;
-    private TestServiceProvider<ReadModel> _serviceProvider;
+    private TestServiceCollection<ReadModel> _serviceCollection;
     private TestLogger<ReadModel> _logger;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     [TestInitialize]
     public void Initialize()
     {
-        _serviceProvider = new TestServiceProvider<ReadModel>(useStubDataRepository: true);
-        _readModel = new ReadModel(_serviceProvider.ServiceScope);
-        _logger = (TestLogger<ReadModel>)_serviceProvider.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+        _serviceCollection = new TestServiceCollection<ReadModel>();
+        _readModel = new ReadModel(_serviceCollection.Scope);
+        _logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class ReadTest
     {
         // arrange:
         // var readModel = new ReadModel(_serviceProvider.ServiceScope);
-        var logger = (TestLogger<ReadModel>)_serviceProvider.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+        var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
         var request = new NoteDto { SongGenres = new List<int> { 2500 } };
 
         // act:
@@ -112,7 +112,7 @@ public class ReadTest
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new TestServiceScopeFactory(_serviceProvider.ServiceProvider);
+        var factory = new TestServiceScopeFactory(_serviceCollection.Provider);
         var readController = new ReadController(factory, logger);
 
         // act:
@@ -126,7 +126,7 @@ public class ReadTest
     // это не тест, а демонстрация распределения в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
-        var __ = _serviceProvider.ServiceProvider.GetRequiredService<IDataRepository>();
+        var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
         TestDataRepository.CreateStubData(400);
 
         // TODO сделай метод, добавляющий N случайных заметок для проведения теста:
@@ -149,9 +149,9 @@ public class ReadTest
 
         while (count-- > 0)
         {
-            var host = new TestServiceProvider<ReadModel>(useStubDataRepository: true);
+            var host = new TestServiceCollection<ReadModel>();
 
-            _readModel = new ReadModel(host.ServiceScope);
+            _readModel = new ReadModel(host.Scope);
 
             var response = await _readModel.ElectNote(request);
 

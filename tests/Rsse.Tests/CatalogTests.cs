@@ -17,23 +17,23 @@ using SearchEngine.Tests.Infrastructure.DAL;
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class CatalogTest
+public class CatalogTests
 {
     private const int SonsPerPage = 10;
     private CatalogModel? _catalogModel;
     private int _songsCount;
-    private TestServiceProvider<CatalogModel>? _host;
+    private TestServiceCollection<CatalogModel>? _host;
     private TestLogger<CatalogModel>? _logger;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new TestServiceProvider<CatalogModel>(useStubDataRepository: true);
-        _catalogModel = new CatalogModel(_host.ServiceScope);
-        var repo = _host.ServiceProvider.GetRequiredService<IDataRepository>();
+        _host = new TestServiceCollection<CatalogModel>();
+        _catalogModel = new CatalogModel(_host.Scope);
+        var repo = _host.Provider.GetRequiredService<IDataRepository>();
         TestDataRepository.CreateStubData(50);
         _songsCount = repo.ReadAllNotes().Count();
-        _logger = (TestLogger<CatalogModel>)_host.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
+        _logger = (TestLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class CatalogTest
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var factory = new TestServiceScopeFactory(new TestServiceProvider<CatalogModel>().ServiceProvider);
+        var factory = new TestServiceScopeFactory(new TestServiceCollection<CatalogModel>().Provider);
         var catalogController = new CatalogController(factory, logger);
 
         // act:

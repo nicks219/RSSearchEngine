@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
 
 namespace SearchEngine.Data.Repository.Contracts;

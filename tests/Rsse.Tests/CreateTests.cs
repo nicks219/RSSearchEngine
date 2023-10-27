@@ -9,15 +9,15 @@ using SearchEngine.Tests.Infrastructure.DAL;
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class CreateTest
+public class CreateTests
 {
     private CreateModel? _createModel;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new TestServiceProvider<CreateModel>(useStubDataRepository: true);
-        _createModel = new CreateModel(host.ServiceScope);
+        var host = new TestServiceCollection<CreateModel>();
+        _createModel = new CreateModel(host.Scope);
     }
 
     [TestMethod]
@@ -43,7 +43,8 @@ public class CreateTest
 
         // act:
         var result = await _createModel!.CreateNote(song);
-        var expected = await new UpdateModel(new TestServiceProvider<UpdateModel>(useStubDataRepository: true).ServiceScope).GetOriginalNote(result.Id);
+        var expected = await new UpdateModel(new TestServiceCollection<UpdateModel>().Scope)
+            .GetOriginalNote(result.Id);
 
         // assert:
         Assert.AreEqual(expected.Title, result.Title);

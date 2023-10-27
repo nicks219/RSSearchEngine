@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SearchEngine.Data.Repository;
+using SearchEngine.Data.Repository.Scripts;
 
 namespace SearchEngine.Data;
 
@@ -43,8 +44,13 @@ public sealed class RsseContext : DbContext
                     if (res) Database.ExecuteSqlRaw(MsSqlScripts.CreateGenresScript);
                     break;
 
+                case "Microsoft.EntityFrameworkCore.Sqlite":
+                    // можно инициализировать тестовую базу на каждый вызов контекста:
+                    if (res) Database.ExecuteSqlRaw(SqlLiteScripts.CreateGenresScript);
+                    break;
+
                 default:
-                    //"Microsoft.EntityFrameworkCore.InMemory" например
+                    // например: "Microsoft.EntityFrameworkCore.InMemory" - как инициализируем?
                     break;
             }
         }

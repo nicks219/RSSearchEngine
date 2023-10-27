@@ -10,7 +10,7 @@ using SearchEngine.Tests.Infrastructure.DAL;
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class UpdateTest
+public class UpdateTests
 {
     private const string TestName = "0: key";
     private const string TestText = "test text text";
@@ -23,13 +23,13 @@ public class UpdateTest
     [TestInitialize]
     public void Initialize()
     {
-        var hostCacheTyped = new TestServiceProvider<CacheRepository>(useStubDataRepository: true);
-        var hostModelTyped = new TestServiceProvider<UpdateModel>(useStubDataRepository: true);
-        var findModel = new FindModel(hostCacheTyped.ServiceScope);
+        var hostCacheTyped = new TestServiceCollection<CacheRepository>();
+        var hostModelTyped = new TestServiceCollection<UpdateModel>();
+        var findModel = new FindModel(hostCacheTyped.Scope);
 
         TestDataRepository.CreateStubData(10);
         _testSongId = findModel.FindIdByName(TestName);
-        _updateModel = new UpdateModel(hostModelTyped.ServiceScope);
+        _updateModel = new UpdateModel(hostModelTyped.Scope);
     }
 
     [TestMethod]

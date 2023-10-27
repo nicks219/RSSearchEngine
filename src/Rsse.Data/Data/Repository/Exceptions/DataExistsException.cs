@@ -1,3 +1,5 @@
+using System;
+
 namespace SearchEngine.Data.Repository.Exceptions;
 
 /// <summary>

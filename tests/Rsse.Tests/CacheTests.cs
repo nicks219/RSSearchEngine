@@ -46,8 +46,8 @@ public class CacheTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new TestServiceProvider<CacheRepository>(true);
-        _factory = new TestServiceScopeFactory(host.ServiceProvider);
+        var host = new TestServiceCollection<CacheRepository>();
+        _factory = new TestServiceScopeFactory(host.Provider);
     }
 
     [TestMethod]

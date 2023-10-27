@@ -5,6 +5,8 @@
 // npm -v 8.5.0
 // на старте использовался шаблон: MS Template .NET Core 3.1 SPA using: Microsoft.AspNetCore.SpaServices.Extensions 3.1.16
 
+using Microsoft.AspNetCore.Builder;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();

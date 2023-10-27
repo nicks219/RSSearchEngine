@@ -1,6 +1,6 @@
 using SearchEngine.Data.Options;
 
-namespace SearchEngine.Data.Repository;
+namespace SearchEngine.Data.Repository.Scripts;
 
 // почему genre c id добавляются в АЛФАВИТНОМ ПОРЯДКЕ столбца genre?
 // [TODO] МАГИЯ - индекс по genre ?

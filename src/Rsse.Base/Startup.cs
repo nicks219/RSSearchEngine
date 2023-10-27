@@ -61,10 +61,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        // if (_env.IsDevelopment())
-        {
-            services.AddCors();
-        }
+        // if (_env.IsDevelopment()){}
+        services.AddCors();
 
         services.AddHostedService<CacheActivatorService>();
 

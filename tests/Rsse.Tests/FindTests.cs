@@ -14,7 +14,7 @@ using SearchEngine.Tests.Infrastructure;
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class FindTest
+public class FindTests
 {
     // private const string Text = "аблака белагривыи лашатки";
     // private const string Text = "Чёрт с ними! За столом сидим, поём, пляшем…";
@@ -25,9 +25,8 @@ public class FindTest
     public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
     {
         // arrange:
-        var useStub = true;
         var logger = Substitute.For<ILogger<FindController>>();
-        var factory = new TestServiceScopeFactory(new TestServiceProvider<CacheRepository>(useStubDataRepository: useStub).ServiceProvider);
+        var factory = new TestServiceScopeFactory(new TestServiceCollection<CacheRepository>().Provider);
         var findController = new FindController(factory, logger);
 
         // act:
