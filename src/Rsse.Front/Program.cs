@@ -5,12 +5,12 @@
 // npm -v 8.5.0
 // на старте использовался шаблон: MS Template .NET Core 3.1 SPA using: Microsoft.AspNetCore.SpaServices.Extensions 3.1.16
 
-using Microsoft.AspNetCore.Builder;
+// using Microsoft.AspNetCore.Builder;
+// var builder = WebApplication.CreateBuilder(args);
+// var app = builder.Build();
+// app.MapGet("/", () => "Hello World!");
+// app.Run();
 
-var builder = WebApplication.CreateBuilder(args);
+using System;
 
-var app = builder.Build();
-
-app.MapGet("/", () => "Hello World!");
-
-app.Run();
+Console.WriteLine("random-search-song-engine: react front");

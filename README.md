@@ -17,7 +17,7 @@
 
 # Технологии
 * ```bash
-  .NET 6 | TypeScript React | MSTest | Docker
+  .NET 7 | TypeScript React | MSTest | Docker
   ```    
 * ```bash
   [MSSQL] | MySQL
