@@ -11,7 +11,7 @@ public enum ConsonantChain
     Undefined = 0,
     Defined = 1
 }
-public sealed class TextProcessor : ITextProcessor
+public sealed class TokenizerProcessor : ITokenizerProcessor
 {
     private const string Specials = "@";
     private const string Numbers = "0123456789";

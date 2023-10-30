@@ -68,7 +68,7 @@ public class ReadModel
             {
                 if (!int.TryParse(id, out noteId))
                 {
-                    noteId = await _repo.ElectNoteId(request.SongGenres, randomElection);
+                    noteId = await _repo.GetElectedNoteId(request.SongGenres, randomElection);
                 }
 
                 if (noteId != 0)

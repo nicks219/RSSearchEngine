@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
-using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Service.Models;
 
 namespace SearchEngine.Controllers;
@@ -65,7 +65,7 @@ public class CatalogController : ControllerBase
         {
             using var scope = _serviceScopeFactory.CreateScope();
 
-            var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
+            var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
             cache.Delete(id);
 
             return await new CatalogModel(scope).DeleteNote(id, pg);

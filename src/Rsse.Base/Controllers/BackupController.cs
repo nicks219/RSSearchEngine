@@ -14,9 +14,9 @@ namespace SearchEngine.Controllers;
 public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
-    private readonly IMysqlBackup _backup;
+    private readonly IDbBackup _backup;
 
-    public BackupController(ILogger<BackupController> logger, IMysqlBackup backup)
+    public BackupController(ILogger<BackupController> logger, IDbBackup backup)
     {
         _logger = logger;
         _backup = backup;

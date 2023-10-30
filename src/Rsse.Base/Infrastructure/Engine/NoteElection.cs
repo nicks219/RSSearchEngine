@@ -9,13 +9,13 @@ using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Infrastructure.Engine;
 
-public static class NoteElector
+public static class NoteElection
 {
     private static readonly Random Random = new();
     private static uint _id;
 
     /// <summary> Возвращает Id выбранной случайно или раунд-робином песни из заданных категорий </summary>
-    public static async Task<int> ElectNoteId(this IDataRepository repo, List<int> checkedTagsList, bool randomElection = true)
+    public static async Task<int> GetElectedNoteId(this IDataRepository repo, List<int> checkedTagsList, bool randomElection = true)
     {
         var checkedTags = checkedTagsList.ToArray();
 

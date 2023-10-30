@@ -2,13 +2,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SearchEngine.Data;
 
-namespace SearchEngine.Infrastructure.Cache.Contracts;
+namespace SearchEngine.Infrastructure.Tokenizer.Contracts;
 
-public interface ICacheRepository
+public interface ITokenizerService
 {
-    public ConcurrentDictionary<int, List<int>> GetUndefinedCache();
+    public ConcurrentDictionary<int, List<int>> GetUndefinedLines();
 
-    public ConcurrentDictionary<int, List<int>> GetDefinedCache();
+    public ConcurrentDictionary<int, List<int>> GetDefinedLines();
 
     public void Delete(int id);
 

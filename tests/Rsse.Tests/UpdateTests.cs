@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
-using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Service.Models;
 using SearchEngine.Tests.Infrastructure;
 using SearchEngine.Tests.Infrastructure.DAL;
@@ -23,7 +23,7 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var hostCacheTyped = new TestServiceCollection<CacheRepository>();
+        var hostCacheTyped = new TestServiceCollection<TokenizerService>();
         var hostModelTyped = new TestServiceCollection<UpdateModel>();
         var findModel = new FindModel(hostCacheTyped.Scope);
 

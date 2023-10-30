@@ -9,7 +9,7 @@ using SearchEngine.Configuration;
 using SearchEngine.Data;
 using SearchEngine.Data.Dto;
 using SearchEngine.Infrastructure;
-using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Service.Models;
 
 namespace SearchEngine.Controllers;
@@ -22,17 +22,17 @@ public class CreateController : ControllerBase
     private const string CreateNoteError = $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]";
     private const string OnGetGenreListError = $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]";
 
-    private const string BackupFileName = "last_backup";
+    private const string BackupFileNameConstant = "last_backup";
 
     private readonly ILogger<CreateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IMysqlBackup _backup;
+    private readonly IDbBackup _backup;
     private readonly CommonBaseOptions _baseOptions;
 
     public CreateController(
         IServiceScopeFactory serviceScopeFactory,
         ILogger<CreateController> logger,
-        IMysqlBackup backup,
+        IDbBackup backup,
         IOptions<CommonBaseOptions> options)
     {
         _serviceScopeFactory = serviceScopeFactory;
@@ -71,14 +71,14 @@ public class CreateController : ControllerBase
             {
                 await model.CreateTag(dto); // [CREATE GENRE]
 
-                var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
+                var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
 
                 cache.Create(result.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
 
                 // создадим бэкап при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)
                 {
-                    _backup.Backup(BackupFileName);
+                    _backup.Backup(BackupFileNameConstant);
                 }
             }
 

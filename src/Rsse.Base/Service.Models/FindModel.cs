@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Cache.Contracts;
 using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Engine.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine.Service.Models;
 
 public class FindModel
 {
     private readonly IDataRepository _repo;
-    private readonly ITextProcessor _processor;
+    private readonly ITokenizerProcessor _processor;
 
     private readonly ConcurrentDictionary<int, List<int>> _undefinedCache;
     private readonly ConcurrentDictionary<int, List<int>> _definedCache;
@@ -20,10 +20,10 @@ public class FindModel
     public FindModel(IServiceScope scope)
     {
         _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        _undefinedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetUndefinedCache();
-        _definedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetDefinedCache();
+        _undefinedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetUndefinedLines();
+        _definedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetDefinedLines();
     }
 
     public int FindIdByName(string name)

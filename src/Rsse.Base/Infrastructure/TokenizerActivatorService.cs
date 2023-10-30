@@ -2,11 +2,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine.Infrastructure;
 
-public class CacheActivatorService : BackgroundService
+public class TokenizerActivatorService : BackgroundService
 {
     private const int BaseMs = 1000;
     private const int Min = 60;
@@ -14,11 +14,11 @@ public class CacheActivatorService : BackgroundService
     private const int Day = 24;
     // update раз в сутки
     private const int TimeWait = 1 * Day * Hour * Min * BaseMs;
-    private readonly ICacheRepository _cache;
-    private readonly ILogger<CacheActivatorService> _logger;
+    private readonly ITokenizerService _cache;
+    private readonly ILogger<TokenizerActivatorService> _logger;
     private int _count;
 
-    public CacheActivatorService(ICacheRepository cache, ILogger<CacheActivatorService> logger)
+    public TokenizerActivatorService(ITokenizerService cache, ILogger<TokenizerActivatorService> logger)
     {
         _cache = cache;
         _logger = logger;

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NSubstitute;
 using SearchEngine.Controllers;
-using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Tests.Infrastructure;
 
 namespace SearchEngine.Tests;
@@ -26,7 +26,7 @@ public class FindTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<FindController>>();
-        var factory = new TestServiceScopeFactory(new TestServiceCollection<CacheRepository>().Provider);
+        var factory = new TestServiceScopeFactory(new TestServiceCollection<TokenizerService>().Provider);
         var findController = new FindController(factory, logger);
 
         // act:

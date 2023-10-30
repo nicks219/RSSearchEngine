@@ -1,4 +1,4 @@
-using SearchEngine.Data.Options;
+using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Data.Repository.Scripts;
 
@@ -8,7 +8,7 @@ public static class MySqlScripts
 {
     public const string CreateGenresScript = $"""
                                               INSERT Users(Email, Password) VALUES
-                                              ('{CommonDataOptions.Email}', '{CommonDataOptions.Password}');
+                                              ('{CommonDataConstants.Email}', '{CommonDataConstants.Password}');
 
                                               INSERT Genre(Genre) VALUES
                                               (N'Build Tasks'),

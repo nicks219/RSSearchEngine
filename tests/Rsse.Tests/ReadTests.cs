@@ -65,15 +65,17 @@ public class ReadTests
     {
         // arrange:
         // var readModel = new ReadModel(_serviceProvider.ServiceScope);
-        var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
+        //var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
         var request = new NoteDto { SongGenres = new List<int> { 2500 } };
 
         // act:
         var result = await _readModel.ElectNote(request);
+        // из-за кривого тестового логера:
+        await Task.Delay(100);
 
         // asserts:
+        Assert.AreEqual(ReadModel.ElectNoteError, _logger.ErrorMessage);
         Assert.AreEqual(ReadModel.ElectNoteError, result.ErrorMessageResponse);
-        Assert.AreEqual(ReadModel.ElectNoteError, logger.ErrorMessage);
     }
 
     [TestMethod]

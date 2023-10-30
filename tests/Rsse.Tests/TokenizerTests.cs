@@ -7,14 +7,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Configuration;
 using SearchEngine.Data;
-using SearchEngine.Infrastructure.Cache;
+using SearchEngine.Infrastructure.Tokenizer;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Tests.Infrastructure;
 using SearchEngine.Tests.Infrastructure.DAL;
 
 namespace SearchEngine.Tests;
 
 [TestClass]
-public class CacheTests
+public class TokenizerTests
 {
     // списки токенов соответствуют текстам из TestDataRepository:
 
@@ -46,19 +47,21 @@ public class CacheTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new TestServiceCollection<CacheRepository>();
+        TestDataRepository.RemoveStubData(400);
+        var host = new TestServiceCollection<TokenizerService>();
         _factory = new TestServiceScopeFactory(host.Provider);
     }
 
     [TestMethod]
-    public void CacheRepository_ShouldInit_CacheLines_Correctly()
+    public void Tokenizer_ShouldInitDefinedAndUndefinedLines_Correctly()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var cache = new CacheRepository(_factory, options, new TestLogger<CacheRepository>());
-        var def = cache.GetDefinedCache();
-        var undef = cache.GetUndefinedCache();
+        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        InitOneNote(tokenizer);
+        var def = tokenizer.GetDefinedLines();
+        var undef = tokenizer.GetUndefinedLines();
 
         // act:
         def.Should().NotBeNull();
@@ -79,73 +82,75 @@ public class CacheTests
     }
 
     [TestMethod]
-    public void CacheRepository_ShouldUpdate_CacheLines()
+    public void Tokenizer_ShouldUpdate_DefinedAndUndefinedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var cache = new CacheRepository(_factory, options, new TestLogger<CacheRepository>());
-        var def = cache.GetDefinedCache();
-        var undef = cache.GetUndefinedCache();
+        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        InitOneNote(tokenizer);
+        var def = tokenizer.GetDefinedLines();
+        var undef = tokenizer.GetUndefinedLines();
 
         // act:
-        cache.Update(1, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
+        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
 
         // assert:
-        def.ElementAt(0)
+        def.First()
             .Value
             .Should()
             .BeEquivalentTo(_testDef2);
 
-        undef.ElementAt(0)
+        undef.First()
             .Value
             .Should()
             .BeEquivalentTo(_testUndef2);
     }
 
     [TestMethod]
-    public void CacheRepository_ShouldCreate_CacheLines()
+    public void Tokenizer_ShouldCreate_DefinedAndUndefinedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var cache = new CacheRepository(_factory, options, new TestLogger<CacheRepository>());
-        var def = cache.GetDefinedCache();
-        var undef = cache.GetUndefinedCache();
+        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var def = tokenizer.GetDefinedLines();
+        var undef = tokenizer.GetUndefinedLines();
 
         // act:
-        cache.Create(2, new TextEntity
+        tokenizer.Create(2, new TextEntity
         {
             Title = TestDataRepository.SecondSongTitle,
             Song = TestDataRepository.SecondSongText
         });
 
         // assert:
-        def.ElementAt(1)
+        def.Last()
             .Value
             .Should()
             .BeEquivalentTo(_testDef2);
 
-        undef.ElementAt(1)
+        undef.Last()
             .Value
             .Should()
             .BeEquivalentTo(_testUndef2);
     }
 
     [TestMethod]
-    public void CacheRepository_ShouldDelete_CacheLines()
+    public void Tokenizer_ShouldDelete_DefinedAndUndefinedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var cache = new CacheRepository(_factory, options, new TestLogger<CacheRepository>());
-        var def = cache.GetDefinedCache();
-        var undef = cache.GetUndefinedCache();
+        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        InitOneNote(tokenizer);
+        var def = tokenizer.GetDefinedLines();
+        var undef = tokenizer.GetUndefinedLines();
         var defCountBefore = def.Count;
         var undefCountBefore = undef.Count;
 
         // act:
-        cache.Delete(1);
+        tokenizer.Delete(1);
 
         // assert:
         defCountBefore.Should().Be(1);
@@ -155,28 +160,28 @@ public class CacheTests
     }
 
     [TestMethod]
-    public void CacheRepository_WhenTokenizerDisabled_ShouldDoNothing()
+    public void Tokenizer_WhenIsDisabled_ShouldDoNothing()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var cache = new CacheRepository(_factory, options, new TestLogger<CacheRepository>());
-        var def = cache.GetDefinedCache();
-        var undef = cache.GetUndefinedCache();
+        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var def = tokenizer.GetDefinedLines();
+        var undef = tokenizer.GetUndefinedLines();
 
         // init asserts:
         CachesShouldBeEmpty();
 
         // create act & asserts:
-        cache.Create(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
+        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
         CachesShouldBeEmpty();
 
         // update act & asserts:
-        cache.Update(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
+        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
         CachesShouldBeEmpty();
 
         // delete act & asserts:
-        cache.Delete(1);
+        tokenizer.Delete(1);
         CachesShouldBeEmpty();
 
         return;
@@ -189,6 +194,9 @@ public class CacheTests
             undef?.Count.Should().Be(0);
         }
     }
+
+    private static void InitOneNote(ITokenizerService tokenizerService) =>
+        tokenizerService.Create(1, new TextEntity { Title = TestDataRepository.FirstSongTitle, Song = TestDataRepository.FirstSongText });
 
     [TestCleanup]
     public void TestCleanup()

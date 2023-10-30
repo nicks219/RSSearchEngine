@@ -1,6 +1,6 @@
 namespace SearchEngine.Infrastructure;
 
-public interface IMysqlBackup
+public interface IDbBackup
 {
     public string Backup(string? fileName);
 

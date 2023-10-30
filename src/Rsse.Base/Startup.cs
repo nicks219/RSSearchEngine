@@ -16,11 +16,11 @@ using SearchEngine.Data;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure;
-using SearchEngine.Infrastructure.Cache;
-using SearchEngine.Infrastructure.Cache.Contracts;
 using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Engine.Contracts;
 using SearchEngine.Infrastructure.Logger;
+using SearchEngine.Infrastructure.Tokenizer;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine;
 
@@ -64,13 +64,13 @@ public class Startup
         // if (_env.IsDevelopment()){}
         services.AddCors();
 
-        services.AddHostedService<CacheActivatorService>();
+        services.AddHostedService<TokenizerActivatorService>();
 
-        services.AddSingleton<ICacheRepository, CacheRepository>();
+        services.AddSingleton<ITokenizerService, TokenizerService>();
 
-        services.AddTransient<ITextProcessor, TextProcessor>();
+        services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
 
-        services.AddSingleton<IMysqlBackup, MysqlBackup>();
+        services.AddSingleton<IDbBackup, MySqlDbBackup>();
 
         services.AddHttpContextAccessor();
 

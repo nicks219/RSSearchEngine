@@ -8,43 +8,43 @@ using Microsoft.Extensions.Options;
 using SearchEngine.Configuration;
 using SearchEngine.Data;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Cache.Contracts;
 using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Engine.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
-namespace SearchEngine.Infrastructure.Cache;
+namespace SearchEngine.Infrastructure.Tokenizer;
 
-public class CacheRepository : ICacheRepository
+public class TokenizerService : ITokenizerService
 {
     // [TODO]: нужен ли ConcurrentDictionary при ReaderWriterLockSlim?
     // [TODO]: можно заменить логгирование на пересоздание линии кэша
     private readonly IServiceScopeFactory _factory;
-    private readonly ConcurrentDictionary<int, List<int>> _undefinedCache;
-    private readonly ConcurrentDictionary<int, List<int>> _definedCache;
+    private readonly ConcurrentDictionary<int, List<int>> _undefinedTokenLines;
+    private readonly ConcurrentDictionary<int, List<int>> _definedTokenLines;
     private readonly ReaderWriterLockSlim _lockSlim;
-    private readonly ILogger<CacheRepository> _logger;
+    private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
 
-    public CacheRepository(IServiceScopeFactory factory, IOptions<CommonBaseOptions> options, ILogger<CacheRepository> logger)
+    public TokenizerService(IServiceScopeFactory factory, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
         _factory = factory;
-        _undefinedCache = new ConcurrentDictionary<int, List<int>>();
-        _definedCache = new ConcurrentDictionary<int, List<int>>();
+        _undefinedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _definedTokenLines = new ConcurrentDictionary<int, List<int>>();
         _logger = logger;
         _lockSlim = new ReaderWriterLockSlim();
-        _isEnabled = options.Value.TokenizerIsEnable;// TODO добавь завязку на флаг
+        _isEnabled = options.Value.TokenizerIsEnable;
 
         Initialize();
     }
 
-    public ConcurrentDictionary<int, List<int>> GetUndefinedCache()
+    public ConcurrentDictionary<int, List<int>> GetUndefinedLines()
     {
-        return _undefinedCache;
+        return _undefinedTokenLines;
     }
 
-    public ConcurrentDictionary<int, List<int>> GetDefinedCache()
+    public ConcurrentDictionary<int, List<int>> GetDefinedLines()
     {
-        return _definedCache;
+        return _definedTokenLines;
     }
 
     public void Delete(int id)
@@ -53,9 +53,9 @@ public class CacheRepository : ICacheRepository
 
         _lockSlim.EnterWriteLock();
 
-        var res1 = _undefinedCache.TryRemove(id, out _);
+        var res1 = _undefinedTokenLines.TryRemove(id, out _);
 
-        var res2 = _definedCache.TryRemove(id, out _);
+        var res2 = _definedTokenLines.TryRemove(id, out _);
 
         if (!(res1 && res2))
         {
@@ -73,16 +73,16 @@ public class CacheRepository : ICacheRepository
 
         using var scope = _factory.CreateScope();
 
-        var processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
         var (definedHash, undefinedHash, _) = CreateCacheLine(processor, text);
 
-        if (!_undefinedCache.TryAdd(id, undefinedHash))
+        if (!_undefinedTokenLines.TryAdd(id, undefinedHash))
         {
             _logger.LogError("[Cache Repository: concurrent create error - 1]");
         }
 
-        if (!_definedCache.TryAdd(id, definedHash))
+        if (!_definedTokenLines.TryAdd(id, definedHash))
         {
             _logger.LogError("[Cache Repository: concurrent create error - 2]");
         }
@@ -98,13 +98,13 @@ public class CacheRepository : ICacheRepository
 
         using var scope = _factory.CreateScope();
 
-        var processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
         var (definedHash, undefinedHash, _) = CreateCacheLine(processor, text);
 
-        if (_undefinedCache.TryGetValue(id, out var oldHash))
+        if (_undefinedTokenLines.TryGetValue(id, out var oldHash))
         {
-            if (!_undefinedCache.TryUpdate(id, undefinedHash, oldHash))
+            if (!_undefinedTokenLines.TryUpdate(id, undefinedHash, oldHash))
             {
                 _logger.LogError("[Cache Repository: concurrent update error - 1_2]");
             }
@@ -114,9 +114,9 @@ public class CacheRepository : ICacheRepository
             _logger.LogError("[Cache Repository: concurrent update error - 1_1]");
         }
 
-        if (_definedCache.TryGetValue(id, out oldHash))
+        if (_definedTokenLines.TryGetValue(id, out oldHash))
         {
-            if (!_definedCache.TryUpdate(id, definedHash, oldHash))
+            if (!_definedTokenLines.TryUpdate(id, definedHash, oldHash))
             {
                 _logger.LogError("[Cache Repository: concurrent update error - 2_2]");
             }
@@ -139,26 +139,27 @@ public class CacheRepository : ICacheRepository
 
         using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
-        var processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
+        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
         try
         {
-            _undefinedCache.Clear();
+            _undefinedTokenLines.Clear();
 
-            _definedCache.Clear();
+            _definedTokenLines.Clear();
 
+            // TODO: интересный момент:
             var texts = repo.ReadAllNotes();
 
             foreach (var text in texts)
             {
                 var (definedHash, undefinedHash, songNumber) = CreateCacheLine(processor, text);
 
-                if (!_undefinedCache.TryAdd(songNumber, undefinedHash))
+                if (!_undefinedTokenLines.TryAdd(songNumber, undefinedHash))
                 {
                     throw new MethodAccessException("[Cache Repository Init: undefined failed]");
                 }
 
-                if (!_definedCache.TryAdd(songNumber, definedHash))
+                if (!_definedTokenLines.TryAdd(songNumber, definedHash))
                 {
                     throw new MethodAccessException("[Cache Repository Init: defined failed]");
                 }
@@ -176,7 +177,7 @@ public class CacheRepository : ICacheRepository
         }
     }
 
-    private static (List<int> Def, List<int> Undef, int Num) CreateCacheLine(ITextProcessor processor, TextEntity text)
+    private static (List<int> Def, List<int> Undef, int Num) CreateCacheLine(ITokenizerProcessor processor, TextEntity text)
     {
         // undefined hash line
         processor.Setup(ConsonantChain.Undefined);

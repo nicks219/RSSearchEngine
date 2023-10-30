@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data;
 using SearchEngine.Data.Dto;
-using SearchEngine.Infrastructure.Cache.Contracts;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Service.Models;
 
 namespace SearchEngine.Controllers;
@@ -53,7 +53,7 @@ public class UpdateController : ControllerBase
         {
             using var scope = _serviceScopeFactory.CreateScope();
 
-            var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
+            var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
             cache.Update(dto.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
 
             return await new UpdateModel(scope).UpdateNote(dto);

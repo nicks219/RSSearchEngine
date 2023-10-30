@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SearchEngine.Infrastructure.Engine.Contracts;
 
-public interface ITextProcessor : IDisposable
+public interface ITokenizerProcessor : IDisposable
 {
     //public IEnumerable<Text> GetTextsFromDump(string dump);
 

@@ -4,14 +4,14 @@ using MySql.Data.MySqlClient;
 
 namespace SearchEngine.Infrastructure;
 
-public class MysqlBackup : IMysqlBackup
+public class MySqlDbBackup : IDbBackup
 {
     private const string Directory = "ClientApp/build";
     private readonly IConfiguration _configuration;
     private readonly int _maxVersion;
     private int _version;
 
-    public MysqlBackup(IConfiguration configuration)
+    public MySqlDbBackup(IConfiguration configuration)
     {
         _configuration = configuration;
         _maxVersion = 10;

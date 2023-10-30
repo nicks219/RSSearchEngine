@@ -1,16 +1,16 @@
-namespace SearchEngine.Data.Options;
+namespace SearchEngine.Data.Configuration;
 
-public static class CommonDataOptions
+public static class CommonDataConstants
 {
     // максимальная длина текста в символах, дефолт 4000:
-    public const int MaxTextLenght = int.MaxValue;
+    public const int MaxTextLenght = 5000;
 
     // максимальная длина названия в символах, дефолт 50:
     public const int MaxTitleLength = 50;
 
     // email для логина:
-    public const string Email = "viktor@email";
+    public const string Email = "test@email";
 
     // пароль для логина:
-    public const string Password = "vikl";
+    public const string Password = "password";
 }

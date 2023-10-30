@@ -11,11 +11,12 @@ namespace SearchEngine.Tests.Infrastructure.DAL;
 public class TestDataRepository : IDataRepository
 {
     internal const string FirstSongText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
-    private const string FirstSongTitle = "Розенбаум - Вечерняя застольная";
+    internal const string FirstSongTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondSongText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
     internal const string SecondSongTitle = "Шаинский - Облака";
 
     internal static readonly List<string> TagList = new() { "Rock", "Pop", "Jazz" };
+    // избавляйся от статики, даже в тестовом моке:
     private static Dictionary<int, Tuple<string, string>>? _notesTableStub = new()
     {
         { 1, new Tuple<string, string>(FirstSongTitle, FirstSongText)}
@@ -25,13 +26,22 @@ public class TestDataRepository : IDataRepository
 
     public static void CreateStubData(int count)
     {
-        _notesTableStub ??= new Dictionary<int, Tuple<string, string>>();
-
         for (var i = 0; i < count; i++)
         {
-            if (!_notesTableStub.ContainsKey(i))
+            if (_notesTableStub?.ContainsKey(i) == false)
             {
                 _notesTableStub.Add(i, new Tuple<string, string>(i + ": key", i + ": value"));
+            }
+        }
+    }
+
+    public static void RemoveStubData(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            if (_notesTableStub?.ContainsKey(i) == true)
+            {
+                _notesTableStub.Remove(i);
             }
         }
     }
