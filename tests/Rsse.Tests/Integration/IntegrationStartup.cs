@@ -9,7 +9,6 @@ using SearchEngine.Data;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure.Engine;
-using SearchEngine.Infrastructure.Engine.Contracts;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Tests.Infrastructure;

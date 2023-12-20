@@ -21,8 +21,6 @@ var builder = Host.CreateDefaultBuilder(args)
             kestrelLimits.MinResponseDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
 
             kestrelLimits.MinRequestBodyDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
-
-            // options.Listen(new IPEndPoint(new IPAddress(new byte[]{127,0,0,1}), 5000));
         });
     });
 

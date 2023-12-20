@@ -17,27 +17,27 @@ namespace SearchEngine.Tests;
 [TestClass]
 public class TokenizerTests
 {
-    // списки токенов соответствуют текстам из TestDataRepository:
+    // векторы соответствуют заметкам из TestDataRepository:
 
-    private readonly List<int> _testDef1 = new()
+    private readonly List<int> _extendedFirst = new()
     {
         1040119440, 33759, 1030767639, 1063641, 2041410332, 1999758047, 1034259014,
         1796253404, 1201652179, 33583602, 1041276484, 1063641, 1911513819, -2036958882, 2001222215, 397889902,
         -242918757
     };
 
-    private readonly List<int> _testUndef1 = new()
+    private readonly List<int> _reducedFirst = new()
     {
         33551703, 33759, 1075359, 33449, 1034441666, 33361239, 1075421, 1034822160, 2003716344, 33790, 1087201,
         33449, 1080846, 33648454, 1993560527, 1035518482, 2031583174
     };
 
-    private readonly List<int> _testDef2 = new()
+    private readonly List<int> _extendedSecond = new()
     {
         -143480386, 1540588859, 1009732761, -143480386, 33434461, 33418, 1089433, 1932589633, 1745272967, -143480386
     };
 
-    private readonly List<int> _testUndef2 = new()
+    private readonly List<int> _reducedSecond = new()
     {
         33307888, 1720827301, 1032391667, 33307888, 1081435, 33418, 33294, 1039272458, 1032768782, 33307888
     };
@@ -53,150 +53,154 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldInitDefinedAndUndefinedLines_Correctly()
+    public void Tokenizer_ShouldInitExtendedAndReducedLines_Correctly()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
-        InitOneNote(tokenizer);
-        var def = tokenizer.GetDefinedLines();
-        var undef = tokenizer.GetUndefinedLines();
+        CreateTestNote(tokenizer);
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
 
         // act:
-        def.Should().NotBeNull();
-        undef.Should().NotBeNull();
-        def.Count.Should().Be(1);
-        undef.Count.Should().Be(1);
+        extended.Should().NotBeNull();
+        reduced.Should().NotBeNull();
+        extended.Count.Should().Be(1);
+        reduced.Count.Should().Be(1);
 
         // assert:
-        def.ElementAt(0)
+        extended.ElementAt(0)
             .Value
             .Should()
-            .BeEquivalentTo(_testDef1);
+            .BeEquivalentTo(_extendedFirst);
 
-        undef.ElementAt(0)
+        reduced.ElementAt(0)
             .Value
             .Should()
-            .BeEquivalentTo(_testUndef1);
+            .BeEquivalentTo(_reducedFirst);
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldUpdate_DefinedAndUndefinedLines()
+    public void Tokenizer_ShouldUpdate_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
-        InitOneNote(tokenizer);
-        var def = tokenizer.GetDefinedLines();
-        var undef = tokenizer.GetUndefinedLines();
+        CreateTestNote(tokenizer);
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
+        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
 
         // assert:
-        def.First()
+        extended.First()
             .Value
             .Should()
-            .BeEquivalentTo(_testDef2);
+            .BeEquivalentTo(_extendedSecond);
 
-        undef.First()
+        reduced.First()
             .Value
             .Should()
-            .BeEquivalentTo(_testUndef2);
+            .BeEquivalentTo(_reducedSecond);
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldCreate_DefinedAndUndefinedLines()
+    public void Tokenizer_ShouldCreate_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
-        var def = tokenizer.GetDefinedLines();
-        var undef = tokenizer.GetUndefinedLines();
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
 
         // act:
         tokenizer.Create(2, new TextEntity
         {
-            Title = TestDataRepository.SecondSongTitle,
-            Song = TestDataRepository.SecondSongText
+            Title = TestDataRepository.SecondNoteTitle,
+            Song = TestDataRepository.SecondNoteText
         });
 
         // assert:
-        def.Last()
+        extended.Last()
             .Value
             .Should()
-            .BeEquivalentTo(_testDef2);
+            .BeEquivalentTo(_extendedSecond);
 
-        undef.Last()
+        reduced.Last()
             .Value
             .Should()
-            .BeEquivalentTo(_testUndef2);
+            .BeEquivalentTo(_reducedSecond);
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldDelete_DefinedAndUndefinedLines()
+    public void Tokenizer_ShouldDelete_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
-        InitOneNote(tokenizer);
-        var def = tokenizer.GetDefinedLines();
-        var undef = tokenizer.GetUndefinedLines();
-        var defCountBefore = def.Count;
-        var undefCountBefore = undef.Count;
+        CreateTestNote(tokenizer);
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
+        var extendedCountBefore = extended.Count;
+        var reducedCountBefore = reduced.Count;
 
         // act:
         tokenizer.Delete(1);
 
         // assert:
-        defCountBefore.Should().Be(1);
-        undefCountBefore.Should().Be(1);
-        def.Count.Should().Be(0);
-        undef.Count.Should().Be(0);
+        extendedCountBefore.Should().Be(1);
+        reducedCountBefore.Should().Be(1);
+        extended.Count.Should().Be(0);
+        reduced.Count.Should().Be(0);
     }
 
     [TestMethod]
-    public void Tokenizer_WhenIsDisabled_ShouldDoNothing()
+    public void Tokenizer_WhenDisabled_ShouldDoNothing()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
         var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
-        var def = tokenizer.GetDefinedLines();
-        var undef = tokenizer.GetUndefinedLines();
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
 
         // init asserts:
-        CachesShouldBeEmpty();
+        VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
-        CachesShouldBeEmpty();
+        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
+        VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondSongTitle, Song = TestDataRepository.SecondSongText });
-        CachesShouldBeEmpty();
+        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
+        VectorsShouldBeEmpty();
 
         // delete act & asserts:
         tokenizer.Delete(1);
-        CachesShouldBeEmpty();
+        VectorsShouldBeEmpty();
 
         return;
 
-        void CachesShouldBeEmpty()
+        void VectorsShouldBeEmpty()
         {
-            def.Should().NotBeNull();
-            undef.Should().NotBeNull();
-            def?.Count.Should().Be(0);
-            undef?.Count.Should().Be(0);
+            extended.Should().NotBeNull();
+            reduced.Should().NotBeNull();
+            extended.Count.Should().Be(0);
+            reduced.Count.Should().Be(0);
         }
     }
 
-    private static void InitOneNote(ITokenizerService tokenizerService) =>
-        tokenizerService.Create(1, new TextEntity { Title = TestDataRepository.FirstSongTitle, Song = TestDataRepository.FirstSongText });
+    private static void CreateTestNote(ITokenizerService tokenizerService) =>
+        tokenizerService.Create(1, new TextEntity
+        {
+            Title = TestDataRepository.FirstNoteTitle,
+            Song = TestDataRepository.FirstNoteText
+        });
 
     [TestCleanup]
     public void TestCleanup()

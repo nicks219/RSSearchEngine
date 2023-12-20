@@ -41,7 +41,8 @@ public class DataRepository : IDataRepository
 
     public IQueryable<TextEntity> ReadAllNotes()
     {
-        var songs = _context.Text!
+        var songs =
+            _context.Text!
             //.Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
             .Select(s => s)
             .AsNoTracking();
@@ -51,7 +52,9 @@ public class DataRepository : IDataRepository
 
     public string ReadTitleByNoteId(int id)
     {
-        var textEntity = _context.Text!
+        // см. предупреждение Rider "21 DB commands":
+        var textEntity =
+            _context.Text!
             .First(s => s.TextId == id);
 
         return textEntity.Title!;
@@ -59,7 +62,8 @@ public class DataRepository : IDataRepository
 
     public int FindNoteIdByTitle(string noteTitle)
     {
-        var song = _context.Text!
+        var song =
+            _context.Text!
             .First(s => s.Title == noteTitle);
 
         return song.TextId;
@@ -124,7 +128,7 @@ public class DataRepository : IDataRepository
     public async Task<List<string>> ReadGeneralTagList()
     {
         var genreList = await _context.Genre!
-            .OrderBy(g => g.GenreId) // борьба с магией сортировки по Genre по дефолту
+            .OrderBy(g => g.GenreId) // лучше сделать на стороне бд (индекс Genre по дефолту)
             .Select(g => new Tuple<string, int>(g.Genre!, g.GenreTextInGenre!.Count))
             .ToListAsync();
 

@@ -6,9 +6,9 @@ namespace SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 public interface ITokenizerService
 {
-    public ConcurrentDictionary<int, List<int>> GetUndefinedLines();
+    public ConcurrentDictionary<int, List<int>> GetReducedLines();
 
-    public ConcurrentDictionary<int, List<int>> GetDefinedLines();
+    public ConcurrentDictionary<int, List<int>> GetExtendedLines();
 
     public void Delete(int id);
 

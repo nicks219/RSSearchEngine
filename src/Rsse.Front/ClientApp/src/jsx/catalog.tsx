@@ -87,7 +87,7 @@ class CatalogView extends React.Component<IProps, IState> {
         let songs = [];
 
         // если работаем с дампами:
-        if(this.state.data.res && this.dumpWorkState < 2)
+        if(this.state.data.res && this.dumpWorkState == 1)
         {
             songs.push(
                 <tr key={"song "} className="bg-warning">
@@ -102,17 +102,13 @@ class CatalogView extends React.Component<IProps, IState> {
             link.click();
             document.body.removeChild(link);
 
-            this.dumpWorkState = this.dumpWorkState + 1;
+            this.dumpWorkState = 2;
         }
-        else if(this.state.data.res && this.dumpWorkState >= 2)
+        else if(this.state.data.res && this.dumpWorkState == 2)
         {
-            // костыль: стейт-машина для предотвращения повторной обработки дампа при нажатии "Каталог" в процессе:
-            if (this.dumpWorkState >= 2) {
-                this.componentDidMount();
-                this.dumpWorkState = -1;
-            }
-
-            this.dumpWorkState = this.dumpWorkState + 1;
+            // если после обработки дампа нажата кнопка "Каталог":
+            this.componentDidMount();
+            this.dumpWorkState = 0;
         }
         else {
             for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {

@@ -20,7 +20,7 @@ namespace SearchEngine.Tests;
 [TestClass]
 public class ReadTests
 {
-    private readonly int _genresCount = TestDataRepository.TagList.Count;
+    private readonly int _tagsCount = TestDataRepository.TagList.Count;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private ReadModel _readModel;
@@ -43,7 +43,7 @@ public class ReadTests
         var response = await _readModel.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_genresCount, response.GenreListResponse?.Count);
+        Assert.AreEqual(_tagsCount, response.GenreListResponse?.Count);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(_logger.ErrorMessage, string.Empty);
-        Assert.AreEqual(TestDataRepository.FirstSongText, response.TitleResponse);
+        Assert.AreEqual(TestDataRepository.FirstNoteText, response.TitleResponse);
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class ReadTests
     {
         // arrange:
         // var readModel = new ReadModel(_serviceProvider.ServiceScope);
-        //var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
+        // var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
         var request = new NoteDto { SongGenres = new List<int> { 2500 } };
 
         // act:
@@ -125,7 +125,7 @@ public class ReadTests
     }
 
     [TestMethod]
-    // это не тест, а демонстрация распределения в текущем алгоритме выбора:
+    // это не тест, а демонстрация распределения результатов в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
         var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
@@ -159,13 +159,9 @@ public class ReadTests
 
             var id = response.Id;
 
-            if (result.ContainsKey(id))
+            if (!result.TryAdd(id, 1))
             {
                 result[id] += 1;
-            }
-            else
-            {
-                result.Add(id, 1);
             }
         }
 

@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure.Engine;
-using SearchEngine.Infrastructure.Engine.Contracts;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
@@ -15,16 +14,16 @@ public class FindModel
     private readonly IDataRepository _repo;
     private readonly ITokenizerProcessor _processor;
 
-    private readonly ConcurrentDictionary<int, List<int>> _undefinedCache;
-    private readonly ConcurrentDictionary<int, List<int>> _definedCache;
+    private readonly ConcurrentDictionary<int, List<int>> _reducedCache;
+    private readonly ConcurrentDictionary<int, List<int>> _extendedCache;
 
     public FindModel(IServiceScope scope)
     {
         _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
         _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        _undefinedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetUndefinedLines();
-        _definedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetDefinedLines();
+        _reducedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+        _extendedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
     }
 
     public int FindIdByName(string name)
@@ -38,81 +37,81 @@ public class FindModel
     {
         var result = new Dictionary<int, double>();
 
-        // I. defined поиск: 0.8D
-        const double defined = 0.8D;
-        // II. undefined поиск: 0.4D
-        const double undefined = 0.6D; // 0.6 .. 0.75
+        // I. коэффициент extended поиска: 0.8D
+        const double extended = 0.8D;
+        // II. коэффициент reduced поиска: 0.4D
+        const double reduced = 0.6D; // 0.6 .. 0.75
 
-        var undefinedSearch = true;
+        var reducedChainSearch = true;
 
-        _processor.Setup(ConsonantChain.Defined);
+        _processor.SetupChain(ConsonantChain.Extended);
 
-        var hash = _processor.CleanUpString(text);
+        var preprocessedStrings = _processor.PreProcessNote(text);
 
-        if (hash.Count == 0)
+        if (preprocessedStrings.Count == 0)
         {
-            // песни вида "123 456" не ищем, так как получим весь каталог
+            // заметки вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
-        var item = _processor.GetHashSetFromStrings(hash);
+        var tokens = _processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, value) in _definedCache)
+        foreach (var (key, values) in _extendedCache)
         {
-            var metric = _processor.GetComparisionMetric(value, item);
+            var metric = _processor.ComputeComparisionMetric(values, tokens);
 
-            // I. 100% совпадение defined, undefined можно не искать
-            if (metric == item.Count)
+            // I. 100% совпадение по extended последовательности, по reduced можно не искать
+            if (metric == tokens.Count)
             {
-                undefinedSearch = false;
-                result.Add(key, metric * (1000D / value.Count)); // было int
+                reducedChainSearch = false;
+                result.Add(key, metric * (1000D / values.Count)); // было int
                 continue;
             }
 
-            // II. defined% совпадение
-            if (metric >= item.Count * defined)
+            // II. extended% совпадение
+            if (metric >= tokens.Count * extended)
             {
                 // [TODO] можно так оценить
-                // undefinedSearch = false;
-                result.Add(key, metric * (100D / value.Count)); // было int
+                // reducedChainSearch = false;
+                result.Add(key, metric * (100D / values.Count)); // было int
             }
         }
 
-        if (!undefinedSearch)
+        if (!reducedChainSearch)
         {
             return result;
         }
 
-        _processor.Setup(ConsonantChain.Undefined);
+        _processor.SetupChain(ConsonantChain.Reduced);
 
-        hash = _processor.CleanUpString(text);
+        preprocessedStrings = _processor.PreProcessNote(text);
 
-        item = _processor.GetHashSetFromStrings(hash);
+        tokens = _processor.TokenizeSequence(preprocessedStrings);
 
-        if (hash.Count == 0)
+        if (preprocessedStrings.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
         // убираем дубликаты слов для intersect - это меняет результаты поиска
-        item = item.ToHashSet().ToList();
+        tokens = tokens.ToHashSet().ToList();
 
-        foreach (var (key, value) in _undefinedCache)
+        foreach (var (key, values) in _reducedCache)
         {
-            var metric = _processor.GetComparisionMetric(value, item);
+            var metric = _processor.ComputeComparisionMetric(values, tokens);
 
-            // III. 100% совпадение undefined
-            if (metric == item.Count)
+            // III. 100% совпадение по reduced
+            if (metric == tokens.Count)
             {
-                result.TryAdd(key, metric * (10D / value.Count)); // было int
+                result.TryAdd(key, metric * (10D / values.Count)); // было int
                 continue;
             }
 
-            // IV. undefined% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (metric >= item.Count * undefined)
+            // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
+            if (metric >= tokens.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / value.Count)); // было int
+                result.TryAdd(key, metric * (1D / values.Count)); // было int
             }
         }
 

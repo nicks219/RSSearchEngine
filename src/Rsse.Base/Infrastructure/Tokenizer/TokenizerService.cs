@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using SearchEngine.Configuration;
 using SearchEngine.Data;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Engine.Contracts;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine.Infrastructure.Tokenizer;
@@ -18,8 +17,8 @@ public class TokenizerService : ITokenizerService
     // [TODO]: нужен ли ConcurrentDictionary при ReaderWriterLockSlim?
     // [TODO]: можно заменить логгирование на пересоздание линии кэша
     private readonly IServiceScopeFactory _factory;
-    private readonly ConcurrentDictionary<int, List<int>> _undefinedTokenLines;
-    private readonly ConcurrentDictionary<int, List<int>> _definedTokenLines;
+    private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
+    private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
     private readonly ReaderWriterLockSlim _lockSlim;
     private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
@@ -27,8 +26,8 @@ public class TokenizerService : ITokenizerService
     public TokenizerService(IServiceScopeFactory factory, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
         _factory = factory;
-        _undefinedTokenLines = new ConcurrentDictionary<int, List<int>>();
-        _definedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
         _logger = logger;
         _lockSlim = new ReaderWriterLockSlim();
         _isEnabled = options.Value.TokenizerIsEnable;
@@ -36,15 +35,9 @@ public class TokenizerService : ITokenizerService
         Initialize();
     }
 
-    public ConcurrentDictionary<int, List<int>> GetUndefinedLines()
-    {
-        return _undefinedTokenLines;
-    }
+    public ConcurrentDictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
 
-    public ConcurrentDictionary<int, List<int>> GetDefinedLines()
-    {
-        return _definedTokenLines;
-    }
+    public ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
 
     public void Delete(int id)
     {
@@ -52,11 +45,11 @@ public class TokenizerService : ITokenizerService
 
         _lockSlim.EnterWriteLock();
 
-        var res1 = _undefinedTokenLines.TryRemove(id, out _);
+        var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
 
-        var res2 = _definedTokenLines.TryRemove(id, out _);
+        var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
 
-        if (!(res1 && res2))
+        if (!(isReducedRemoved && isExtendedRemoved))
         {
             _logger.LogError("[Cache Repository: concurrent delete error]");
         }
@@ -74,16 +67,16 @@ public class TokenizerService : ITokenizerService
 
         var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        var (definedHash, undefinedHash, _) = CreateCacheLine(processor, text);
+        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, text);
 
-        if (!_undefinedTokenLines.TryAdd(id, undefinedHash))
-        {
-            _logger.LogError("[Cache Repository: concurrent create error - 1]");
-        }
-
-        if (!_definedTokenLines.TryAdd(id, definedHash))
+        if (!_extendedTokenLines.TryAdd(id, extendedLine))
         {
             _logger.LogError("[Cache Repository: concurrent create error - 2]");
+        }
+
+        if (!_reducedTokenLines.TryAdd(id, reducedLine))
+        {
+            _logger.LogError("[Cache Repository: concurrent create error - 1]");
         }
 
         _lockSlim.ExitReadLock();
@@ -99,11 +92,11 @@ public class TokenizerService : ITokenizerService
 
         var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        var (definedHash, undefinedHash, _) = CreateCacheLine(processor, text);
+        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, text);
 
-        if (_undefinedTokenLines.TryGetValue(id, out var oldHash))
+        if (_extendedTokenLines.TryGetValue(id, out var cachedTokensLine))
         {
-            if (!_undefinedTokenLines.TryUpdate(id, undefinedHash, oldHash))
+            if (!_extendedTokenLines.TryUpdate(id, extendedLine, cachedTokensLine))
             {
                 _logger.LogError("[Cache Repository: concurrent update error - 1_2]");
             }
@@ -113,9 +106,9 @@ public class TokenizerService : ITokenizerService
             _logger.LogError("[Cache Repository: concurrent update error - 1_1]");
         }
 
-        if (_definedTokenLines.TryGetValue(id, out oldHash))
+        if (_reducedTokenLines.TryGetValue(id, out cachedTokensLine))
         {
-            if (!_definedTokenLines.TryUpdate(id, definedHash, oldHash))
+            if (!_reducedTokenLines.TryUpdate(id, reducedLine, cachedTokensLine))
             {
                 _logger.LogError("[Cache Repository: concurrent update error - 2_2]");
             }
@@ -142,25 +135,25 @@ public class TokenizerService : ITokenizerService
 
         try
         {
-            _undefinedTokenLines.Clear();
+            _reducedTokenLines.Clear();
 
-            _definedTokenLines.Clear();
+            _extendedTokenLines.Clear();
 
             // TODO: избавься от загрузки всех записей из таблицы:
             var texts = repo.ReadAllNotes();
 
             foreach (var text in texts)
             {
-                var (definedHash, undefinedHash, songNumber) = CreateCacheLine(processor, text);
+                var (extendedLine, reducedLine, id) = CreateTokensLine(processor, text);
 
-                if (!_undefinedTokenLines.TryAdd(songNumber, undefinedHash))
+                if (!_extendedTokenLines.TryAdd(id, extendedLine))
                 {
-                    throw new MethodAccessException("[Cache Repository Init: undefined failed]");
+                    throw new MethodAccessException("[Cache Repository Init: extended failed]");
                 }
 
-                if (!_definedTokenLines.TryAdd(songNumber, definedHash))
+                if (!_reducedTokenLines.TryAdd(id, reducedLine))
                 {
-                    throw new MethodAccessException("[Cache Repository Init: defined failed]");
+                    throw new MethodAccessException("[Cache Repository Init: reduced failed]");
                 }
             }
 
@@ -168,7 +161,7 @@ public class TokenizerService : ITokenizerService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[Cache Repository Init: Init Failed]");
+            _logger.LogError(ex, "[Cache Repository Init: general failed]");
         }
         finally
         {
@@ -176,30 +169,22 @@ public class TokenizerService : ITokenizerService
         }
     }
 
-    private static (List<int> Def, List<int> Undef, int Num) CreateCacheLine(ITokenizerProcessor processor, TextEntity text)
+    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, TextEntity text)
     {
-        // undefined hash line
-        processor.Setup(ConsonantChain.Undefined);
+        // extended tokens chain line:
+        processor.SetupChain(ConsonantChain.Extended);
 
-        //var song = processor.ConvertStringToText(text);
+        var note = processor.PreProcessNote(text.Song + ' ' + text.Title);
 
-        //song.Title.ForEach(t => song.Words.Add(t));
+        var extendedTokensLine = processor.TokenizeSequence(note);
 
-        var song = processor.CleanUpString(text.Song + ' ' + text.Title);
+        // reduced tokens chain line:
+        processor.SetupChain(ConsonantChain.Reduced);
 
-        var undefinedHashLine = processor.GetHashSetFromStrings(song);
+        note = processor.PreProcessNote(text.Song + ' ' + text.Title);
 
-        // defined hash line
-        processor.Setup(ConsonantChain.Defined);
+        var reducedTokensLine = processor.TokenizeSequence(note);
 
-        //song = processor.ConvertStringToText(text);
-
-        //song.Title.ForEach(t => song.Words.Add(t));
-
-        song = processor.CleanUpString(text.Song + ' ' + text.Title);
-
-        var definedHashLine = processor.GetHashSetFromStrings(song);
-
-        return (Def: definedHashLine, Undef: undefinedHashLine, Num: text.TextId);
+        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: text.TextId);
     }
 }

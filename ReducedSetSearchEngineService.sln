@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC7
 		src\Directory.Packages.props = src\Directory.Packages.props
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front", "front", "{F63409DD-059D-445B-95EA-897A6333935C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
 		src\Rsse.Front\ClientApp\src\bootstrap.css = src\Rsse.Front\ClientApp\src\bootstrap.css
 		src\Rsse.Front\ClientApp\src\index.tsx = src\Rsse.Front\ClientApp\src\index.tsx
@@ -41,6 +41,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front", "front", "{F63409DD
 		src\Rsse.Front\ClientApp\src\jsx\read.tsx = src\Rsse.Front\ClientApp\src\jsx\read.tsx
 		src\Rsse.Front\ClientApp\src\jsx\update.tsx = src\Rsse.Front\ClientApp\src\jsx\update.tsx
 		src\Rsse.Front\ClientApp\src\react.css = src\Rsse.Front\ClientApp\src\react.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.scripts", "front.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
+	ProjectSection(SolutionItems) = preProject
+		src\Rsse.Front\build.bat = src\Rsse.Front\build.bat
+		src\Rsse.Front\install.bat = src\Rsse.Front\install.bat
+		src\Rsse.Front\start.bat = src\Rsse.Front\start.bat
 	EndProjectSection
 EndProject
 Global
@@ -87,5 +94,6 @@ Global
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{F63409DD-059D-445B-95EA-897A6333935C} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 	EndGlobalSection
 EndGlobal

@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
-using SearchEngine.Infrastructure.Tokenizer;
 
-namespace SearchEngine.Infrastructure.Engine.Contracts;
+namespace SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 public interface ITokenizerProcessor : IDisposable
 {
-    //public IEnumerable<Text> GetTextsFromDump(string dump);
+    public List<string> PreProcessNote(string note);
 
-    //public Text ConvertStringToText(string sentence);
+    public List<int> TokenizeSequence(IEnumerable<string> strings);
 
-    public List<string> CleanUpString(string sentence);
+    public int ComputeComparisionMetric(List<int> cachedTokens, IEnumerable<int> freshTokens);
 
-    public List<int> GetHashSetFromStrings(IEnumerable<string> text);
+    public void SetupChain(ConsonantChain consonantChain);
 
-    public int GetComparisionMetric(List<int> originHash, List<int> wantedHash);
+    // public IEnumerable<Text> GetTextsFromDump(string dump);
 
-    public void Setup(ConsonantChain consonantChain);
+    // public Text ConvertStringToText(string sentence);
 }
 
 public class Text

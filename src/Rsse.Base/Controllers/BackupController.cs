@@ -16,13 +16,13 @@ namespace SearchEngine.Controllers;
 public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
-    private readonly IDbBackup _backup;
+    private readonly IDbMigrator _migrator;
     private readonly ITokenizerService _cache;
 
-    public BackupController(ILogger<BackupController> logger, IDbBackup backup, ITokenizerService cache)
+    public BackupController(ILogger<BackupController> logger, IDbMigrator migrator, ITokenizerService cache)
     {
         _logger = logger;
-        _backup = backup;
+        _migrator = migrator;
         _cache = cache;
     }
 
@@ -31,7 +31,7 @@ public class BackupController : ControllerBase
     {
         try
         {
-            var result = _backup.Backup(fileName);
+            var result = _migrator.Create(fileName);
             /*var response = _context.HttpContext?.Response;
 
             if (response != null)
@@ -67,7 +67,7 @@ public class BackupController : ControllerBase
     {
         try
         {
-            var result = _backup.Restore(fileName);
+            var result = _migrator.Restore(fileName);
 
             _cache.Initialize();
             return new OkObjectResult(new { Res = Path.GetFileName(result) });

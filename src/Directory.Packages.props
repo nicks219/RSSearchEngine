@@ -10,16 +10,5 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="[6.5.0]" />
     <!-- DATA -->
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="[7.0.0]" />
-
-    <!-- FRONT -->
-    <!--<PackageVersion Include="JavaScriptEngineSwitcher.ChakraCore" Version="3.9.1" />
-    <PackageVersion Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="3.9.1" />
-    <PackageVersion Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="3.9.1" />
-    <PackageVersion Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="3.9.1" />
-    <PackageVersion Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" Version="3.9.1" />
-    <PackageVersion Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" Version="3.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.16" />
-    <PackageVersion Include="React.AspNet" Version="5.2.11" />
-    <PackageVersion Include="Microsoft.TypeScript.MSBuild" Version="4.4.2" />-->
   </ItemGroup>
 </Project>

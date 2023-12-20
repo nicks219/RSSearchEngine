@@ -26,18 +26,18 @@ public class CreateController : ControllerBase
 
     private readonly ILogger<CreateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IDbBackup _backup;
+    private readonly IDbMigrator _migrator;
     private readonly CommonBaseOptions _baseOptions;
 
     public CreateController(
         IServiceScopeFactory serviceScopeFactory,
         ILogger<CreateController> logger,
-        IDbBackup backup,
+        IDbMigrator migrator,
         IOptions<CommonBaseOptions> options)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _backup = backup;
+        _migrator = migrator;
         _baseOptions = options.Value;
     }
 
@@ -75,11 +75,11 @@ public class CreateController : ControllerBase
 
                 cache.Create(result.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
 
-                // создадим бэкап при выставленном флаге CreateBackupForNewSong:
+                // создадим дамп при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)
                 {
                     // создание полного дампа достаточно ресурсозатратно:
-                    _backup.Backup(BackupFileNameConstant);
+                    _migrator.Create(BackupFileNameConstant);
                 }
             }
 

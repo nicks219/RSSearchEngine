@@ -4,20 +4,29 @@ using MySql.Data.MySqlClient;
 
 namespace SearchEngine.Infrastructure;
 
-public class MySqlDbBackup : IDbBackup
+// TODO: миграции можно реализовать средствами утилиты
+// export DOTNET_ROLL_FORWARD=LatestMajor
+// Microsoft.EntityFrameworkCore.Design
+// dotnet new tool-manifest
+// dotnet tool update dotnet-ef (7.0.1)
+// dotnet ef dbcontext list
+// dotnet ef migrations list
+// создаём миграцию из папки RsseBase: dotnet ef migrations add Init -s "./" -p "../Rsse.Data"
+
+public class MySqlDbMigrator : IDbMigrator
 {
     private const string Directory = "ClientApp/build";
     private readonly IConfiguration _configuration;
     private readonly int _maxVersion;
     private int _version;
 
-    public MySqlDbBackup(IConfiguration configuration)
+    public MySqlDbMigrator(IConfiguration configuration)
     {
         _configuration = configuration;
         _maxVersion = 10;
     }
 
-    public string Backup(string? fileName)
+    public string Create(string? fileName)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 

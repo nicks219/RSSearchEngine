@@ -10,16 +10,16 @@ namespace SearchEngine.Tests.Infrastructure.DAL;
 
 public class TestDataRepository : IDataRepository
 {
-    internal const string FirstSongText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
-    internal const string FirstSongTitle = "Розенбаум - Вечерняя застольная";
-    internal const string SecondSongText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
-    internal const string SecondSongTitle = "Шаинский - Облака";
+    internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
+    internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
+    internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
+    internal const string SecondNoteTitle = "Шаинский - Облака";
 
     internal static readonly List<string> TagList = new() { "Rock", "Pop", "Jazz" };
     // избавляйся от статики, даже в тестовом моке:
     private static Dictionary<int, Tuple<string, string>>? _notesTableStub = new()
     {
-        { 1, new Tuple<string, string>(FirstSongTitle, FirstSongText)}
+        { 1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText)}
     };
 
     private int _id;
@@ -147,7 +147,7 @@ public class TestDataRepository : IDataRepository
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        _notesTableStub ??= new Dictionary<int, Tuple<string, string>> { { 1, new Tuple<string, string>(FirstSongTitle, FirstSongText) } };
+        _notesTableStub ??= new Dictionary<int, Tuple<string, string>> { { 1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText) } };
 
         return new TestQueryable<Tuple<string, string>>(
             new List<Tuple<string, string>>
