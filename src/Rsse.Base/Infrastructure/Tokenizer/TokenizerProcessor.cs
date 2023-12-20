@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SearchEngine.Infrastructure.Engine.Contracts;
 
-namespace SearchEngine.Infrastructure.Engine;
+namespace SearchEngine.Infrastructure.Tokenizer;
 
 public enum ConsonantChain
 {
@@ -81,7 +81,7 @@ public sealed class TokenizerProcessor : ITokenizerProcessor
 
     public List<int> GetHashSetFromStrings(IEnumerable<string> text)
     {
-        const int mult = 31;
+        const int factor = 31;
 
         var result = new List<int>();
 
@@ -89,13 +89,13 @@ public sealed class TokenizerProcessor : ITokenizerProcessor
         {
             var hash = 0;
 
-            var multTemporary = mult;
+            var tempFactor = factor;
 
             foreach (var letter in word)
             {
-                hash += letter * multTemporary;
+                hash += letter * tempFactor;
 
-                multTemporary *= mult;
+                tempFactor *= factor;
             }
 
             result.Add(hash);

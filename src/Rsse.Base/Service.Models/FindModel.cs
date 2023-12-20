@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Engine.Contracts;
+using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine.Service.Models;

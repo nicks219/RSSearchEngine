@@ -117,6 +117,7 @@ public class CatalogModel
                 }
         }
 
+        if (pageNumber < MinimalPageNumber) pageNumber = MinimalPageNumber;
         return pageNumber;
     }
 

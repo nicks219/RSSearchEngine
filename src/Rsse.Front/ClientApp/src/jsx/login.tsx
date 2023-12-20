@@ -23,7 +23,7 @@ export class LoginRequired {
     // [TODO] сейчас у компонентов нет component.url - их надо докидывать отдельно
     static ContinueLoading() {
         let component = window.temp;
-        
+
         if (component) {
             // login для update
             if (window.url === Loader.updateUrl) {
@@ -38,7 +38,7 @@ export class LoginRequired {
                 Loader.getData(component, window.url);
             }
         }
-        
+
         this.MessageOff();
     }
 
@@ -49,7 +49,7 @@ export class LoginRequired {
     static MessageOn(component: any, url: string) {
         window.temp = component;
         window.url = url;
-        
+
         (document.getElementById("loginMessage")as HTMLElement).style.display = "block";
         (document.getElementById("login")as HTMLElement).style.display = "block";
         ReactDOM.render(
@@ -70,7 +70,7 @@ export class Login extends React.Component<IProps, IState> {
     constructor(props: any) {
         super(props);
         this.submit = this.submit.bind(this);
-        
+
         (document.getElementById("login")as HTMLElement).style.display = "block";
     }
 
@@ -88,7 +88,7 @@ export class Login extends React.Component<IProps, IState> {
 
         Loader.fireAndForgetWithQuery(Loader.loginUrl, query, callback, null);
     }
-    
+
     loginErr = () => {
         // установим локальные куки
         document.cookie = 'rsse_auth = false';
@@ -98,7 +98,7 @@ export class Login extends React.Component<IProps, IState> {
     loginOk = () => {
         // установим локальные куки
         document.cookie = 'rsse_auth = true';
-        console.log("Login ok");
+        console.log("Login ok.");
         this.setState({ style: "submitStyleGreen" });
         LoginRequired.ContinueLoading();
         setTimeout(() => {

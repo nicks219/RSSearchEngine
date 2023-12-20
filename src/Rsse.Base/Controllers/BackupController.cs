@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Infrastructure;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
 namespace SearchEngine.Controllers;
 
@@ -15,11 +17,13 @@ public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
     private readonly IDbBackup _backup;
+    private readonly ITokenizerService _cache;
 
-    public BackupController(ILogger<BackupController> logger, IDbBackup backup)
+    public BackupController(ILogger<BackupController> logger, IDbBackup backup, ITokenizerService cache)
     {
         _logger = logger;
         _backup = backup;
+        _cache = cache;
     }
 
     [HttpGet("/create")]
@@ -37,13 +41,13 @@ public class BackupController : ControllerBase
                 //contentType = "application/octet-stream";
 
                 //response.ContentType = contentType;
-                
+
                 //response.Headers.Add("Content-Disposition", "attachment; filename=" + result + ";");
 
                 //response.SendFileAsync(result).GetAwaiter().GetResult();
                 var path = Path.GetFullPath(result);
                 var name = Path.GetFileName(path);
-                
+
                 return File(System.IO.File.ReadAllBytes(path), contentType, name);
 
                 //return new PhysicalFileResult(path, contentType);// EmptyResult();
@@ -64,6 +68,8 @@ public class BackupController : ControllerBase
         try
         {
             var result = _backup.Restore(fileName);
+
+            _cache.Initialize();
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)

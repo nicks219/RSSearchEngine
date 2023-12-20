@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Scripts;
 
 namespace SearchEngine.Data;
@@ -22,7 +21,7 @@ public sealed class RsseContext : DbContext
         // var path = Path.Combine(AppContext.BaseDirectory, relativePath);
         // var sql = File.ReadAllText(path);
 
-        // в SqlScripts удаляю индекс для GenreText таблицы
+        // в SqlScripts удаляется индекс для GenreText таблицы
         if (_init)
         {
             return;

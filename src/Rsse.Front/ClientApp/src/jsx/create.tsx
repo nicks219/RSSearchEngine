@@ -41,6 +41,8 @@ class CreateView extends React.Component<IProps, IState> {
     }
 
     componentWillUnmount() {
+        // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
+        if (isNaN(window.textId)) window.textId = 0;
         this.mounted = false;
     }
 
@@ -52,7 +54,7 @@ class CreateView extends React.Component<IProps, IState> {
             //this.props.listener.setState({id: this.state.menuListener});
             Loader.redirectToMenu("/#/read/" + this.state.menuListener);
         }
-        
+
         let id = 0;
         if (this.state.data) id = Number(this.state.data.savedTextId);
         if (id !== 0) window.textId = id;
@@ -105,7 +107,7 @@ class Checkbox extends React.Component<IProps> {
                 return "";
             }
         };
-        
+
         return (
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={checked} />
@@ -150,7 +152,7 @@ class Message extends React.Component<IProps> {
 }
 
 class SubmitButton extends React.Component<IProps> {
-    
+
     requestBody: any;
     storage: string[] = [];
     storageId: string[] = [];
@@ -158,7 +160,7 @@ class SubmitButton extends React.Component<IProps> {
     btn: any;
     static state: any;
     static listener: any;
-    
+
     constructor(props: any) {
         super(props);
         this.submit = this.submit.bind(this);
@@ -166,10 +168,10 @@ class SubmitButton extends React.Component<IProps> {
         this.state = 0;
         SubmitButton.listener = this.props.listener;
     }
-    
+
     static checkButtonGetSong: any = (e: any) => {
         if (SubmitButton.state !== undefined) {
-            
+
             let title = e.target.innerText;
             let id = e.target.attributes.about.nodeValue;
 
@@ -184,10 +186,10 @@ class SubmitButton extends React.Component<IProps> {
         this.btn.style.display = "none";
         // отмена - сохраняем текст и название
         SubmitButton.state = undefined;
-        
+
         let text = JSON.parse(this.requestBody).TextJS;
         let title = JSON.parse(this.requestBody).TitleJS;
-        
+
         this.requestBody = JSON.stringify({
             "CheckedCheckboxesJS":[],
             "TextJS": text,
@@ -195,7 +197,7 @@ class SubmitButton extends React.Component<IProps> {
             });
         Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
     }
-    
+
     componentDidMount() {
         this.btn  = (document.getElementById('cancelButton') as HTMLInputElement);
         this.btn.style.display = "none";
@@ -203,15 +205,15 @@ class SubmitButton extends React.Component<IProps> {
 
     async submit(e: any) {
         e.preventDefault();
-        
+
         this.btn.style.display = "none";
         SubmitButton.state = this.state;
-        
+
         if (this.state === 1)
         {
             // подтверждение
             SubmitButton.state = undefined;
-            
+
             this.state = 0;
             Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
             return;
@@ -227,11 +229,11 @@ class SubmitButton extends React.Component<IProps> {
             TitleJS: formTitle
         };
         this.requestBody = JSON.stringify(item);
-        
+
         this.storage = [];
         let promise = this.findSongMatches(formMessage, formTitle);
         await promise;
-        
+
         if (this.storage.length > 0)
         {
             // переключение в "подтверждение или отмена"
@@ -243,17 +245,17 @@ class SubmitButton extends React.Component<IProps> {
         // совпадения не обнаружены
         Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
     }
-    
+
     findSongMatches = async (formMessage: string | File | null, formTitle: string | File | null) => {
         let promise;
 
         if (typeof formMessage === "string") {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
         }
-        
+
         let callback = (data: any) => this.getFoundNames(data);
         let query = "?text=" + formMessage + " " + formTitle;
-        
+
         try {
             promise = Loader.getWithPromise(Loader.findUrl, query, callback);
         } catch (err) {
@@ -263,7 +265,7 @@ class SubmitButton extends React.Component<IProps> {
         if (promise !== undefined) {
             await promise;}
     }
-    
+
     getFoundNames = async (res: any) => {
         let result = [];
         let response = res['res'];
@@ -291,14 +293,14 @@ class SubmitButton extends React.Component<IProps> {
             }
 
             let i = String(result[ind][0]);
-            
+
             //  получаем имена возможных совпадений: i:string зто id 'песни', можно вместо time его выставлять
             let promise;
-            
+
             let callback = (data: any) => this.getTitle(data, i);
-            
+
             let query = "?id=" + i;
-            
+
             try {
                 promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
             } catch (err) {
@@ -310,7 +312,7 @@ class SubmitButton extends React.Component<IProps> {
             }
         }
     }
-    
+
     getTitle = (data: any, i: string) => {
         this.storage.push((data.res + '\r\n'));
         this.storageId.push(i);
@@ -318,8 +320,8 @@ class SubmitButton extends React.Component<IProps> {
         let time = Date.now();
         // stub
         data = {
-            "genresNamesCS": this.storage, // this.props.listener.state.data.genresNamesCS, 
-            "isGenreCheckedCS": [], 
+            "genresNamesCS": this.storage, // this.props.listener.state.data.genresNamesCS,
+            "isGenreCheckedCS": [],
             "textCS": JSON.parse(this.requestBody).TextJS,
             "titleCS": JSON.parse(this.requestBody).TitleJS,
             "genresNamesId": this.storageId //

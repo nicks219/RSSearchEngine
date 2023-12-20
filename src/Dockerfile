@@ -1,10 +1,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 WORKDIR /app
 
+# при использовании CPM файл версионирования необходимо скопировать в контейнер
+COPY Directory.Packages.props .
 COPY ./Rsse.Base/ ./Rsse.Base/
 COPY ./Rsse.Data/ ./Rsse.Data/
-# скопируем билд фронта
-# TODO: предварительно необходимо запустить в папке хоста ./Rsse.Front/ClientApp/ команду npm run build
+# скопируем предварительно собранный фронт
 COPY ./Rsse.Front/ClientApp/build/ ./Rsse.Base/ClientApp/build/
 
 WORKDIR /app/Rsse.Base

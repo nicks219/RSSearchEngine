@@ -1,3 +1,4 @@
+/*
 using System.Diagnostics;
 using System.IO;
 using JavaScriptEngineSwitcher.ChakraCore;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using React.AspNet;
 
-namespace SearchEngine.Front;
+namespace SearchEngine.Front.Obsolete;
 
 public class Startup
 {
@@ -95,3 +96,4 @@ public class Startup
         // cmd.WaitForExit();
     }
 }
+*/

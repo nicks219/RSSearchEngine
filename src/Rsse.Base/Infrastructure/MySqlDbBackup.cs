@@ -25,7 +25,10 @@ public class MySqlDbBackup : IDbBackup
             ? Path.Combine(Directory, $"backup_{_version}.txt")
             : Path.Combine(Directory, $"_{fileName}_.txt");
 
-        _version = (_version + 1) % _maxVersion;
+        if (string.IsNullOrEmpty(fileName))
+        {
+            _version = (_version + 1) % _maxVersion;
+        }
 
         using var conn = new MySqlConnection(connectionString);
 

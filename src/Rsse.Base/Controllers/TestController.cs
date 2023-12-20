@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +19,14 @@ public class TestController : Controller
         _logger = logger;
     }
 
+    [HttpGet("version")]
+    public ActionResult GetVersion()
+    {
+        return Ok("v5: react-router");
+    }
+
+    // последующие ручки необходимо переписать либо удалить:
+
     #region Throttle Counter
 
     /// <summary> счетчик производительности </summary>
@@ -30,6 +39,7 @@ public class TestController : Controller
     private const int Count = 1000 * 300;
     private static readonly int[] Obj = Enumerable.Range(1, Count).ToArray();
 
+    [Authorize]
     [HttpGet($"test.traffic")]
     public ActionResult GetMega([FromQuery] bool more = false)
     {
@@ -52,6 +62,7 @@ public class TestController : Controller
             });
     }
 
+    [Authorize]
     [HttpGet("start")]
     public ActionResult Start()
     {
@@ -62,6 +73,7 @@ public class TestController : Controller
         return Ok("Counter start \r\n");
     }
 
+    [Authorize]
     [HttpGet("stop")]
     public ActionResult Stop()
     {
@@ -81,12 +93,7 @@ public class TestController : Controller
 
     #endregion
 
-    [HttpGet("version")]
-    public ActionResult GetVersion()
-    {
-        return Ok("v2: add tags");
-    }
-
+    [Authorize]
     [HttpGet("gc")]
     public ActionResult GcCall()
     {
@@ -97,6 +104,7 @@ public class TestController : Controller
         return Ok("gc \r\n");
     }
 
+    [Authorize]
     [HttpGet("test")]
     public ActionResult LogEveryRequest()
     {
@@ -125,6 +133,7 @@ public class TestController : Controller
         });
     }
 
+    [Authorize]
     [HttpGet("test.every.nth")]
     public ActionResult Get([FromQuery] int count = 100)
     {
@@ -155,12 +164,14 @@ public class TestController : Controller
         });
     }
 
+    [Authorize]
     [HttpGet("live")]
     public string Live()
     {
         return "live";
     }
 
+    [Authorize]
     [HttpGet("live.async")]
     public async Task<string> LiveAsync()
     {
@@ -168,6 +179,7 @@ public class TestController : Controller
         return "live.async";
     }
 
+    [Authorize]
     [HttpGet("live.task")]
     public Task<string> LiveTask()
     {

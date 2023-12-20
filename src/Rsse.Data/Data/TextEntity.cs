@@ -16,7 +16,7 @@ public class TextEntity
     [MaxLength(CommonDataConstants.MaxTitleLength)]
     public string? Title { get; set; }
 
-    [MaxLength(CommonDataConstants.MaxTextLenght)]
+    [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Song { get; set; }
 
     public ICollection<GenreTextEntity>? GenreTextInText { get; set; }

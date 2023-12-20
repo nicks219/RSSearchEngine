@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <RootNamespace>SearchEngine.Front</RootNamespace>
+    </PropertyGroup>
+
+  <!--<ItemGroup>
+  <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" />
+      <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" />
+      <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" />
+      <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" />
+      <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" />
+      <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" />
+      <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+      <PackageReference Include="React.AspNet" />
+  <PackageReference Include="Microsoft.TypeScript.MSBuild" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
+    </ItemGroup>-->
+
+    <!--
+    <ItemGroup>
+      <None Include="ClientApp\src\index.tsx" />
+      <None Include="ClientApp\src\jsx\catalog.tsx" />
+      <None Include="ClientApp\src\jsx\create.tsx" />
+      <None Include="ClientApp\src\jsx\login.tsx" />
+      <None Include="ClientApp\src\jsx\menu.tsx" />
+      <None Include="ClientApp\src\jsx\read.tsx" />
+      <None Include="ClientApp\src\jsx\update.tsx" />
+      <None Include="ClientApp\src\react-app-env.d.ts" />
+    </ItemGroup> -->
+
+    <!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+        <Exec Command="cd $(SpaRoot)ClientApp\node_modules\ || cd $(SpaRoot)ClientApp\ &amp;&amp; npm install"/>
+    </Target> -->
+
+  <!--<Target Name="NpmInstallScript" AfterTargets="PostBuildEvent">
+    <Exec Command="cd ClientApp\node_modules\ || cd ClientApp\ &amp;&amp; npm install" ContinueOnError="WarnAndContinue"/>
+    <Exec Command="cd ClientApp\ &amp;&amp; npm run build"/>
+  </Target>-->
+
+</Project>

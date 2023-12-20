@@ -37,17 +37,18 @@ public class FindTests
         // надо обдумать, какой пример вообще пригоден для этого теста:
 
         // assert:
-        deserialized.Value.Should().NotBeNull();
-        deserialized.Value?.Res.Should().NotBeNull();
+        deserialized.Should().NotBeNull();
+        deserialized?.Value.Should().NotBeNull();
+        deserialized?.Value?.Res.Should().NotBeNull();
 
         // {"Value":{"Res":{"270":0.031746031746031744,"228":0.0273972602739726}},"Formatters":[],"ContentTypes":[],"DeclaredType":null,"StatusCode":200}
-        deserialized.Value?.Res?
+        deserialized?.Value?.Res?
             .Keys
             .ElementAt(0)
             .Should()
             .Be("1");
 
-        deserialized.Value?.Res?
+        deserialized?.Value?.Res?
             .Values
             .ElementAt(0)
             .Should()

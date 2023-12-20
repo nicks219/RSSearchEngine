@@ -29,9 +29,10 @@ public static class NoteElection
 
         Interlocked.Increment(ref _id);
 
-        // round robin or random:
+        // round robin либо random:
         var coin = randomElection ? GetRandomInRange(howManyNotes) : (int)(_id % howManyNotes);
 
+        // в данный момент дополнительная рандомизация не задействована:
         var result = randomElection switch
         {
             // [original random]

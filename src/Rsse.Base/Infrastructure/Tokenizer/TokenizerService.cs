@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using SearchEngine.Configuration;
 using SearchEngine.Data;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Engine.Contracts;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
@@ -147,7 +146,7 @@ public class TokenizerService : ITokenizerService
 
             _definedTokenLines.Clear();
 
-            // TODO: интересный момент:
+            // TODO: избавься от загрузки всех записей из таблицы:
             var texts = repo.ReadAllNotes();
 
             foreach (var text in texts)

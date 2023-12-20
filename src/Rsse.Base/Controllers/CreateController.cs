@@ -78,6 +78,7 @@ public class CreateController : ControllerBase
                 // создадим бэкап при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)
                 {
+                    // создание полного дампа достаточно ресурсозатратно:
                     _backup.Backup(BackupFileNameConstant);
                 }
             }

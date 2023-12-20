@@ -10,6 +10,8 @@ interface IProps {
 
 class CatalogView extends React.Component<IProps, IState> {
     mounted: boolean;
+    // стейт счетчика рендеринга компонента при обработке дампа, см. ниже:
+    dumpWorkState: number;
 
     public state: IState = {
     data: null
@@ -18,6 +20,7 @@ class CatalogView extends React.Component<IProps, IState> {
     constructor(props: any) {
         super(props);
         this.mounted = true;
+        this.dumpWorkState = 0;
     }
 
     componentWillUnmount() {
@@ -27,7 +30,7 @@ class CatalogView extends React.Component<IProps, IState> {
     componentDidMount() {
         Loader.getDataById(this, 1, Loader.catalogUrl);
     }
-    
+
     click = (e: any) => {
         e.preventDefault();
         let target = Number(e.target.id.slice(7));
@@ -40,21 +43,23 @@ class CatalogView extends React.Component<IProps, IState> {
     }
 
     createDump = (e: any) => {
+        this.dumpWorkState = 1;
         e.preventDefault();
         Loader.getData(this, Loader.backupCreateUrl);
     }
 
     restoreDump = (e: any) => {
+        this.dumpWorkState = 1;
         e.preventDefault();
         Loader.getData(this, Loader.backupRestoreUrl);
     }
-    
+
     logout = (e: any) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
-        
+
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
-        
+
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, this);
     }
 
@@ -78,9 +83,11 @@ class CatalogView extends React.Component<IProps, IState> {
         if (!this.state.data) {
             return null;
         }
-        
+
         let songs = [];
-        if(this.state.data.res)
+
+        // если работаем с дампами:
+        if(this.state.data.res && this.dumpWorkState < 2)
         {
             songs.push(
                 <tr key={"song "} className="bg-warning">
@@ -94,6 +101,18 @@ class CatalogView extends React.Component<IProps, IState> {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            this.dumpWorkState = this.dumpWorkState + 1;
+        }
+        else if(this.state.data.res && this.dumpWorkState >= 2)
+        {
+            // костыль: стейт-машина для предотвращения повторной обработки дампа при нажатии "Каталог" в процессе:
+            if (this.dumpWorkState >= 2) {
+                this.componentDidMount();
+                this.dumpWorkState = -1;
+            }
+
+            this.dumpWorkState = this.dumpWorkState + 1;
         }
         else {
             for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {

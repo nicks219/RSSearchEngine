@@ -7,18 +7,18 @@ cd src =)  папка с ямлом, запуск из-под wsl
 
 cd /mnt/c/Users/nick/source/repos/tagit/src && \
 docker-compose down && \
-docker image rm nick219nick/tagit:v3 && \
+docker image rm nick219nick/tagit:v5 && \
 docker-compose -f docker-compose-build.yml build && \
 docker-compose -f docker-compose-build.yml up -d && \
 R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v3 && \
-docker push nick219nick/tagit:v3;
+docker commit -a Nick219 -m v5 ${R_C_HASH} nick219nick/tagit:v5 && \
+docker push nick219nick/tagit:v5;
 
 II.	подъем образа на хосте:
 cd scr =) папка с ямлом
 
 docker compose down && \
-docker image rm nick219nick/tagit:v3 && \
+docker image rm nick219nick/tagit:v5 && \
 docker compose up -d;
 
 III. 	тестовые сценарии:
@@ -42,4 +42,4 @@ docker exec -i $DB_HASH mysql --host=localhost --user=root --password=1 tagit < 
 
 VII. 	сбилдить образ:
 
-docker build -t nick219nick/tagit:v3 .
+docker build -t nick219nick/tagit:v5 .
