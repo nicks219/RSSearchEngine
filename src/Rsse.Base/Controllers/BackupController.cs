@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Infrastructure;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
@@ -17,13 +16,13 @@ public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
     private readonly IDbMigrator _migrator;
-    private readonly ITokenizerService _cache;
+    private readonly ITokenizerService _tokenizer;
 
-    public BackupController(ILogger<BackupController> logger, IDbMigrator migrator, ITokenizerService cache)
+    public BackupController(ILogger<BackupController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     {
         _logger = logger;
         _migrator = migrator;
-        _cache = cache;
+        _tokenizer = tokenizer;
     }
 
     [HttpGet("/create")]
@@ -32,26 +31,6 @@ public class BackupController : ControllerBase
         try
         {
             var result = _migrator.Create(fileName);
-            /*var response = _context.HttpContext?.Response;
-
-            if (response != null)
-            {
-                response.Clear();
-                var contentType = "text/plain";
-                //contentType = "application/octet-stream";
-
-                //response.ContentType = contentType;
-
-                //response.Headers.Add("Content-Disposition", "attachment; filename=" + result + ";");
-
-                //response.SendFileAsync(result).GetAwaiter().GetResult();
-                var path = Path.GetFullPath(result);
-                var name = Path.GetFileName(path);
-
-                return File(System.IO.File.ReadAllBytes(path), contentType, name);
-
-                //return new PhysicalFileResult(path, contentType);// EmptyResult();
-            }*/
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
@@ -68,8 +47,8 @@ public class BackupController : ControllerBase
         try
         {
             var result = _migrator.Restore(fileName);
+            _tokenizer.Initialize();
 
-            _cache.Initialize();
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)

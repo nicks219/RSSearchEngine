@@ -60,19 +60,19 @@ public class TestDataRepository : IDataRepository
         return new TestQueryable<TextEntity>(songs!);
     }
 
-    public string ReadTitleByNoteId(int id)
+    public string ReadNoteTitle(int noteId)
     {
         if (_notesTableStub == null) throw new NullReferenceException("Data is null");
 
-        foreach (var keyValue in _notesTableStub.Where(keyValue => keyValue.Key == id))
+        foreach (var keyValue in _notesTableStub.Where(keyValue => keyValue.Key == noteId))
         {
             return keyValue.Value.Item1;
         }
 
-        throw new NotImplementedException($"Note with id `{id}` not found");
+        throw new NotImplementedException($"Note with id `{noteId}` not found");
     }
 
-    public int FindNoteIdByTitle(string noteTitle)
+    public int ReadNoteId(string noteTitle)
     {
         if (_notesTableStub == null) throw new NullReferenceException("Data is null");
 
@@ -84,14 +84,14 @@ public class TestDataRepository : IDataRepository
         throw new NotImplementedException($"Note `{noteTitle}` not found");
     }
 
-    public Task<int> CreateNote(NoteDto? dt)
+    public Task<int> CreateNote(NoteDto? note)
     {
-        if (dt?.Title == null || dt.Text == null || _notesTableStub == null)
+        if (note?.TitleRequest == null || note.TextRequest == null || _notesTableStub == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notesTableStub.Add(_id, new Tuple<string, string>(dt.Title, dt.Text));
+        _notesTableStub.Add(_id, new Tuple<string, string>(note.TitleRequest, note.TextRequest));
         _id++;
         return Task.FromResult(_id - 1);
     }
@@ -103,9 +103,9 @@ public class TestDataRepository : IDataRepository
     }
 
     //Login Ok
-    public Task<UserEntity?> GetUser(LoginDto dt)
+    public Task<UserEntity?> GetUser(LoginDto login)
     {
-        var user = dt.Password == "skip"
+        var user = login.Password == "skip"
             ? null
             : new UserEntity();
 
@@ -156,19 +156,19 @@ public class TestDataRepository : IDataRepository
             });
     }
 
-    public IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
         return new TestQueryable<int>(checkedTags);
     }
 
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto? dt)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto? note)
     {
-        if (dt?.Title == null || dt.Text == null || _notesTableStub == null)
+        if (note?.TitleRequest == null || note.TextRequest == null || _notesTableStub == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notesTableStub[dt.Id] = new Tuple<string, string>(dt.Title, dt.Text);
+        _notesTableStub[note.NoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
 
         return Task.CompletedTask;
     }

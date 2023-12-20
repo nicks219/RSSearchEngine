@@ -5,50 +5,50 @@ namespace SearchEngine.Data.Dto;
 
 public record NoteDto
 {
-    // request
+    // request:
     [JsonPropertyName("checkedCheckboxesJs")]
-    public List<int>? SongGenres { get; set; }
+    public List<int>? TagsCheckedRequest { get; set; }
 
     [JsonPropertyName("titleJs")]
-    public string? Title { get; set; }
+    public string? TitleRequest { get; set; }
 
     [JsonPropertyName("textJs")]
-    public string? Text { get; set; }
+    public string? TextRequest { get; set; }
 
-    // response
-    [JsonPropertyName("textCS")]
-    public string? TextResponse { get; set; }
+    // response:
+    [JsonPropertyName("isGenreCheckedCS")]
+    public List<string>? TagsCheckedUncheckedResponse { get; init; }
 
     [JsonPropertyName("titleCS")]
     public string? TitleResponse { get; set; }
 
-    [JsonPropertyName("isGenreCheckedCS")]
-    public List<string>? SongGenresResponse { get; init; }
+    [JsonPropertyName("textCS")]
+    public string? TextResponse { get; set; }
 
+    // common:
     [JsonPropertyName("genresNamesCS")]
-    public List<string>? GenreListResponse { get; init; }
+    public List<string>? CommonTagsListResponse { get; init; }
+
+    [JsonPropertyName("savedTextId")]
+    public int NoteId { get; set; }
 
     public string? ErrorMessageResponse { get; set; }
-
-    // request and response
-    [JsonPropertyName("savedTextId")]
-    public int Id { get; set; }
 
     public NoteDto()
     {
     }
 
     public NoteDto(
-        List<string> genreListCs,
-        int savedTextId = 0,
-        string textCs = "",
-        string titleCs = "",
-        List<string>? checkedCheckboxesCs = null)
+        List<string> commonTagsListResponse,
+        int noteId = 0,
+        string textResponse = "",
+        string titleResponse = "",
+        List<string>? tagsCheckedUncheckedResponse = null)
     {
-        TextResponse = textCs;
-        TitleResponse = titleCs;
-        SongGenresResponse = checkedCheckboxesCs ?? new List<string>();
-        GenreListResponse = genreListCs;
-        Id = savedTextId;
+        TextResponse = textResponse;
+        TitleResponse = titleResponse;
+        TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
+        CommonTagsListResponse = commonTagsListResponse;
+        NoteId = noteId;
     }
 }

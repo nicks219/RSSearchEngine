@@ -71,9 +71,9 @@ public class ReadController : ControllerBase
     {
         try
         {
-            if (dto?.SongGenres?.Count == 0)
+            if (dto?.TagsCheckedRequest?.Count == 0)
             {
-                dto.SongGenres = Enumerable.Range(1, 44).ToList();
+                dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
 
             using var scope = _serviceScopeFactory.CreateScope();

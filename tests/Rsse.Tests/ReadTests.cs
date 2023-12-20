@@ -43,14 +43,14 @@ public class ReadTests
         var response = await _readModel.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_tagsCount, response.GenreListResponse?.Count);
+        Assert.AreEqual(_tagsCount, response.CommonTagsListResponse?.Count);
     }
 
     [TestMethod]
     public async Task ModelElectionTest_OnValidRequest_ShouldReturnNote()
     {
         // arrange:
-        var request = new NoteDto { SongGenres = new List<int> { 2 } };
+        var request = new NoteDto { TagsCheckedRequest = new List<int> { 2 } };
 
         // act:
         var response = await _readModel.ElectNote(request, null, false);
@@ -66,7 +66,7 @@ public class ReadTests
         // arrange:
         // var readModel = new ReadModel(_serviceProvider.ServiceScope);
         // var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
-        var request = new NoteDto { SongGenres = new List<int> { 2500 } };
+        var request = new NoteDto { TagsCheckedRequest = new List<int> { 2500 } };
 
         // act:
         var result = await _readModel.ElectNote(request);
@@ -142,10 +142,10 @@ public class ReadTests
 
         var expectedSongsCount = Math.Min(songsCount, count) * coefficient;
 
-        var request = new NoteDto { SongGenres = new List<int>() };
+        var request = new NoteDto { TagsCheckedRequest = new List<int>() };
 
         // жанров в стабе так себе, 44 точно нет =) скорректируй
-        request.SongGenres = Enumerable.Range(1, 44).ToList();
+        request.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
 
         var result = new Dictionary<int, int>();
 
@@ -157,7 +157,7 @@ public class ReadTests
 
             var response = await _readModel.ElectNote(request);
 
-            var id = response.Id;
+            var id = response.NoteId;
 
             if (!result.TryAdd(id, 1))
             {

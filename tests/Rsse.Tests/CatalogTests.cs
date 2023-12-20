@@ -19,9 +19,9 @@ namespace SearchEngine.Tests;
 [TestClass]
 public class CatalogTests
 {
-    private const int SonsPerPage = 10;
+    private const int NotesPerPage = 10;
     private CatalogModel? _catalogModel;
-    private int _songsCount;
+    private int _notesCount;
     private TestServiceCollection<CatalogModel>? _host;
     private TestLogger<CatalogModel>? _logger;
 
@@ -32,7 +32,7 @@ public class CatalogTests
         _catalogModel = new CatalogModel(_host.Scope);
         var repo = _host.Provider.GetRequiredService<IDataRepository>();
         TestDataRepository.CreateStubData(50);
-        _songsCount = repo.ReadAllNotes().Count();
+        _notesCount = repo.ReadAllNotes().Count();
         _logger = (TestLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
@@ -46,8 +46,8 @@ public class CatalogTests
         var response = await _catalogModel!.ReadCatalogPage(1);
 
         // asserts:
-        Assert.AreEqual(SonsPerPage, response.CatalogPage?.Count);
-        Assert.AreEqual(_songsCount, response.SongsCount);
+        Assert.AreEqual(NotesPerPage, response.CatalogPage?.Count);
+        Assert.AreEqual(_notesCount, response.SongsCount);
     }
 
     [TestMethod]

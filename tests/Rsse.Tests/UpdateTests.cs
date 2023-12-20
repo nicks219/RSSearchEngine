@@ -14,7 +14,7 @@ public class UpdateTests
 {
     private const string TestName = "0: key";
     private const string TestText = "test text text";
-    private int _testSongId;
+    private int _testNoteId;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private UpdateModel _updateModel;
@@ -23,12 +23,12 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var hostCacheTyped = new TestServiceCollection<TokenizerService>();
+        var hostTokenizerTyped = new TestServiceCollection<TokenizerService>();
         var hostModelTyped = new TestServiceCollection<UpdateModel>();
-        var findModel = new FindModel(hostCacheTyped.Scope);
+        var findModel = new FindModel(hostTokenizerTyped.Scope);
 
         TestDataRepository.CreateStubData(10);
-        _testSongId = findModel.FindIdByName(TestName);
+        _testNoteId = findModel.FindNoteId(TestName);
         _updateModel = new UpdateModel(hostModelTyped.Scope);
     }
 
@@ -39,26 +39,26 @@ public class UpdateTests
         var response = await _updateModel.GetOriginalNote(1);
 
         // assert:
-        Assert.AreEqual(TestDataRepository.TagList.Count, response.GenreListResponse?.Count);
+        Assert.AreEqual(TestDataRepository.TagList.Count, response.CommonTagsListResponse?.Count);
     }
 
     [TestMethod]
     public async Task ModelUpdateTest_ShouldUpdateNoteToExpected()
     {
         // arrange:
-        var song = new NoteDto
+        var request = new NoteDto
         {
-            Title = TestName,
-            Text = TestText,
-            SongGenres = new List<int> { 1, 2, 3, 11 },
-            Id = _testSongId
+            TitleRequest = TestName,
+            TextRequest = TestText,
+            TagsCheckedRequest = new List<int> { 1, 2, 3, 11 },
+            NoteId = _testNoteId
         };
 
         // act:
-        var response = await _updateModel.UpdateNote(song);
+        var response = await _updateModel.UpdateNote(request);
 
         // assert:
-        // TODO поправь - где-то в стабе я меняю местами text и title:
+        // TODO: в стабе поменяны местами text и title, поправь:
         Assert.AreEqual(TestText, response.TitleResponse);
     }
 

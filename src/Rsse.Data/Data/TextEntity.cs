@@ -13,9 +13,11 @@ public class TextEntity
     [Column("TextID")]
     public int TextId { get; set; }
 
+    [Column("Title")]
     [MaxLength(CommonDataConstants.MaxTitleLength)]
     public string? Title { get; set; }
 
+    [Column("Song")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Song { get; set; }
 

@@ -14,13 +14,13 @@ public class TokenizerActivatorService : BackgroundService
     private const int Day = 24;
     // update раз в сутки
     private const int TimeWait = 1 * Day * Hour * Min * BaseMs;
-    private readonly ITokenizerService _cache;
+    private readonly ITokenizerService _tokenizer;
     private readonly ILogger<TokenizerActivatorService> _logger;
     private int _count;
 
-    public TokenizerActivatorService(ITokenizerService cache, ILogger<TokenizerActivatorService> logger)
+    public TokenizerActivatorService(ITokenizerService tokenizer, ILogger<TokenizerActivatorService> logger)
     {
-        _cache = cache;
+        _tokenizer = tokenizer;
         _logger = logger;
     }
 
@@ -40,7 +40,7 @@ public class TokenizerActivatorService : BackgroundService
 
                 _count++;
 
-                _cache.Initialize();
+                _tokenizer.Initialize();
 
                 await Task.Delay(TimeWait, stoppingToken);
             }

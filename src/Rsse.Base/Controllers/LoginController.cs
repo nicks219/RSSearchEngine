@@ -49,12 +49,12 @@ public class LoginController : ControllerBase
         return LogOutMessage;
     }
 
-    private async Task<string> Login(LoginDto model)
+    private async Task<string> Login(LoginDto loginDto)
     {
         using var scope = _scope.CreateScope();
         try
         {
-            var id = await new LoginModel(scope).TryLogin(model);
+            var id = await new LoginModel(scope).TryLogin(loginDto);
 
             if (id == null)
             {

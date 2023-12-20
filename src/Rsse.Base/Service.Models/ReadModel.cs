@@ -28,7 +28,7 @@ public class ReadModel
     {
         try
         {
-            var res = _repo.ReadTitleByNoteId(id);
+            var res = _repo.ReadNoteTitle(id);
 
             return res;
         }
@@ -64,31 +64,31 @@ public class ReadModel
 
         try
         {
-            if (request is { SongGenres: not null } && request.SongGenres.Count != 0)
+            if (request is { TagsCheckedRequest: not null } && request.TagsCheckedRequest.Count != 0)
             {
                 if (!int.TryParse(id, out noteId))
                 {
-                    noteId = await _repo.GetElectedNoteId(request.SongGenres, randomElection);
+                    noteId = await _repo.GetElectedNoteId(request.TagsCheckedRequest, randomElection);
                 }
 
                 if (noteId != 0)
                 {
-                    var song = await _repo
+                    var notes = await _repo
                         .ReadNote(noteId)
                         .ToListAsync();
 
-                    if (song.Count > 0)
+                    if (notes.Count > 0)
                     {
-                        text = song[0].Item1;
+                        text = notes[0].Item1;
 
-                        title = song[0].Item2;
+                        title = notes[0].Item2;
                     }
                 }
             }
 
-            var genreListResponse = await _repo.ReadGeneralTagList();
+            var tagList = await _repo.ReadGeneralTagList();
 
-            return new NoteDto(genreListResponse, noteId, text, title);
+            return new NoteDto(tagList, noteId, text, title);
         }
         catch (Exception ex)
         {

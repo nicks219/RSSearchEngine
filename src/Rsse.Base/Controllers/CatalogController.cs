@@ -65,8 +65,8 @@ public class CatalogController : ControllerBase
         {
             using var scope = _serviceScopeFactory.CreateScope();
 
-            var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
-            cache.Delete(id);
+            var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+            tokenizer.Delete(id);
 
             return await new CatalogModel(scope).DeleteNote(id, pg);
         }

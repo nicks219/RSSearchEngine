@@ -40,35 +40,35 @@ public class CreateModel
         }
     }
 
-    public async Task<NoteDto> CreateNote(NoteDto createdNote)
+    public async Task<NoteDto> CreateNote(NoteDto noteDto)
     {
         try
         {
-            if (createdNote.SongGenres == null ||
-                string.IsNullOrEmpty(createdNote.Text) ||
-                string.IsNullOrEmpty(createdNote.Title) ||
-                createdNote.SongGenres.Count == 0)
+            if (noteDto.TagsCheckedRequest == null ||
+                string.IsNullOrEmpty(noteDto.TextRequest) ||
+                string.IsNullOrEmpty(noteDto.TitleRequest) ||
+                noteDto.TagsCheckedRequest.Count == 0)
             {
                 var errorDto = await ReadTagList();
 
                 errorDto.ErrorMessageResponse = CreateNoteEmptyDataError;
 
-                if (string.IsNullOrEmpty(createdNote.Text))
+                if (string.IsNullOrEmpty(noteDto.TextRequest))
                 {
                     return errorDto;
                 }
 
-                errorDto.TextResponse = createdNote.Text;
-                errorDto.TitleResponse = createdNote.Title;
+                errorDto.TextResponse = noteDto.TextRequest;
+                errorDto.TitleResponse = noteDto.TitleRequest;
 
                 return errorDto;
             }
 
             //createdNote.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdNote.Text)).ToString();
 
-            createdNote.Title = createdNote.Title.Trim();
+            noteDto.TitleRequest = noteDto.TitleRequest.Trim();
 
-            var newNoteId = await _repo.CreateNote(createdNote);
+            var newNoteId = await _repo.CreateNote(noteDto);
 
             if (newNoteId == 0)
             {
@@ -83,7 +83,7 @@ public class CreateModel
 
             var updatedDto = await ReadTagList();
 
-            var updatedTagList = updatedDto.GenreListResponse!;
+            var updatedTagList = updatedDto.CommonTagsListResponse!;
 
             var checkboxes = new List<string>();
 
@@ -92,7 +92,7 @@ public class CreateModel
                 checkboxes.Add("unchecked");
             }
 
-            foreach (var i in createdNote.SongGenres)
+            foreach (var i in noteDto.TagsCheckedRequest)
             {
                 checkboxes[i - 1] = "checked";
             }
@@ -110,14 +110,14 @@ public class CreateModel
     // \[([^\[\]]+)\]
     private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
 
-    public Task CreateTag(NoteDto? dto)
+    public Task CreateTagFromTitle(NoteDto? noteDto)
     {
-        if (dto?.Title == null)
+        if (noteDto?.TitleRequest == null)
         {
             return Task.CompletedTask;
         }
 
-        var tag = TitlePattern.Match(dto.Title).Value.Trim("[]".ToCharArray());
+        var tag = TitlePattern.Match(noteDto.TitleRequest).Value.Trim("[]".ToCharArray());
 
         return !string.IsNullOrEmpty(tag)
             ? _repo.CreateTagIfNotExists(tag)

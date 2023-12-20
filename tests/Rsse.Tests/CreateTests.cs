@@ -27,27 +27,27 @@ public class CreateTests
         var result = await _createModel!.ReadTagList();
 
         // assert:
-        Assert.AreEqual(TestDataRepository.TagList.Count, result.GenreListResponse?.Count);
+        Assert.AreEqual(TestDataRepository.TagList.Count, result.CommonTagsListResponse?.Count);
     }
 
     [TestMethod]
     public async Task ModelCreateTest_ShouldCreatNote_Correctly()
     {
         // arrange:
-        var song = new NoteDto
+        var request = new NoteDto
         {
-            Title = "test title",
-            Text = "test text",
-            SongGenres = new List<int> { 1, 2, 3, 4, 11 }
+            TitleRequest = "test title",
+            TextRequest = "test text",
+            TagsCheckedRequest = new List<int> { 1, 2, 3, 4, 11 }
         };
 
         // act:
-        var result = await _createModel!.CreateNote(song);
+        var response = await _createModel!.CreateNote(request);
         var expected = await new UpdateModel(new TestServiceCollection<UpdateModel>().Scope)
-            .GetOriginalNote(result.Id);
+            .GetOriginalNote(response.NoteId);
 
         // assert:
-        Assert.AreEqual(expected.Title, result.Title);
+        Assert.AreEqual(expected.TitleRequest, response.TitleRequest);
     }
 
     [TestCleanup]

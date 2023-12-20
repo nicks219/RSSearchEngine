@@ -69,11 +69,11 @@ public class CreateController : ControllerBase
 
             if (string.IsNullOrEmpty(result.ErrorMessageResponse))
             {
-                await model.CreateTag(dto); // [CREATE GENRE]
+                await model.CreateTagFromTitle(dto);
 
-                var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+                var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
 
-                cache.Create(result.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
+                tokenizer.Create(result.NoteId, new TextEntity { Title = dto.TitleRequest, Song = dto.TextRequest });
 
                 // создадим дамп при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)

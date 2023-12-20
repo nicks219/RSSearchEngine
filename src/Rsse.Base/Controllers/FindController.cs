@@ -33,8 +33,8 @@ public class FindController : ControllerBase
         {
             using var scope = _scopeFactory.CreateScope();
             var model = new FindModel(scope);
-            var result = model.Find(text);
-            const double threshold = 0.1D; // было 0 int
+            var result = model.FindSearchIndexes(text);
+            const double threshold = 0.1D;
 
             switch (result.Count)
             {

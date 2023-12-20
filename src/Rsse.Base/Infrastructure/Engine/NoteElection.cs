@@ -19,7 +19,7 @@ public static class NoteElection
     {
         var checkedTags = checkedTagsList.ToArray();
 
-        var allElectableNotes = repo.ReadAllNotesTaggedBy(checkedTags);
+        var allElectableNotes = repo.ReadTaggedNotes(checkedTags);
         var howManyNotes = await allElectableNotes.CountAsync();
 
         if (howManyNotes == 0)

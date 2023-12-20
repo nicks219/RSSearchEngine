@@ -76,21 +76,21 @@ public class UpdateModel
     {
         try
         {
-            if (updatedNote.SongGenres == null
-                || string.IsNullOrEmpty(updatedNote.Text)
-                || string.IsNullOrEmpty(updatedNote.Title)
-                || updatedNote.SongGenres.Count == 0)
+            if (updatedNote.TagsCheckedRequest == null
+                || string.IsNullOrEmpty(updatedNote.TextRequest)
+                || string.IsNullOrEmpty(updatedNote.TitleRequest)
+                || updatedNote.TagsCheckedRequest.Count == 0)
             {
-                return await GetOriginalNote(updatedNote.Id);
+                return await GetOriginalNote(updatedNote.NoteId);
             }
 
             var initialNoteTags = await _repo
-                .ReadNoteTags(updatedNote.Id)
+                .ReadNoteTags(updatedNote.NoteId)
                 .ToListAsync();
 
             await _repo.UpdateNote(initialNoteTags, updatedNote);
 
-            return await GetOriginalNote(updatedNote.Id);
+            return await GetOriginalNote(updatedNote.NoteId);
         }
         catch (Exception ex)
         {

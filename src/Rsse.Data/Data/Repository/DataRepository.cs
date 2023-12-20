@@ -50,17 +50,17 @@ public class DataRepository : IDataRepository
         return songs;
     }
 
-    public string ReadTitleByNoteId(int id)
+    public string ReadNoteTitle(int noteId)
     {
         // см. предупреждение Rider "21 DB commands":
         var textEntity =
             _context.Text!
-            .First(s => s.TextId == id);
+            .First(s => s.TextId == noteId);
 
         return textEntity.Title!;
     }
 
-    public int FindNoteIdByTitle(string noteTitle)
+    public int ReadNoteId(string noteTitle)
     {
         var song =
             _context.Text!
@@ -69,7 +69,7 @@ public class DataRepository : IDataRepository
         return song.TextId;
     }
 
-    public IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
         // TODO: определить какой метод лучше
         // IQueryable<int> songsCollection = database.GenreText//
@@ -128,7 +128,7 @@ public class DataRepository : IDataRepository
     public async Task<List<string>> ReadGeneralTagList()
     {
         var genreList = await _context.Genre!
-            .OrderBy(g => g.GenreId) // лучше сделать на стороне бд (индекс Genre по дефолту)
+            .OrderBy(g => g.GenreId) // вместо сортировки лучше построить индекс на стороне бд (индекс Genre по дефолту)
             .Select(g => new Tuple<string, int>(g.Genre!, g.GenreTextInGenre!.Count))
             .ToListAsync();
 
@@ -140,7 +140,7 @@ public class DataRepository : IDataRepository
 
     public async Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
     {
-        var forAddition = note.SongGenres!.ToHashSet();
+        var forAddition = note.TagsCheckedRequest!.ToHashSet();
 
         var forDelete = initialTags.ToHashSet();
 
@@ -150,7 +150,7 @@ public class DataRepository : IDataRepository
 
         forDelete.ExceptWith(except);
 
-        if (await CheckTagsExistsError(note.Id, forAddition))
+        if (await CheckTagsExistsError(note.NoteId, forAddition))
         {
             // название песни остаётся неизменным (constraint)
             // Id жанров и номера кнопок с фронта совпадают
@@ -159,28 +159,28 @@ public class DataRepository : IDataRepository
             try
             {
                 // дешевле просто откатить или не начинать транзакцию, без механизма исключений
-                var text = await _context.Text!.FindAsync(note.Id);
+                var text = await _context.Text!.FindAsync(note.NoteId);
 
                 if (text == null)
                 {
                     throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
                 }
 
-                text.Title = note.Title;
+                text.Title = note.TitleRequest;
 
-                text.Song = note.Text;
+                text.Song = note.TextRequest;
 
                 _context.Text.Update(text);
 
                 _context.GenreText!
                     .RemoveRange(_context.GenreText
                         .Where(f =>
-                            f.TextId == note.Id && forDelete.Contains(f.GenreId)));
+                            f.TextId == note.NoteId && forDelete.Contains(f.GenreId)));
 
                 await _context.GenreText
                     .AddRangeAsync(forAddition
                         .Select(genre => new GenreTextEntity
-                        { TextId = note.Id, GenreId = genre }));
+                        { TextId = note.NoteId, GenreId = genre }));
 
                 await _context.SaveChangesAsync();
 
@@ -201,23 +201,23 @@ public class DataRepository : IDataRepository
 
     public async Task<int> CreateNote(NoteDto note)
     {
-        if (!await CheckTitleExistsError(note.Title!))
+        if (!await CheckTitleExistsError(note.TitleRequest!))
         {
-            return note.Id;
+            return note.NoteId;
         }
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var addition = new TextEntity { Title = note.Title, Song = note.Text };
+            var addition = new TextEntity { Title = note.TitleRequest, Song = note.TextRequest };
 
             await _context.Text!.AddAsync(addition);
 
             await _context.SaveChangesAsync();
 
             await _context.GenreText!
-                .AddRangeAsync(note.SongGenres!
+                .AddRangeAsync(note.TagsCheckedRequest!
                     .Select(genre => new GenreTextEntity
                     { TextId = addition.TextId, GenreId = genre }));
 
@@ -225,24 +225,24 @@ public class DataRepository : IDataRepository
 
             await transaction.CommitAsync();
 
-            note.Id = addition.TextId;
+            note.NoteId = addition.TextId;
         }
         catch (DataExistsException)
         {
             await transaction.RollbackAsync();
 
-            note.Id = 0;
+            note.NoteId = 0;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
 
-            note.Id = 0;
+            note.NoteId = 0;
 
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
 
-        return note.Id;
+        return note.NoteId;
     }
 
     public async Task<int> DeleteNote(int noteId)

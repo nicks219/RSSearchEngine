@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +26,6 @@ public class UpdateController : ControllerBase
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        var isAuthorized = accessor.HttpContext?.User.Claims.Any();
     }
 
     [HttpGet]
@@ -52,11 +50,12 @@ public class UpdateController : ControllerBase
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
+            var response = await new UpdateModel(scope).UpdateNote(dto);
 
-            var cache = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
-            cache.Update(dto.Id, new TextEntity { Title = dto.Title, Song = dto.Text });
+            var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+            tokenizer.Update(dto.NoteId, new TextEntity { Title = dto.TitleRequest, Song = dto.TextRequest });
 
-            return await new UpdateModel(scope).UpdateNote(dto);
+            return response;
         }
         catch (Exception ex)
         {

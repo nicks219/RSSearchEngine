@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
@@ -14,26 +13,26 @@ public class FindModel
     private readonly IDataRepository _repo;
     private readonly ITokenizerProcessor _processor;
 
-    private readonly ConcurrentDictionary<int, List<int>> _reducedCache;
-    private readonly ConcurrentDictionary<int, List<int>> _extendedCache;
+    private readonly ConcurrentDictionary<int, List<int>> _reducedLines;
+    private readonly ConcurrentDictionary<int, List<int>> _extendedLines;
 
     public FindModel(IServiceScope scope)
     {
         _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
         _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        _reducedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
-        _extendedCache = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
+        _reducedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+        _extendedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
     }
 
-    public int FindIdByName(string name)
+    public int FindNoteId(string name)
     {
-        var id = _repo.FindNoteIdByTitle(name);
+        var id = _repo.ReadNoteId(name);
 
         return id;
     }
 
-    public Dictionary<int, double> Find(string text)
+    public Dictionary<int, double> FindSearchIndexes(string text)
     {
         var result = new Dictionary<int, double>();
 
@@ -56,7 +55,7 @@ public class FindModel
 
         var tokens = _processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, values) in _extendedCache)
+        foreach (var (key, values) in _extendedLines)
         {
             var metric = _processor.ComputeComparisionMetric(values, tokens);
 
@@ -97,7 +96,7 @@ public class FindModel
         // убираем дубликаты слов для intersect - это меняет результаты поиска
         tokens = tokens.ToHashSet().ToList();
 
-        foreach (var (key, values) in _reducedCache)
+        foreach (var (key, values) in _reducedLines)
         {
             var metric = _processor.ComputeComparisionMetric(values, tokens);
 
