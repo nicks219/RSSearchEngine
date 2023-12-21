@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using SearchEngine.Data.Entities;
 
-namespace SearchEngine.Tests.Infrastructure.DAL;
+namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 public class TestQueryProvider : IAsyncQueryProvider
 {

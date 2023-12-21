@@ -37,16 +37,17 @@ public sealed class CatalogContext : DbContext
             switch (Database.ProviderName)
             {
                 case "Pomelo.EntityFrameworkCore.MySql":
-                    if (created) Database.ExecuteSqlRaw(MySqlScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(MySqlScript.CreateGenresScript);
                     break;
 
                 case "Microsoft.EntityFrameworkCore.SqlServer":
-                    if (created) Database.ExecuteSqlRaw(MsSqlScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(MsSqlScript.CreateGenresScript);
                     break;
 
+                // данный провайдер используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // можно инициализировать тестовую базу на каждый вызов контекста:
-                    if (created) Database.ExecuteSqlRaw(SqlLiteScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateGenresScript);
                     break;
 
                 default:

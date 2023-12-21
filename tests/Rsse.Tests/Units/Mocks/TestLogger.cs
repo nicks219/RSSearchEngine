@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace SearchEngine.Tests.Infrastructure;
+namespace SearchEngine.Tests.Units.Mocks;
 
 public class TestLogger<TModel> : ILogger<TModel>
 {

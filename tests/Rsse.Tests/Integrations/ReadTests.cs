@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Tests.Integrations.Infra;
 
-namespace SearchEngine.Tests.Integration;
+namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class IntegrationTests
+public class ReadTests
 {
     [TestMethod]
-    public async Task ReadNoteById_HttpCall_SimpleTest()
+    public async Task Integration_ReadNoteTitleById_ShouldPassCorrectly()
     {
-        // для тестов создаётся бд sqllite в файле с одной песней
+        // NB: для тестов скриптом создаётся SQLite бд в файле, с одной песней
 
         // arrange:
         var factory = new CustomWebAppFactory();

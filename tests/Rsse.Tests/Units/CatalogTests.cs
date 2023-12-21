@@ -11,10 +11,10 @@ using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Service.Models;
-using SearchEngine.Tests.Infrastructure;
-using SearchEngine.Tests.Infrastructure.DAL;
+using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-namespace SearchEngine.Tests;
+namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class CatalogTests

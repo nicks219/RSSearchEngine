@@ -1,6 +1,6 @@
 namespace SearchEngine.Data.Repository.Scripts;
 
-public static class MsSqlScripts
+public static class MsSqlScript
 {
     public const string CreateGenresScript = """
                                              SET IDENTITY_INSERT [dbo].[Genre] ON

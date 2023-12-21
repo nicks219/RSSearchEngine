@@ -3,7 +3,7 @@ using SearchEngine.Data.Configuration;
 namespace SearchEngine.Data.Repository.Scripts;
 
 // [TODO] разберись с индексами: индекс по genre, genre c id добавляются в алфавитном порядке столбца genre
-public static class MySqlScripts
+public static class MySqlScript
 {
     public const string CreateGenresScript = $"""
                                               INSERT Users(Email, Password) VALUES

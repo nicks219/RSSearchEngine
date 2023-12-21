@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace SearchEngine.Tests.Infrastructure.DAL;
+namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 public class TestQueryable<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
 {

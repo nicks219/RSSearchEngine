@@ -5,9 +5,9 @@ using SearchEngine.Configuration;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
-using SearchEngine.Tests.Infrastructure.DAL;
+using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-namespace SearchEngine.Tests.Infrastructure;
+namespace SearchEngine.Tests.Units.Mocks;
 
 public class TestServiceCollection<TScope> where TScope : class
 {

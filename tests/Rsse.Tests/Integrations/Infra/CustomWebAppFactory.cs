@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Hosting;
 
-namespace SearchEngine.Tests.Integration;
+namespace SearchEngine.Tests.Integrations.Infra;
 
 public class CustomWebAppFactory : WebApplicationFactory<IntegrationStartup>
 {

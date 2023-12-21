@@ -6,7 +6,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 
-namespace SearchEngine.Tests.Infrastructure.DAL;
+namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 public class TestCatalogRepository : IDataRepository
 {

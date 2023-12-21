@@ -4,10 +4,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Service.Models;
-using SearchEngine.Tests.Infrastructure;
-using SearchEngine.Tests.Infrastructure.DAL;
+using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-namespace SearchEngine.Tests;
+namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class UpdateTests

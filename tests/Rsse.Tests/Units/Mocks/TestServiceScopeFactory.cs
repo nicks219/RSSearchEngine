@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SearchEngine.Tests.Infrastructure;
+namespace SearchEngine.Tests.Units.Mocks;
 
 public class TestServiceScopeFactory : IServiceScopeFactory
 {

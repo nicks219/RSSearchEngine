@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Tests.Infrastructure.DAL;
+namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 public class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
 {

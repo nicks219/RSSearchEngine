@@ -9,10 +9,10 @@ using SearchEngine.Configuration;
 using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
-using SearchEngine.Tests.Infrastructure;
-using SearchEngine.Tests.Infrastructure.DAL;
+using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-namespace SearchEngine.Tests;
+namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class TokenizerTests

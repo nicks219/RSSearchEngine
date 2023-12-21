@@ -1,6 +1,11 @@
 namespace SearchEngine.Data.Repository.Scripts;
 
-public static class SqlLiteScripts
+/// <summary>
+/// Скрипт инициализируется при запуске интеграционных тестов
+/// Ссылка на особенности SQLite: https://www.sqlite.org/lang.html
+/// </summary>
+// ReSharper disable once InconsistentNaming
+public static class SQLiteIntegrationTestScript
 {
     public const string CreateGenresScript = """
                                              INSERT INTO [Genre] ([GenreID], [Genre]) VALUES (1, 'Авторские');

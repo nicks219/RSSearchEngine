@@ -9,9 +9,9 @@ using Newtonsoft.Json;
 using NSubstitute;
 using SearchEngine.Controllers;
 using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Tests.Infrastructure;
+using SearchEngine.Tests.Units.Mocks;
 
-namespace SearchEngine.Tests;
+namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class FindTests
