@@ -1,12 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Data.Repository.Contracts;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
 
-namespace RandomSongSearchEngine.Service.Models;
+namespace SearchEngine.Service.Models;
 
 public class CatalogModel
 {
     #region Defaults
+
+    public const string NavigateCatalogError = $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]";
+    private const string ReadCatalogPageError = $"[{nameof(CatalogModel)}: {nameof(ReadCatalogPage)} error]";
+    private const string DeleteNoteError = $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]";
 
     private const int Forward = 2;
     private const int Backward = 1;
@@ -20,7 +29,6 @@ public class CatalogModel
     public CatalogModel(IServiceScope serviceScope)
     {
         _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-        
         _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
@@ -29,16 +37,16 @@ public class CatalogModel
         try
         {
             var notesCount = await _repo.ReadNotesCount();
-            
+
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
-            
+
             return CreateCatalogDto(pageNumber, notesCount, catalogPage);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(ReadCatalogPage)} error]");
-            
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(ReadCatalogPage)} error]" };
+            _logger.LogError(ex, ReadCatalogPageError);
+
+            return new CatalogDto { ErrorMessage = ReadCatalogPageError };
         }
     }
 
@@ -47,22 +55,22 @@ public class CatalogModel
         try
         {
             var direction = catalog.Direction();
-            
+
             var pageNumber = catalog.PageNumber;
-            
+
             var notesCount = await _repo.ReadNotesCount();
-            
+
             pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
-            
+
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
-            
+
             return CreateCatalogDto(pageNumber, notesCount, catalogPage);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]");
-            
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]" };
+            _logger.LogError(ex, NavigateCatalogError);
+
+            return new CatalogDto { ErrorMessage = NavigateCatalogError };
         }
     }
 
@@ -71,14 +79,14 @@ public class CatalogModel
         try
         {
             await _repo.DeleteNote(noteId);
-            
+
             return await ReadCatalogPage(pageNumber);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]");
-            
-            return new CatalogDto { ErrorMessage = $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]" };
+            _logger.LogError(ex, DeleteNoteError);
+
+            return new CatalogDto { ErrorMessage = DeleteNoteError };
         }
     }
 
@@ -87,28 +95,29 @@ public class CatalogModel
         switch (navigation)
         {
             case Forward:
-            {
-                var pageCount = Math.DivRem(songsCount, PageSize, out var remainder);
-            
-                if (remainder > 0)
                 {
-                    pageCount++;
-                }
+                    var pageCount = Math.DivRem(songsCount, PageSize, out var remainder);
 
-                if (pageNumber < pageCount)
-                {
-                    pageNumber++;
-                }
+                    if (remainder > 0)
+                    {
+                        pageCount++;
+                    }
 
-                break;
-            }
+                    if (pageNumber < pageCount)
+                    {
+                        pageNumber++;
+                    }
+
+                    break;
+                }
             case Backward:
-            {
-                if (pageNumber > MinimalPageNumber) pageNumber--;
-                break;
-            }
+                {
+                    if (pageNumber > MinimalPageNumber) pageNumber--;
+                    break;
+                }
         }
 
+        if (pageNumber < MinimalPageNumber) pageNumber = MinimalPageNumber;
         return pageNumber;
     }
 

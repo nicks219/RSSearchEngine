@@ -11,8 +11,8 @@ services:
       - MYSQL_DATABASE=tagit
       - MYSQL_ROOT_PASSWORD=1
     restart: always
-    ports:
-      - 3306:3306
+    expose:
+      - 3306
     volumes:
       - mysql-volume:/var/lib/mysql
 

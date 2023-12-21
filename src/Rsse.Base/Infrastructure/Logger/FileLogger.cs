@@ -1,9 +1,12 @@
-﻿using System.Text;
+using System;
+using System.IO;
+using System.Text;
+using Microsoft.Extensions.Logging;
 
-namespace RandomSongSearchEngine.Infrastructure.Logger;
+namespace SearchEngine.Infrastructure.Logger;
 
 /// <summary>
-/// Мой логгер
+/// Кастомный логгер
 /// </summary>
 public class FileLogger : ILogger
 {
@@ -19,9 +22,9 @@ public class FileLogger : ILogger
         _categoryName = categoryName ?? "";
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
-        return null!;
+        return null;
     }
 
     //TODO доделай лог левел
@@ -47,13 +50,13 @@ public class FileLogger : ILogger
         {
             return;
         }
-        
+
         var log = new StringBuilder();
-            
+
         log.Append(DateTime.Now + "   [" + logLevel.ToString().ToUpperInvariant() + "] [" + _categoryName + "]  ");
-            
+
         log.Append(formatter(state, exception!) + Environment.NewLine);
-            
+
         if (exception != null)
         {
             log.Append(exception.GetType() + "    " + exception.Message + Environment.NewLine);
@@ -61,7 +64,7 @@ public class FileLogger : ILogger
         }
 
         var fullLog = log.ToString();
-            
+
         lock (Lock)
         {
             File.AppendAllText(_filePath, fullLog);

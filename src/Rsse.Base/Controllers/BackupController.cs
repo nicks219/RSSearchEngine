@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using System;
+using System.IO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RandomSongSearchEngine.Infrastructure;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Infrastructure;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [Authorize]
 [Route("backup")]
@@ -11,12 +15,14 @@ namespace RandomSongSearchEngine.Controllers;
 public class BackupController : ControllerBase
 {
     private readonly ILogger<BackupController> _logger;
-    private readonly IMysqlBackup _backup;
+    private readonly IDbMigrator _migrator;
+    private readonly ITokenizerService _tokenizer;
 
-    public BackupController(ILogger<BackupController> logger, IMysqlBackup backup)
+    public BackupController(ILogger<BackupController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     {
         _logger = logger;
-        _backup = backup;
+        _migrator = migrator;
+        _tokenizer = tokenizer;
     }
 
     [HttpGet("/create")]
@@ -24,27 +30,7 @@ public class BackupController : ControllerBase
     {
         try
         {
-            var result = _backup.Backup(fileName);
-            /*var response = _context.HttpContext?.Response;
-
-            if (response != null)
-            {
-                response.Clear();
-                var contentType = "text/plain";
-                //contentType = "application/octet-stream";
-
-                //response.ContentType = contentType;
-                
-                //response.Headers.Add("Content-Disposition", "attachment; filename=" + result + ";");
-
-                //response.SendFileAsync(result).GetAwaiter().GetResult();
-                var path = Path.GetFullPath(result);
-                var name = Path.GetFileName(path);
-                
-                return File(System.IO.File.ReadAllBytes(path), contentType, name);
-
-                //return new PhysicalFileResult(path, contentType);// EmptyResult();
-            }*/
+            var result = _migrator.Create(fileName);
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
@@ -54,13 +40,15 @@ public class BackupController : ControllerBase
             return BadRequest($"[{nameof(BackupController)}] {nameof(CreateBackup)} error: {exception}");
         }
     }
-    
+
     [HttpGet("/restore")]
     public IActionResult RestoreFromBackup(string? fileName)
     {
         try
         {
-            var result = _backup.Restore(fileName);
+            var result = _migrator.Restore(fileName);
+            _tokenizer.Initialize();
+
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)

@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Menu from "./jsx/menu";
 import './bootstrap.css';
 import './react.css';
+import MenuRouter from "./jsx/menu-router";
 
 console.log('start');
 ReactDOM.render(
     <React.StrictMode>
-        <Menu />
+        <MenuRouter />
     </React.StrictMode>
   ,
   document.getElementById('root')

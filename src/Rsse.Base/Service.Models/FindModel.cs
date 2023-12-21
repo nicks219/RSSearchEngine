@@ -1,114 +1,116 @@
 using System.Collections.Concurrent;
-using RandomSongSearchEngine.Data.Repository.Contracts;
-using RandomSongSearchEngine.Infrastructure.Cache.Contracts;
-using RandomSongSearchEngine.Infrastructure.Engine;
-using RandomSongSearchEngine.Infrastructure.Engine.Contracts;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Infrastructure.Tokenizer;
+using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
-namespace RandomSongSearchEngine.Service.Models;
+namespace SearchEngine.Service.Models;
 
 public class FindModel
 {
     private readonly IDataRepository _repo;
-    private readonly ITextProcessor _processor;
-    
-    private readonly ConcurrentDictionary<int, List<int>> _undefinedCache;
-    private readonly ConcurrentDictionary<int, List<int>> _definedCache;
+    private readonly ITokenizerProcessor _processor;
+
+    private readonly ConcurrentDictionary<int, List<int>> _reducedLines;
+    private readonly ConcurrentDictionary<int, List<int>> _extendedLines;
 
     public FindModel(IServiceScope scope)
     {
         _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _processor = scope.ServiceProvider.GetRequiredService<ITextProcessor>();
-        
-        _undefinedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetUndefinedCache();
-        _definedCache = scope.ServiceProvider.GetRequiredService<ICacheRepository>().GetDefinedCache();
+        _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
+
+        _reducedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+        _extendedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
     }
 
-    public int FindIdByName(string name)
+    public int FindNoteId(string name)
     {
-        var id = _repo.FindNoteIdByTitle(name);
+        var id = _repo.ReadNoteId(name);
 
         return id;
     }
 
-    public Dictionary<int, double> Find(string text)
+    public Dictionary<int, double> ComputeSearchIndexes(string text)
     {
         var result = new Dictionary<int, double>();
 
-        // I. defined поиск: 0.8D
-        const double defined = 0.8D;
-        // II. undefined поиск: 0.4D
-        const double undefined = 0.6D; // 0.6 .. 0.75
+        // I. коэффициент extended поиска: 0.8D
+        const double extended = 0.8D;
+        // II. коэффициент reduced поиска: 0.4D
+        const double reduced = 0.6D; // 0.6 .. 0.75
 
-        var undefinedSearch = true;
+        var reducedChainSearch = true;
 
-        _processor.Setup(ConsonantChain.Defined);
+        _processor.SetupChain(ConsonantChain.Extended);
 
-        var hash = _processor.CleanUpString(text);
+        var preprocessedStrings = _processor.PreProcessNote(text);
 
-        if (hash.Count == 0)
+        if (preprocessedStrings.Count == 0)
         {
-            // песни вида "123 456" не ищем, так как получим весь каталог
+            // заметки вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
-        var item = _processor.GetHashSetFromStrings(hash);
+        var newTokensLine = _processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, value) in _definedCache)
+        foreach (var (key, cachedTokensLine) in _extendedLines)
         {
-            var metric = _processor.GetComparisionMetric(value, item);
+            var metric = _processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
 
-            // I. 100% совпадение defined, undefined можно не искать
-            if (metric == item.Count)
+            // I. 100% совпадение по extended последовательности, по reduced можно не искать
+            if (metric == newTokensLine.Count)
             {
-                undefinedSearch = false;
-                result.Add(key, metric * (1000D / value.Count)); // было int
+                reducedChainSearch = false;
+                result.Add(key, metric * (1000D / cachedTokensLine.Count)); // было int
                 continue;
             }
 
-            // II. defined% совпадение
-            if (metric >= item.Count * defined)
+            // II. extended% совпадение
+            if (metric >= newTokensLine.Count * extended)
             {
                 // [TODO] можно так оценить
-                // undefinedSearch = false;
-                result.Add(key, metric * (100D / value.Count)); // было int
+                // reducedChainSearch = false;
+                result.Add(key, metric * (100D / cachedTokensLine.Count)); // было int
             }
         }
 
-        if (!undefinedSearch)
+        if (!reducedChainSearch)
         {
             return result;
         }
 
-        _processor.Setup(ConsonantChain.Undefined);
+        _processor.SetupChain(ConsonantChain.Reduced);
 
-        hash = _processor.CleanUpString(text);
+        preprocessedStrings = _processor.PreProcessNote(text);
 
-        item = _processor.GetHashSetFromStrings(hash);
-        
-        if (hash.Count == 0)
+        newTokensLine = _processor.TokenizeSequence(preprocessedStrings);
+
+        if (preprocessedStrings.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
         // убираем дубликаты слов для intersect - это меняет результаты поиска
-        item = item.ToHashSet().ToList();
+        newTokensLine = newTokensLine.ToHashSet().ToList();
 
-        foreach (var (key, value) in _undefinedCache)
+        foreach (var (key, cachedTokensLine) in _reducedLines)
         {
-            var metric = _processor.GetComparisionMetric(value, item);
+            var metric = _processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
 
-            // III. 100% совпадение undefined
-            if (metric == item.Count)
+            // III. 100% совпадение по reduced
+            if (metric == newTokensLine.Count)
             {
-                result.TryAdd(key, metric * (10D / value.Count)); // было int
+                result.TryAdd(key, metric * (10D / cachedTokensLine.Count)); // было int
                 continue;
             }
 
-            // IV. undefined% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (metric >= item.Count * undefined)
+            // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
+            if (metric >= newTokensLine.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / value.Count)); // было int
+                result.TryAdd(key, metric * (1D / cachedTokensLine.Count)); // было int
             }
         }
 

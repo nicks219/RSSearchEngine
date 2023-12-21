@@ -1,78 +1,51 @@
-# TAG IT 
-#### Организация и поиск небольших заметок (база знаний)
-#### Разрабатывается для личной эксплуатации
-#### Чтобы не утонуть в море мудрости и знаний =)
-
-* Нечеткий тестковый поиск (запрос с ошибками): 
-  ```bash
-  /api/find/{string} вернет json {res: [id, weight]}
-  ```
-* Организация заметок "всё под рукой" по категориям
-* Распознаёт ссылки 
-* Для тэгов применяйте ```@``` (больший вес слова при поиске)
-* По выбранным категориям идёт с round robin
-* Работа с локальными поисковыми индексами учитывает необходимость 
-синхронизации индексов на подах
-* Для добавления тега - используйте в названии прямоугольные скобки
+# RS Search Engine: "Tag IT"
+#### Веб-сервис с каталогом для организация и поиска небольших заметок в т.ч. по тегам
+#### Главная фишка функционала - текстовый поиск, который выдерживает существенные синтаксические ошибки
 
 # Технологии
 * ```bash
-  .NET 6 | TypeScript React | MSTest | Docker
+  .NET 7 | TypeScript React | MSTest | Docker
   ```    
 * ```bash
-  [MSSQL] | MySQL
+  MySQL | EF
   ```
-# Запуск
-* Сбилдите фронт: ```npm install && npm run build```  
-* Для локального разработки запустите:  
-  ```npm start``` из папки ```Rsse.Front/ClientApp/build```  
-* В каталоге есть ```docker-compose.yml``` и ```Dockerfile```
-* В папке Rsse.Data/Dump есть MySql-дамп на 389 песен
-* Некоторая информация есть в папке ```docs```
+---------------------------------------------
 
-# Деплой
-* Пример скрипта доставки (компоуз должен быть поднят), не забудьте указать свой registry:
-```bash
-cd /mnt/f/tagit/src && \
-docker-compose down && \
-docker image rm nick219nick/tagit:v1 && \
-docker-compose -f docker-compose-build.yml build && \
-docker-compose -f docker-compose-build.yml up -d && \
-R_C_HASH=`docker ps | grep tagit | grep -E -o "^\S+"` && \
-docker commit -a Nick219 -m v1 ${R_C_HASH} nick219nick/tagit:v1 && \
-docker push nick219nick/tagit:v1;
-```
+## Дополнительное описание функционала
+* Для вычисления поискового индекса используется проприентарный алгоритм токенизации
+* Запрос на нечеткий текстовый поиск вернет массив с индексами релевантности для заметок: 
+  ```bash
+  /api/find/{string} вернет json {res: [id, weight]}
+  ```
+* Ссылки в заметках - кликабельны
+* По выбранным тегам просмотр заметок идёт с round robin либо рандомно
+* Для добавления нового тега используйте в названии заметки прямоугольные скобки
+* Для увеличения веса слова применяйте ```@``` в заметках и при поиске (актуально при отсутствии ошибок)
+* Синхронизация локальных поисковых индексов между разными подами сервиса будет доработана 
+в будущих версиях
+* Изначально сервис задумывался как каталог исключительно для песен, что повлияло на именования в коде и таблицах бд
 
-# Описание API
+## Локальная разработка
+* Сборка фронта:
+  - **npm install && npm run build** в папке ```Rsse.Front/ClientApp```
+  - либо запустите скрипты **install** и **build**
+* Запуск фронта:
+  - выполните команду **npm start** в папке ```Rsse.Front/ClientApp/build```
+  - либо запустите скрипт **start**
+* При проблемах с авторизацией замените `localohost` на `127.0.0.1`
+* Для билда и подъёма сервиса используйте ```docker-compose``` файлы и ```Dockerfile``` из папки с проектами
+* Рекомендуесая версия **Node.js** - **16.20.2**. Следующая версия роняла билд с ошибкой SSL:
+    **error:0308010C:digital envelope routines::unsupported**. (8-21-2023)
+* Дополнительная информация и шпаргалки по синтаксису докера можно найти в папке ```docs```
 
-В development зайдите на /swagger/v1/swagger.json, также в Rsse.Base/Controller закоммитан api.v1.json
+## Дополнительная информация для разработки
 
-# Установка Docker Engine на Ubuntu
+* БД:
+  - при первом запуске будет создана бд `tagit` с таблицей авторизации. При ошибке проверьте корректность строки подключения в `appsettings`.
+  - для накатки базы из дампа скопируйте файл с дампом бд, именуемый `backup_9.txt`, в папку `Rsse.Base/ClientApp/build` перед сборкой docker-образа.
+    После подъёма контейнера запустите команду **Каталог>Restore** в меню сервиса.
+  - для демонстрации функционала в VCS закоммитан файл с каталогом из 915 песен.
+* API
+  - под development доступна ручка **/swagger/v1/swagger.json**
+  - также в **Rsse.Base/Controller** закоммитан **api.v5.json**
 
-https://docs.docker.com/engine/install/ubuntu/  
-
-```bash
-sudo apt-get remove docker docker-engine docker.io containerd runc
-
-sudo apt-get update
-
-sudo apt-get install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-echo \
- "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
- $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-```
-А теперь =)
-```bash
-sudo docker run hello-world
-```

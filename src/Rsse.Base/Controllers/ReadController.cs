@@ -1,14 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RandomSongSearchEngine.Data.Dto;
-using RandomSongSearchEngine.Service.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.Models;
 
-namespace RandomSongSearchEngine.Controllers;
+namespace SearchEngine.Controllers;
 
 [ApiController]
 [Route("api/read")]
 
 public class ReadController : ControllerBase
 {
+    public const string ElectNoteError = $"[{nameof(ReadController)}: {nameof(ElectNote)} error]";
+    private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]";
+    private const string ReadTagListError = $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]";
+
     private static bool _randomElection = true;
     private readonly ILogger<ReadController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -33,12 +42,12 @@ public class ReadController : ControllerBase
         {
             using var scope = _serviceScopeFactory.CreateScope();
             var res = new ReadModel(scope).ReadTitleByNoteId(int.Parse(id));
-            return Ok(new {res});
+            return Ok(new { res });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]");
-            return BadRequest($"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]");
+            _logger.LogError(ex, ReadTitleByNoteIdError);
+            return BadRequest(ReadTitleByNoteIdError);
         }
     }
 
@@ -52,8 +61,8 @@ public class ReadController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]");
-            return new NoteDto { ErrorMessageResponse = $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]" };
+            _logger.LogError(ex, ReadTagListError);
+            return new NoteDto { ErrorMessageResponse = ReadTagListError };
         }
     }
 
@@ -62,19 +71,19 @@ public class ReadController : ControllerBase
     {
         try
         {
-            if (dto?.SongGenres?.Count == 0)
+            if (dto?.TagsCheckedRequest?.Count == 0)
             {
-                dto.SongGenres = Enumerable.Range(1, 44).ToList();
+                dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
-            
+
             using var scope = _serviceScopeFactory.CreateScope();
             var model = await new ReadModel(scope).ElectNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(ReadController)}: {nameof(ElectNote)} error]");
-            return new NoteDto { ErrorMessageResponse = $"[{nameof(ReadController)}: {nameof(ElectNote)} error]" };
+            _logger.LogError(ex, ElectNoteError);
+            return new NoteDto { ErrorMessageResponse = ElectNoteError };
         }
     }
 

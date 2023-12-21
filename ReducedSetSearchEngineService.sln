@@ -1,0 +1,104 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsse.Base", "src\Rsse.Base\Rsse.Base.csproj", "{57F9C100-FA1B-4DD0-A816-0196B48EBD71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests", "tests\Rsse.Tests\Rsse.Tests.csproj", "{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Data", "src\Rsse.Data\Rsse.Data.csproj", "{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2E-4C04-AE32-6D2576462FCA}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Packages.props = src\Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C685C254-6FDC-47DB-B1FD-3E9DF75688B3}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Directory.Packages.props = tests\Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC769-2E8D-4951-A185-1F260C962A19}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		README.md = README.md
+		src\docker-compose.yml = src\docker-compose.yml
+		src\docker-compose-build.yml = src\docker-compose-build.yml
+		src\Dockerfile = src\Dockerfile
+		drafts.md = drafts.md
+		CHANGELOG.md = CHANGELOG.md
+		docs\DOCKER_SCRIPTS.md = docs\DOCKER_SCRIPTS.md
+		src\Rsse.Base\Controllers\api.v5.json = src\Rsse.Base\Controllers\api.v5.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", "{F63409DD-059D-445B-95EA-897A6333935C}"
+	ProjectSection(SolutionItems) = preProject
+		src\Rsse.Front\ClientApp\src\bootstrap.css = src\Rsse.Front\ClientApp\src\bootstrap.css
+		src\Rsse.Front\ClientApp\src\index.tsx = src\Rsse.Front\ClientApp\src\index.tsx
+		src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json
+		src\Rsse.Front\ClientApp\src\jsx\catalog.tsx = src\Rsse.Front\ClientApp\src\jsx\catalog.tsx
+		src\Rsse.Front\ClientApp\src\jsx\create.tsx = src\Rsse.Front\ClientApp\src\jsx\create.tsx
+		src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx = src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx
+		src\Rsse.Front\ClientApp\src\jsx\loader.tsx = src\Rsse.Front\ClientApp\src\jsx\loader.tsx
+		src\Rsse.Front\ClientApp\src\jsx\login.tsx = src\Rsse.Front\ClientApp\src\jsx\login.tsx
+		src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx = src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx
+		src\Rsse.Front\ClientApp\src\jsx\read.tsx = src\Rsse.Front\ClientApp\src\jsx\read.tsx
+		src\Rsse.Front\ClientApp\src\jsx\update.tsx = src\Rsse.Front\ClientApp\src\jsx\update.tsx
+		src\Rsse.Front\ClientApp\src\react.css = src\Rsse.Front\ClientApp\src\react.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.scripts", "front.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
+	ProjectSection(SolutionItems) = preProject
+		src\Rsse.Front\build.bat = src\Rsse.Front\build.bat
+		src\Rsse.Front\install.bat = src\Rsse.Front\install.bat
+		src\Rsse.Front\start.bat = src\Rsse.Front\start.bat
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.ActiveCfg = Debug|x64
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.Build.0 = Debug|x64
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|x64.ActiveCfg = Release|x64
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|x64.Build.0 = Release|x64
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.Build.0 = Debug|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.ActiveCfg = Release|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.Build.0 = Release|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.Build.0 = Debug|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.ActiveCfg = Release|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{F63409DD-059D-445B-95EA-897A6333935C} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+	EndGlobalSection
+EndGlobal

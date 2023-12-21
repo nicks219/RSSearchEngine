@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- BASE -->
+    <PackageVersion Include="MySqlBackup.NET" Version="[2.3.7]" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="[6.5.0]" />
+    <!-- DATA -->
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="[7.0.0]" />
+  </ItemGroup>
+</Project>

@@ -1,23 +1,25 @@
-﻿using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace RandomSongSearchEngine.Data.Dto;
+namespace SearchEngine.Data.Dto;
 
 public record CatalogDto
 {
     // название и соответствующее ему Id из бд
-    [JsonPropertyName("titlesAndIds")] 
+    [JsonPropertyName("titlesAndIds")]
     public List<Tuple<string, int>>? CatalogPage { get; init; }
 
     [JsonPropertyName("navigationButtons")]
     public List<int>? NavigationButtons { get; init; }
 
-    [JsonPropertyName("songsCount")] 
+    [JsonPropertyName("songsCount")]
     public int SongsCount { get; init; }
 
-    [JsonPropertyName("pageNumber")] 
+    [JsonPropertyName("pageNumber")]
     public int PageNumber { get; init; }
 
-    [JsonPropertyName("errorMessage")] 
+    [JsonPropertyName("errorMessage")]
     public string? ErrorMessage { get; init; }
 
     public int Direction()
@@ -26,7 +28,7 @@ public record CatalogDto
         {
             return 0;
         }
-        
+
         return NavigationButtons[0] switch
         {
             1 => 1,
