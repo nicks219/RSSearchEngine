@@ -93,7 +93,7 @@ public class TokenizerTests
         var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
+        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
 
         // assert:
         extended.First()
@@ -121,7 +121,7 @@ public class TokenizerTests
         tokenizer.Create(2, new TextEntity
         {
             Title = TestDataRepository.SecondNoteTitle,
-            Song = TestDataRepository.SecondNoteText
+            Text = TestDataRepository.SecondNoteText
         });
 
         // assert:
@@ -173,11 +173,11 @@ public class TokenizerTests
         VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
+        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Song = TestDataRepository.SecondNoteText });
+        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
@@ -199,7 +199,7 @@ public class TokenizerTests
         tokenizerService.Create(1, new TextEntity
         {
             Title = TestDataRepository.FirstNoteTitle,
-            Song = TestDataRepository.FirstNoteText
+            Text = TestDataRepository.FirstNoteText
         });
 
     [TestCleanup]

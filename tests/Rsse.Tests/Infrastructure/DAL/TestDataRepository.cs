@@ -51,9 +51,9 @@ public class TestDataRepository : IDataRepository
         var songs = _notesTableStub?
             .Select(entity => new TextEntity
             {
-                Song = entity.Value.Item2,
+                Text = entity.Value.Item2,
                 Title = entity.Value.Item1,
-                TextId = entity.Key
+                NoteId = entity.Key
             })
             .ToList();
 

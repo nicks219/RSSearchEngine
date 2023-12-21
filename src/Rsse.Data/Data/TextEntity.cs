@@ -6,12 +6,12 @@ using SearchEngine.Data.Configuration;
 namespace SearchEngine.Data;
 
 /// <summary>
-/// Строка таблицы бд с текстами песен
+/// Строка таблицы бд с заметками
 /// </summary>
 public class TextEntity
 {
     [Column("TextID")]
-    public int TextId { get; set; }
+    public int NoteId { get; set; }
 
     [Column("Title")]
     [MaxLength(CommonDataConstants.MaxTitleLength)]
@@ -19,7 +19,7 @@ public class TextEntity
 
     [Column("Song")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
-    public string? Song { get; set; }
+    public string? Text { get; set; }
 
     public ICollection<GenreTextEntity>? GenreTextInText { get; set; }
 }

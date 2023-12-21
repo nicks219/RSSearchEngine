@@ -53,7 +53,7 @@ public class UpdateController : ControllerBase
             var response = await new UpdateModel(scope).UpdateNote(dto);
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
-            tokenizer.Update(dto.NoteId, new TextEntity { Title = dto.TitleRequest, Song = dto.TextRequest });
+            tokenizer.Update(dto.NoteId, new TextEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response;
         }

@@ -73,7 +73,7 @@ public class CreateController : ControllerBase
 
                 var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
 
-                tokenizer.Create(result.NoteId, new TextEntity { Title = dto.TitleRequest, Song = dto.TextRequest });
+                tokenizer.Create(result.NoteId, new TextEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
                 // создадим дамп при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)

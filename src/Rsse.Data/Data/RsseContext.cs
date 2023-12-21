@@ -84,31 +84,31 @@ public sealed class RsseContext : DbContext
         // base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<TextEntity>()
-            .HasKey(k => k.TextId);
+            .HasKey(k => k.NoteId);
 
         //CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<TextEntity>()
             .HasAlternateKey(k => k.Title);
 
         modelBuilder.Entity<GenreEntity>()
-            .HasKey(k => k.GenreId);
+            .HasKey(k => k.TagId);
 
         //CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<GenreEntity>()
-            .HasAlternateKey(k => k.Genre);
+            .HasAlternateKey(k => k.Tag);
 
         modelBuilder.Entity<GenreTextEntity>()
-            .HasKey(k => new { GenreID = k.GenreId, TextID = k.TextId });
+            .HasKey(k => new { GenreID = k.TagId, TextID = k.NoteId });
 
         modelBuilder.Entity<GenreTextEntity>()
             .HasOne(g => g.GenreInGenreText)
             .WithMany(m => m!.GenreTextInGenre)
-            .HasForeignKey(k => k.GenreId);
+            .HasForeignKey(k => k.TagId);
 
         modelBuilder.Entity<GenreTextEntity>()
             .HasOne(t => t.TextInGenreText)
             .WithMany(m => m!.GenreTextInText)
-            .HasForeignKey(k => k.TextId);
+            .HasForeignKey(k => k.NoteId);
     }
 }
 

@@ -13,7 +13,7 @@ namespace SearchEngine.Tests.Integration;
 public class IntegrationTests
 {
     [TestMethod]
-    public async Task ReadSongById_HttpCall_SimpleTest()
+    public async Task ReadNoteById_HttpCall_SimpleTest()
     {
         // для тестов создаётся бд sqllite в файле с одной песней
 

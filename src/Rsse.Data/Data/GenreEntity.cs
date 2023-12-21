@@ -5,15 +5,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SearchEngine.Data;
 
 /// <summary>
-/// Строка таблицы бд с жанрами песен
+/// Строка таблицы бд с тегами заметок
 /// </summary>
 public class GenreEntity
 {
     [Column("GenreID")]
-    public int GenreId { get; set; }
+    public int TagId { get; set; }
 
     [MaxLength(30)]
-    public string? Genre { get; set; }
+    [Column("Genre")]
+    public string? Tag { get; set; }
 
     public ICollection<GenreTextEntity>? GenreTextInGenre { get; set; }
 }

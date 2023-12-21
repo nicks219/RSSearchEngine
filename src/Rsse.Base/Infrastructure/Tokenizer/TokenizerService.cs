@@ -174,17 +174,17 @@ public class TokenizerService : ITokenizerService
         // extended tokens chain line:
         processor.SetupChain(ConsonantChain.Extended);
 
-        var note = processor.PreProcessNote(text.Song + ' ' + text.Title);
+        var note = processor.PreProcessNote(text.Text + ' ' + text.Title);
 
         var extendedTokensLine = processor.TokenizeSequence(note);
 
         // reduced tokens chain line:
         processor.SetupChain(ConsonantChain.Reduced);
 
-        note = processor.PreProcessNote(text.Song + ' ' + text.Title);
+        note = processor.PreProcessNote(text.Text + ' ' + text.Title);
 
         var reducedTokensLine = processor.TokenizeSequence(note);
 
-        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: text.TextId);
+        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: text.NoteId);
     }
 }
