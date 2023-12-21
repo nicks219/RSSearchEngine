@@ -20,7 +20,7 @@ namespace SearchEngine.Tests;
 [TestClass]
 public class ReadTests
 {
-    private readonly int _tagsCount = TestDataRepository.TagList.Count;
+    private readonly int _tagsCount = TestCatalogRepository.TagList.Count;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private ReadModel _readModel;
@@ -57,7 +57,7 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(_logger.ErrorMessage, string.Empty);
-        Assert.AreEqual(TestDataRepository.FirstNoteText, response.TitleResponse);
+        Assert.AreEqual(TestCatalogRepository.FirstNoteText, response.TitleResponse);
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public class ReadTests
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
         var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
-        TestDataRepository.CreateStubData(400);
+        TestCatalogRepository.CreateStubData(400);
 
         // TODO сделай метод, добавляющий N случайных заметок для проведения теста:
         const double coefficient = 0.7D;

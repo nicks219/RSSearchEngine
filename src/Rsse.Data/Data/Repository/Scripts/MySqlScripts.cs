@@ -2,8 +2,7 @@ using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Data.Repository.Scripts;
 
-// почему genre c id добавляются в АЛФАВИТНОМ ПОРЯДКЕ столбца genre?
-// [TODO] МАГИЯ - индекс по genre ?
+// [TODO] разберись с индексами: индекс по genre, genre c id добавляются в алфавитном порядке столбца genre
 public static class MySqlScripts
 {
     public const string CreateGenresScript = $"""

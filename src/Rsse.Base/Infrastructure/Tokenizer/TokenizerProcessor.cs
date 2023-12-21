@@ -86,12 +86,12 @@ public sealed class TokenizerProcessor : ITokenizerProcessor
         return result;
     }
 
-    public int ComputeComparisionMetric(List<int> cachedTokens, IEnumerable<int> freshTokens)
+    public int ComputeComparisionMetric(List<int> cachedTokens, IEnumerable<int> newTokens)
     {
         return _consonantChain switch
         {
-            ReducedConsonantChain => GetReducedChainMetric(cachedTokens, freshTokens),
-            ExtendedConsonantChain => GetExtendedChainMetric(cachedTokens, freshTokens),
+            ReducedConsonantChain => GetReducedChainMetric(cachedTokens, newTokens),
+            ExtendedConsonantChain => GetExtendedChainMetric(cachedTokens, newTokens),
             _ => throw new NotImplementedException("Unknown compare method")
         };
     }

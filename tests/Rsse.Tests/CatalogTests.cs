@@ -31,7 +31,7 @@ public class CatalogTests
         _host = new TestServiceCollection<CatalogModel>();
         _catalogModel = new CatalogModel(_host.Scope);
         var repo = _host.Provider.GetRequiredService<IDataRepository>();
-        TestDataRepository.CreateStubData(50);
+        TestCatalogRepository.CreateStubData(50);
         _notesCount = repo.ReadAllNotes().Count();
         _logger = (TestLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
     }
@@ -40,7 +40,7 @@ public class CatalogTests
     public async Task CatalogModel_ShouldRead_Page()
     {
         // arrange:
-        TestDataRepository.CreateStubData(50);
+        TestCatalogRepository.CreateStubData(50);
 
         // act:
         var response = await _catalogModel!.ReadCatalogPage(1);
@@ -57,7 +57,7 @@ public class CatalogTests
         const int forwardConst = 2;
 
         // arrange:
-        TestDataRepository.CreateStubData(50);
+        TestCatalogRepository.CreateStubData(50);
         var request = new CatalogDto { NavigationButtons = new List<int> { forwardConst }, PageNumber = page };
 
         // act:

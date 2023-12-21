@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Configuration;
-using SearchEngine.Data;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure;
@@ -56,7 +56,7 @@ public class Startup
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
-            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Nick", Version = "v1" });
+            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "RS-SearchEngine Service", Version = "v5" });
         });
 
         services.Configure<CommonBaseOptions>(_configuration.GetSection(nameof(CommonBaseOptions)));
@@ -77,9 +77,9 @@ public class Startup
             _ => throw new NotImplementedException("[unsupported db]")
         };
 
-        services.AddDbContext<RsseContext>(dbOptions);
+        services.AddDbContext<CatalogContext>(dbOptions);
 
-        services.AddScoped<IDataRepository, DataRepository>();
+        services.AddScoped<IDataRepository, CatalogRepository>();
 
         services.AddMemoryCache(); // это где-либо используется?
 

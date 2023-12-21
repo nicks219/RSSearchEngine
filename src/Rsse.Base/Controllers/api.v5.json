@@ -1,10 +1,52 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Nick",
-    "version": "v1"
+    "title": "RS-SearchEngine Service",
+    "version": "v5"
   },
   "paths": {
+    "/create": {
+      "get": {
+        "tags": [
+          "Backup"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/restore": {
+      "get": {
+        "tags": [
+          "Backup"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/catalog": {
       "get": {
         "tags": [
@@ -146,17 +188,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
@@ -171,17 +213,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             }
           }
@@ -192,17 +234,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
@@ -305,6 +347,18 @@
         }
       }
     },
+    "/api/read/election": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/read/title": {
       "get": {
         "tags": [
@@ -337,17 +391,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
@@ -358,21 +412,30 @@
         "tags": [
           "Read"
         ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             }
           }
@@ -383,20 +446,32 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -602,17 +677,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
@@ -627,17 +702,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SongDto"
+                "$ref": "#/components/schemas/NoteDto"
               }
             }
           }
@@ -648,17 +723,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SongDto"
+                  "$ref": "#/components/schemas/NoteDto"
                 }
               }
             }
@@ -702,7 +777,7 @@
         },
         "additionalProperties": false
       },
-      "SongDto": {
+      "NoteDto": {
         "type": "object",
         "properties": {
           "checkedCheckboxesJs": {
@@ -721,19 +796,19 @@
             "type": "string",
             "nullable": true
           },
-          "textCS": {
-            "type": "string",
+          "isGenreCheckedCS": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "nullable": true
           },
           "titleCS": {
             "type": "string",
             "nullable": true
           },
-          "isGenreCheckedCS": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
+          "textCS": {
+            "type": "string",
             "nullable": true
           },
           "genresNamesCS": {
@@ -743,13 +818,13 @@
             },
             "nullable": true
           },
-          "errorMessageResponse": {
-            "type": "string",
-            "nullable": true
-          },
           "savedTextId": {
             "type": "integer",
             "format": "int32"
+          },
+          "errorMessageResponse": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -759,13 +834,11 @@
         "properties": {
           "item1": {
             "type": "string",
-            "nullable": true,
-            "readOnly": true
+            "nullable": true
           },
           "item2": {
             "type": "integer",
-            "format": "int32",
-            "readOnly": true
+            "format": "int32"
           }
         },
         "additionalProperties": false

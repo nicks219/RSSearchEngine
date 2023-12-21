@@ -3,12 +3,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SearchEngine.Data.Configuration;
 
-namespace SearchEngine.Data;
+namespace SearchEngine.Data.Entities;
 
 /// <summary>
-/// Строка таблицы бд с заметками
+/// Представление строки таблицы бд с заметками
 /// </summary>
-public class TextEntity
+[Table("Text")]
+public class NoteEntity
 {
     [Column("TextID")]
     public int NoteId { get; set; }
@@ -21,5 +22,5 @@ public class TextEntity
     [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Text { get; set; }
 
-    public ICollection<GenreTextEntity>? GenreTextInText { get; set; }
+    public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
 }

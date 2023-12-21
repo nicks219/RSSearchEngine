@@ -7,6 +7,7 @@
 	margin-left: 1rem;
 	background-color: #ffe;
 	overflow-wrap: break-word;
+    user-select: none;
 }
 
 body {
@@ -47,6 +48,7 @@ body {
 
 #header li {
 	display: inline;
+    user-select: none;
 }
 
 #header li a {
@@ -56,6 +58,7 @@ body {
 	font-size: 1.3rem;
 	padding: 1rem;
     transition: all 0.5s 0.1s;
+    border-radius: 10px;
 }
 
 #header li a:hover {
@@ -242,7 +245,7 @@ button.pas {
 	color: white;
 	font-weight: bold;
 	font-size: 1rem;
-	border-radius: 15px;
+	border-radius: 10px;
 	margin-left: 1rem;
 	padding-left: 1rem;
 	padding-right: 1rem;
@@ -254,9 +257,9 @@ button.pas {
 	color: white;
 	font-weight: bold;
 	font-size: 2rem;
-	border-radius: 1em;
 	padding-left: 1rem;
 	padding-right: 1rem;
+    border-radius: 15px;
 }
 
 #submitButtonGreen[type="checkbox"] + label {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Configuration;
-using SearchEngine.Data;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Tests.Infrastructure;
@@ -47,7 +47,7 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        TestDataRepository.RemoveStubData(400);
+        TestCatalogRepository.RemoveStubData(400);
         var host = new TestServiceCollection<TokenizerService>();
         _factory = new TestServiceScopeFactory(host.Provider);
     }
@@ -93,7 +93,7 @@ public class TokenizerTests
         var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Update(1, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
+        tokenizer.Update(1, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
 
         // assert:
         extended.First()
@@ -118,10 +118,10 @@ public class TokenizerTests
         var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Create(2, new TextEntity
+        tokenizer.Create(2, new NoteEntity
         {
-            Title = TestDataRepository.SecondNoteTitle,
-            Text = TestDataRepository.SecondNoteText
+            Title = TestCatalogRepository.SecondNoteTitle,
+            Text = TestCatalogRepository.SecondNoteText
         });
 
         // assert:
@@ -173,11 +173,11 @@ public class TokenizerTests
         VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
+        tokenizer.Create(2, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2, new TextEntity { Title = TestDataRepository.SecondNoteTitle, Text = TestDataRepository.SecondNoteText });
+        tokenizer.Update(2, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
@@ -196,10 +196,10 @@ public class TokenizerTests
     }
 
     private static void CreateTestNote(ITokenizerService tokenizerService) =>
-        tokenizerService.Create(1, new TextEntity
+        tokenizerService.Create(1, new NoteEntity
         {
-            Title = TestDataRepository.FirstNoteTitle,
-            Text = TestDataRepository.FirstNoteText
+            Title = TestCatalogRepository.FirstNoteTitle,
+            Text = TestCatalogRepository.FirstNoteText
         });
 
     [TestCleanup]

@@ -1,7 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SearchEngine.Data;
+namespace SearchEngine.Data.Entities;
 
+/// <summary>
+/// Представление строки таблицы бд с информацией для авторизации
+/// </summary>
 public class UserEntity
 {
     public int Id { get; set; }

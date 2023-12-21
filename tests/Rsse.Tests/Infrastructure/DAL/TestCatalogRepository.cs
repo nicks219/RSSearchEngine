@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SearchEngine.Data;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Infrastructure.DAL;
 
-public class TestDataRepository : IDataRepository
+public class TestCatalogRepository : IDataRepository
 {
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
@@ -46,18 +46,18 @@ public class TestDataRepository : IDataRepository
         }
     }
 
-    public IQueryable<TextEntity> ReadAllNotes()
+    public IQueryable<NoteEntity> ReadAllNotes()
     {
-        var songs = _notesTableStub?
-            .Select(entity => new TextEntity
+        var notes = _notesTableStub?
+            .Select(keyValue => new NoteEntity
             {
-                Text = entity.Value.Item2,
-                Title = entity.Value.Item1,
-                NoteId = entity.Key
+                Text = keyValue.Value.Item2,
+                Title = keyValue.Value.Item1,
+                NoteId = keyValue.Key
             })
             .ToList();
 
-        return new TestQueryable<TextEntity>(songs!);
+        return new TestQueryable<NoteEntity>(notes!);
     }
 
     public string ReadNoteTitle(int noteId)
@@ -173,7 +173,7 @@ public class TestDataRepository : IDataRepository
         return Task.CompletedTask;
     }
 
-    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestDataRepository));
+    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestCatalogRepository));
 
     public void Dispose()
     {

@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Data", "src\Rsse.Data\Rsse.Data.csproj", "{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2E-4C04-AE32-6D2576462FCA}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Packages.props = src\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C685C254-6FDC-47DB-B1FD-3E9DF75688B3}"
 	ProjectSection(SolutionItems) = preProject
@@ -24,7 +27,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC7
 		src\docker-compose-build.yml = src\docker-compose-build.yml
 		src\Dockerfile = src\Dockerfile
 		drafts.md = drafts.md
-		src\Directory.Packages.props = src\Directory.Packages.props
+		CHANGELOG.md = CHANGELOG.md
+		docs\DOCKER_SCRIPTS.md = docs\DOCKER_SCRIPTS.md
+		src\Rsse.Base\Controllers\api.v5.json = src\Rsse.Base\Controllers\api.v5.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", "{F63409DD-059D-445B-95EA-897A6333935C}"

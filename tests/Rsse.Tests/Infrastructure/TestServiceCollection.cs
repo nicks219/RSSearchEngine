@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Configuration;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Tests.Infrastructure.DAL;
@@ -19,7 +18,7 @@ public class TestServiceCollection<TScope> where TScope : class
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<IDataRepository, TestDataRepository>();
+        services.AddSingleton<IDataRepository, TestCatalogRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
         services.AddSingleton<ILogger<TScope>, TestLogger<TScope>>();

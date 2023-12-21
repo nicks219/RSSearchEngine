@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SearchEngine.Data;
+namespace SearchEngine.Data.Entities;
 
 /// <summary>
-/// Строка таблицы бд с тегами заметок
+/// Представление строки таблицы бд с тегами заметок
 /// </summary>
-public class GenreEntity
+[Table("Genre")]
+public class TagEntity
 {
     [Column("GenreID")]
     public int TagId { get; set; }
@@ -16,5 +17,5 @@ public class GenreEntity
     [Column("Genre")]
     public string? Tag { get; set; }
 
-    public ICollection<GenreTextEntity>? GenreTextInGenre { get; set; }
+    public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
 }

@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Configuration;
-using SearchEngine.Data;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Service.Models;
@@ -73,7 +73,7 @@ public class CreateController : ControllerBase
 
                 var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
 
-                tokenizer.Create(result.NoteId, new TextEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+                tokenizer.Create(result.NoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
                 // создадим дамп при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)

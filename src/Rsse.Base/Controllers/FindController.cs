@@ -33,29 +33,29 @@ public class FindController : ControllerBase
         {
             using var scope = _scopeFactory.CreateScope();
             var model = new FindModel(scope);
-            var result = model.FindSearchIndexes(text);
+            var searchIndexes = model.ComputeSearchIndexes(text);
             const double threshold = 0.1D;
 
-            switch (result.Count)
+            switch (searchIndexes.Count)
             {
                 case 0:
                     return Ok(new { });
 
                 // нулевой вес не стоит учитывать если результатов много
                 case > 10:
-                    result = result
+                    searchIndexes = searchIndexes
                         .Where(kv => kv.Value > threshold)
                         .ToDictionary(x => x.Key, x => x.Value);
                     break;
             }
 
-            result = result
+            searchIndexes = searchIndexes
                 .OrderByDescending(x => x.Value)
                 .ToDictionary(x => x.Key, x => x.Value);
 
-            var resp = new OkObjectResult(new { Res = result });
+            var response = new OkObjectResult(new { Res = searchIndexes });
 
-            return resp;
+            return response;
         }
         catch (Exception ex)
         {

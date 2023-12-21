@@ -5,10 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Configuration;
 using SearchEngine.Controllers;
-using SearchEngine.Data;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Engine;
 using SearchEngine.Infrastructure.Tokenizer;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Tests.Infrastructure;
@@ -25,7 +24,7 @@ public class IntegrationStartup
             // https://andrewlock.net/when-asp-net-core-cant-find-your-controller-debugging-application-parts/
             .AddApplicationPart(typeof(ReadController).Assembly);
 
-        services.AddTransient<IDataRepository, DataRepository>();
+        services.AddTransient<IDataRepository, CatalogRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
         services.AddSingleton<ILogger, TestLogger<IntegrationStartup>>();
@@ -41,7 +40,7 @@ public class IntegrationStartup
         var connectionString = $"Data Source={dbPath}";
         // https://www.sqlite.org/lang.html
 
-        services.AddDbContext<RsseContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContext<CatalogContext>(options => options.UseSqlite(connectionString));
     }
 
     public static void Configure(IApplicationBuilder app)

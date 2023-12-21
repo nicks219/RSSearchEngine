@@ -4,69 +4,71 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Data.Repository.Exceptions;
 
 namespace SearchEngine.Data.Repository;
 
-public class DataRepository : IDataRepository
+public class CatalogRepository : IDataRepository
 {
-    private readonly RsseContext _context;
+    private readonly CatalogContext _context;
 
-    public DataRepository(IServiceProvider serviceProvider)
+    public CatalogRepository(IServiceProvider serviceProvider)
     {
-        _context = serviceProvider.GetRequiredService<RsseContext>();
+        _context = serviceProvider.GetRequiredService<CatalogContext>();
     }
 
     public async Task CreateTagIfNotExists(string tag)
     {
         tag = tag.ToUpper();
 
-        var exists = await _context.Genre!.AnyAsync(entity => entity.Tag == tag);
+        var exists = await _context.Tags!.AnyAsync(tagEntity => tagEntity.Tag == tag);
 
         if (exists)
         {
             return;
         }
 
-        var maxId = await _context.Genre!.Select(entity => entity.TagId).MaxAsync();
+        var maxId = await _context.Tags!.Select(tagEntity => tagEntity.TagId).MaxAsync();
 
-        var genre = new GenreEntity { Tag = tag, TagId = ++maxId };
+        var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
-        await _context.Genre!.AddAsync(genre);
+        await _context.Tags!.AddAsync(newTag);
 
         await _context.SaveChangesAsync();
     }
 
-    public IQueryable<TextEntity> ReadAllNotes()
+    public IQueryable<NoteEntity> ReadAllNotes()
     {
-        var songs =
-            _context.Text!
+        var notes =
+            _context.Notes!
             //.Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
-            .Select(entity => entity)
+            .Select(note => note)
             .AsNoTracking();
 
-        return songs;
+        return notes;
     }
 
     public string ReadNoteTitle(int noteId)
     {
         // см. предупреждение Rider "21 DB commands":
-        var textEntity =
-            _context.Text!
-            .First(entity => entity.NoteId == noteId);
+        var note =
+            _context.Notes!
+            .First(noteEntity => noteEntity.NoteId == noteId);
 
-        return textEntity.Title!;
+        return note.Title!;
     }
 
     public int ReadNoteId(string noteTitle)
     {
-        var song =
-            _context.Text!
-            .First(entity => entity.Title == noteTitle);
+        var note =
+            _context.Notes!
+            .First(noteEntity => noteEntity.Title == noteTitle);
 
-        return song.NoteId;
+        return note.NoteId;
     }
 
     public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
@@ -76,30 +78,30 @@ public class DataRepository : IDataRepository
         //    .Where(s => chosenOnes.Contains(s.GenreInGenreText.GenreID))
         //    .Select(s => s.TextInGenreText.TextID);
 
-        var songsForRandomizer = _context.Text!
-            .Where(entity => entity.GenreTextInText!.Any(c => checkedTags.Contains(c.TagId)))
-            .Select(entity => entity.NoteId);
+        var notesForElection = _context.Notes!
+            .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
+            .Select(note => note.NoteId);
 
-        return songsForRandomizer;
+        return notesForElection;
     }
 
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
     {
-        var titlesAndIdsList = _context.Text!
-            .OrderBy(s => s.Title)
+        var titleAndIdList = _context.Notes!
+            .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(entity => new Tuple<string, int>(entity.Title!, entity.NoteId))
+            .Select(note => new Tuple<string, int>(note.Title!, note.NoteId))
             .AsNoTracking();
 
-        return titlesAndIdsList;
+        return titleAndIdList;
     }
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        var titleAndText = _context.Text!
-            .Where(entity => entity.NoteId == noteId)
-            .Select(entity => new Tuple<string, string>(entity.Text!, entity.Title!))
+        var titleAndText = _context.Notes!
+            .Where(note => note.NoteId == noteId)
+            .Select(note => new Tuple<string, string>(note.Text!, note.Title!))
             .AsNoTracking();
 
         return titleAndText;
@@ -107,9 +109,9 @@ public class DataRepository : IDataRepository
 
     public IQueryable<int> ReadNoteTags(int noteId)
     {
-        var songGenres = _context.GenreText!
-            .Where(entity => entity.TextInGenreText!.NoteId == noteId)
-            .Select(entity => entity.TagId);
+        var songGenres = _context.TagsToNotesRelation!
+            .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
+            .Select(relation => relation.TagId);
 
         return songGenres;
     }
@@ -117,23 +119,22 @@ public class DataRepository : IDataRepository
     public async Task<UserEntity?> GetUser(LoginDto login)
     {
         return await _context.Users!
-            .FirstOrDefaultAsync(u => u.Email == login.Email && u.Password == login.Password);
+            .FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
     }
 
     public async Task<int> ReadNotesCount()
     {
-        return await _context.Text!.CountAsync();
+        return await _context.Notes!.CountAsync();
     }
 
     public async Task<List<string>> ReadGeneralTagList()
     {
-        var genreList = await _context.Genre!
-            .OrderBy(entity =>
-                entity.TagId) // вместо сортировки лучше построить индекс на стороне бд (индекс Genre по дефолту)
-            .Select(entity => new Tuple<string, int>(entity.Tag!, entity.GenreTextInGenre!.Count))
+        var tagList = await _context.Tags!
+            .OrderBy(tag => tag.TagId) // вместо сортировки построй корректный индекс на стороне бд
+            .Select(tag => new Tuple<string, int>(tag.Tag!, tag.RelationEntityReference!.Count))
             .ToListAsync();
 
-        return genreList.Select(tagAndAmount =>
+        return tagList.Select(tagAndAmount =>
                 tagAndAmount.Item2 > 0
                     ? tagAndAmount.Item1 + ": " + tagAndAmount.Item2
                     : tagAndAmount.Item1)
@@ -152,37 +153,37 @@ public class DataRepository : IDataRepository
 
         forDelete.ExceptWith(except);
 
-        if (await CheckTagsExistsError(note.NoteId, forAddition))
+        if (await VerifyTagNotExists(note.NoteId, forAddition))
         {
-            // название песни остаётся неизменным (constraint)
-            // Id жанров и номера кнопок с фронта совпадают
+            // название заметки остаётся неизменным (constraint)
+            // ID тегов и номера кнопок с фронта совпадают
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
                 // дешевле просто откатить или не начинать транзакцию, без механизма исключений
-                var text = await _context.Text!.FindAsync(note.NoteId);
+                var processedNote = await _context.Notes!.FindAsync(note.NoteId);
 
-                if (text == null)
+                if (processedNote == null)
                 {
                     throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
                 }
 
-                text.Title = note.TitleRequest;
+                processedNote.Title = note.TitleRequest;
 
-                text.Text = note.TextRequest;
+                processedNote.Text = note.TextRequest;
 
-                _context.Text.Update(text);
+                _context.Notes.Update(processedNote);
 
-                _context.GenreText!
-                    .RemoveRange(_context.GenreText
-                        .Where(f =>
-                            f.NoteId == note.NoteId && forDelete.Contains(f.TagId)));
+                _context.TagsToNotesRelation!
+                    .RemoveRange(_context.TagsToNotesRelation
+                        .Where(relation =>
+                            relation.NoteId == note.NoteId && forDelete.Contains(relation.TagId)));
 
-                await _context.GenreText
+                await _context.TagsToNotesRelation
                     .AddRangeAsync(forAddition
                         .Select(id =>
-                            new GenreTextEntity
+                            new TagsToNotesEntity
                             {
                                 NoteId = note.NoteId,
                                 TagId = id
@@ -207,7 +208,7 @@ public class DataRepository : IDataRepository
 
     public async Task<int> CreateNote(NoteDto note)
     {
-        if (!await CheckTitleExistsError(note.TitleRequest!))
+        if (await VerifyTitleNotExists(note.TitleRequest!) == false)
         {
             return note.NoteId;
         }
@@ -216,18 +217,18 @@ public class DataRepository : IDataRepository
 
         try
         {
-            var addition = new TextEntity { Title = note.TitleRequest, Text = note.TextRequest };
+            var forAddition = new NoteEntity { Title = note.TitleRequest, Text = note.TextRequest };
 
-            await _context.Text!.AddAsync(addition);
+            await _context.Notes!.AddAsync(forAddition);
 
             await _context.SaveChangesAsync();
 
-            await _context.GenreText!
+            await _context.TagsToNotesRelation!
                 .AddRangeAsync(note.TagsCheckedRequest!
                     .Select(id =>
-                        new GenreTextEntity
+                        new TagsToNotesEntity
                         {
-                            NoteId = addition.NoteId,
+                            NoteId = forAddition.NoteId,
                             TagId = id
                         }));
 
@@ -235,7 +236,7 @@ public class DataRepository : IDataRepository
 
             await transaction.CommitAsync();
 
-            note.NoteId = addition.NoteId;
+            note.NoteId = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
@@ -261,22 +262,22 @@ public class DataRepository : IDataRepository
 
         try
         {
-            var result = 0;
+            var writtenEntries = 0;
 
-            var song = await _context.Text!.FindAsync(noteId);
+            var processedNote = await _context.Notes!.FindAsync(noteId);
 
-            if (song == null)
+            if (processedNote == null)
             {
-                return result;
+                return writtenEntries;
             }
 
-            _context.Text.Remove(song);
+            _context.Notes.Remove(processedNote);
 
-            result = await _context.SaveChangesAsync();
+            writtenEntries = await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
-            return result;
+            return writtenEntries;
         }
         catch (Exception ex)
         {
@@ -286,11 +287,32 @@ public class DataRepository : IDataRepository
         }
     }
 
+    private async Task<bool> VerifyTitleNotExists(string title)
+    {
+        return !await _context.Notes!.AnyAsync(entity => entity.Title == title);
+    }
+
+    private async Task<bool> VerifyTagNotExists(int noteId, IReadOnlyCollection<int> forAddition)
+    {
+        if (forAddition.Count == 0)
+        {
+            return true;
+        }
+
+        if (await _context.TagsToNotesRelation!.AnyAsync(relation =>
+                relation.NoteId == noteId && relation.TagId == forAddition.First()))
+        {
+            throw new DataExistsException("[Global Error: Tags Exists Error]");
+        }
+
+        return true;
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _context.DisposeAsync().ConfigureAwait(false);
 
-        //context = null;
+        // context = null;
 
         GC.SuppressFinalize(this);
     }
@@ -300,28 +322,8 @@ public class DataRepository : IDataRepository
     {
         _context.Dispose();
 
-        //context = null;
+        // context = null;
 
         GC.SuppressFinalize(this);
-    }
-
-    private async Task<bool> CheckTitleExistsError(string title)
-    {
-        return !await _context.Text!.AnyAsync(p => p.Title == title);
-    }
-
-    private async Task<bool> CheckTagsExistsError(int textId, IReadOnlyCollection<int> forAddition)
-    {
-        if (forAddition.Count <= 0)
-        {
-            return true;
-        }
-
-        if (await _context.GenreText!.AnyAsync(p => p.NoteId == textId && p.TagId == forAddition.First()))
-        {
-            throw new DataExistsException("[Global Error: Tags Exists Error]");
-        }
-
-        return true;
     }
 }

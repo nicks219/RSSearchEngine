@@ -27,7 +27,7 @@ public class CreateTests
         var result = await _createModel!.ReadTagList();
 
         // assert:
-        Assert.AreEqual(TestDataRepository.TagList.Count, result.CommonTagsListResponse?.Count);
+        Assert.AreEqual(TestCatalogRepository.TagList.Count, result.CommonTagsListResponse?.Count);
     }
 
     [TestMethod]

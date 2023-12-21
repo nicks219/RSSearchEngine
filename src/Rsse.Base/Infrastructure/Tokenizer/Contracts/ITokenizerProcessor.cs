@@ -9,7 +9,7 @@ public interface ITokenizerProcessor : IDisposable
 
     public List<int> TokenizeSequence(IEnumerable<string> strings);
 
-    public int ComputeComparisionMetric(List<int> cachedTokens, IEnumerable<int> freshTokens);
+    public int ComputeComparisionMetric(List<int> cachedTokens, IEnumerable<int> newTokens);
 
     public void SetupChain(ConsonantChain consonantChain);
 

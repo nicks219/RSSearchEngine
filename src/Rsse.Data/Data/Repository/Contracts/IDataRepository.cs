@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Data.Repository.Contracts;
 
@@ -17,7 +18,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     // common:
     Task<List<string>> ReadGeneralTagList();
     Task<int> ReadNotesCount();
-    IQueryable<TextEntity> ReadAllNotes();
+    IQueryable<NoteEntity> ReadAllNotes();
     IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags);
     string ReadNoteTitle(int noteId);
     int ReadNoteId(string noteTitle);

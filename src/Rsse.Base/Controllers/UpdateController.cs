@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Data;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 using SearchEngine.Service.Models;
 
@@ -53,7 +53,7 @@ public class UpdateController : ControllerBase
             var response = await new UpdateModel(scope).UpdateNote(dto);
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
-            tokenizer.Update(dto.NoteId, new TextEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            tokenizer.Update(dto.NoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response;
         }

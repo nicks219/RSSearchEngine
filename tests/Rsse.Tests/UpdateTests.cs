@@ -27,7 +27,7 @@ public class UpdateTests
         var hostModelTyped = new TestServiceCollection<UpdateModel>();
         var findModel = new FindModel(hostTokenizerTyped.Scope);
 
-        TestDataRepository.CreateStubData(10);
+        TestCatalogRepository.CreateStubData(10);
         _testNoteId = findModel.FindNoteId(TestName);
         _updateModel = new UpdateModel(hostModelTyped.Scope);
     }
@@ -39,7 +39,7 @@ public class UpdateTests
         var response = await _updateModel.GetOriginalNote(1);
 
         // assert:
-        Assert.AreEqual(TestDataRepository.TagList.Count, response.CommonTagsListResponse?.Count);
+        Assert.AreEqual(TestCatalogRepository.TagList.Count, response.CommonTagsListResponse?.Count);
     }
 
     [TestMethod]

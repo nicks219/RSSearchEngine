@@ -32,7 +32,7 @@ public class FindModel
         return id;
     }
 
-    public Dictionary<int, double> FindSearchIndexes(string text)
+    public Dictionary<int, double> ComputeSearchIndexes(string text)
     {
         var result = new Dictionary<int, double>();
 
@@ -53,26 +53,26 @@ public class FindModel
             return result;
         }
 
-        var tokens = _processor.TokenizeSequence(preprocessedStrings);
+        var newTokensLine = _processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, values) in _extendedLines)
+        foreach (var (key, cachedTokensLine) in _extendedLines)
         {
-            var metric = _processor.ComputeComparisionMetric(values, tokens);
+            var metric = _processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
 
             // I. 100% совпадение по extended последовательности, по reduced можно не искать
-            if (metric == tokens.Count)
+            if (metric == newTokensLine.Count)
             {
                 reducedChainSearch = false;
-                result.Add(key, metric * (1000D / values.Count)); // было int
+                result.Add(key, metric * (1000D / cachedTokensLine.Count)); // было int
                 continue;
             }
 
             // II. extended% совпадение
-            if (metric >= tokens.Count * extended)
+            if (metric >= newTokensLine.Count * extended)
             {
                 // [TODO] можно так оценить
                 // reducedChainSearch = false;
-                result.Add(key, metric * (100D / values.Count)); // было int
+                result.Add(key, metric * (100D / cachedTokensLine.Count)); // было int
             }
         }
 
@@ -85,7 +85,7 @@ public class FindModel
 
         preprocessedStrings = _processor.PreProcessNote(text);
 
-        tokens = _processor.TokenizeSequence(preprocessedStrings);
+        newTokensLine = _processor.TokenizeSequence(preprocessedStrings);
 
         if (preprocessedStrings.Count == 0)
         {
@@ -94,23 +94,23 @@ public class FindModel
         }
 
         // убираем дубликаты слов для intersect - это меняет результаты поиска
-        tokens = tokens.ToHashSet().ToList();
+        newTokensLine = newTokensLine.ToHashSet().ToList();
 
-        foreach (var (key, values) in _reducedLines)
+        foreach (var (key, cachedTokensLine) in _reducedLines)
         {
-            var metric = _processor.ComputeComparisionMetric(values, tokens);
+            var metric = _processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
 
             // III. 100% совпадение по reduced
-            if (metric == tokens.Count)
+            if (metric == newTokensLine.Count)
             {
-                result.TryAdd(key, metric * (10D / values.Count)); // было int
+                result.TryAdd(key, metric * (10D / cachedTokensLine.Count)); // было int
                 continue;
             }
 
             // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (metric >= tokens.Count * reduced)
+            if (metric >= newTokensLine.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / values.Count)); // было int
+                result.TryAdd(key, metric * (1D / cachedTokensLine.Count)); // было int
             }
         }
 

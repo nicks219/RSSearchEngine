@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using SearchEngine.Data;
+using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Tests.Infrastructure.DAL;
 
@@ -38,7 +38,7 @@ public class TestQueryProvider : IAsyncQueryProvider
         var type = typeof(TResult);
 
         // cache tests:
-        if (type == typeof(IEnumerable<TextEntity>))
+        if (type == typeof(IEnumerable<NoteEntity>))
         {
             if (expression is ConstantExpression constantExpression)
             {
@@ -51,7 +51,7 @@ public class TestQueryProvider : IAsyncQueryProvider
         if (type == typeof(int) && expression is MethodCallExpression callExpression)
         {
             var query = (callExpression.Arguments[0] as ConstantExpression)?.Value;
-            var enumerableQuery = query as EnumerableQuery<TextEntity>;
+            var enumerableQuery = query as EnumerableQuery<NoteEntity>;
             var count = enumerableQuery?.Count() ?? throw new NullReferenceException("Count should not be null");
             return (TResult)(object)count;
         }

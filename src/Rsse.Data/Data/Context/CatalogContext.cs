@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Scripts;
 
-namespace SearchEngine.Data;
+namespace SearchEngine.Data.Context;
 
 /// <summary>
-/// Контекст (таблицы) базы данных
+/// Контекст базы данных
 /// </summary>
-public sealed class RsseContext : DbContext
+public sealed class CatalogContext : DbContext
 {
     private readonly object _obj = new();
     private static volatile bool _init;
@@ -15,7 +16,7 @@ public sealed class RsseContext : DbContext
     /// Конфигурируем контекст базы данных
     /// </summary>
     /// <param name="option"></param>
-    public RsseContext(DbContextOptions<RsseContext> option) : base(option)
+    public CatalogContext(DbContextOptions<CatalogContext> option) : base(option)
     {
         // const string relativePath = "Dump/rsse-5-4.dump";
         // var path = Path.Combine(AppContext.BaseDirectory, relativePath);
@@ -31,21 +32,21 @@ public sealed class RsseContext : DbContext
         {
             _init = true;
 
-            var res = Database.EnsureCreated();
+            var created = Database.EnsureCreated();
 
             switch (Database.ProviderName)
             {
                 case "Pomelo.EntityFrameworkCore.MySql":
-                    if (res) Database.ExecuteSqlRaw(MySqlScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(MySqlScripts.CreateGenresScript);
                     break;
 
                 case "Microsoft.EntityFrameworkCore.SqlServer":
-                    if (res) Database.ExecuteSqlRaw(MsSqlScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(MsSqlScripts.CreateGenresScript);
                     break;
 
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // можно инициализировать тестовую базу на каждый вызов контекста:
-                    if (res) Database.ExecuteSqlRaw(SqlLiteScripts.CreateGenresScript);
+                    if (created) Database.ExecuteSqlRaw(SqlLiteScripts.CreateGenresScript);
                     break;
 
                 default:
@@ -56,24 +57,24 @@ public sealed class RsseContext : DbContext
     }
 
     /// <summary>
-    /// Таблица бд с пользователями приложения
+    /// Контекст с пользователями приложения
     /// </summary>
     public DbSet<UserEntity>? Users { get; set; }
 
     /// <summary>
-    /// Таблица бд с текстами песен
+    /// Контекст с текстами заметок
     /// </summary>
-    public DbSet<TextEntity>? Text { get; set; }
+    public DbSet<NoteEntity>? Notes { get; set; }
 
     /// <summary>
-    /// Таблица бд с жанрами песен
+    /// Контекст с тегами заметок
     /// </summary>
-    public DbSet<GenreEntity>? Genre { get; set; }
+    public DbSet<TagEntity>? Tags { get; set; }
 
     /// <summary>
-    /// Таблица бд, связывающая песни и их жанры
+    /// Контекст для связыви заметок и тегов
     /// </summary>
-    public DbSet<GenreTextEntity>? GenreText { get; set; }
+    public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
 
     /// <summary>
     /// Создание связей для модели "многие-ко-многим"
@@ -83,32 +84,32 @@ public sealed class RsseContext : DbContext
     {
         // base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<TextEntity>()
-            .HasKey(k => k.NoteId);
+        modelBuilder.Entity<NoteEntity>()
+            .HasKey(noteEntity => noteEntity.NoteId);
 
         //CONSTRAINT UNIQUE NONCLUSTERED
-        modelBuilder.Entity<TextEntity>()
-            .HasAlternateKey(k => k.Title);
+        modelBuilder.Entity<NoteEntity>()
+            .HasAlternateKey(noteEntity => noteEntity.Title);
 
-        modelBuilder.Entity<GenreEntity>()
-            .HasKey(k => k.TagId);
+        modelBuilder.Entity<TagEntity>()
+            .HasKey(tagsEntity => tagsEntity.TagId);
 
         //CONSTRAINT UNIQUE NONCLUSTERED
-        modelBuilder.Entity<GenreEntity>()
-            .HasAlternateKey(k => k.Tag);
+        modelBuilder.Entity<TagEntity>()
+            .HasAlternateKey(tagsEntity => tagsEntity.Tag);
 
-        modelBuilder.Entity<GenreTextEntity>()
-            .HasKey(k => new { GenreID = k.TagId, TextID = k.NoteId });
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasKey(relationEntity => new { GenreID = relationEntity.TagId, TextID = relationEntity.NoteId });
 
-        modelBuilder.Entity<GenreTextEntity>()
-            .HasOne(g => g.GenreInGenreText)
-            .WithMany(m => m!.GenreTextInGenre)
-            .HasForeignKey(k => k.TagId);
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasOne(relationEntity => relationEntity.TagsInRelationEntity)
+            .WithMany(tagsEntity => tagsEntity.RelationEntityReference)
+            .HasForeignKey(relationEntity => relationEntity.TagId);
 
-        modelBuilder.Entity<GenreTextEntity>()
-            .HasOne(t => t.TextInGenreText)
-            .WithMany(m => m!.GenreTextInText)
-            .HasForeignKey(k => k.NoteId);
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasOne(relationEntity => relationEntity.NoteInRelationEntity)
+            .WithMany(noteEntity => noteEntity.RelationEntityReference)
+            .HasForeignKey(relationEntity => relationEntity.NoteId);
     }
 }
 

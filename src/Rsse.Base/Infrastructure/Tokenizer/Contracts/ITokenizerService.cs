@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using SearchEngine.Data;
+using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Infrastructure.Tokenizer.Contracts;
 
@@ -12,9 +12,9 @@ public interface ITokenizerService
 
     public void Delete(int id);
 
-    public void Create(int id, TextEntity text);
+    public void Create(int id, NoteEntity note);
 
-    public void Update(int id, TextEntity text);
+    public void Update(int id, NoteEntity note);
 
     public void Initialize();
 }

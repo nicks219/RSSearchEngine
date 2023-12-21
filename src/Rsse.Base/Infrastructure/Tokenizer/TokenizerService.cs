@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Configuration;
-using SearchEngine.Data;
+using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Infrastructure.Tokenizer.Contracts;
 
@@ -57,7 +57,7 @@ public class TokenizerService : ITokenizerService
         _lockSlim.ExitWriteLock();
     }
 
-    public void Create(int id, TextEntity text)
+    public void Create(int id, NoteEntity note)
     {
         if (!_isEnabled) return;
 
@@ -67,7 +67,7 @@ public class TokenizerService : ITokenizerService
 
         var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, text);
+        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
         if (!_extendedTokenLines.TryAdd(id, extendedLine))
         {
@@ -82,7 +82,7 @@ public class TokenizerService : ITokenizerService
         _lockSlim.ExitReadLock();
     }
 
-    public void Update(int id, TextEntity text)
+    public void Update(int id, NoteEntity note)
     {
         if (!_isEnabled) return;
 
@@ -92,7 +92,7 @@ public class TokenizerService : ITokenizerService
 
         var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, text);
+        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
         if (_extendedTokenLines.TryGetValue(id, out var cachedTokensLine))
         {
@@ -169,22 +169,22 @@ public class TokenizerService : ITokenizerService
         }
     }
 
-    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, TextEntity text)
+    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
     {
         // extended tokens chain line:
         processor.SetupChain(ConsonantChain.Extended);
 
-        var note = processor.PreProcessNote(text.Text + ' ' + text.Title);
+        var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
-        var extendedTokensLine = processor.TokenizeSequence(note);
+        var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         // reduced tokens chain line:
         processor.SetupChain(ConsonantChain.Reduced);
 
-        note = processor.PreProcessNote(text.Text + ' ' + text.Title);
+        preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
-        var reducedTokensLine = processor.TokenizeSequence(note);
+        var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
-        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: text.NoteId);
+        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
     }
 }
