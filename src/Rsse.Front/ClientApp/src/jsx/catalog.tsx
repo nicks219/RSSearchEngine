@@ -87,7 +87,7 @@ class CatalogView extends React.Component<IProps, IState> {
         let songs = [];
 
         // если работаем с дампами:
-        if(this.state.data.res && this.dumpWorkState == 1)
+        if(this.state.data.res && this.dumpWorkState === 1)
         {
             songs.push(
                 <tr key={"song "} className="bg-warning">
@@ -104,13 +104,15 @@ class CatalogView extends React.Component<IProps, IState> {
 
             this.dumpWorkState = 2;
         }
-        else if(this.state.data.res && this.dumpWorkState == 2)
+        else if(this.state.data.res && this.dumpWorkState === 2)
         {
             // если после обработки дампа нажата кнопка "Каталог":
             this.componentDidMount();
             this.dumpWorkState = 0;
         }
-        else {
+        // на отладке можно получить исключение и пустой стейт
+        else if(this.state.data.titlesAndIds !== null && this.state.data.titlesAndIds !== undefined)
+        {
             for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {
                 songs.push(
                     <tr key={"song " + i} className="bg-warning">

@@ -123,7 +123,7 @@ public class Startup
                     // same-origin на проде
                     "http://188.120.235.243:5000")
                 .AllowCredentials();
-            builder.WithHeaders("Content-type");
+            builder.WithHeaders("Content-Type");
             builder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
         });
 

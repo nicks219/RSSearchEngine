@@ -111,7 +111,7 @@ class Checkbox extends React.Component<IProps> {
         return (
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={checked} />
-                <label htmlFor={this.props.id} onClick={SubmitButton.checkButtonGetSong} about={getGenreId(this.props.id)}>
+                <label htmlFor={this.props.id} onClick={SubmitButton.loadNoteOnClick} about={getGenreId(this.props.id)}>
                     {getGenreName(this.props.id)}
                 </label>
             </div>
@@ -156,7 +156,7 @@ class SubmitButton extends React.Component<IProps> {
     requestBody: any;
     storage: string[] = [];
     storageId: string[] = [];
-    state: any;
+    submitState: any;
     btn: any;
     static state: any;
     static listener: any;
@@ -165,11 +165,12 @@ class SubmitButton extends React.Component<IProps> {
         super(props);
         this.submit = this.submit.bind(this);
         // подтверждение или отмена
-        this.state = 0;
+        this.submitState = 0;
         SubmitButton.listener = this.props.listener;
     }
 
-    static checkButtonGetSong: any = (e: any) => {
+    // чекбоксы превращаются в ссылки на каталог заметок
+    static loadNoteOnClick: any = (e: any) => {
         if (SubmitButton.state !== undefined) {
 
             let title = e.target.innerText;
@@ -186,6 +187,7 @@ class SubmitButton extends React.Component<IProps> {
         this.btn.style.display = "none";
         // отмена - сохраняем текст и название
         SubmitButton.state = undefined;
+        this.submitState = 0;
 
         let text = JSON.parse(this.requestBody).TextJS;
         let title = JSON.parse(this.requestBody).TitleJS;
@@ -207,14 +209,14 @@ class SubmitButton extends React.Component<IProps> {
         e.preventDefault();
 
         this.btn.style.display = "none";
-        SubmitButton.state = this.state;
+        SubmitButton.state = this.submitState;
 
-        if (this.state === 1)
+        if (this.submitState === 1)
         {
             // подтверждение
             SubmitButton.state = undefined;
 
-            this.state = 0;
+            this.submitState = 0;
             Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
             return;
         }
@@ -231,14 +233,14 @@ class SubmitButton extends React.Component<IProps> {
         this.requestBody = JSON.stringify(item);
 
         this.storage = [];
-        let promise = this.findSongMatches(formMessage, formTitle);
+        let promise = this.findSimilarNotes(formMessage, formTitle);
         await promise;
 
         if (this.storage.length > 0)
         {
             // переключение в "подтверждение или отмена"
             this.btn.style.display = "block";
-            this.state = 1;
+            this.submitState = 1;
             return;
         }
 
@@ -246,14 +248,14 @@ class SubmitButton extends React.Component<IProps> {
         Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
     }
 
-    findSongMatches = async (formMessage: string | File | null, formTitle: string | File | null) => {
+    findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
         let promise;
 
         if (typeof formMessage === "string") {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
         }
 
-        let callback = (data: any) => this.getFoundNames(data);
+        let callback = (data: any) => this.getNoteTitles(data);
         let query = "?text=" + formMessage + " " + formTitle;
 
         try {
@@ -266,7 +268,7 @@ class SubmitButton extends React.Component<IProps> {
             await promise;}
     }
 
-    getFoundNames = async (res: any) => {
+    getNoteTitles = async (res: any) => {
         let result = [];
         let response = res['res'];
         if (response === undefined) {

@@ -25,11 +25,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC7
 		README.md = README.md
 		src\docker-compose.yml = src\docker-compose.yml
 		src\docker-compose-build.yml = src\docker-compose-build.yml
-		src\Dockerfile = src\Dockerfile
 		drafts.md = drafts.md
 		CHANGELOG.md = CHANGELOG.md
 		docs\DOCKER_SCRIPTS.md = docs\DOCKER_SCRIPTS.md
 		src\Rsse.Base\Controllers\api.v5.json = src\Rsse.Base\Controllers\api.v5.json
+		src\Dockerfile-net = src\Dockerfile-net
+		src\Dockerfile-net-react = src\Dockerfile-net-react
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", "{F63409DD-059D-445B-95EA-897A6333935C}"
