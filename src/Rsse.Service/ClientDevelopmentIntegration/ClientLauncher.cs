@@ -13,7 +13,7 @@ internal static class ClientLauncher
 {
     // пользовательские настройки
     private const string LaunchCommand = "npm run dev";
-    private const string ClientRoot = "../Rsse.Front/ClientApp";
+    private const string ClientRoot = "../Rsse.Client/ClientApp";
     private const string DevServerUrl = "https://localhost:5173";
     private const bool KillBrowsersOnStop = true;
 

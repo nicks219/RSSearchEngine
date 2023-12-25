@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsse.Base", "src\Rsse.Base\Rsse.Base.csproj", "{57F9C100-FA1B-4DD0-A816-0196B48EBD71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsse.Service", "src\Rsse.Service\Rsse.Service.csproj", "{57F9C100-FA1B-4DD0-A816-0196B48EBD71}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests", "tests\Rsse.Tests\Rsse.Tests.csproj", "{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Data", "src\Rsse.Data\Rsse.Data.csproj", "{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rsse.Client", "src\Rsse.Front\ClientApp\Rsse.Client.esproj", "{7A622CEE-5DAF-47D6-89C5-328C6986A60F}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.esproj", "{7A622CEE-5DAF-47D6-89C5-328C6986A60F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2E-4C04-AE32-6D2576462FCA}"
 EndProject
@@ -21,29 +21,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC7
 		README.md = README.md
 		drafts.md = drafts.md
 		CHANGELOG.md = CHANGELOG.md
-		src\Rsse.Base\Controllers\api.v5.json = src\Rsse.Base\Controllers\api.v5.json
+		src\Rsse.Service\Controllers\api.v5.json = src\Rsse.Service\Controllers\api.v5.json
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Front\ClientApp\src\index.tsx = src\Rsse.Front\ClientApp\src\index.tsx
-		src\Rsse.Front\ClientApp\src\jsx\catalog.tsx = src\Rsse.Front\ClientApp\src\jsx\catalog.tsx
-		src\Rsse.Front\ClientApp\src\jsx\create.tsx = src\Rsse.Front\ClientApp\src\jsx\create.tsx
-		src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx = src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx
-		src\Rsse.Front\ClientApp\src\jsx\loader.tsx = src\Rsse.Front\ClientApp\src\jsx\loader.tsx
-		src\Rsse.Front\ClientApp\src\jsx\login.tsx = src\Rsse.Front\ClientApp\src\jsx\login.tsx
-		src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx = src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx
-		src\Rsse.Front\ClientApp\src\jsx\read.tsx = src\Rsse.Front\ClientApp\src\jsx\read.tsx
-		src\Rsse.Front\ClientApp\src\jsx\update.tsx = src\Rsse.Front\ClientApp\src\jsx\update.tsx
+		src\Rsse.Client\ClientApp\src\index.tsx = src\Rsse.Client\ClientApp\src\index.tsx
+		src\Rsse.Client\ClientApp\src\jsx\catalog.tsx = src\Rsse.Client\ClientApp\src\jsx\catalog.tsx
+		src\Rsse.Client\ClientApp\src\jsx\create.tsx = src\Rsse.Client\ClientApp\src\jsx\create.tsx
+		src\Rsse.Client\ClientApp\src\jsx\hideMenu.tsx = src\Rsse.Client\ClientApp\src\jsx\hideMenu.tsx
+		src\Rsse.Client\ClientApp\src\jsx\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\loader.tsx
+		src\Rsse.Client\ClientApp\src\jsx\login.tsx = src\Rsse.Client\ClientApp\src\jsx\login.tsx
+		src\Rsse.Client\ClientApp\src\jsx\menu-router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu-router.tsx
+		src\Rsse.Client\ClientApp\src\jsx\read.tsx = src\Rsse.Client\ClientApp\src\jsx\read.tsx
+		src\Rsse.Client\ClientApp\src\jsx\update.tsx = src\Rsse.Client\ClientApp\src\jsx\update.tsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Front\build.bat = src\Rsse.Front\build.bat
-		src\Rsse.Front\install.bat = src\Rsse.Front\install.bat
-		src\Rsse.Front\start.bat = src\Rsse.Front\start.bat
+		src\Rsse.Client\build.bat = src\Rsse.Client\build.bat
+		src\Rsse.Client\install.bat = src\Rsse.Client\install.bat
+		src\Rsse.Client\start.bat = src\Rsse.Client\start.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{783F77EB-C548-44FA-9E9C-03B9185033F1}"
@@ -53,19 +53,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Front\ClientApp\src\bootstrap.css = src\Rsse.Front\ClientApp\src\bootstrap.css
-		src\Rsse.Front\ClientApp\src\react.css = src\Rsse.Front\ClientApp\src\react.css
+		src\Rsse.Client\ClientApp\src\bootstrap.css = src\Rsse.Client\ClientApp\src\bootstrap.css
+		src\Rsse.Client\ClientApp\src\react.css = src\Rsse.Client\ClientApp\src\react.css
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.config", "client.config", "{4FD34D03-D220-4406-AAC5-846D83DBFB73}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Front\ClientApp\package.json = src\Rsse.Front\ClientApp\package.json
-		src\Rsse.Front\ClientApp\package-lock.json = src\Rsse.Front\ClientApp\package-lock.json
-		src\Rsse.Front\ClientApp\tsconfig.json = src\Rsse.Front\ClientApp\tsconfig.json
-		src\Rsse.Front\ClientApp\tsconfig.node.json = src\Rsse.Front\ClientApp\tsconfig.node.json
-		src\Rsse.Front\ClientApp\vite.config.ts = src\Rsse.Front\ClientApp\vite.config.ts
-		src\Rsse.Front\ClientApp\.eslintrc.cjs = src\Rsse.Front\ClientApp\.eslintrc.cjs
-		src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json
+		src\Rsse.Client\ClientApp\package.json = src\Rsse.Client\ClientApp\package.json
+		src\Rsse.Client\ClientApp\package-lock.json = src\Rsse.Client\ClientApp\package-lock.json
+		src\Rsse.Client\ClientApp\tsconfig.json = src\Rsse.Client\ClientApp\tsconfig.json
+		src\Rsse.Client\ClientApp\tsconfig.node.json = src\Rsse.Client\ClientApp\tsconfig.node.json
+		src\Rsse.Client\ClientApp\vite.config.ts = src\Rsse.Client\ClientApp\vite.config.ts
+		src\Rsse.Client\ClientApp\.eslintrc.cjs = src\Rsse.Client\ClientApp\.eslintrc.cjs
+		src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}"

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rsse.Base\Rsse.Base.csproj" />
+    <ProjectReference Include="..\..\src\Rsse.Service\Rsse.Service.csproj" />
   </ItemGroup>
 
 </Project>
