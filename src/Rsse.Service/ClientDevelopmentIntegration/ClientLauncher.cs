@@ -15,6 +15,9 @@ internal static class ClientLauncher
     private const string LaunchCommand = "npm run dev";
     private const string ClientRoot = "../Rsse.Client/ClientApp";
     private const string DevServerUrl = "https://localhost:5173";
+    private const bool ManageLaunchCommandResource = true;
+    // управление браузером также возможно из launchSettings
+    private const bool RunBrowserOnStart = false;
     private const bool KillBrowsersOnStop = true;
 
     // системные настройки
@@ -70,20 +73,26 @@ internal static class ClientLauncher
         var pathToIntegrationDir = string.Concat(Directory.GetCurrentDirectory(), Path.DirectorySeparatorChar,
                                    IntegrationFolder, Path.DirectorySeparatorChar);
 
-        var devServerInitializer = new Process();
-        devServerInitializer.StartInfo.FileName = "cmd.exe";
-        devServerInitializer.StartInfo.Arguments = $"/C cd {ClientRoot} && start {pathToIntegrationDir}{ShellProcessName} @cmk /k {LaunchCommand}";
+        if (ManageLaunchCommandResource)
+        {
+            var devServerInitializer = new Process();
+            devServerInitializer.StartInfo.FileName = "cmd.exe";
+            devServerInitializer.StartInfo.Arguments =
+                $"/C cd {ClientRoot} && start {pathToIntegrationDir}{ShellProcessName} @cmk /k {LaunchCommand}";
+            devServerInitializer.Start();
+            devServerInitializer.WaitForExit();
+            devServerInitializer.Close();
+        }
 
-        var devClientInitializer = new Process();
-        devClientInitializer.StartInfo.FileName = "cmd.exe";
-        devClientInitializer.StartInfo.Arguments = $"/C rundll32 url.dll,FileProtocolHandler {DevServerUrl}";
-
-        devServerInitializer.Start();
-        devClientInitializer.Start();
-        devServerInitializer.WaitForExit();
-        devClientInitializer.WaitForExit();
-        devServerInitializer.Close();
-        devClientInitializer.Close();
+        if (RunBrowserOnStart)
+        {
+            var devClientInitializer = new Process();
+            devClientInitializer.StartInfo.FileName = "cmd.exe";
+            devClientInitializer.StartInfo.Arguments = $"/C rundll32 url.dll,FileProtocolHandler {DevServerUrl}";
+            devClientInitializer.Start();
+            devClientInitializer.WaitForExit();
+            devClientInitializer.Close();
+        }
 
         // остановить при завершении Main
         AppDomain.CurrentDomain.ProcessExit += (_, _) => Down();
@@ -108,16 +117,19 @@ internal static class ClientLauncher
 
             _initialized = false;
 
-            // оставновка dev server: для остановки Vite будут остановдены все процессы node
-            // тк дочерние процессы node запускаются не только от rsse.cmd (но и например от cmd)
-            var nodeProcesses = Process.GetProcessesByName(NodeProcessName).ToList();
-            var cmdShellNodeProcesses = Process.GetProcessesByName(ShellProcessName).ToList();
-            nodeProcesses.ForEach(ps => ps.Kill());
-            cmdShellNodeProcesses.ForEach(ps => ps.Kill());
-
-            // остановка chrome: будут закрыты все вкладки и браузеры Chrome
-            if (KillBrowsersOnStop)
+            if (ManageLaunchCommandResource)
             {
+                // для оставновки dev-сервера Vite будут остановдены процессы node (в данной версии абсолютно все)
+                // тк необходимые дочерние процессы node запускаются не только от имени rsse.cmd (но и например от cmd)
+                var nodeProcesses = Process.GetProcessesByName(NodeProcessName).ToList();
+                var cmdShellNodeProcesses = Process.GetProcessesByName(ShellProcessName).ToList();
+                nodeProcesses.ForEach(ps => ps.Kill());
+                cmdShellNodeProcesses.ForEach(ps => ps.Kill());
+            }
+
+            if (RunBrowserOnStart && KillBrowsersOnStop)
+            {
+                // остановка браузера: будут закрыты все вкладки и браузеры заданного типа
                 var browserProcess = Process.GetProcessesByName(BrowserProcessName)
                     .FirstOrDefault(ps => ps.MainWindowTitle != string.Empty);
                 browserProcess?.Kill();

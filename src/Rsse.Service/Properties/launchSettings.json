@@ -3,16 +3,19 @@
     "ServerAndClient": {
       "commandName": "Project",
       "commandLineArgs": "--js true",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://127.0.0.1:5000"
+      "applicationUrl": "https://localhost:5173"
     },
 
     "ServerOnly": {
       "commandName": "Project",
       "commandLineArgs": "--js false",
+      "launchBrowser": true,
+      "launchUrl": "version",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -23,9 +26,11 @@
     "ClientOnly": {
       "commandName": "Project",
       "commandLineArgs": "--js only",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "https://localhost:5173"
     },
 
     "Production": {
