@@ -1,0 +1,130 @@
+#if WINDOWS
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+
+namespace SearchEngine.ClientDevelopmentIntegration;
+
+/// <summary>
+/// Подъём и остановка среды разработки JS
+/// </summary>
+internal static class ClientLauncher
+{
+    // пользовательские настройки
+    private const string LaunchCommand = "npm run dev";
+    private const string ClientRoot = "../Rsse.Front/ClientApp";
+    private const string DevServerUrl = "https://localhost:5173";
+    private const bool KillBrowsersOnStop = true;
+
+    // системные настройки
+    private const string ShellProcessName = "rsse.cmd";
+    private const string BrowserProcessName = "chrome";
+    private const string NodeProcessName = "node";
+    private const string IntegrationFolder = "ClientDevelopmentIntegration";
+
+    private static readonly object Lock = new();
+    private static volatile bool _initialized;
+
+    /// <summary>
+    /// Запустить dev-среду JS в требуемом режиме
+    /// </summary>
+    /// <param name="args">режимы старта и остановки <b>true - only - false</b></param>
+    /// <returns><b>false</b> - выбран отличный от <b>only</b> режим</returns>
+    internal static bool Run(string[]? args)
+    {
+        if (args is not ["--js", _])
+        {
+            return false;
+        }
+
+        var arg = args[1];
+        switch (arg)
+        {
+            case "true":
+                Up();
+                Console.WriteLine($"info: [{nameof(ClientLauncher)}] starting Vite");
+                return false;
+            case "only":
+                Up();
+                Console.WriteLine($"info: [{nameof(ClientLauncher)}] running JS only mode: press any key to stop");
+                Console.ReadLine();
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Запустить dev server и браузер и подписаться на завершение приложения
+    /// </summary>
+    private static void Up()
+    {
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+        if (isDevelopment == false || _initialized)
+        {
+            return;
+        }
+
+        var pathToIntegrationDir = string.Concat(Directory.GetCurrentDirectory(), Path.DirectorySeparatorChar,
+                                   IntegrationFolder, Path.DirectorySeparatorChar);
+
+        var devServerInitializer = new Process();
+        devServerInitializer.StartInfo.FileName = "cmd.exe";
+        devServerInitializer.StartInfo.Arguments = $"/C cd {ClientRoot} && start {pathToIntegrationDir}{ShellProcessName} @cmk /k {LaunchCommand}";
+
+        var devClientInitializer = new Process();
+        devClientInitializer.StartInfo.FileName = "cmd.exe";
+        devClientInitializer.StartInfo.Arguments = $"/C rundll32 url.dll,FileProtocolHandler {DevServerUrl}";
+
+        devServerInitializer.Start();
+        devClientInitializer.Start();
+        devServerInitializer.WaitForExit();
+        devClientInitializer.WaitForExit();
+        devServerInitializer.Close();
+        devClientInitializer.Close();
+
+        // остановить при завершении Main
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Down();
+        // остановить из IDE
+        Console.CancelKeyPress += (_, _) => Down();
+
+        _initialized = true;
+        Console.WriteLine($"info: [{nameof(ClientLauncher)}] started");
+    }
+
+    /// <summary>
+    /// Остановить dev server и браузер
+    /// </summary>
+    private static void Down()
+    {
+        lock (Lock)
+        {
+            if (!_initialized)
+            {
+                return;
+            }
+
+            _initialized = false;
+
+            // оставновка dev server: для остановки Vite будут остановдены все процессы node
+            // тк дочерние процессы node запускаются не только от rsse.cmd (но и например от cmd)
+            var nodeProcesses = Process.GetProcessesByName(NodeProcessName).ToList();
+            var cmdShellNodeProcesses = Process.GetProcessesByName(ShellProcessName).ToList();
+            nodeProcesses.ForEach(ps => ps.Kill());
+            cmdShellNodeProcesses.ForEach(ps => ps.Kill());
+
+            // остановка chrome: будут закрыты все вкладки и браузеры Chrome
+            if (KillBrowsersOnStop)
+            {
+                var browserProcess = Process.GetProcessesByName(BrowserProcessName)
+                    .FirstOrDefault(ps => ps.MainWindowTitle != string.Empty);
+                browserProcess?.Kill();
+            }
+
+            Console.WriteLine($"info: [{nameof(ClientLauncher)}] stopped");
+        }
+    }
+}
+#endif

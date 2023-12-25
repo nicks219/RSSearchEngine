@@ -28,6 +28,8 @@ public class Startup
     private const string MySql = "mysql";
     private const string DefaultConnectionKey = "DefaultConnection";
     private const string MsDataSourceKey = "Data Source";
+    private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
+    private const string LogFileName = "service.log";
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
     private readonly IConfiguration _configuration;
@@ -42,8 +44,6 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddCors();
-
         services.AddHostedService<TokenizerActivatorService>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
@@ -81,8 +81,6 @@ public class Startup
 
         services.AddScoped<IDataRepository, CatalogRepository>();
 
-        services.AddMemoryCache(); // это где-либо используется?
-
         services.AddControllers();
 
         services
@@ -91,11 +89,32 @@ public class Startup
             {
                 options.LoginPath = new PathString("/Account/Login/");
             });
+
+        services.AddCors(builder =>
+        {
+            builder.AddPolicy(DevelopmentCorsPolicy, c =>
+            {
+                c.WithOrigins(
+                        // dev сервер для JS
+                        "https://localhost:5173",
+                        "http://localhost:5173",
+                        "https://127.0.0.1:5173",
+                        "http://127.0.0.1:5173",
+                        // same-origin на проде
+                        "http://188.120.235.243:5000")
+                    .AllowCredentials();
+                c.WithHeaders("Content-Type");
+                c.WithMethods("GET", "POST", "DELETE", "OPTIONS");
+            });
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
     {
-        if (_env.IsDevelopment())
+        var isDevelopment = _env.IsDevelopment();
+        var isProduction = _env.IsProduction();
+
+        if (isDevelopment)
         {
             app.UseDeveloperExceptionPage();
 
@@ -115,42 +134,38 @@ public class Startup
 
         app.UseRouting();
 
-        app.UseCors(builder =>
-        {
-            builder.WithOrigins(
-                    "http://localhost:3000",
-                    "http://127.0.0.1:3000",
-                    // same-origin на проде
-                    "http://188.120.235.243:5000")
-                .AllowCredentials();
-            builder.WithHeaders("Content-Type");
-            builder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
-        });
+        app.UseCors(DevelopmentCorsPolicy);
 
         app.UseAuthentication();
 
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
 
-        UseLogging(loggerFactory, env);
+        UseLogging(loggerFactory);
+
+        LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 
     private string? GetConnectionString() => _configuration.GetConnectionString(DefaultConnectionKey);
 
-    private void UseLogging(ILoggerFactory loggerFactory, IHostEnvironment env)
+    private static void UseLogging(ILoggerFactory loggerFactory)
     {
-        loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "logger.txt"));
+        loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
+    }
+
+    private void LogSystemInfo(ILoggerFactory loggerFactory, bool isDevelopment, bool isProduction)
+    {
         var logger = loggerFactory.CreateLogger(typeof(FileLogger));
 
-        logger.LogInformation(
-            "Application started at {Date}, is 64-bit process: {Process}",
-            DateTime.Now.ToString(CultureInfo.InvariantCulture),
-            Environment.Is64BitProcess.ToString());
-
-        logger.LogInformation("IsDevelopment: {IsDev}", env.IsDevelopment().ToString());
-        logger.LogInformation("IsProduction: {IsProd}", env.IsProduction().ToString());
-        logger.LogInformation("Connection string here: {ConnectionString}", GetConnectionString());
+        logger.LogInformation("Application started at {Date}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());
+        logger.LogInformation("Development: {IsDev}", isDevelopment);
+        logger.LogInformation("Production: {IsProd}", isProduction);
+        logger.LogInformation("Connection string: {ConnectionString}", GetConnectionString());
         logger.LogInformation("Server GC: {IsServer}", GCSettings.IsServerGC);
         logger.LogInformation("CPU: {Cpus}", Environment.ProcessorCount);
     }

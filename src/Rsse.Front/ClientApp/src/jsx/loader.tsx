@@ -16,29 +16,31 @@ export class Loader {
     static backupRestoreUrl: string = "/restore";
 
     // для прода:
-    static credos: "omit" | "same-origin" | "include" = "same-origin";
-    static corsAddress: string = "";
+    static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
+    static corsDevelopmentOrigin: string = "";
+    static hostSchema = "http";
 
     static setDevelopmentCredos() {
         if (process.env.NODE_ENV === "development") {
-            this.credos = "include";
+            this.corsCredentialsPolicy = "include";
             // для разработки:
             // куки чувствительны к Origin ('localhost' != '127.0.0.1')
-            this.corsAddress = "http://127.0.0.1:5000";
+            this.corsDevelopmentOrigin = "http://127.0.0.1:5000";
+            this.hostSchema = "https";
         }
     }
-    
+
     static redirectToMenu(url: string) {
         Loader.setDevelopmentCredos();
         LoginRequired.MessageOff();
         // todo: проверить рабоспособность редиректа на хостинге
         try {
-            let redirectTo = "http://" + window.location.host + url;
+            let redirectTo = this.hostSchema + "://" + window.location.host + url;
             console.log("Redirect to: " + redirectTo);
             window.location.href = redirectTo;
         } catch {
             console.log("Loader: redirect exception");
-        }   
+        }
     }
 
     //GET request: /api/controller
@@ -62,7 +64,7 @@ export class Loader {
         }*/
 
         try {
-            const response = await fetch(this.corsAddress + url, {credentials: this.credos});
+            const response = await fetch(this.corsDevelopmentOrigin + url, {credentials: this.corsCredentialsPolicy});
             const data = await response.json().catch(() => LoginRequired.MessageOn(component, url));
             if (component.mounted) component.setState({data});
         } catch {
@@ -89,7 +91,7 @@ export class Loader {
         }*/
 
         try {
-            const response = await fetch(this.corsAddress + url + "?id=" + String(requestId), {credentials: this.credos});
+            const response = await fetch(this.corsDevelopmentOrigin + url + "?id=" + String(requestId), {credentials: this.corsCredentialsPolicy});
             const data = await response.json().catch(() => LoginRequired.MessageOn(component, url));
             if (component.mounted) component.setState({data});
         } catch {
@@ -123,11 +125,11 @@ export class Loader {
         }*/
 
         try {
-            const response = await fetch(this.corsAddress + url + "?id=" + String(id), {
+            const response = await fetch(this.corsDevelopmentOrigin + url + "?id=" + String(id), {
                 method: "POST",
                 headers: {'Content-Type': "application/json;charset=utf-8"},
                 body: requestBody,
-                credentials: this.credos
+                credentials: this.corsCredentialsPolicy
             });
 
             const data = await response.json().catch(() => LoginRequired.MessageOn(component, url));
@@ -158,9 +160,9 @@ export class Loader {
 
         try {
             const response = await fetch(
-                this.corsAddress + url + "?id=" + String(requestId) + "&pg=" + String(pageNumber), {
+                this.corsDevelopmentOrigin + url + "?id=" + String(requestId) + "&pg=" + String(pageNumber), {
                     method: "DELETE",
-                    credentials: this.credos
+                    credentials: this.corsCredentialsPolicy
                 });
 
             const data = await response.json().catch(() => LoginRequired.MessageOn(component, url));
@@ -189,7 +191,7 @@ export class Loader {
         }*/
 
         try {
-            fetch(this.corsAddress + url + query, {credentials: this.credos}).then(callback);
+            fetch(this.corsDevelopmentOrigin + url + query, {credentials: this.corsCredentialsPolicy}).then(callback);
             if (component !== null) {
                 LoginRequired.MessageOn(component, url);
             }
@@ -205,7 +207,7 @@ export class Loader {
         // url = this.corsAddress + url;
 
         /*let promise: Promise<any>;
-        
+
         try{
             promise = window.fetch(this.corsAddress + url + query,
                 {credentials: this.credos})
@@ -218,7 +220,7 @@ export class Loader {
         }*/
 
         try {
-            const response = await fetch(this.corsAddress + url + query, {credentials: this.credos});
+            const response = await fetch(this.corsDevelopmentOrigin + url + query, {credentials: this.corsCredentialsPolicy});
             return response.json().then(callback);
         } catch {
             console.log("Loader: promise exception");

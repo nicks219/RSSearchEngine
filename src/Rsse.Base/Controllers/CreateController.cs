@@ -19,10 +19,10 @@ namespace SearchEngine.Controllers;
 [ApiController]
 public class CreateController : ControllerBase
 {
-    private const string CreateNoteError = $"[{nameof(CreateController)}: {nameof(CreateNoteAsync)} error]";
-    private const string OnGetGenreListError = $"[{nameof(CreateController)}: {nameof(OnGetGenreListAsync)} error]";
+    private const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateNoteAsync)} error";
+    private const string OnGetGenreListError = $"[{nameof(CreateController)}] {nameof(GetTagListAsync)} error";
 
-    private const string BackupFileNameConstant = "last_backup";
+    private const string BackupFileName = "db_last_dump";
 
     private readonly ILogger<CreateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -42,7 +42,7 @@ public class CreateController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<NoteDto>> OnGetGenreListAsync()
+    public async Task<ActionResult<NoteDto>> GetTagListAsync()
     {
         try
         {
@@ -79,7 +79,7 @@ public class CreateController : ControllerBase
                 if (_baseOptions.CreateBackupForNewSong)
                 {
                     // создание полного дампа достаточно ресурсозатратно:
-                    _migrator.Create(BackupFileNameConstant);
+                    _migrator.Create(BackupFileName);
                 }
             }
 

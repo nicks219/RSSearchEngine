@@ -14,19 +14,11 @@ interface IProps {
     id: any;
 }
 
-interface IMatchParams {
-    textId: string;
-}
-
-interface IMatchedProps extends RouteComponentProps<IMatchParams> {
-}
-
-//export class HomeView extends React.Component<IMatchParams, IState> {
 export class HomeView extends React.Component<RouteComponentProps<{textId: string}>, IState> {
     formId: any;
     mounted: boolean;
     displayed: boolean;
-    
+
     readFromCatalog: boolean;
 
     public state: IState = {
@@ -42,7 +34,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
         this.formId = null;
         this.mounted = true;
         this.displayed = false;
-        
+
         this.readFromCatalog = false;
 
         this.mainForm = React.createRef();
@@ -50,7 +42,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
 
     componentDidMount() {
         this.formId = this.mainForm.current;
-        
+
         // если песня "заказана из каталога", то не обновляем содержимое компонента.
         if (!this.readFromCatalog) {
             Loader.getData(this, Loader.readUrl);
@@ -60,7 +52,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
             this.formId.style.display = "none";
             (document.getElementById("login")as HTMLElement).style.display = "none";
         }
-        
+
         this.readFromCatalog = false;
     }
 
@@ -94,12 +86,12 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
             let requestBody = JSON.stringify(item);
             let id = this.props.match.params.textId;//this.props.data
             this.readFromCatalog = true;
-            
+
             Loader.postData(this, requestBody, Loader.readUrl, id);
             //
             this.displayed = true;
         }
-        
+
         let checkboxes = [];
         if (this.state.data != null) {
             for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
@@ -109,7 +101,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
 
         return (
             <div>
-                
+
                 <form ref={this.mainForm}
                     id="dizzy">
                     {checkboxes}
@@ -143,19 +135,19 @@ interface IWithLinks{
 }
 
 class WithLinks extends React.Component<IWithLinks> {
-    
+
     constructor(props: any) {
         super(props);
     }
-    
+
     render() {
         let res: any = [];
 
         // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
         // [TODO] такую ссылку парсит некорректно, съедает ).
         this.props.text && this.props.text.replace(
-            /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim, 
-            (m, link, text) => {
+            /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
+            (_, link, text) => {
             return res.push(link ? <a href={(link[0]==="w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
         })
 
@@ -168,7 +160,7 @@ class Message extends React.Component<IProps> {
         super(props);
         this.hideMenu = this.hideMenu.bind(this);
     }
-    
+
     hideMenu() {
         this.props.formId.style.display = hideMenu(this.props.formId.style.display);
     }
@@ -177,7 +169,7 @@ class Message extends React.Component<IProps> {
         if (this.props.jsonStorage && Number(this.props.jsonStorage.savedTextId) !== 0) {
             window.textId = Number(this.props.jsonStorage.savedTextId);
         }
-        
+
         return (
             <span>
                 {this.props.jsonStorage != null ? (this.props.jsonStorage.textCS != null ?

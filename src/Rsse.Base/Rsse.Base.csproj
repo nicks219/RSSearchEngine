@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <UserSecretsId>89325659-56d0-436e-993a-e44aa19ed5e7</UserSecretsId>
         <Platforms>x64</Platforms>
         <Authors>nick219</Authors>
         <Company>nick219</Company>
@@ -10,6 +9,10 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>SearchEngine</RootNamespace>
         <ServerGarbageCollection>true</ServerGarbageCollection>
+    </PropertyGroup>
+  
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+      <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,5 +23,5 @@
     <ItemGroup>
       <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
     </ItemGroup>
-
+  
 </Project>

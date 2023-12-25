@@ -11,12 +11,11 @@ namespace SearchEngine.Controllers;
 
 [ApiController]
 [Route("api/read")]
-
 public class ReadController : ControllerBase
 {
-    public const string ElectNoteError = $"[{nameof(ReadController)}: {nameof(ElectNote)} error]";
-    private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}: {nameof(ReadTitleByNoteId)} error]";
-    private const string ReadTagListError = $"[{nameof(ReadController)}: {nameof(ReadTagList)} error]";
+    public const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(ElectNote)} error";
+    private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadTitleByNoteId)} error";
+    private const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadTagList)} error";
 
     private static bool _randomElection = true;
     private readonly ILogger<ReadController> _logger;

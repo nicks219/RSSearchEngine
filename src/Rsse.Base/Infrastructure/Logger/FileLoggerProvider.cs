@@ -9,7 +9,7 @@ public class FileLoggerProvider : ILoggerProvider
 
     public FileLoggerProvider(string path)
     {
-        this._path = path;
+        _path = path;
     }
 
     public ILogger CreateLogger(string categoryName)

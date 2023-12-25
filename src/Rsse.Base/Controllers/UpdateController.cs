@@ -16,8 +16,8 @@ namespace SearchEngine.Controllers;
 [ApiController]
 public class UpdateController : ControllerBase
 {
-    private const string GetInitialNoteError = $"[{nameof(UpdateController)}: {nameof(GetInitialNote)} error]";
-    private const string UpdateNoteError = $"[{nameof(UpdateController)}: {nameof(UpdateNote)} error]";
+    private const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(GetInitialNote)} error";
+    private const string UpdateNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateNote)} error";
 
     private readonly ILogger<UpdateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;

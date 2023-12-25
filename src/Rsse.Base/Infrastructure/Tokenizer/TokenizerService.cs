@@ -15,7 +15,7 @@ namespace SearchEngine.Infrastructure.Tokenizer;
 public class TokenizerService : ITokenizerService
 {
     // [TODO]: нужен ли ConcurrentDictionary при ReaderWriterLockSlim?
-    // [TODO]: можно заменить логгирование на пересоздание линии кэша
+    // [TODO]: дополнить логгирование ошибок пересозданием линии кэша
     private readonly IServiceScopeFactory _factory;
     private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
     private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
@@ -51,7 +51,7 @@ public class TokenizerService : ITokenizerService
 
         if (!(isReducedRemoved && isExtendedRemoved))
         {
-            _logger.LogError("[Cache Repository: concurrent delete error]");
+            _logger.LogError("[Cache Repository] on delete error");
         }
 
         _lockSlim.ExitWriteLock();
@@ -71,12 +71,12 @@ public class TokenizerService : ITokenizerService
 
         if (!_extendedTokenLines.TryAdd(id, extendedLine))
         {
-            _logger.LogError("[Cache Repository: concurrent create error - 2]");
+            _logger.LogError("[Cache Repository] extended vectors create error");
         }
 
         if (!_reducedTokenLines.TryAdd(id, reducedLine))
         {
-            _logger.LogError("[Cache Repository: concurrent create error - 1]");
+            _logger.LogError("[Cache Repository] reduced vectors create error");
         }
 
         _lockSlim.ExitReadLock();
@@ -98,24 +98,24 @@ public class TokenizerService : ITokenizerService
         {
             if (!_extendedTokenLines.TryUpdate(id, extendedLine, cachedTokensLine))
             {
-                _logger.LogError("[Cache Repository: concurrent update error - 1_2]");
+                _logger.LogError("[Cache Repository] extended vectors concurrent update error");
             }
         }
         else
         {
-            _logger.LogError("[Cache Repository: concurrent update error - 1_1]");
+            _logger.LogError("[Cache Repository] extended vectors has not been updated");
         }
 
         if (_reducedTokenLines.TryGetValue(id, out cachedTokensLine))
         {
             if (!_reducedTokenLines.TryUpdate(id, reducedLine, cachedTokensLine))
             {
-                _logger.LogError("[Cache Repository: concurrent update error - 2_2]");
+                _logger.LogError("[Cache Repository] reduced vectors concurrent update error");
             }
         }
         else
         {
-            _logger.LogError("[Cache Repository: concurrent update error - 2_1]");
+            _logger.LogError("[Cache Repository] reduced vectors has not been updated");
         }
 
         _lockSlim.ExitReadLock();
@@ -148,12 +148,12 @@ public class TokenizerService : ITokenizerService
 
                 if (!_extendedTokenLines.TryAdd(id, extendedLine))
                 {
-                    throw new MethodAccessException("[Cache Repository Init: extended failed]");
+                    throw new MethodAccessException("[Cache Repository] extended vectors initialization error");
                 }
 
                 if (!_reducedTokenLines.TryAdd(id, reducedLine))
                 {
-                    throw new MethodAccessException("[Cache Repository Init: reduced failed]");
+                    throw new MethodAccessException("[Cache Repository] reduced vectors initialization error");
                 }
             }
 
@@ -161,7 +161,7 @@ public class TokenizerService : ITokenizerService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[Cache Repository Init: general failed]");
+            _logger.LogError(ex, "[Cache Repository] initialization system error");
         }
         finally
         {

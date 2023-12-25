@@ -10,7 +10,7 @@ namespace SearchEngine.Controllers;
 [Route("api/find")]
 public class FindController : ControllerBase
 {
-    private const string FindError = $"[{nameof(FindController)}: {nameof(Find)} error: Search Indices May Failed !]";
+    private const string FindError = $"[{nameof(FindController)}] {nameof(Find)} error: search indices may corrupted";
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<FindController> _logger;

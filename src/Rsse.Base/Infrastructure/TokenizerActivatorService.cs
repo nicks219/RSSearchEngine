@@ -47,7 +47,7 @@ public class TokenizerActivatorService : BackgroundService
         }
         finally
         {
-            _logger.LogInformation("[cache activator service] graceful shutdown after {Count} cycles", _count.ToString());
+            _logger.LogInformation("[{Name}] graceful shutdown after {Count} cycles", nameof(TokenizerActivatorService), _count.ToString());
         }
     }
 }

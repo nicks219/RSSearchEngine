@@ -2,6 +2,8 @@
 FROM node:21-slim AS node-build-env
 WORKDIR /home/node/app
 COPY ./Rsse.Front/ClientApp/*.json ./
+COPY ./Rsse.Front/ClientApp/index.html ./
+COPY ./Rsse.Front/ClientApp/vite.config.ts ./
 COPY ./Rsse.Front/ClientApp/src/ ./src
 COPY ./Rsse.Front/ClientApp/public/ ./public
 RUN npm install

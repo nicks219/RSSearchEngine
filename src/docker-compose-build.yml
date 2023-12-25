@@ -17,11 +17,13 @@ services:
       - mysql-volume:/var/lib/mysql
 
   tagit:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-net-react
     container_name: tagit
     restart: always
     ports:
-      - 5000:5000
+      - 5001:5000
 
 volumes:
   mysql-volume:

@@ -14,9 +14,9 @@ namespace SearchEngine.Controllers;
 [ApiController]
 public class CatalogController : ControllerBase
 {
-    public const string NavigateCatalogError = $"[{nameof(CatalogController)}: {nameof(NavigateCatalog)} error]";
-    private const string ReadCatalogPageError = $"[{nameof(CatalogController)}: {nameof(ReadCatalogPage)} error]";
-    private const string DeleteNoteError = $"[{nameof(CatalogController)}: {nameof(DeleteNote)} error]";
+    public const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(NavigateCatalog)} error";
+    private const string ReadCatalogPageError = $"[{nameof(CatalogController)}:] {nameof(ReadCatalogPage)} error";
+    private const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(DeleteNote)} error";
 
     private readonly ILogger<CatalogController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;

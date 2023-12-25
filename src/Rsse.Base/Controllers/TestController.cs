@@ -39,8 +39,7 @@ public class TestController : Controller
     private const int Count = 1000 * 300;
     private static readonly int[] Obj = Enumerable.Range(1, Count).ToArray();
 
-    [Authorize]
-    [HttpGet($"test.traffic")]
+    [Authorize, HttpGet($"test.traffic")]
     public ActionResult GetMega([FromQuery] bool more = false)
     {
         // TODO: можно репортать время http запроса, используй DiagnosticSource
@@ -62,8 +61,7 @@ public class TestController : Controller
             });
     }
 
-    [Authorize]
-    [HttpGet("start")]
+    [Authorize, HttpGet("start")]
     public ActionResult Start()
     {
         _thread = new Thread(Method);
@@ -73,8 +71,7 @@ public class TestController : Controller
         return Ok("Counter start \r\n");
     }
 
-    [Authorize]
-    [HttpGet("stop")]
+    [Authorize, HttpGet("stop")]
     public ActionResult Stop()
     {
         _loop = false;
@@ -93,8 +90,7 @@ public class TestController : Controller
 
     #endregion
 
-    [Authorize]
-    [HttpGet("gc")]
+    [Authorize, HttpGet("gc")]
     public ActionResult GcCall()
     {
         GC.Collect(2, GCCollectionMode.Forced, true);
@@ -104,8 +100,7 @@ public class TestController : Controller
         return Ok("gc \r\n");
     }
 
-    [Authorize]
-    [HttpGet("test")]
+    [Authorize, HttpGet("test")]
     public ActionResult LogEveryRequest()
     {
         var info = GC.GetGCMemoryInfo();
@@ -133,8 +128,7 @@ public class TestController : Controller
         });
     }
 
-    [Authorize]
-    [HttpGet("test.every.nth")]
+    [Authorize, HttpGet("test.every.nth")]
     public ActionResult Get([FromQuery] int count = 100)
     {
         var info = GC.GetGCMemoryInfo();
@@ -164,23 +158,20 @@ public class TestController : Controller
         });
     }
 
-    [Authorize]
-    [HttpGet("live")]
+    [Authorize, HttpGet("live")]
     public string Live()
     {
         return "live";
     }
 
-    [Authorize]
-    [HttpGet("live.async")]
+    [Authorize, HttpGet("live.async")]
     public async Task<string> LiveAsync()
     {
         await Task.Delay(1);
         return "live.async";
     }
 
-    [Authorize]
-    [HttpGet("live.task")]
+    [Authorize, HttpGet("live.task")]
     public Task<string> LiveTask()
     {
         return Task.FromResult<string>("live.task");

@@ -12,13 +12,16 @@ namespace SearchEngine.Controllers;
 [Route("backup")]
 [ApiController]
 
-public class BackupController : ControllerBase
+public class DbDumpController : ControllerBase
 {
-    private readonly ILogger<BackupController> _logger;
+    private const string CreateError = $"[{nameof(DbDumpController)}] {nameof(CreateDump)} error";
+    private const string RestoreError = $"[{nameof(DbDumpController)}] {nameof(RestoreFromDump)} error";
+
+    private readonly ILogger<DbDumpController> _logger;
     private readonly IDbMigrator _migrator;
     private readonly ITokenizerService _tokenizer;
 
-    public BackupController(ILogger<BackupController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
+    public DbDumpController(ILogger<DbDumpController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     {
         _logger = logger;
         _migrator = migrator;
@@ -26,7 +29,7 @@ public class BackupController : ControllerBase
     }
 
     [HttpGet("/create")]
-    public IActionResult CreateBackup(string? fileName)
+    public IActionResult CreateDump(string? fileName)
     {
         try
         {
@@ -36,13 +39,13 @@ public class BackupController : ControllerBase
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, $"[{nameof(BackupController)}] {nameof(CreateBackup)} error");
-            return BadRequest($"[{nameof(BackupController)}] {nameof(CreateBackup)} error: {exception}");
+            _logger.LogError(exception, CreateError);
+            return BadRequest(CreateError);
         }
     }
 
     [HttpGet("/restore")]
-    public IActionResult RestoreFromBackup(string? fileName)
+    public IActionResult RestoreFromDump(string? fileName)
     {
         try
         {
@@ -53,8 +56,8 @@ public class BackupController : ControllerBase
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, $"[{nameof(BackupController)}] {nameof(RestoreFromBackup)} error");
-            return BadRequest($"[{nameof(BackupController)}] {nameof(RestoreFromBackup)} error: {exception}");
+            _logger.LogError(exception, RestoreError);
+            return BadRequest(RestoreError);
         }
     }
 }

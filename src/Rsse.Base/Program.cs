@@ -3,6 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
 using SearchEngine;
+#if WINDOWS
+using SearchEngine.ClientDevelopmentIntegration;
+
+var standaloneMode = ClientLauncher.Run(args);
+if (standaloneMode) return;
+#endif
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>
@@ -32,5 +38,5 @@ try
 }
 catch (InvalidOperationException ex)
 {
-    throw new Exception("[DB FAILURE] turn on database server please", ex);
+    throw new Exception("[STARTUP ERROR] more likely db server is down", ex);
 }

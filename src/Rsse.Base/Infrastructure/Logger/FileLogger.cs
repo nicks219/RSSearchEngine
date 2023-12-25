@@ -30,7 +30,7 @@ public class FileLogger : ILogger
     //TODO доделай лог левел
     public bool IsEnabled(LogLevel logLevel)
     {
-        //return logLevel == LogLevel.Trace;
+        // return logLevel == LogLevel.Trace;
         return true;
     }
 

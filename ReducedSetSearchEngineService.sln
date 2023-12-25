@@ -9,35 +9,26 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests", "tests\Rsse.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Data", "src\Rsse.Data\Rsse.Data.csproj", "{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rsse.Client", "src\Rsse.Front\ClientApp\Rsse.Client.esproj", "{7A622CEE-5DAF-47D6-89C5-328C6986A60F}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2E-4C04-AE32-6D2576462FCA}"
-	ProjectSection(SolutionItems) = preProject
-		src\Directory.Packages.props = src\Directory.Packages.props
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C685C254-6FDC-47DB-B1FD-3E9DF75688B3}"
-	ProjectSection(SolutionItems) = preProject
-		tests\Directory.Packages.props = tests\Directory.Packages.props
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC769-2E8D-4951-A185-1F260C962A19}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		README.md = README.md
-		src\docker-compose.yml = src\docker-compose.yml
-		src\docker-compose-build.yml = src\docker-compose-build.yml
 		drafts.md = drafts.md
 		CHANGELOG.md = CHANGELOG.md
-		docs\DOCKER_SCRIPTS.md = docs\DOCKER_SCRIPTS.md
 		src\Rsse.Base\Controllers\api.v5.json = src\Rsse.Base\Controllers\api.v5.json
-		src\Dockerfile-net = src\Dockerfile-net
-		src\Dockerfile-net-react = src\Dockerfile-net-react
+		src\Directory.Packages.props = src\Directory.Packages.props
+		tests\Directory.Packages.props = tests\Directory.Packages.props
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", "{F63409DD-059D-445B-95EA-897A6333935C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Front\ClientApp\src\bootstrap.css = src\Rsse.Front\ClientApp\src\bootstrap.css
 		src\Rsse.Front\ClientApp\src\index.tsx = src\Rsse.Front\ClientApp\src\index.tsx
-		src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json
 		src\Rsse.Front\ClientApp\src\jsx\catalog.tsx = src\Rsse.Front\ClientApp\src\jsx\catalog.tsx
 		src\Rsse.Front\ClientApp\src\jsx\create.tsx = src\Rsse.Front\ClientApp\src\jsx\create.tsx
 		src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx = src\Rsse.Front\ClientApp\src\jsx\hideMenu.tsx
@@ -46,10 +37,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.rsse", "front.rsse", 
 		src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx = src\Rsse.Front\ClientApp\src\jsx\menu-router.tsx
 		src\Rsse.Front\ClientApp\src\jsx\read.tsx = src\Rsse.Front\ClientApp\src\jsx\read.tsx
 		src\Rsse.Front\ClientApp\src\jsx\update.tsx = src\Rsse.Front\ClientApp\src\jsx\update.tsx
-		src\Rsse.Front\ClientApp\src\react.css = src\Rsse.Front\ClientApp\src\react.css
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front.scripts", "front.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
 	ProjectSection(SolutionItems) = preProject
 		src\Rsse.Front\build.bat = src\Rsse.Front\build.bat
 		src\Rsse.Front\install.bat = src\Rsse.Front\install.bat
@@ -59,6 +49,35 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{783F77EB-C548-44FA-9E9C-03B9185033F1}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Rsse.Front\ClientApp\src\bootstrap.css = src\Rsse.Front\ClientApp\src\bootstrap.css
+		src\Rsse.Front\ClientApp\src\react.css = src\Rsse.Front\ClientApp\src\react.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.config", "client.config", "{4FD34D03-D220-4406-AAC5-846D83DBFB73}"
+	ProjectSection(SolutionItems) = preProject
+		src\Rsse.Front\ClientApp\package.json = src\Rsse.Front\ClientApp\package.json
+		src\Rsse.Front\ClientApp\package-lock.json = src\Rsse.Front\ClientApp\package-lock.json
+		src\Rsse.Front\ClientApp\tsconfig.json = src\Rsse.Front\ClientApp\tsconfig.json
+		src\Rsse.Front\ClientApp\tsconfig.node.json = src\Rsse.Front\ClientApp\tsconfig.node.json
+		src\Rsse.Front\ClientApp\vite.config.ts = src\Rsse.Front\ClientApp\vite.config.ts
+		src\Rsse.Front\ClientApp\.eslintrc.cjs = src\Rsse.Front\ClientApp\.eslintrc.cjs
+		src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Front\ClientApp\src\jsx\.eslintrc.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{57BE091A-8698-4755-85D8-0BCCDAC427A1}"
+	ProjectSection(SolutionItems) = preProject
+		src\docker-compose.yml = src\docker-compose.yml
+		src\docker-compose-build.yml = src\docker-compose-build.yml
+		src\Dockerfile-net = src\Dockerfile-net
+		src\Dockerfile-net-react = src\Dockerfile-net-react
+		src\.dockerignore = src\.dockerignore
+		docs\docker.md = docs\docker.md
 	EndProjectSection
 EndProject
 Global
@@ -93,6 +112,14 @@ Global
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.ActiveCfg = Release|Any CPU
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.Build.0 = Release|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Debug|x64.Build.0 = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Release|x64.ActiveCfg = Debug|Any CPU
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F}.Release|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,7 +131,11 @@ Global
 		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
-		{F63409DD-059D-445B-95EA-897A6333935C} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
-		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{7A622CEE-5DAF-47D6-89C5-328C6986A60F} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{4FD34D03-D220-4406-AAC5-846D83DBFB73} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{F63409DD-059D-445B-95EA-897A6333935C} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{57BE091A-8698-4755-85D8-0BCCDAC427A1} = {307CC769-2E8D-4951-A185-1F260C962A19}
 	EndGlobalSection
 EndGlobal

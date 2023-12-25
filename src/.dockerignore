@@ -25,6 +25,6 @@
 */*/obj*
 */bin
 */obj
-**/logger.txt
+**/*.log
 LICENSE
 README.md
