@@ -1,0 +1,35 @@
+###################################
+FROM node:21-slim AS node-build-env
+WORKDIR /home/node/app
+COPY ./Rsse.Client/ClientApp/*.json ./
+COPY ./Rsse.Client/ClientApp/index.html ./
+COPY ./Rsse.Client/ClientApp/vite.config.ts ./
+COPY ./Rsse.Client/ClientApp/src/ ./src
+COPY ./Rsse.Client/ClientApp/public/ ./public
+RUN npm install
+RUN npm run build
+
+##################################################
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
+WORKDIR /app
+
+# CPM: копируем файл версионирования
+COPY Directory.Packages.props .
+COPY ./Rsse.Service/ ./Rsse.Service/
+COPY ./Rsse.Data/ ./Rsse.Data/
+
+# JS: копируем папку с файлами фронта
+# COPY ./Rsse.Client/ClientApp/build/ ./Rsse.Service/ClientApp/build/
+COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/
+
+WORKDIR /app/Rsse.Service
+# .NET: публикуем в папку /app/Rsse.Service/out/
+RUN dotnet publish -c Release -o out
+
+########################################
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
+COPY --from=build-env /app/Rsse.Service/out/ App/
+COPY --from=build-env /app/Rsse.Service/ClientApp/build/ App/ClientApp/build/
+WORKDIR /App
+EXPOSE 5000
+ENTRYPOINT ["dotnet", "Rsse.Service.dll"]

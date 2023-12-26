@@ -338,4 +338,4 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/src/Rsse.Front/ClientApp/build/
+/src/Rsse.Client/ClientApp/build/

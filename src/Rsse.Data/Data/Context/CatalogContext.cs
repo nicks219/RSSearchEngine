@@ -44,14 +44,10 @@ public sealed class CatalogContext : DbContext
                     if (created) Database.ExecuteSqlRaw(MsSqlScript.CreateGenresScript);
                     break;
 
-                // данный провайдер используется при запуске интеграционных тестов:
+                // SQLite используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // можно инициализировать тестовую базу на каждый вызов контекста:
                     if (created) Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateGenresScript);
-                    break;
-
-                default:
-                    // например: "Microsoft.EntityFrameworkCore.InMemory" - как инициализируем?
                     break;
             }
         }

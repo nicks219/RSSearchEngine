@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Platforms>x64</Platforms>
+        <Authors>nick219</Authors>
+        <Company>nick219</Company>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <RootNamespace>SearchEngine</RootNamespace>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+    </PropertyGroup>
+  
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+      <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MySqlBackup.NET" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
+    </ItemGroup>
+  
+</Project>
