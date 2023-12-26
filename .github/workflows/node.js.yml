@@ -6,8 +6,9 @@ name: Node.js CI
 on:
   push:
     branches: [ "master", "feature**/**", "!feature-ci/**" ]
+    # tags-ignore: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "master", "feature**/**" ]
+    branches: [ "master" ]
 
 jobs:
   build:

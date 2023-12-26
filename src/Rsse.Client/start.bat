@@ -1,2 +1,2 @@
 rem start cmd.exe /c npm start
-cd ClientApp/build && npm run dev
+cd ClientApp && npm run dev

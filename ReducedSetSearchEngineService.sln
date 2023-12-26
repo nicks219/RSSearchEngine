@@ -49,6 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 		.github\workflows\node.js.yml = .github\workflows\node.js.yml
 		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
+		.github\workflows\docker-publish.yml = .github\workflows\docker-publish.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
