@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+#pragma warning disable CS0162 // Unreachable code detected
 
 namespace SearchEngine.ClientDevelopmentIntegration;
 
