@@ -5,6 +5,8 @@ name: Docker Publish
 # separate terms of service, privacy policy, and support
 # documentation.
 
+# Образ публикуется в ghcr.io
+
 on:
   schedule:
     - cron: '40 8 * * *'

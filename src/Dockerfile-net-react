@@ -28,6 +28,7 @@ RUN dotnet publish -c Release -o out Rsse.Service.csproj
 
 ########################################
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine
+LABEL description="RSSearchEngine: .NET + React"
 COPY --from=build-env /app/Rsse.Service/out/ App/
 COPY --from=build-env /app/Rsse.Service/ClientApp/build/ App/ClientApp/build/
 WORKDIR /App
