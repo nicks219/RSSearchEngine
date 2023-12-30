@@ -51,6 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{
 		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
 		.github\workflows\docker-publish.yml = .github\workflows\docker-publish.yml
 		.github\workflows\continuos-deployment.yml = .github\workflows\continuos-deployment.yml
+		.github\workflows\k3s-deploy.yml = .github\workflows\k3s-deploy.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
@@ -83,6 +84,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{57BE09
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-AFC8-4031-95FC-F4976BB8A0F9}"
+	ProjectSection(SolutionItems) = preProject
+		.k3s\deployment.yml = .k3s\deployment.yml
+		.k3s\service.yml = .k3s\service.yml
+		.k3s\traefik.yml = .k3s\traefik.yml
+		.k3s\mysql.yml = .k3s\mysql.yml
+		.k3s\my-custom.cnf = .k3s\my-custom.cnf
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

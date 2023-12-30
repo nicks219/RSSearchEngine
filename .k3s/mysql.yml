@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  selector:
+    app: mysql
+  type: ClusterIP # LoadBalancer
+  ports:
+    - name: mysql-port
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+        name: mysql
+    spec:
+
+      nodeSelector:
+        # полагаю тут должно быть имя ноды
+        kubernetes.io/hostname: nick2192.fvds.ru
+
+      containers:
+
+        - name: mysql
+          image: mysql:8.0.31 # edge
+          imagePullPolicy: Always
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+            - name: mysql-config-volume
+              mountPath: /etc/mysql/mysql.conf.d/my-custom.cnf
+              subPath: my-custom.cnf
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_USER
+              value: "1"
+            - name: MYSQL_PASSWORD
+              value: "1"
+            - name: MYSQL_DATABASE
+              value: "tagit"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "1"
+            - name: MYSQL_INITSB_SKIP_TZINFO
+              value: "yes"
+
+      volumes:
+
+        - name: mysql-config-volume
+          configMap:
+            name: mysql-config
+            items:
+              - key: main-config
+                path: my-custom.cnf
+
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
