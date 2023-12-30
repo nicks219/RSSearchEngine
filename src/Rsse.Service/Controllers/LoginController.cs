@@ -3,8 +3,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.Models;
@@ -19,17 +21,20 @@ public class LoginController : ControllerBase
     private const string DataError = $"[{nameof(LoginController)}] credentials error";
     private const string LogOutMessage = $"[{nameof(LoginController)}] {nameof(Logout)}";
     private const string LoginOkMessage = $"[{nameof(LoginController)}] {nameof(Login)}";
+    private const string ModifyCookieMessage = $"[{nameof(LoginController)}] {nameof(ModifyCookie)}";
 
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure";
 
     private readonly ILogger<LoginController> _logger;
     private readonly IServiceScopeFactory _scope;
+    private readonly IWebHostEnvironment _env;
 
-    public LoginController(IServiceScopeFactory serviceScopeFactory, ILogger<LoginController> logger)
+    public LoginController(IServiceScopeFactory serviceScopeFactory, IWebHostEnvironment env, ILogger<LoginController> logger)
     {
         _logger = logger;
         _scope = serviceScopeFactory;
+        _env = env;
     }
 
     [HttpGet("login")]
@@ -82,6 +87,13 @@ public class LoginController : ControllerBase
 
     private void ModifyCookie()
     {
+        if (_env.IsProduction())
+        {
+            return;
+        }
+
+        _logger.LogInformation(ModifyCookieMessage);
+
         var setCookie = HttpContext.Response.Headers.SetCookie;
         var asString = setCookie.ToString();
         var modified = asString.Replace(SameSiteLax, SameSiteNone);
