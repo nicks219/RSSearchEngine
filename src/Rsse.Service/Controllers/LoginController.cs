@@ -87,12 +87,11 @@ public class LoginController : ControllerBase
 
     private void ModifyCookie()
     {
-        var isProd = _env.IsProduction();
-        _logger.LogInformation("Prod: {IsProd}", isProd);
-        if (isProd)
+        if (_env.IsProduction())
         {
             return;
         }
+
         _logger.LogInformation(ModifyCookieMessage);
 
         var setCookie = HttpContext.Response.Headers.SetCookie;

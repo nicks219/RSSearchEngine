@@ -18,7 +18,7 @@
 * fix: фронт переработан для разработки с Vite 10.2.4 под Node 21.5.0 - npm 10.2.4 - React 17.0.0
   - время билда, количество зависимостей и артефактов сократилось на порядок
   - сборка проверена на младших версиях Node (18.19.0, 20.10.0)
-* fix: поправлено использование кук совместно с CORS - исправлен SameSite для соответсвия [**draft-west-cookie-incrementalism-00**](https://datatracker.ietf.org/doc/html/draft-west-cookie-incrementalism-00)
+* fix: поправлено использование кук совместно с CORS - модифицируется SameSite для соответсвия [**draft-west-cookie-incrementalism-00**](https://datatracker.ietf.org/doc/html/draft-west-cookie-incrementalism-00)
 * upd: добавлен докерфайл для билда образа .NET + React
 * upd: добавлен лаунчер среды разработки для JS (управление dev-сервером и браузером)
 * ci: добавлен пробный пайплайн для прогона билда под Node.JS
