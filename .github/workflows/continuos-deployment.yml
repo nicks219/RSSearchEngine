@@ -17,11 +17,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa4096
           chmod 600 ~/.ssh/id_rsa4096
-          ssh-keyscan -p 22 -t rsa ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} -t rsa ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server
         run: |
           echo $(pwd)
-          rsync -azP -e "ssh -i $HOME/.ssh/id_rsa4096 -p 22" ./src/docker-compose.yml ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/docker-compose.yml
-          ssh -i $HOME/.ssh/id_rsa4096 -p 22 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose down
-          ssh -i $HOME/.ssh/id_rsa4096 -p 22 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose up -d
+          echo ${{github.ref_name}}
+          rsync -azP -e "ssh -i $HOME/.ssh/id_rsa4096 -p ${{ secrets.SSH_PORT }}" ./src/docker-compose.yml ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/docker-compose.yml
+          ssh -i $HOME/.ssh/id_rsa4096 -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose down
+          ssh -i $HOME/.ssh/id_rsa4096 -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose up -d
