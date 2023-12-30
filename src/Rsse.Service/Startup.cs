@@ -35,6 +35,16 @@ public class Startup
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
 
+    private readonly string[] _allowedOrigins = {
+        // dev сервер для JS
+        "https://localhost:5173",
+        "http://localhost:5173",
+        "https://127.0.0.1:5173",
+        "http://127.0.0.1:5173",
+        // same-origin на проде
+        "http://188.120.235.243:5000"
+    };
+
     public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         _configuration = configuration;
@@ -92,19 +102,11 @@ public class Startup
 
         services.AddCors(builder =>
         {
-            builder.AddPolicy(DevelopmentCorsPolicy, c =>
+            builder.AddPolicy(DevelopmentCorsPolicy, policyBuilder =>
             {
-                c.WithOrigins(
-                        // dev сервер для JS
-                        "https://localhost:5173",
-                        "http://localhost:5173",
-                        "https://127.0.0.1:5173",
-                        "http://127.0.0.1:5173",
-                        // same-origin на проде
-                        "http://188.120.235.243:5000")
-                    .AllowCredentials();
-                c.WithHeaders("Content-Type");
-                c.WithMethods("GET", "POST", "DELETE", "OPTIONS");
+                policyBuilder.WithOrigins(_allowedOrigins).AllowCredentials();
+                policyBuilder.WithHeaders("Content-Type");
+                policyBuilder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
             });
         });
     }

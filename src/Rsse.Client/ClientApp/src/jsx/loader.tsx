@@ -18,7 +18,7 @@ export class Loader {
     // для прода:
     static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
     static corsServiceBaseUrl: string = "";
-    static hostSchema = "http";
+    static redirectHostSchema = "http";
 
     static setDevelopmentCredos() {
         if (process.env.NODE_ENV === "development") {
@@ -26,7 +26,7 @@ export class Loader {
             // для разработки:
             // куки чувствительны к Origin ('localhost' != '127.0.0.1')
             this.corsServiceBaseUrl = "http://127.0.0.1:5000";
-            this.hostSchema = "https";
+            this.redirectHostSchema = "https";
         }
     }
 
@@ -35,7 +35,7 @@ export class Loader {
         LoginRequired.MessageOff();
         // todo: проверить рабоспособность редиректа на хостинге
         try {
-            let redirectTo = this.hostSchema + "://" + window.location.host + url;
+            let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
             console.log("Redirect to: " + redirectTo);
             window.location.href = redirectTo;
         } catch {
