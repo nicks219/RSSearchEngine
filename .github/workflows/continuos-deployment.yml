@@ -23,5 +23,5 @@ jobs:
         run: |
           echo $(pwd)
           rsync -azP -e "ssh -i $HOME/.ssh/id_rsa4096 -p 22" ./src/docker-compose.yml ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/docker-compose.yml
-          ssh -i $HOME/.ssh/id_rsa4096 -p 22 docker compose down
-          ssh -i $HOME/.ssh/id_rsa4096 -p 22 docker compose up -d
+          ssh -i $HOME/.ssh/id_rsa4096 -p 22 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose down
+          ssh -i $HOME/.ssh/id_rsa4096 -p 22 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} docker compose up -d
