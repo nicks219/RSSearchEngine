@@ -2,7 +2,7 @@ name: Deploy to K3S
 
 on:
   push:
-    tags: [ 'k3*.*.*']
+    tags: [ 'k*.*.*']
 
 jobs:
   build:
