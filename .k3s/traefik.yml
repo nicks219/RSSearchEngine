@@ -6,13 +6,18 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - http:
+    - host: maintainer.me
+      http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
+          - backend:
               service:
                 name: rsse-app-service
                 port:
                   number: 5000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - maintainer.me
+      secretName: secret-tls
 ---

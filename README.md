@@ -1,4 +1,6 @@
 # RS Search Engine: "Tag IT"
+---------------------------------------------
+[![Deploy to K3S](https://github.com/nicks219/RSSearchEngine/actions/workflows/k3s-deploy.yml/badge.svg)](https://github.com/nicks219/RSSearchEngine/actions/workflows/k3s-deploy.yml)
 #### Веб-сервис с каталогом для организации, случайного выбора и поиска небольших заметок в т.ч. по тегам
 #### Главная фишка функционала - нечеткий текстовый поиск, выдерживающий существенные синтаксические ошибки
 #### Архитектура оптимизирована для работы контейнеров на бюджетном хостинге (1vCPU/1Gb RAM)
@@ -11,9 +13,10 @@
   MySQL | SQLite | EF
   ```
 * ```text
-  GitHub CI/CD | Docker
+  GitHub CI/CD | Docker | K3S ready | DV SSL ready
   ```
 ---------------------------------------------
+![cover.png](docs%2Fcover.png)
 
 ## Дополнительное описание функционала
 * Для вычисления поискового индекса используется проприентарный алгоритм токенизации
@@ -57,8 +60,11 @@
 * Фронт:
   - используется React Router, т.е. возможна навигация
 * Kubernetes:
+    - ингресс использует DV SSL сертификат от Comodo
     - манифест mysql для k3s совместо с конфигурацией создаст примерно такой ресурс:
       ```text
       NAME    TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)          AGE
       mysql   LoadBalancer   10.43.153.59   82.146.45.180   3306:30532/TCP   2m55s
       ```
+--------------------------------------------------
+

@@ -31,6 +31,7 @@
 
 #### v5.1.1
 * fix: отключена модификация cookie для prod
+* upd: https ready: изменен манифест ingress для поддержи DV SSL сертификата (kubectl create secret tls secret-tls --key=... --cert=...)
 
 ### next versions
 * planned upd:
