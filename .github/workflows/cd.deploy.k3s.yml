@@ -1,4 +1,6 @@
-name: Deploy to K3S
+# use k*.*.* tag
+# publish image to dockerhub registry
+name: Deploy.K3S
 
 on:
   push:

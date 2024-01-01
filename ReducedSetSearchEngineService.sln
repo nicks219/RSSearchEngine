@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C685C254-6FDC-47DB-B1FD-3E9DF75688B3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC769-2E8D-4951-A185-1F260C962A19}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307CC769-2E8D-4951-A185-1F260C962A19}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		README.md = README.md
@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{307CC7
 		src\Rsse.Service\Controllers\api.v5.json = src\Rsse.Service\Controllers\api.v5.json
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
+		.common\scripts.docker.md = .common\scripts.docker.md
+		.common\scripts.k3s.bash = .common\scripts.k3s.bash
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
@@ -46,12 +48,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.sc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{783F77EB-C548-44FA-9E9C-03B9185033F1}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
-		.github\workflows\node.js.yml = .github\workflows\node.js.yml
-		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
-		.github\workflows\docker-publish.yml = .github\workflows\docker-publish.yml
-		.github\workflows\continuos-deployment.yml = .github\workflows\continuos-deployment.yml
-		.github\workflows\k3s-deploy.yml = .github\workflows\k3s-deploy.yml
+		.github\workflows\cd.deploy.k3s.yml = .github\workflows\cd.deploy.k3s.yml
+		.github\workflows\cd.dploy.server.yml = .github\workflows\cd.dploy.server.yml
+		.github\workflows\ci.docker.build.yml = .github\workflows\ci.docker.build.yml
+		.github\workflows\ci.docker.publish.yml = .github\workflows\ci.docker.publish.yml
+		.github\workflows\ci.dotnet.build.yml = .github\workflows\ci.dotnet.build.yml
+		.github\workflows\ci.node.js.build.yml = .github\workflows\ci.node.js.build.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
@@ -71,27 +73,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.config", "client.con
 		src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".client.js", ".client.js", "{AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{57BE091A-8698-4755-85D8-0BCCDAC427A1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE091A-8698-4755-85D8-0BCCDAC427A1}"
 	ProjectSection(SolutionItems) = preProject
 		src\docker-compose.yml = src\docker-compose.yml
 		src\docker-compose-build.yml = src\docker-compose-build.yml
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
 		src\.dockerignore = src\.dockerignore
-		docs\docker.md = docs\docker.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-AFC8-4031-95FC-F4976BB8A0F9}"
 	ProjectSection(SolutionItems) = preProject
-		.k3s\deployment.yml = .k3s\deployment.yml
-		.k3s\service.yml = .k3s\service.yml
-		.k3s\traefik.yml = .k3s\traefik.yml
-		.k3s\mysql.yml = .k3s\mysql.yml
-		.k3s\my-custom.cnf = .k3s\my-custom.cnf
+		.k3s\configmap.mysql.cnf = .k3s\configmap.mysql.cnf
+		.k3s\deployment.rsse.yml = .k3s\deployment.rsse.yml
+		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
+		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
+		.k3s\service.rsse.yml = .k3s\service.rsse.yml
 	EndProjectSection
 EndProject
 Global
@@ -149,7 +150,6 @@ Global
 		{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
 		{F63409DD-059D-445B-95EA-897A6333935C} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
 		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
-		{57BE091A-8698-4755-85D8-0BCCDAC427A1} = {307CC769-2E8D-4951-A185-1F260C962A19}
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 	EndGlobalSection
 EndGlobal

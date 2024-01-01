@@ -1,11 +1,11 @@
-name: Docker Publish
+# use v*.*.* tag
+# publish to github registry
+name: Publish.Docker.ghcr
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
 # documentation.
-
-# Образ публикуется в ghcr.io
 
 on:
   schedule:

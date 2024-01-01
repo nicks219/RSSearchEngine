@@ -1,3 +1,5 @@
+## Разнообразные полезные команды
+
 GRANT ALL PRIVILEGES ON *.* TO '1'@'%';
 SET PASSWORD FOR '1'@'%' = '1';
 FLUSH PRIVILEGIES;
