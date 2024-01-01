@@ -11,7 +11,7 @@ using NSubstitute;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Service.Models;
+using SearchEngine.Models;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -43,7 +43,7 @@ public class ReadTests
         var response = await _readModel.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_tagsCount, response.CommonTagsListResponse?.Count);
+        Assert.AreEqual(_tagsCount, response.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class ReadTests
         var request = new NoteDto { TagsCheckedRequest = new List<int> { 2 } };
 
         // act:
-        var response = await _readModel.ElectNote(request, null, false);
+        var response = await _readModel.GetNextOrSpecificNote(request, null, false);
 
         // assert:
         Assert.AreEqual(_logger.ErrorMessage, string.Empty);
@@ -67,7 +67,7 @@ public class ReadTests
         var request = new NoteDto { TagsCheckedRequest = new List<int> { 2500 } };
 
         // act:
-        var result = await _readModel.ElectNote(request);
+        var result = await _readModel.GetNextOrSpecificNote(request);
         // ждём тестовый логер:
         await Task.Delay(100);
 
@@ -80,7 +80,7 @@ public class ReadTests
     public async Task ModelElectionTest_OnNullRequest_ShouldReturnEmptyResponse_ShouldNotLogError()
     {
         // arrange & act:
-        var response = await _readModel.ElectNote(null);
+        var response = await _readModel.GetNextOrSpecificNote(null);
 
         // asserts:
         Assert.AreEqual(string.Empty, response.TitleResponse);
@@ -99,7 +99,7 @@ public class ReadTests
 
         // act:
         var readController = new ReadController(serviceScopeFactory, logger);
-        _ = await readController.ElectNote(null, null);
+        _ = await readController.GetNextOrSpecificNote(null, null);
 
         // assert:
         logger
@@ -116,7 +116,7 @@ public class ReadTests
         var readController = new ReadController(factory, logger);
 
         // act:
-        var response = (await readController.ElectNote(null, null)).Value;
+        var response = (await readController.GetNextOrSpecificNote(null, null)).Value;
 
         // assert:
         Assert.AreEqual(string.Empty, response?.TitleResponse);
@@ -152,7 +152,7 @@ public class ReadTests
 
             _readModel = new ReadModel(host.Scope);
 
-            var response = await _readModel.ElectNote(request);
+            var response = await _readModel.GetNextOrSpecificNote(request);
 
             var id = response.CommonNoteId;
 

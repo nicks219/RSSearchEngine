@@ -10,7 +10,7 @@ using NSubstitute;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Service.Models;
+using SearchEngine.Models;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -43,7 +43,7 @@ public class CatalogTests
         TestCatalogRepository.CreateStubData(50);
 
         // act:
-        var response = await _catalogModel!.ReadCatalogPage(1);
+        var response = await _catalogModel!.ReadPage(1);
 
         // asserts:
         Assert.AreEqual(NotesPerPage, response.CatalogPage?.Count);

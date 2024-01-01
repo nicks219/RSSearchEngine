@@ -45,10 +45,10 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     // common:
 
     /// <summary>
-    /// Получить список тегов
+    /// Получить список тегов в формате "имя : количество записей"
     /// </summary>
     /// <returns>список тегов</returns>
-    Task<List<string>> ReadGeneralTagList();
+    Task<List<string>> ReadStructuredTagList();
 
     /// <summary>
     /// Получить количество заметок

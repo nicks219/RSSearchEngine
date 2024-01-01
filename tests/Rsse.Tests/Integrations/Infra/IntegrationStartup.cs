@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Configuration;
+using SearchEngine.Common.Configuration;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Integrations.Infra;

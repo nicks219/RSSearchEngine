@@ -143,7 +143,7 @@ public class CatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<string>> ReadGeneralTagList()
+    public async Task<List<string>> ReadStructuredTagList()
     {
         var tagList = await _context.Tags!
             // TODO заменить сортировку на корректный индекс в бд

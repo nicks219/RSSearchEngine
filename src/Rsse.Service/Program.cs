@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
 using SearchEngine;
+using SearchEngine.Tools.ClientDevelopmentIntegration;
 #if WINDOWS
-using SearchEngine.ClientDevelopmentIntegration;
 
 var standaloneMode = ClientLauncher.Run(args);
 if (standaloneMode) return;
@@ -17,11 +17,6 @@ var builder = Host.CreateDefaultBuilder(args)
         webBuilder.UseWebRoot("ClientApp/build");
         webBuilder.UseKestrel(options =>
         {
-            // defaults:
-            // MinRequestBodyDataRate = 240b/s grace 00:00:05
-            // MinResponseDataRate = 240b/s grace 00:00:05
-            // MaxConcurrentConnections = null
-
             var kestrelLimits = options.Limits;
 
             kestrelLimits.MinResponseDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));

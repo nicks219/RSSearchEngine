@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace SearchEngine.Data.Dto;
 
 /// <summary>
-/// Шаблон передачи данных авторизации
+/// Шаблон передачи данных для заметки
 /// </summary>
 public record NoteDto
 {
@@ -44,9 +44,11 @@ public record NoteDto
     [JsonPropertyName("textCS")]
     public string? TextResponse { get; set; }
 
-    // common:
+    /// <summary>
+    /// Список тегов в формате "имя : количество записей"
+    /// </summary>
     [JsonPropertyName("genresNamesCS")]
-    public List<string>? CommonTagsListResponse { get; init; }
+    public List<string>? StructuredTagsListResponse { get; init; }
 
     /// <summary>
     /// Поле для хранения идентификатора сохраненной/измененной заметки
@@ -60,17 +62,17 @@ public record NoteDto
     public string? CommonErrorMessageResponse { get; set; }
 
     /// <summary>
-    /// Создать незаполненный шаблон передачи данных авторизации
+    /// Создать незаполненный шаблон передачи данных для заметки
     /// </summary>
     public NoteDto()
     {
     }
 
     /// <summary>
-    /// Создать шаблон передачи данных авторизации
+    /// Создать шаблон передачи данных для заметки
     /// </summary>
     public NoteDto(
-        List<string> commonTagsListResponse,
+        List<string> structuredTagsListResponse,
         int commonNoteId = 0,
         string textResponse = "",
         string titleResponse = "",
@@ -79,7 +81,7 @@ public record NoteDto
         TextResponse = textResponse;
         TitleResponse = titleResponse;
         TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
-        CommonTagsListResponse = commonTagsListResponse;
+        StructuredTagsListResponse = structuredTagsListResponse;
         CommonNoteId = commonNoteId;
     }
 }

@@ -126,7 +126,7 @@ internal class TestCatalogRepository : IDataRepository
         return new TestQueryable<Tuple<string, int>>(titlesList);
     }
 
-    public Task<List<string>> ReadGeneralTagList()
+    public Task<List<string>> ReadStructuredTagList()
     {
         var result = Task.FromResult(TagList);
         return result;

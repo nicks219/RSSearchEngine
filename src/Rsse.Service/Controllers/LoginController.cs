@@ -9,12 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Models;
+using SearchEngine.Models;
 
 namespace SearchEngine.Controllers;
 
-[ApiController]
-[Route("account")]
+/// <summary>
+/// Контроллер авторизации
+/// </summary>
+
+[ApiController, Route("account")]
+
 public class LoginController : ControllerBase
 {
     private const string LoginError = $"[{nameof(LoginController)}] {nameof(Login)} system error";
@@ -37,6 +41,12 @@ public class LoginController : ControllerBase
         _env = env;
     }
 
+    /// <summary>
+    /// Авторизоваться в системе
+    /// </summary>
+    /// <param name="email">email</param>
+    /// <param name="password">пароль</param>
+    /// <returns>объект OkObjectResult с результатом</returns>
     [HttpGet("login")]
     public async Task<ActionResult<string>> Login(string? email, string? password)
     {
@@ -50,6 +60,9 @@ public class LoginController : ControllerBase
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
 
+    /// <summary>
+    /// Выйти из системы
+    /// </summary>
     [HttpGet("logout")]
     public async Task<ActionResult<string>> Logout()
     {
@@ -60,19 +73,23 @@ public class LoginController : ControllerBase
         return LogOutMessage;
     }
 
+    /// <summary>
+    /// Вход в систему, аутентификация на основе кук
+    /// </summary>
+    /// <param name="loginDto">данные для авторизации</param>
     private async Task<string> Login(LoginDto loginDto)
     {
         using var scope = _scope.CreateScope();
         try
         {
-            var id = await new LoginModel(scope).TryLogin(loginDto);
+            var identity = await new LoginModel(scope).SignIn(loginDto);
 
-            if (id == null)
+            if (identity == null)
             {
                 return DataError;
             }
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
             ModifyCookie();
 
@@ -85,6 +102,9 @@ public class LoginController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Модифицировать куки при разработке
+    /// </summary>
     private void ModifyCookie()
     {
         if (_env.IsProduction())

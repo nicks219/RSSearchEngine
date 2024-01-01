@@ -5,13 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
-using SearchEngine.Service.Models;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Models;
 
 namespace SearchEngine.Controllers;
 
-[Route("api/catalog")]
-[ApiController]
+/// <summary>
+/// Контроллер для функционала каталога с возможностью удаления заметки
+/// </summary>
+
+[Route("api/catalog"), ApiController]
+
 public class CatalogController : ControllerBase
 {
     public const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(NavigateCatalog)} error";
@@ -27,13 +31,17 @@ public class CatalogController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Прочитать страницу каталога
+    /// </summary>
+    /// <param name="id">номер страницы</param>
     [HttpGet]
     public async Task<ActionResult<CatalogDto>> ReadCatalogPage(int id)
     {
         try
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            return await new CatalogModel(scope).ReadCatalogPage(id);
+            return await new CatalogModel(scope).ReadPage(id);
         }
         catch (Exception ex)
         {
@@ -42,6 +50,10 @@ public class CatalogController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Переместиться по каталогу
+    /// </summary>
+    /// <param name="dto">шаблон с информацией для навигации</param>
     [HttpPost]
     public async Task<ActionResult<CatalogDto>> NavigateCatalog([FromBody] CatalogDto dto)
     {
@@ -57,8 +69,13 @@ public class CatalogController : ControllerBase
         }
     }
 
-    [Authorize]
-    [HttpDelete]
+    /// <summary>
+    /// Удалить заметку
+    /// </summary>
+    /// <param name="id">идентификатор заметки</param>
+    /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
+    /// <returns>актуальная страница каталога</returns>
+    [Authorize, HttpDelete]
     public async Task<ActionResult<CatalogDto>> DeleteNote(int id, int pg)
     {
         try

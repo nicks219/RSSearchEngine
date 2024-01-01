@@ -5,10 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using SearchEngine.Configuration;
+using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Entities;
-using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 

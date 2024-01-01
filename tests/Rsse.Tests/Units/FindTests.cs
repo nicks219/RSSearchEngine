@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NSubstitute;
 using SearchEngine.Controllers;
-using SearchEngine.Infrastructure.Tokenizer;
+using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Units;
@@ -24,12 +24,12 @@ public class FindTests
     public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<FindController>>();
+        var logger = Substitute.For<ILogger<CompliantController>>();
         var factory = new TestServiceScopeFactory(new TestServiceCollection<TokenizerService>().Provider);
-        var findController = new FindController(factory, logger);
+        var findController = new CompliantController(factory, logger);
 
         // act:
-        var response = (OkObjectResult)findController.Find(Text);
+        var response = (OkObjectResult)findController.GetComplianceIndices(Text);
         var serialized = JsonConvert.SerializeObject(response);
         var deserialized = JsonConvert.DeserializeObject<Response>(serialized);
 

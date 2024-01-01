@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
-using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Service.Models;
+using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Models;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -25,7 +25,7 @@ public class UpdateTests
     {
         var hostTokenizerTyped = new TestServiceCollection<TokenizerService>();
         var hostModelTyped = new TestServiceCollection<UpdateModel>();
-        var findModel = new FindModel(hostTokenizerTyped.Scope);
+        var findModel = new CompliantModel(hostTokenizerTyped.Scope);
 
         TestCatalogRepository.CreateStubData(10);
         _testNoteId = findModel.FindNoteId(TestName);
@@ -39,7 +39,7 @@ public class UpdateTests
         var response = await _updateModel.GetOriginalNote(1);
 
         // assert:
-        Assert.AreEqual(TestCatalogRepository.TagList.Count, response.CommonTagsListResponse?.Count);
+        Assert.AreEqual(TestCatalogRepository.TagList.Count, response.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]

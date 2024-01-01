@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Models;
+using SearchEngine.Models;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -24,10 +24,10 @@ public class CreateTests
     public async Task ModelTagListTest_ShouldReports_ExpectedGenreCount()
     {
         // arrange & act:
-        var result = await _createModel!.ReadTagList();
+        var result = await _createModel!.ReadStructuredTagList();
 
         // assert:
-        Assert.AreEqual(TestCatalogRepository.TagList.Count, result.CommonTagsListResponse?.Count);
+        Assert.AreEqual(TestCatalogRepository.TagList.Count, result.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]

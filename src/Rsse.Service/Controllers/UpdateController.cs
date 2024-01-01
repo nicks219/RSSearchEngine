@@ -7,13 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
-using SearchEngine.Service.Models;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Models;
 
 namespace SearchEngine.Controllers;
 
-[Route("api/update")]
-[ApiController]
+/// <summary>
+/// Контроллер для обновления заметки
+/// </summary>
+
+[Route("api/update"), ApiController]
+
 public class UpdateController : ControllerBase
 {
     private const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(GetInitialNote)} error";
@@ -28,6 +32,10 @@ public class UpdateController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Получить обновляемую заметку
+    /// </summary>
+    /// <param name="id">идентификатор обновляемой заметки</param>
     [HttpGet]
     public async Task<ActionResult<NoteDto>> GetInitialNote(int id)
     {
@@ -43,8 +51,11 @@ public class UpdateController : ControllerBase
         }
     }
 
-    [Authorize]
-    [HttpPost]
+    /// <summary>
+    /// Обновить заметку
+    /// </summary>
+    /// <param name="dto">данные для обновления</param>
+    [Authorize, HttpPost]
     public async Task<ActionResult<NoteDto>> UpdateNote([FromBody] NoteDto dto)
     {
         try

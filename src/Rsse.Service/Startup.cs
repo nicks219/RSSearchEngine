@@ -11,14 +11,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Configuration;
+using SearchEngine.Common.Configuration;
+using SearchEngine.Common.Logger;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure;
-using SearchEngine.Infrastructure.Logger;
-using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Tools.Migrator;
 
 namespace SearchEngine;
 
@@ -36,12 +36,12 @@ public class Startup
     private readonly IWebHostEnvironment _env;
 
     private readonly string[] _allowedOrigins = {
-        // dev сервер для JS
+        // dev сервер для JS:
         "https://localhost:5173",
         "http://localhost:5173",
         "https://127.0.0.1:5173",
         "http://127.0.0.1:5173",
-        // same-origin на проде
+        // same-origin на проде:
         "http://188.120.235.243:5000"
     };
 
@@ -82,8 +82,6 @@ public class Startup
         Action<DbContextOptionsBuilder> dbOptions = dbType switch
         {
             MySql => options => options.UseMySql(connectionString, _mySqlVersion),
-            // b => b.MigrationsAssembly("Rsse.Data")
-            // _ => options => options.UseSqlServer(connectionString),
             _ => throw new NotImplementedException("[unsupported db]")
         };
 

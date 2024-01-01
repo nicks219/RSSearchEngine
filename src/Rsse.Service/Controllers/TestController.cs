@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace SearchEngine.Controllers;
 
+/// <summary>
+/// Контроллер с системным функионалом для проверок
+/// </summary>
+
 public class TestController : Controller
 {
     private static int _counter;
@@ -19,60 +23,66 @@ public class TestController : Controller
         _logger = logger;
     }
 
+    /// <summary>
+    /// Получить версию сервиса
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("version")]
     public ActionResult GetVersion()
     {
-        return Ok("v5: react-router");
+        return Ok("v5.1.2: K3S and DV SSL ready");
     }
 
-    // последующие ручки необходимо переписать либо удалить:
+    // TODO последующие ручки переписать либо удалить:
 
-    #region Throttle Counter
+    #region Get Performance Grade
 
-    /// <summary> счетчик производительности </summary>
+    // функционал для оценки производительности/троттлинга:
     private static Thread? _thread;
     private static readonly StringBuilder Builder = new();
     private static bool _loop;
     private static int _timeCounter;
 
-    /// <summary> большой объект (~2mb траффика, измерено Fiddler) </summary>
     private const int Count = 1000 * 300;
-    private static readonly int[] Obj = Enumerable.Range(1, Count).ToArray();
+    // объект на ~2mb траффика, измерено Fiddler:
+    private static readonly int[] HugeObject = Enumerable.Range(1, Count).ToArray();
 
+    // мотивация: вернуть большой объект в ответе
     [Authorize, HttpGet($"test.traffic")]
-    public ActionResult GetMega([FromQuery] bool more = false)
+    public ActionResult GetHugeObject([FromQuery] bool more = false)
     {
-        // TODO: можно репортать время http запроса, используй DiagnosticSource
         if (!more)
         {
             return Ok(
                 new
                 {
-                    Result = Obj
+                    Result = HugeObject
                 });
         }
 
         return Ok(
             new
             {
-                Result1 = Obj,
-                Result2 = Obj,
-                Result3 = Obj
+                Result1 = HugeObject,
+                Result2 = HugeObject,
+                Result3 = HugeObject
             });
     }
 
+    // мотивация: запустить создание строки
     [Authorize, HttpGet("start")]
-    public ActionResult Start()
+    public ActionResult StartHugeStringCreation()
     {
-        _thread = new Thread(Method);
+        _thread = new Thread(IncrementalStringBuilding);
 
         _thread.Start();
 
         return Ok("Counter start \r\n");
     }
 
+    // мотивация: остановить создание строки и получить её в ответе
     [Authorize, HttpGet("stop")]
-    public ActionResult Stop()
+    public ActionResult StopHugeStringCreation()
     {
         _loop = false;
 
@@ -80,7 +90,6 @@ public class TestController : Controller
 
         _logger.LogError("Time: {Time}", result);
 
-        // TODO: можно очистить файл лога
         Builder.Clear();
 
         _timeCounter = 0;
@@ -90,8 +99,9 @@ public class TestController : Controller
 
     #endregion
 
+    // мотивация: запустить сборку мусора
     [Authorize, HttpGet("gc")]
-    public ActionResult GcCall()
+    public ActionResult GarbageCollectorCall()
     {
         GC.Collect(2, GCCollectionMode.Forced, true);
 
@@ -100,8 +110,9 @@ public class TestController : Controller
         return Ok("gc \r\n");
     }
 
+    // мотивация: получить лог и информацию о хипе по запросу
     [Authorize, HttpGet("test")]
-    public ActionResult LogEveryRequest()
+    public ActionResult LogOnEveryRequest()
     {
         var info = GC.GetGCMemoryInfo();
 
@@ -128,8 +139,9 @@ public class TestController : Controller
         });
     }
 
+    // мотивация: получить лог по N-му запросу, и информацию о хипе
     [Authorize, HttpGet("test.every.nth")]
-    public ActionResult Get([FromQuery] int count = 100)
+    public ActionResult LogOnEveryNthRequest([FromQuery] int count = 100)
     {
         var info = GC.GetGCMemoryInfo();
 
@@ -158,26 +170,30 @@ public class TestController : Controller
         });
     }
 
+    // мотивация: получить ответ от синхронной ручки
     [Authorize, HttpGet("live")]
-    public string Live()
+    public string GetLive()
     {
         return "live";
     }
 
+    // мотивация: получить ответ от асинхронной ручки
     [Authorize, HttpGet("live.async")]
-    public async Task<string> LiveAsync()
+    public async Task<string> GetLiveAsync()
     {
         await Task.Delay(1);
         return "live.async";
     }
 
+    // мотивация: получить ответ от асинхронной ручки
     [Authorize, HttpGet("live.task")]
-    public Task<string> LiveTask()
+    public Task<string> GetLiveAsTask()
     {
         return Task.FromResult<string>("live.task");
     }
 
-    private static void Method()
+    // увеличивать строку вплоть до оствновки цикла
+    private static void IncrementalStringBuilding()
     {
         _loop = true;
 

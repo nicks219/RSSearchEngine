@@ -3,14 +3,16 @@ using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Infrastructure;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Tools.Migrator;
 
 namespace SearchEngine.Controllers;
 
-[Authorize]
-[Route("backup")]
-[ApiController]
+/// <summary>
+/// Контроллер для работы с миграциями бд
+/// </summary>
+
+[Authorize, Route("backup"), ApiController]
 
 public class DbDumpController : ControllerBase
 {
@@ -28,6 +30,10 @@ public class DbDumpController : ControllerBase
         _tokenizer = tokenizer;
     }
 
+    /// <summary>
+    /// Создать дамп бд
+    /// </summary>
+    /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     [HttpGet("/create")]
     public IActionResult CreateDump(string? fileName)
     {
@@ -44,6 +50,10 @@ public class DbDumpController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Накатить дамп
+    /// </summary>
+    /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     [HttpGet("/restore")]
     public IActionResult RestoreFromDump(string? fileName)
     {

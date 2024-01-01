@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Configuration;
+using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Infrastructure.Tokenizer;
-using SearchEngine.Infrastructure.Tokenizer.Contracts;
+using SearchEngine.Engine.Contracts;
+using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 namespace SearchEngine.Tests.Units.Mocks;

@@ -5,15 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Models;
+using SearchEngine.Models;
 
 namespace SearchEngine.Controllers;
 
-[ApiController]
-[Route("api/read")]
+/// <summary>
+/// Контроллер для получения заметок
+/// </summary>
+
+[ApiController, Route("api/read")]
+
 public class ReadController : ControllerBase
 {
-    public const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(ElectNote)} error";
+    public const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(GetNextOrSpecificNote)} error";
     private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadTitleByNoteId)} error";
     private const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadTagList)} error";
 
@@ -27,13 +31,20 @@ public class ReadController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Переключить режим выбора следующей заметки
+    /// </summary>
     [HttpGet("election")]
-    public ActionResult ChangeTextElectionMethod()
+    public ActionResult SwitchNodeElectionMode()
     {
         _randomElection = !_randomElection;
         return Ok(new { RandomElection = _randomElection });
     }
 
+    /// <summary>
+    /// Прочитать заголовок заметки по её идентификатору
+    /// </summary>
+    /// <param name="id">идентификатор заметки</param>
     [HttpGet("title")]
     public ActionResult ReadTitleByNoteId(string id)
     {
@@ -50,6 +61,9 @@ public class ReadController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Получить список тегов
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<NoteDto>> ReadTagList()
     {
@@ -65,8 +79,14 @@ public class ReadController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Выбрать следующую либо прочитать конкретную заметку, по отмеченным тегам или идентификатору
+    /// </summary>
+    /// <param name="dto">данные с отмеченными тегами</param>
+    /// <param name="id">строка с идентификатором, если требуется</param>
+    /// <returns>ответ с заметкой</returns>
     [HttpPost]
-    public async Task<ActionResult<NoteDto>> ElectNote([FromBody] NoteDto? dto, [FromQuery] string? id)
+    public async Task<ActionResult<NoteDto>> GetNextOrSpecificNote([FromBody] NoteDto? dto, [FromQuery] string? id)
     {
         try
         {
@@ -76,7 +96,7 @@ public class ReadController : ControllerBase
             }
 
             using var scope = _serviceScopeFactory.CreateScope();
-            var model = await new ReadModel(scope).ElectNote(dto, id, _randomElection);
+            var model = await new ReadModel(scope).GetNextOrSpecificNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)
@@ -85,15 +105,4 @@ public class ReadController : ControllerBase
             return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
         }
     }
-
-    // CORS ручная настройка
-    // [HttpOptions]
-    // public ActionResult Options()
-    // {
-    //    HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
-    //    HttpContext.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-    //    HttpContext.Response.Headers.Add("Access-Control-Allow-Methods", "OPTIONS");
-    //    HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "Content-type");
-    //    return Ok();
-    // }
 }
