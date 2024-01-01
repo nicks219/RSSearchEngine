@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-public class TestQueryable<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
+internal class TestQueryable<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
 {
     private readonly IAsyncQueryProvider _queryProvider;
 

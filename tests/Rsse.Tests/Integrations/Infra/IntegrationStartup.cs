@@ -17,13 +17,13 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// <summary>
 /// При конфинурации запуска используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html
 /// </summary>
-public class IntegrationStartup
+internal class IntegrationStartup
 {
     public static void ConfigureServices(IServiceCollection services)
     {
         services
             .AddControllers()
-            // I. разберись почему требуется этот метод:
+            // разберись почему требуется этот метод:
             // https://andrewlock.net/when-asp-net-core-cant-find-your-controller-debugging-application-parts/
             .AddApplicationPart(typeof(ReadController).Assembly);
 
@@ -34,8 +34,8 @@ public class IntegrationStartup
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
 
-        // II. SQLite: https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
-        // проверено на Windows и на Ubuntu (в GitHub Actions CI):
+        // SQLite: https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
+        // функциональность проверена на Windows/Ubuntu:
 
         const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
         var path = Environment.GetFolderPath(folder);

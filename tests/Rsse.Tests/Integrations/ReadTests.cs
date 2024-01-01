@@ -28,7 +28,6 @@ public class ReadTests
 
         // act:
         var client = factory.CreateClient(options);
-        // election: var uri = new Uri("api/read/election", UriKind.Relative);
         var uri = new Uri("api/read/title?id=1", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var status = response.ReasonPhrase;

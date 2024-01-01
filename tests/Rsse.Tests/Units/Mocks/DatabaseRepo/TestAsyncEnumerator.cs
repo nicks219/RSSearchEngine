@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-public class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
+internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
 {
     private readonly Task<IEnumerable<T>> _enumerableTask;
     private IEnumerator<T>? _enumerator;

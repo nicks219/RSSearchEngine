@@ -9,7 +9,7 @@ using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 namespace SearchEngine.Tests.Units.Mocks;
 
-public class TestServiceCollection<TScope> where TScope : class
+internal class TestServiceCollection<TScope> where TScope : class
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;

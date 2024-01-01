@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace SearchEngine.Tests.Integrations.Infra;
 
-public class CustomWebAppFactory : WebApplicationFactory<IntegrationStartup>
+internal class CustomWebAppFactory : WebApplicationFactory<IntegrationStartup>
 {
     protected override IHostBuilder CreateHostBuilder()
     {

@@ -64,13 +64,11 @@ public class ReadTests
     public async Task ModelElectionTest_OnInvalidRequest_ShouldReturnErrorMessageResponse()
     {
         // arrange:
-        // var readModel = new ReadModel(_serviceProvider.ServiceScope);
-        // var logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
         var request = new NoteDto { TagsCheckedRequest = new List<int> { 2500 } };
 
         // act:
         var result = await _readModel.ElectNote(request);
-        // из-за кривого тестового логера:
+        // ждём тестовый логер:
         await Task.Delay(100);
 
         // asserts:
@@ -125,13 +123,13 @@ public class ReadTests
     }
 
     [TestMethod]
-    // это не тест, а демонстрация распределения результатов в текущем алгоритме выбора:
+    // демонстрация распределения результатов в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
         var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
         TestCatalogRepository.CreateStubData(400);
 
-        // TODO сделай метод, добавляющий N случайных заметок для проведения теста:
+        // TODO: сделать метод, добавляющий N случайных заметок для проведения теста
         const double coefficient = 0.7D;
 
         const int songsCount = 389;
@@ -144,7 +142,6 @@ public class ReadTests
 
         var request = new NoteDto { TagsCheckedRequest = new List<int>() };
 
-        // жанров в стабе так себе, 44 точно нет =) скорректируй
         request.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
 
         var result = new Dictionary<int, int>();

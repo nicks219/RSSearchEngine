@@ -9,7 +9,7 @@ using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-public class TestQueryProvider : IAsyncQueryProvider
+internal class TestQueryProvider : IAsyncQueryProvider
 {
     public IQueryable CreateQuery(Expression expression)
     {
@@ -30,7 +30,6 @@ public class TestQueryProvider : IAsyncQueryProvider
 
     public IQueryable<TElement> CreateQuery<TElement>(Expression expression) => new TestQueryable<TElement>(this, expression);
 
-    // нуждается в правке:
     public object Execute(Expression expression) => new List<int> { 10, 20, 30 };
 
     public TResult Execute<TResult>(Expression expression)
@@ -65,24 +64,24 @@ public class TestQueryProvider : IAsyncQueryProvider
 
         switch (expression.NodeType)
         {
-            // I. вызов из TestRepo: public IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags):
-            // TResult: Task<int>: сигнатура ElectNoteId, стаб на таску
+            // I. TestRepo: public IQueryable<int> ReadAllNotesTaggedBy(IEnumerable<int> checkedTags)..
+            // TResult: Task<int>..
             case ExpressionType.Call when type.BaseType?.Name == nameof(Task):
                 {
                     var firstArgument = ((MethodCallExpression)expression).Arguments[0];
                     if (firstArgument.NodeType == ExpressionType.Constant)
                     {
-                        // A. выполнение: await allElectableNotes.CountAsync();
+                        // A. await allElectableNotes.CountAsync()..
                         var value = ((ConstantExpression)firstArgument).Value;
                         if (value == null) throw new NullReferenceException(nameof(value) + "is null");
                         return ((EnumerableQuery<int>)value).Count() > 1
-                            // добавил для теста на гистограмму:
+                            // histogram test:
                             ? (TResult)(object)Task.FromResult(200)
                             : (TResult)(object)Task.FromResult(((EnumerableQuery<int>)value).ElementAt(0));
                     }
                     else
                     {
-                        // B. выполнение: orderby>skip(...)>take(1)>firstasync(): В СКИПЕ НУЖНОЕ МНЕ ЧИСЛО !
+                        // B. OrderBy>skip(...)>take(1)>FirstAsync()..
                         firstArgument = ((MethodCallExpression)firstArgument).Arguments[0];
                         var secondArgument = ((MethodCallExpression)firstArgument).Arguments[1];
                         var value = ((ConstantExpression)secondArgument).Value;
@@ -93,8 +92,8 @@ public class TestQueryProvider : IAsyncQueryProvider
                     }
                 }
 
-            // II. public IQueryable<Tuple<string, string>> ReadNote(int noteId):
-            // TResult: EnumerableQuery<Tuple<string, string>>, это ReadNote из репо, асинхронное перечисление
+            // II. public IQueryable<Tuple<string, string>> ReadNote(int noteId)..
+            // TResult: EnumerableQuery<Tuple<string, string>>..
             case ExpressionType.Constant:
                 {
                     var value = (ConstantExpression)expression;

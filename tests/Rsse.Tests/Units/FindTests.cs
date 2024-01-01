@@ -17,11 +17,10 @@ namespace SearchEngine.Tests.Units;
 public class FindTests
 {
     // private const string Text = "аблака белагривыи лашатки";
-    // private const string Text = "Чёрт с ними! За столом сидим, поём, пляшем…";
+    // private const string Text = "я ты он она";
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    // public void ControllerDeleteInvalidRequest_ShouldResponseNull()
     public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
     {
         // arrange:
@@ -33,8 +32,6 @@ public class FindTests
         var response = (OkObjectResult)findController.Find(Text);
         var serialized = JsonConvert.SerializeObject(response);
         var deserialized = JsonConvert.DeserializeObject<Response>(serialized);
-
-        // надо обдумать, какой пример вообще пригоден для этого теста:
 
         // assert:
         deserialized.Should().NotBeNull();

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SearchEngine.Tests.Units.Mocks;
 
-public class TestServiceScopeFactory : IServiceScopeFactory
+internal class TestServiceScopeFactory : IServiceScopeFactory
 {
     private readonly IServiceProvider _serviceProvider;
 

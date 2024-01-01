@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SearchEngine.Tests.Units.Mocks;
 
-public class TestLogger<TModel> : ILogger<TModel>
+internal class TestLogger<TModel> : ILogger<TModel>
 {
     internal string? ErrorMessage { get; private set; } = string.Empty;
 

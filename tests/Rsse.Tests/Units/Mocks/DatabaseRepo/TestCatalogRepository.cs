@@ -8,7 +8,7 @@ using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-public class TestCatalogRepository : IDataRepository
+internal class TestCatalogRepository : IDataRepository
 {
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
@@ -16,7 +16,7 @@ public class TestCatalogRepository : IDataRepository
     internal const string SecondNoteTitle = "Шаинский - Облака";
 
     internal static readonly List<string> TagList = new() { "Rock", "Pop", "Jazz" };
-    // избавляйся от статики, даже в тестовом моке:
+
     private static Dictionary<int, Tuple<string, string>>? _notesTableStub = new()
     {
         { 1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText)}
@@ -177,7 +177,6 @@ public class TestCatalogRepository : IDataRepository
 
     public void Dispose()
     {
-        // _notesTableStub = null;
         GC.SuppressFinalize(this);
     }
 
