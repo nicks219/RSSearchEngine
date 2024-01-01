@@ -1,14 +1,14 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Loader } from "./loader";
-import { hideMenu } from "./hideMenu";
+import { LoaderComponent } from "./loader.component.tsx";
+import { menuHandler } from "./menu.handler.tsx";
 import { RouteComponentProps } from 'react-router';
 
 interface IState {
     data: any;
 }
 interface IProps {
-    listener: any;
+    subscription: any;
     formId: any;
     jsonStorage: any;
     id: any;
@@ -28,7 +28,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     mainForm: React.RefObject<HTMLFormElement>;
 
     constructor(props: any) {
-        // из "каталога" я попаду в этот конструктор, а потом в DidMount, id песни { data: 1 } будет в props.
+        // из "каталога" я попаду в конструктор, далее в DidMount, id песни { data: 1 } будет в props:
         super(props);
 
         this.formId = null;
@@ -36,19 +36,18 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
         this.displayed = false;
 
         this.readFromCatalog = false;
-
         this.mainForm = React.createRef();
     }
 
     componentDidMount() {
         this.formId = this.mainForm.current;
 
-        // если песня "заказана из каталога", то не обновляем содержимое компонента.
+        // если заметка вызвана из каталога, то не обновляем содержимое компонента:
         if (!this.readFromCatalog) {
-            Loader.getData(this, Loader.readUrl);
+            LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.readUrl);
         }
         else{
-            // убираем чекбоксы и логин если "из каталога".
+            // убираем чекбоксы и логин если вызов произошёл из каталога:
             this.formId.style.display = "none";
             (document.getElementById("login")as HTMLElement).style.display = "none";
         }
@@ -59,11 +58,10 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     componentDidUpdate() {
         ReactDOM.render(
             <div>
-                <SubmitButton listener={this} formId={this.formId} jsonStorage={null} id={null}/>
+                <SubmitButton subscription={this} formId={this.formId} jsonStorage={null} id={null}/>
             </div>,
             document.querySelector("#searchButton1")
         );
-        // внешняя зависимость
         (document.getElementById("header")as HTMLElement).style.backgroundColor = "#e9ecee";//???
     }
 
@@ -78,24 +76,23 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     }
 
     render() {
-        // читаем "песню из каталога":
-        if (this.props.match.params.textId && !this.displayed) {//1. old: this.props.data 2. wrapped: this.props.textId
-            console.log("Get text id from path params: " + this.props.match.params.textId);//this.props.data
+        // читаем заметку из каталога:
+        if (this.props.match.params.textId && !this.displayed) {
+            console.log("Get text id from path params: " + this.props.match.params.textId);
 
             const item = { CheckedCheckboxesJS: [] };
             let requestBody = JSON.stringify(item);
-            let id = this.props.match.params.textId;//this.props.data
+            let id = this.props.match.params.textId;
             this.readFromCatalog = true;
 
-            Loader.postData(this, requestBody, Loader.readUrl, id);
-            //
+            LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.readUrl, id);
             this.displayed = true;
         }
 
         let checkboxes = [];
         if (this.state.data != null) {
             for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}`} id={i} jsonStorage={this.state.data} listener={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
             }
         }
 
@@ -108,7 +105,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
                 </form>
                 <div id="messageBox">
                     {this.state.data != null && this.state.data.textCS != null &&
-                        <Message formId={this.formId} jsonStorage={this.state.data} listener={null} id={null}/>
+                        <Message formId={this.formId} jsonStorage={this.state.data} subscription={null} id={null}/>
                     }
                 </div>
             </div>
@@ -118,13 +115,13 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
 
 class Checkbox extends React.Component<IProps> {
     render() {
-        let getGenreName = (i: number) => {
+        let getTagName = (i: number) => {
             return this.props.jsonStorage.genresNamesCS[i];
         };
         return (
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={false} />
-                <label htmlFor={this.props.id}>{getGenreName(this.props.id)}</label>
+                <label htmlFor={this.props.id}>{getTagName(this.props.id)}</label>
             </div>
         );
     }
@@ -144,7 +141,6 @@ class WithLinks extends React.Component<IWithLinks> {
         let res: any = [];
 
         // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
-        // [TODO] такую ссылку парсит некорректно, съедает ).
         this.props.text && this.props.text.replace(
             /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
             (_, link, text) => {
@@ -162,7 +158,7 @@ class Message extends React.Component<IProps> {
     }
 
     hideMenu() {
-        this.props.formId.style.display = hideMenu(this.props.formId.style.display);
+        this.props.formId.style.display = menuHandler(this.props.formId.style.display);
     }
 
     render() {
@@ -178,11 +174,10 @@ class Message extends React.Component<IProps> {
                             {this.props.jsonStorage.titleCS}
                         </div>
                         <div id="songBody">
-                                {/* {this.props.jsonStorage.textCS} */}
                             <WithLinks text={this.props.jsonStorage.textCS} />
                         </div>
                     </span>
-                    : "выберите жанр")
+                    : "выберите тег")
                     : ""}
             </span>
         );
@@ -198,7 +193,6 @@ class SubmitButton extends React.Component<IProps> {
 
     submit(e: any) {
         e.preventDefault();
-        // внешняя зависимость
         (document.getElementById("login") as HTMLElement).style.display = "none";
         let formData = new FormData(this.props.formId);
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
@@ -206,9 +200,8 @@ class SubmitButton extends React.Component<IProps> {
             CheckedCheckboxesJS: checkboxesArray
         };
         let requestBody = JSON.stringify(item);
-        Loader.postData(this.props.listener, requestBody, Loader.readUrl);
-        // внешняя зависимость
-        (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey"; // #4cff00
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.readUrl);
+        (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey";
     }
 
     componentWillUnmount() {

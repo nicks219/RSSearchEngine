@@ -29,14 +29,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
 		src\Rsse.Client\ClientApp\src\index.tsx = src\Rsse.Client\ClientApp\src\index.tsx
-		src\Rsse.Client\ClientApp\src\jsx\catalog.tsx = src\Rsse.Client\ClientApp\src\jsx\catalog.tsx
-		src\Rsse.Client\ClientApp\src\jsx\create.tsx = src\Rsse.Client\ClientApp\src\jsx\create.tsx
-		src\Rsse.Client\ClientApp\src\jsx\hideMenu.tsx = src\Rsse.Client\ClientApp\src\jsx\hideMenu.tsx
-		src\Rsse.Client\ClientApp\src\jsx\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\loader.tsx
-		src\Rsse.Client\ClientApp\src\jsx\login.tsx = src\Rsse.Client\ClientApp\src\jsx\login.tsx
-		src\Rsse.Client\ClientApp\src\jsx\menu-router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu-router.tsx
-		src\Rsse.Client\ClientApp\src\jsx\read.tsx = src\Rsse.Client\ClientApp\src\jsx\read.tsx
-		src\Rsse.Client\ClientApp\src\jsx\update.tsx = src\Rsse.Client\ClientApp\src\jsx\update.tsx
+		src\Rsse.Client\ClientApp\src\jsx\catalog.component.tsx = src\Rsse.Client\ClientApp\src\jsx\catalog.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\menu.router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu.router.tsx
+		src\Rsse.Client\ClientApp\src\jsx\read.component.tsx = src\Rsse.Client\ClientApp\src\jsx\read.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\create.component.tsx = src\Rsse.Client\ClientApp\src\jsx\create.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\login.component.tsx = src\Rsse.Client\ClientApp\src\jsx\login.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\menu.handler.tsx = src\Rsse.Client\ClientApp\src\jsx\menu.handler.tsx
+		src\Rsse.Client\ClientApp\src\jsx\update.component.tsx = src\Rsse.Client\ClientApp\src\jsx\update.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\loader.component.tsx = src\Rsse.Client\ClientApp\src\jsx\loader.component.tsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"

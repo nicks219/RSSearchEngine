@@ -1,11 +1,11 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { HomeView } from "./read";
-import UpdateView from "./update";
-import CreateView from "./create";
-import CatalogView from "./catalog";
-import { Login } from "./login";
+import { HomeView } from "./read.component.tsx";
+import UpdateView from "./update.component.tsx";
+import CreateView from "./create.component.tsx";
+import CatalogView from "./catalog.component.tsx";
+import { LoginComponent } from "./login.component.tsx";
 
 import {
     HashRouter,
@@ -39,9 +39,6 @@ export default class MenuRouter extends React.Component<any, any> {
                     <div id="renderContainer1">
                         <Route exact path="/" component={HomeView}/>
                         <Route exact path="/read/:textId" component={HomeView}/>
-
-                        {/* для следующих пунктов меню требуется меньший сдвиг сверху: #renderContainer */}
-
                         <Route path="/update" component={UpdateView}/>
                         <Route path="/create" component={CreateView}/>
                         <Route path="/catalog" component={CatalogView}/>
@@ -52,7 +49,7 @@ export default class MenuRouter extends React.Component<any, any> {
 }
 
 ReactDOM.render(
-    <Login listener={this} formId={null} jsonStorage={null} id={null}/>
+    <LoginComponent subscription={this} formId={null} jsonStorage={null} id={null}/>
     , document.querySelector("#renderLoginForm")
 );
 

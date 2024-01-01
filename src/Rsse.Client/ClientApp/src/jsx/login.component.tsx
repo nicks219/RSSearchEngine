@@ -1,7 +1,7 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { Loader } from "./loader";
+import { LoaderComponent } from "./loader.component.tsx";
 
 interface IState {
     style: any;
@@ -12,46 +12,50 @@ declare global {
 }
 
 interface IProps {
-    listener: any;
+    subscription: any;
     formId: any;
     jsonStorage: any;
     id: any;
 }
 
-export class LoginRequired {
-    // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации
-    // [TODO] сейчас у компонентов нет component.url - их надо докидывать отдельно
+export class LoginBoxHandler {
+    static login = false;
+
+    // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации:
     static ContinueLoading() {
         let component = window.temp;
 
         if (component) {
-            // login для update
-            if (window.url === Loader.updateUrl) {
+            // login для update:
+            if (window.url === LoaderComponent.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.getDataById(component, window.textId, window.url);
-                // login для catalog
-            } else if (window.url === Loader.catalogUrl){
-                Loader.getDataById(component, component.state.data.pageNumber, window.url);
+                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, window.textId, window.url);
+                // login для catalog:
+            } else if (window.url === LoaderComponent.catalogUrl){
+                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, component.state.data.pageNumber, window.url);
             }
-            // login для всего остального
+            // login для остальных компонентов:
             else {
-                Loader.getData(component, window.url);
+                LoaderComponent.unusedPromise = LoaderComponent.getData(component, window.url);
             }
         }
 
-        this.MessageOff();
+        this.Invisible();
     }
 
-    static MessageOff() {
+    static Invisible() {
+        if (!this.login) return;
         (document.getElementById("loginMessage")as HTMLElement).style.display = "none";
     }
 
-    static MessageOn(component: any, url: string) {
+    // hideMenu ?
+    static Visible(component: any, url: string) {
         window.temp = component;
         window.url = url;
 
         (document.getElementById("loginMessage")as HTMLElement).style.display = "block";
         (document.getElementById("login")as HTMLElement).style.display = "block";
+        this.login = true;
         ReactDOM.render(
             <h1>
                 LOGIN PLEASE
@@ -61,7 +65,7 @@ export class LoginRequired {
     }
 }
 
-export class Login extends React.Component<IProps, IState> {
+export class LoginComponent extends React.Component<IProps, IState> {
 
     public state: IState = {
         style: "submitStyle"
@@ -86,21 +90,19 @@ export class Login extends React.Component<IProps, IState> {
         let query = "?email=" + String(email) + "&password=" + String(password);
         let callback = (response: Response) => response.ok ? this.loginOk() : this.loginErr();
 
-        Loader.fireAndForgetWithQuery(Loader.loginUrl, query, callback, null);
+        LoaderComponent.fireAndForgetWithQuery(LoaderComponent.loginUrl, query, callback, null);
     }
 
     loginErr = () => {
-        // установим локальные куки
         document.cookie = 'rsse_auth = false';
         console.log("Login error");
     }
 
     loginOk = () => {
-        // установим локальные куки
         document.cookie = 'rsse_auth = true';
         console.log("Login ok.");
         this.setState({ style: "submitStyleGreen" });
-        LoginRequired.ContinueLoading();
+        LoginBoxHandler.ContinueLoading();
         setTimeout(() => {
             (document.getElementById("login")as HTMLElement).style.display = "none";
         }, 1500);

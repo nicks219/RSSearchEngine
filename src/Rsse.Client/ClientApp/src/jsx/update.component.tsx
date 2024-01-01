@@ -1,6 +1,6 @@
 ﻿import * as React from 'react';
-import {Loader} from "./loader";
-import { hideMenu } from "./hideMenu";
+import {LoaderComponent} from "./loader.component.tsx";
+import { menuHandler } from "./menu.handler.tsx";
 
 interface IState {
     data: any;
@@ -8,7 +8,7 @@ interface IState {
 }
 
 interface IProps {
-    listener: any;
+    subscribe: any;
     formId: any;
     jsonStorage: any;
     id: any;
@@ -35,7 +35,7 @@ class UpdateView extends React.Component<IProps, IState> {
 
     componentDidMount() {
         this.formId = this.mainForm.current;
-        Loader.getDataById(this, window.textId, Loader.updateUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
     }
 
     componentWillUnmount() {
@@ -46,7 +46,7 @@ class UpdateView extends React.Component<IProps, IState> {
         let checkboxes = [];
         if (this.state != null && this.state.data != null) {
             for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
-                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} listener={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} subscribe={null} formId={null}/>);
             }
         }
 
@@ -55,11 +55,11 @@ class UpdateView extends React.Component<IProps, IState> {
                 <form ref={this.mainForm} id="dizzy">
                     {checkboxes}
                     {this.state != null && this.state.data != null &&
-                        <SubmitButton listener={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
+                        <SubmitButton subscribe={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
                     }
                 </form>
                 {this.state != null && this.state.data != null && this.state.data.textCS != null &&
-                    <Message formId={this.formId} jsonStorage={this.state.data} listener={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={this.state.data} subscribe={null} id={null}/>
                 }
             </div>
         );
@@ -67,7 +67,7 @@ class UpdateView extends React.Component<IProps, IState> {
 }
 
 class Checkbox extends React.Component<IProps> {
-    
+
     render() {
         let checked = this.props.jsonStorage.isGenreCheckedCS[this.props.id] === "checked";
         let getGenreName = (i: number) => {
@@ -93,23 +93,22 @@ class Message extends React.Component<IProps> {
         this.getCookie();
     }
 
-    // куки сервиса: .AspNetCore.Cookies
+    // именование кук ASP.NET: ".AspNetCore.Cookies"
     getCookie = () => {
-        // куки выставляются в компоненте Login
+        // куки выставляются в компоненте Login:
         const name = "rsse_auth";
         let matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
         ));
 
-        // return matches ? decodeURIComponent(matches[1]) : undefined;
         if (matches == null || decodeURIComponent(matches[1]) === 'false')
         {
             this.hideMenu();
         }
     }
-    
+
     hideMenu() {
-        this.props.formId.style.display = hideMenu(this.props.formId.style.display);
+        this.props.formId.style.display = menuHandler(this.props.formId.style.display);
     }
 
     inputText = (e: any) => {
@@ -131,7 +130,7 @@ class Message extends React.Component<IProps> {
                                 value={this.props.jsonStorage.textCS} onChange={this.inputText} />
                         </h5>
                     </div>
-                    : "выберите песню")
+                    : "выберите заметку")
                     : "loading.."}
             </div>
         );
@@ -157,7 +156,7 @@ class SubmitButton extends React.Component<IProps> {
             SavedTextId: window.textId
         };
         let requestBody = JSON.stringify(item);
-        Loader.postData(this.props.listener, requestBody, Loader.updateUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscribe, requestBody, LoaderComponent.updateUrl);
     }
 
     componentWillUnmount() {

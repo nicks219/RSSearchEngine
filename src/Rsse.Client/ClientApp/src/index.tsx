@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './bootstrap.css';
 import './react.css';
-import MenuRouter from "./jsx/menu-router";
+import MenuRouter from "./jsx/menu.router.tsx";
 
 console.log('start');
 ReactDOM.render(

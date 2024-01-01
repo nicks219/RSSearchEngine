@@ -1,17 +1,17 @@
 ﻿import * as React from 'react';
-import { Loader } from "./loader";
+import { LoaderComponent } from "./loader.component.tsx";
 
 interface IState {
     data: any;
 }
 interface IProps {
-    listener: any;
+    subscription: any;
 }
 
 class CatalogView extends React.Component<IProps, IState> {
     mounted: boolean;
-    // стейт счетчика рендеринга компонента при обработке дампа, см. ниже:
-    dumpWorkState: number;
+    onDumpRenderingCounterState: number;
+    unused: any;
 
     public state: IState = {
     data: null
@@ -20,7 +20,7 @@ class CatalogView extends React.Component<IProps, IState> {
     constructor(props: any) {
         super(props);
         this.mounted = true;
-        this.dumpWorkState = 0;
+        this.onDumpRenderingCounterState = 0;
     }
 
     componentWillUnmount() {
@@ -28,7 +28,7 @@ class CatalogView extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
-        Loader.getDataById(this, 1, Loader.catalogUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, 1, LoaderComponent.catalogUrl);
     }
 
     click = (e: any) => {
@@ -39,19 +39,19 @@ class CatalogView extends React.Component<IProps, IState> {
             navigationButtons: [target]
         };
         let requestBody = JSON.stringify(item);
-        Loader.postData(this, requestBody, Loader.catalogUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.catalogUrl);
     }
 
     createDump = (e: any) => {
-        this.dumpWorkState = 1;
+        this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        Loader.getData(this, Loader.backupCreateUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.backupCreateUrl);
     }
 
     restoreDump = (e: any) => {
-        this.dumpWorkState = 1;
+        this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        Loader.getData(this, Loader.backupRestoreUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.backupRestoreUrl);
     }
 
     logout = (e: any) => {
@@ -60,23 +60,20 @@ class CatalogView extends React.Component<IProps, IState> {
 
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
 
-        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, this);
+        LoaderComponent.fireAndForgetWithQuery(LoaderComponent.logoutUrl, "", callback, this);
     }
 
     redirect = (e: any) => {
-        // listener это меню.
         e.preventDefault();
-        let id = Number(e.target.id);
-        // Menu:
-        // this.props.listener.setState({ id: id });
-        Loader.redirectToMenu("/#/read/" + id);
+        let noteId = Number(e.target.id);
+        LoaderComponent.redirectToMenu("/#/read/" + noteId);
     }
 
     delete = (e: any) => {
         e.preventDefault();
         let id = Number(e.target.id);
         console.log('You want to delete song with id: ' + id);
-        Loader.deleteDataById(this, id, Loader.catalogUrl, this.state.data.pageNumber);
+        LoaderComponent.unusedPromise = LoaderComponent.deleteDataById(this, id, LoaderComponent.catalogUrl, this.state.data.pageNumber);
     }
 
     render() {
@@ -87,7 +84,7 @@ class CatalogView extends React.Component<IProps, IState> {
         let songs = [];
 
         // если работаем с дампами:
-        if(this.state.data.res && this.dumpWorkState === 1)
+        if(this.state.data.res && this.onDumpRenderingCounterState === 1)
         {
             songs.push(
                 <tr key={"song "} className="bg-warning">
@@ -102,15 +99,15 @@ class CatalogView extends React.Component<IProps, IState> {
             link.click();
             document.body.removeChild(link);
 
-            this.dumpWorkState = 2;
+            this.onDumpRenderingCounterState = 2;
         }
-        else if(this.state.data.res && this.dumpWorkState === 2)
+        else if(this.state.data.res && this.onDumpRenderingCounterState === 2)
         {
             // если после обработки дампа нажата кнопка "Каталог":
             this.componentDidMount();
-            this.dumpWorkState = 0;
+            this.onDumpRenderingCounterState = 0;
         }
-        // на отладке можно получить исключение и пустой стейт
+        // на отладке можно получить исключение и пустой стейт:
         else if(this.state.data.titlesAndIds !== null && this.state.data.titlesAndIds !== undefined)
         {
             for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {
@@ -160,7 +157,6 @@ class CatalogView extends React.Component<IProps, IState> {
                                     <button id="js-logout" className="btn btn-outline-light" onClick={this.createDump}>
                                         &lt;Create&gt;
                                     </button>
-                                        {/* <a href={this.state.data.res} download={this.state.data.res}>&lt;Download&gt;</a>*/}
                                     <button id="js-logout" className="btn btn-outline-light" onClick={this.restoreDump}>
                                         &lt;Restore&gt;
                                     </button>

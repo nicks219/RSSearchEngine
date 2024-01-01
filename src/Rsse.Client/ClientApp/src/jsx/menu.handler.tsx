@@ -1,7 +1,7 @@
-export function hideMenu(cssProperty: string): any {
+// login: MessageOn - MessageOff ?
+export function menuHandler(cssProperty: string): any {
     if (cssProperty !== "none") {
         cssProperty = "none";
-        // внешняя зависимость
         (document.getElementById("login")as HTMLElement).style.display = "none";
         return cssProperty;
     }

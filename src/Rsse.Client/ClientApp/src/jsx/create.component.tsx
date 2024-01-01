@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import {Loader} from "./loader";
+import {LoaderComponent} from "./loader.component.tsx";
 
 interface IState {
     data: any;
@@ -8,7 +8,7 @@ interface IState {
 }
 
 interface IProps {
-    listener: any;
+    subscription: any;
     formId: any;
     jsonStorage: any;
     id: any;
@@ -20,7 +20,7 @@ class CreateView extends React.Component<IProps, IState> {
 
     public state: IState = {
         data: null,
-        // используй реальное время, это более корректно для key
+        // NB использовать реальное время более корректно для key:
         time: null,
         menuListener: null
     }
@@ -37,22 +37,21 @@ class CreateView extends React.Component<IProps, IState> {
 
     componentDidMount() {
         this.formId = this.mainForm.current;
-        Loader.getData(this, Loader.createUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.createUrl);
     }
 
     componentWillUnmount() {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(window.textId)) window.textId = 0;
+        if (isNaN(window.textId)) {
+            window.textId = 0;
+        }
         this.mounted = false;
     }
 
     componentDidUpdate() {
-
-        // listener это меню.
         if (this.state.menuListener){
             console.log("Redirected: " + this.state.menuListener);
-            //this.props.listener.setState({id: this.state.menuListener});
-            Loader.redirectToMenu("/#/read/" + this.state.menuListener);
+            LoaderComponent.redirectToMenu("/#/read/" + this.state.menuListener);
         }
 
         let id = 0;
@@ -64,7 +63,7 @@ class CreateView extends React.Component<IProps, IState> {
         let checkboxes = [];
         if (this.state.data != null && this.state.data.genresNamesCS != null) {
             for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} listener={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
             }
         }
 
@@ -80,11 +79,11 @@ class CreateView extends React.Component<IProps, IState> {
                     id="dizzy">
                     {checkboxes}
                     {this.state.data != null &&
-                        <SubmitButton listener={this} formId={this.formId} id={null} jsonStorage={null}/>
+                        <SubmitButton subscription={this} formId={this.formId} id={null} jsonStorage={null}/>
                     }
                 </form>
                 {this.state.data != null &&
-                    <Message formId={this.formId} jsonStorage={jsonStorage} listener={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={jsonStorage} subscription={null} id={null}/>
                 }
             </div>
         );
@@ -120,12 +119,12 @@ class Checkbox extends React.Component<IProps> {
 }
 
 class Message extends React.Component<IProps> {
-    inputText = (e: any) => {
+    textHandler = (e: any) => {
         this.props.jsonStorage.textCS = e.target.value;
         this.forceUpdate();
     }
 
-    inputTitle = (e: any) => {
+    titleHandler = (e: any) => {
         this.props.jsonStorage.titleCS = e.target.value;
         this.forceUpdate();
     }
@@ -138,11 +137,11 @@ class Message extends React.Component<IProps> {
                     <div>
                         <h5>
                             <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                value={this.props.jsonStorage.titleCS} onChange={this.inputTitle} />
+                                value={this.props.jsonStorage.titleCS} onChange={this.titleHandler} />
                         </h5>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={this.props.jsonStorage.textCS} onChange={this.inputText} />
+                                value={this.props.jsonStorage.textCS} onChange={this.textHandler} />
                         </h5>
                     </div>
                     : "loading.."}
@@ -164,19 +163,19 @@ class SubmitButton extends React.Component<IProps> {
     constructor(props: any) {
         super(props);
         this.submit = this.submit.bind(this);
-        // подтверждение или отмена
+        // подтверждение или отмена:
         this.submitState = 0;
-        SubmitButton.listener = this.props.listener;
+        SubmitButton.listener = this.props.subscription;
     }
 
-    // чекбоксы превращаются в ссылки на каталог заметок
+    // чекбоксы превращаются в ссылки на каталог заметок:
     static loadNoteOnClick: any = (e: any) => {
         if (SubmitButton.state !== undefined) {
 
             let title = e.target.innerText;
             let id = e.target.attributes.about.nodeValue;
 
-            // listener это компонент create.
+            // subscription на компонент create.
             console.log("Submitted: " + SubmitButton.state + " " + title + " " + id);
             SubmitButton.listener.setState({menuListener: id});
         }
@@ -185,7 +184,7 @@ class SubmitButton extends React.Component<IProps> {
     cancel = (e: any) => {
         e.preventDefault();
         this.btn.style.display = "none";
-        // отмена - сохраняем текст и название
+        // отмена - сохраняем текст и название:
         SubmitButton.state = undefined;
         this.submitState = 0;
 
@@ -197,7 +196,7 @@ class SubmitButton extends React.Component<IProps> {
             "TextJS": text,
             "TitleJS": title
             });
-        Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
     }
 
     componentDidMount() {
@@ -213,11 +212,11 @@ class SubmitButton extends React.Component<IProps> {
 
         if (this.submitState === 1)
         {
-            // подтверждение
+            // подтверждение:
             SubmitButton.state = undefined;
 
             this.submitState = 0;
-            Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
+            LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
             return;
         }
 
@@ -238,14 +237,14 @@ class SubmitButton extends React.Component<IProps> {
 
         if (this.storage.length > 0)
         {
-            // переключение в "подтверждение или отмена"
+            // переключение в "подтверждение или отмена":
             this.btn.style.display = "block";
             this.submitState = 1;
             return;
         }
 
-        // совпадения не обнаружены
-        Loader.postData(this.props.listener, this.requestBody, Loader.createUrl);
+        // совпадения не обнаружены:
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
     }
 
     findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
@@ -259,7 +258,7 @@ class SubmitButton extends React.Component<IProps> {
         let query = "?text=" + formMessage + " " + formTitle;
 
         try {
-            promise = Loader.getWithPromise(Loader.findUrl, query, callback);
+            promise = LoaderComponent.getWithPromise(LoaderComponent.findUrl, query, callback);
         } catch (err) {
             console.log("Find when create: try-catch err");
         }
@@ -289,14 +288,14 @@ class SubmitButton extends React.Component<IProps> {
         }
 
         for (let ind = 0; ind < result.length; ind++) {
-            // лучше сделать reject
+            // лучше сделать reject:
             if (this.storage.length >= 10) {
                 continue;
             }
 
             let i = String(result[ind][0]);
 
-            //  получаем имена возможных совпадений: i:string зто id 'песни', можно вместо time его выставлять
+            // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
             let promise;
 
             let callback = (data: any) => this.getTitle(data, i);
@@ -304,7 +303,7 @@ class SubmitButton extends React.Component<IProps> {
             let query = "?id=" + i;
 
             try {
-                promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
+                promise = LoaderComponent.getWithPromise(LoaderComponent.readTitleUrl, query, callback);
             } catch (err) {
                 console.log("Find when create: try-catch err");
             }
@@ -320,20 +319,20 @@ class SubmitButton extends React.Component<IProps> {
         this.storageId.push(i);
 
         let time = Date.now();
-        // stub
+        // stub:
         data = {
-            "genresNamesCS": this.storage, // this.props.listener.state.data.genresNamesCS,
+            "genresNamesCS": this.storage,
             "isGenreCheckedCS": [],
             "textCS": JSON.parse(this.requestBody).TextJS,
             "titleCS": JSON.parse(this.requestBody).TitleJS,
-            "genresNamesId": this.storageId //
+            "genresNamesId": this.storageId
         };
-        // listener это CreateView
-        this.props.listener.setState({ data , time });
+        // subscription на CreateView:
+        this.props.subscription.setState({ data , time });
     }
 
     componentWillUnmount() {
-        // отменяй подписки и асинхронную загрузку
+        // TODO отменить подписки и асинхронную загрузку
     }
 
     render() {
