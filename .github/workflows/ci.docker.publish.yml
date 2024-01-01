@@ -1,5 +1,5 @@
-# use v*.*.* tag
-# publish to github registry
+# use d*.*.* tag
+# build and publish to github registry
 name: Publish.Docker.ghcr
 
 # This workflow uses actions that are not certified by GitHub.
@@ -13,7 +13,7 @@ on:
   push:
     # branches: [ "master" ]
     # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    tags: [ 'd*.*.*' ]
   # pull_request:
     # branches: [ "master" ]
 
@@ -26,7 +26,7 @@ env:
 
 jobs:
   build:
-
+    name: Build and publish
     runs-on: ubuntu-latest
     defaults:
       run:

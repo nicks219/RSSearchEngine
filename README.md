@@ -1,7 +1,7 @@
 ![cover.png](.common/cover.png)
 ---------------------------------------------
 # RS Search Engine
-[![Deploy to K3S](https://github.com/nicks219/RSSearchEngine/actions/workflows/k3s-deploy.yml/badge.svg)](https://github.com/nicks219/RSSearchEngine/actions/workflows/k3s-deploy.yml)
+[![Deploy.K3S](https://github.com/nicks219/RSSearchEngine/actions/workflows/cd.deploy.k3s.yml/badge.svg)](https://github.com/nicks219/RSSearchEngine/actions/workflows/cd.deploy.k3s.yml)
 #### Веб-сервис с каталогом для организации, случайного выбора и поиска небольших заметок в т.ч. по тегам
 #### Главная фишка функционала - нечеткий текстовый поиск, выдерживающий существенные синтаксические ошибки
 #### Архитектура оптимизирована для работы контейнеров на бюджетном хостинге (1vCPU/1Gb RAM)

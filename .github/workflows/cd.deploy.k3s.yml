@@ -1,5 +1,5 @@
 # use k*.*.* tag
-# publish image to dockerhub registry
+# publish image to dockerhub registry and run rollout
 name: Deploy.K3S
 
 on:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Docker image
+    name: Build and deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

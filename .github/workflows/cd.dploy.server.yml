@@ -1,12 +1,13 @@
-# use d*.*.* tag
+# use r*.*.* tag
 name: Deploy.remote
 
 on:
   push:
-    tags: [ 'd*.*.*' ]
+    tags: [ 'r*.*.*' ]
 
 jobs:
   deploy:
+    name: Deploy only
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
