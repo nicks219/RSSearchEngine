@@ -36,7 +36,7 @@ public class CreateModel
         catch (Exception ex)
         {
             _logger.LogError(ex, ReadTagListError);
-            return new NoteDto { ErrorMessageResponse = ReadTagListError };
+            return new NoteDto { CommonErrorMessageResponse = ReadTagListError };
         }
     }
 
@@ -51,7 +51,7 @@ public class CreateModel
             {
                 var errorDto = await ReadTagList();
 
-                errorDto.ErrorMessageResponse = CreateNoteEmptyDataError;
+                errorDto.CommonErrorMessageResponse = CreateNoteEmptyDataError;
 
                 if (string.IsNullOrEmpty(noteDto.TextRequest))
                 {
@@ -74,7 +74,7 @@ public class CreateModel
             {
                 var errorDto = await ReadTagList();
 
-                errorDto.ErrorMessageResponse = CreateNoteUnsuccessfulError;
+                errorDto.CommonErrorMessageResponse = CreateNoteUnsuccessfulError;
 
                 errorDto.TitleResponse = "[Already Exist]";
 
@@ -103,7 +103,7 @@ public class CreateModel
         {
             _logger.LogError(ex, CreateNoteError);
 
-            return new NoteDto { ErrorMessageResponse = CreateNoteError };
+            return new NoteDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }
 

@@ -12,15 +12,23 @@ using SearchEngine.Data.Repository.Exceptions;
 
 namespace SearchEngine.Data.Repository;
 
+/// <summary>
+/// Репозиторий доступа к бд
+/// </summary>
 public class CatalogRepository : IDataRepository
 {
     private readonly CatalogContext _context;
 
+    /// <summary>
+    /// Создать репозиторий
+    /// </summary>
+    /// <param name="serviceProvider"></param>
     public CatalogRepository(IServiceProvider serviceProvider)
     {
         _context = serviceProvider.GetRequiredService<CatalogContext>();
     }
 
+    /// <inheritdoc/>
     public async Task CreateTagIfNotExists(string tag)
     {
         tag = tag.ToUpper();
@@ -41,20 +49,20 @@ public class CatalogRepository : IDataRepository
         await _context.SaveChangesAsync();
     }
 
+    /// <inheritdoc/>
     public IQueryable<NoteEntity> ReadAllNotes()
     {
         var notes =
             _context.Notes!
-            //.Select(s => string.Concat(s.TextId, " '", s.Title!, "' '", s.Song!,"'"))
             .Select(note => note)
             .AsNoTracking();
 
         return notes;
     }
 
+    /// <inheritdoc/>
     public string ReadNoteTitle(int noteId)
     {
-        // см. предупреждение Rider "21 DB commands":
         var note =
             _context.Notes!
             .First(noteEntity => noteEntity.NoteId == noteId);
@@ -62,6 +70,7 @@ public class CatalogRepository : IDataRepository
         return note.Title!;
     }
 
+    /// <inheritdoc/>
     public int ReadNoteId(string noteTitle)
     {
         var note =
@@ -71,6 +80,7 @@ public class CatalogRepository : IDataRepository
         return note.NoteId;
     }
 
+    /// <inheritdoc/>
     public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
         // TODO: определить какой метод лучше
@@ -85,6 +95,7 @@ public class CatalogRepository : IDataRepository
         return notesForElection;
     }
 
+    /// <inheritdoc/>
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
     {
         var titleAndIdList = _context.Notes!
@@ -97,6 +108,7 @@ public class CatalogRepository : IDataRepository
         return titleAndIdList;
     }
 
+    /// <inheritdoc/>
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
         var titleAndText = _context.Notes!
@@ -107,6 +119,7 @@ public class CatalogRepository : IDataRepository
         return titleAndText;
     }
 
+    /// <inheritdoc/>
     public IQueryable<int> ReadNoteTags(int noteId)
     {
         var songGenres = _context.TagsToNotesRelation!
@@ -116,21 +129,25 @@ public class CatalogRepository : IDataRepository
         return songGenres;
     }
 
+    /// <inheritdoc/>
     public async Task<UserEntity?> GetUser(LoginDto login)
     {
         return await _context.Users!
             .FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
     }
 
+    /// <inheritdoc/>
     public async Task<int> ReadNotesCount()
     {
         return await _context.Notes!.CountAsync();
     }
 
+    /// <inheritdoc/>
     public async Task<List<string>> ReadGeneralTagList()
     {
         var tagList = await _context.Tags!
-            .OrderBy(tag => tag.TagId) // вместо сортировки построй корректный индекс на стороне бд
+            // TODO заменить сортировку на корректный индекс в бд
+            .OrderBy(tag => tag.TagId)
             .Select(tag => new Tuple<string, int>(tag.Tag!, tag.RelationEntityReference!.Count))
             .ToListAsync();
 
@@ -141,6 +158,7 @@ public class CatalogRepository : IDataRepository
             .ToList();
     }
 
+    /// <inheritdoc/>
     public async Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
     {
         var forAddition = note.TagsCheckedRequest!.ToHashSet();
@@ -153,16 +171,14 @@ public class CatalogRepository : IDataRepository
 
         forDelete.ExceptWith(except);
 
-        if (await VerifyTagNotExists(note.NoteId, forAddition))
+        if (await VerifyTagNotExists(note.CommonNoteId, forAddition))
         {
-            // название заметки остаётся неизменным (constraint)
             // ID тегов и номера кнопок с фронта совпадают
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // дешевле просто откатить или не начинать транзакцию, без механизма исключений
-                var processedNote = await _context.Notes!.FindAsync(note.NoteId);
+                var processedNote = await _context.Notes!.FindAsync(note.CommonNoteId);
 
                 if (processedNote == null)
                 {
@@ -178,14 +194,14 @@ public class CatalogRepository : IDataRepository
                 _context.TagsToNotesRelation!
                     .RemoveRange(_context.TagsToNotesRelation
                         .Where(relation =>
-                            relation.NoteId == note.NoteId && forDelete.Contains(relation.TagId)));
+                            relation.NoteId == note.CommonNoteId && forDelete.Contains(relation.TagId)));
 
                 await _context.TagsToNotesRelation
                     .AddRangeAsync(forAddition
                         .Select(id =>
                             new TagsToNotesEntity
                             {
-                                NoteId = note.NoteId,
+                                NoteId = note.CommonNoteId,
                                 TagId = id
                             }));
 
@@ -206,11 +222,12 @@ public class CatalogRepository : IDataRepository
         }
     }
 
+    /// <inheritdoc/>
     public async Task<int> CreateNote(NoteDto note)
     {
         if (await VerifyTitleNotExists(note.TitleRequest!) == false)
         {
-            return note.NoteId;
+            return note.CommonNoteId;
         }
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -236,48 +253,49 @@ public class CatalogRepository : IDataRepository
 
             await transaction.CommitAsync();
 
-            note.NoteId = forAddition.NoteId;
+            note.CommonNoteId = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
             await transaction.RollbackAsync();
 
-            note.NoteId = 0;
+            note.CommonNoteId = 0;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
 
-            note.NoteId = 0;
+            note.CommonNoteId = 0;
 
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
 
-        return note.NoteId;
+        return note.CommonNoteId;
     }
 
+    /// <inheritdoc/>
     public async Task<int> DeleteNote(int noteId)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var writtenEntries = 0;
+            var deletedEntries = 0;
 
             var processedNote = await _context.Notes!.FindAsync(noteId);
 
             if (processedNote == null)
             {
-                return writtenEntries;
+                return deletedEntries;
             }
 
             _context.Notes.Remove(processedNote);
 
-            writtenEntries = await _context.SaveChangesAsync();
+            deletedEntries = await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
-            return writtenEntries;
+            return deletedEntries;
         }
         catch (Exception ex)
         {
@@ -302,7 +320,7 @@ public class CatalogRepository : IDataRepository
         if (await _context.TagsToNotesRelation!.AnyAsync(relation =>
                 relation.NoteId == noteId && relation.TagId == forAddition.First()))
         {
-            throw new DataExistsException("[Global Error: Tags Exists Error]");
+            throw new DataExistsException("[PANIC] tags exists error");
         }
 
         return true;
@@ -312,17 +330,13 @@ public class CatalogRepository : IDataRepository
     {
         await _context.DisposeAsync().ConfigureAwait(false);
 
-        // context = null;
-
         GC.SuppressFinalize(this);
     }
 
-    // на старте отрабатывает четыре раза
+    // WARN на старте отрабатывает четыре раза
     void IDisposable.Dispose()
     {
         _context.Dispose();
-
-        // context = null;
 
         GC.SuppressFinalize(this);
     }

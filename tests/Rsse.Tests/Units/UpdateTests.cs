@@ -51,7 +51,7 @@ public class UpdateTests
             TitleRequest = TestName,
             TextRequest = TestText,
             TagsCheckedRequest = new List<int> { 1, 2, 3, 11 },
-            NoteId = _testNoteId
+            CommonNoteId = _testNoteId
         };
 
         // act:

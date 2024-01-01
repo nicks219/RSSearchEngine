@@ -13,16 +13,10 @@ public sealed class CatalogContext : DbContext
     private static volatile bool _init;
 
     /// <summary>
-    /// Конфигурируем контекст базы данных
+    /// Создать контекст работы с базой данных
     /// </summary>
-    /// <param name="option"></param>
     public CatalogContext(DbContextOptions<CatalogContext> option) : base(option)
     {
-        // const string relativePath = "Dump/rsse-5-4.dump";
-        // var path = Path.Combine(AppContext.BaseDirectory, relativePath);
-        // var sql = File.ReadAllText(path);
-
-        // в SqlScripts удаляется индекс для GenreText таблицы
         if (_init)
         {
             return;
@@ -46,7 +40,7 @@ public sealed class CatalogContext : DbContext
 
                 // SQLite используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
-                    // можно инициализировать тестовую базу на каждый вызов контекста:
+                    // TODO можно инициализировать тестовую базу на каждый вызов контекста:
                     if (created) Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateGenresScript);
                     break;
             }
@@ -54,17 +48,17 @@ public sealed class CatalogContext : DbContext
     }
 
     /// <summary>
-    /// Контекст с пользователями приложения
+    /// Контекст для пользователей приложения
     /// </summary>
     public DbSet<UserEntity>? Users { get; set; }
 
     /// <summary>
-    /// Контекст с текстами заметок
+    /// Контекст для текстов заметок
     /// </summary>
     public DbSet<NoteEntity>? Notes { get; set; }
 
     /// <summary>
-    /// Контекст с тегами заметок
+    /// Контекст для тегов заметок
     /// </summary>
     public DbSet<TagEntity>? Tags { get; set; }
 
@@ -74,24 +68,22 @@ public sealed class CatalogContext : DbContext
     public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
 
     /// <summary>
-    /// Создание связей для модели "многие-ко-многим"
+    /// Создать связи для модели "многие-ко-многим"
     /// </summary>
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // base.OnModelCreating(modelBuilder);
-
         modelBuilder.Entity<NoteEntity>()
             .HasKey(noteEntity => noteEntity.NoteId);
 
-        //CONSTRAINT UNIQUE NONCLUSTERED
+        // CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<NoteEntity>()
             .HasAlternateKey(noteEntity => noteEntity.Title);
 
         modelBuilder.Entity<TagEntity>()
             .HasKey(tagsEntity => tagsEntity.TagId);
 
-        //CONSTRAINT UNIQUE NONCLUSTERED
+        // CONSTRAINT UNIQUE NONCLUSTERED
         modelBuilder.Entity<TagEntity>()
             .HasAlternateKey(tagsEntity => tagsEntity.Tag);
 
@@ -110,7 +102,7 @@ public sealed class CatalogContext : DbContext
     }
 }
 
-/*
+/* аналогичный код на SQL:
 CREATE TABLE [dbo].[Genre] (
     [GenreID] INT           IDENTITY (1, 1) NOT NULL,
     [Genre]   NVARCHAR (30) NOT NULL,
@@ -132,5 +124,4 @@ CREATE TABLE [dbo].[Text] (
     [Song]   NVARCHAR (4000) NOT NULL,
     PRIMARY KEY CLUSTERED ([TextID] ASC),
     CONSTRAINT [NK_2] UNIQUE NONCLUSTERED ([Title] ASC)
-);
-*/
+);*/

@@ -147,7 +147,7 @@ internal class TestCatalogRepository : IDataRepository
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        _notesTableStub ??= new Dictionary<int, Tuple<string, string>> { { 1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText) } };
+        _notesTableStub ??= new Dictionary<int, Tuple<string, string>> { { 1, new Tuple<string, string>(FirstNoteText, FirstNoteTitle) } };
 
         return new TestQueryable<Tuple<string, string>>(
             new List<Tuple<string, string>>
@@ -168,7 +168,7 @@ internal class TestCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notesTableStub[note.NoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
+        _notesTableStub[note.CommonNoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
 
         return Task.CompletedTask;
     }

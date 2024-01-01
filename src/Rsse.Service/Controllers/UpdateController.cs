@@ -39,7 +39,7 @@ public class UpdateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, GetInitialNoteError);
-            return new NoteDto { ErrorMessageResponse = GetInitialNoteError };
+            return new NoteDto { CommonErrorMessageResponse = GetInitialNoteError };
         }
     }
 
@@ -53,14 +53,14 @@ public class UpdateController : ControllerBase
             var response = await new UpdateModel(scope).UpdateNote(dto);
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
-            tokenizer.Update(dto.NoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            tokenizer.Update(dto.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, UpdateNoteError);
-            return new NoteDto { ErrorMessageResponse = UpdateNoteError };
+            return new NoteDto { CommonErrorMessageResponse = UpdateNoteError };
         }
     }
 }

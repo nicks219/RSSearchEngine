@@ -61,7 +61,7 @@ public class ReadController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, ReadTagListError);
-            return new NoteDto { ErrorMessageResponse = ReadTagListError };
+            return new NoteDto { CommonErrorMessageResponse = ReadTagListError };
         }
     }
 
@@ -82,7 +82,7 @@ public class ReadController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, ElectNoteError);
-            return new NoteDto { ErrorMessageResponse = ElectNoteError };
+            return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
         }
     }
 

@@ -3,15 +3,11 @@ using System;
 namespace SearchEngine.Data.Repository.Exceptions;
 
 /// <summary>
-/// Моё исключение
+/// Данные уже существуют
 /// </summary>
 public class DataExistsException : Exception
 {
     public DataExistsException(string message) : base(message)
-    {
-    }
-
-    public DataExistsException(string message, Exception inner) : base(message, inner)
     {
     }
 }

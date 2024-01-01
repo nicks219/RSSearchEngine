@@ -44,7 +44,7 @@ public class CreateTests
         // act:
         var response = await _createModel!.CreateNote(request);
         var expected = await new UpdateModel(new TestServiceCollection<UpdateModel>().Scope)
-            .GetOriginalNote(response.NoteId);
+            .GetOriginalNote(response.CommonNoteId);
 
         // assert:
         Assert.AreEqual(expected.TitleRequest, response.TitleRequest);

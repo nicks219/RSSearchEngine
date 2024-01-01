@@ -4,25 +4,48 @@ using System.Text.Json.Serialization;
 
 namespace SearchEngine.Data.Dto;
 
+/// <summary>
+/// Шаблон передачи данных каталога
+/// </summary>
 public record CatalogDto
 {
-    // название и соответствующее ему Id из бд
+    private const int Backward = 1;
+    private const int Forward = 2;
+
+    /// <summary>
+    /// Название и соответствующее ему Id из бд
+    /// </summary>
     [JsonPropertyName("titlesAndIds")]
     public List<Tuple<string, int>>? CatalogPage { get; init; }
 
-    [JsonPropertyName("navigationButtons")]
-    public List<int>? NavigationButtons { get; init; }
-
+    /// <summary>
+    /// Количество заметок
+    /// </summary>
     [JsonPropertyName("songsCount")]
-    public int SongsCount { get; init; }
+    public int NotesCount { get; init; }
 
+    /// <summary>
+    /// Номер страницы каталога
+    /// </summary>
     [JsonPropertyName("pageNumber")]
     public int PageNumber { get; init; }
 
+    /// <summary>
+    /// Сообщение об ошибке, если потребуется
+    /// </summary>
     [JsonPropertyName("errorMessage")]
     public string? ErrorMessage { get; init; }
 
-    public int Direction()
+    /// <summary>
+    /// Направление перемещения по каталогу
+    /// </summary>
+    [JsonPropertyName("navigationButtons")]
+    public List<int>? NavigationButtons { get; init; }
+
+    /// <summary>
+    /// Получить направление перемещения по каталогу в виде константы
+    /// </summary>
+    public int GetDirection()
     {
         if (NavigationButtons is null)
         {
@@ -31,9 +54,9 @@ public record CatalogDto
 
         return NavigationButtons[0] switch
         {
-            1 => 1,
-            2 => 2,
-            _ => throw new NotImplementedException("[Wrong Navigate]")
+            Backward => Backward,
+            Forward => Forward,
+            _ => throw new NotImplementedException($"[{nameof(GetDirection)}] unknown direction")
         };
     }
 }

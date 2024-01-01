@@ -3,25 +3,44 @@ using System.Text.Json.Serialization;
 
 namespace SearchEngine.Data.Dto;
 
+/// <summary>
+/// Шаблон передачи данных авторизации
+/// </summary>
 public record NoteDto
 {
-    // request:
+    /// <summary>
+    /// Список отмеченных тегов в запросе
+    /// </summary>
     [JsonPropertyName("checkedCheckboxesJs")]
     public List<int>? TagsCheckedRequest { get; set; }
 
+    /// <summary>
+    /// Именование заметки в запросе
+    /// </summary>
     [JsonPropertyName("titleJs")]
     public string? TitleRequest { get; set; }
 
+    /// <summary>
+    /// Текст заметки в запросе
+    /// </summary>
     [JsonPropertyName("textJs")]
     public string? TextRequest { get; set; }
 
-    // response:
+    /// <summary>
+    /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
+    /// </summary>
     [JsonPropertyName("isGenreCheckedCS")]
     public List<string>? TagsCheckedUncheckedResponse { get; init; }
 
+    /// <summary>
+    /// Именование заметки в ответе
+    /// </summary>
     [JsonPropertyName("titleCS")]
     public string? TitleResponse { get; set; }
 
+    /// <summary>
+    /// Текст заметки в ответе
+    /// </summary>
     [JsonPropertyName("textCS")]
     public string? TextResponse { get; set; }
 
@@ -29,18 +48,30 @@ public record NoteDto
     [JsonPropertyName("genresNamesCS")]
     public List<string>? CommonTagsListResponse { get; init; }
 
+    /// <summary>
+    /// Поле для хранения идентификатора сохраненной/измененной заметки
+    /// </summary>
     [JsonPropertyName("savedTextId")]
-    public int NoteId { get; set; }
+    public int CommonNoteId { get; set; }
 
-    public string? ErrorMessageResponse { get; set; }
+    /// <summary>
+    /// Сообщение об ошибке
+    /// </summary>
+    public string? CommonErrorMessageResponse { get; set; }
 
+    /// <summary>
+    /// Создать незаполненный шаблон передачи данных авторизации
+    /// </summary>
     public NoteDto()
     {
     }
 
+    /// <summary>
+    /// Создать шаблон передачи данных авторизации
+    /// </summary>
     public NoteDto(
         List<string> commonTagsListResponse,
-        int noteId = 0,
+        int commonNoteId = 0,
         string textResponse = "",
         string titleResponse = "",
         List<string>? tagsCheckedUncheckedResponse = null)
@@ -49,6 +80,6 @@ public record NoteDto
         TitleResponse = titleResponse;
         TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
         CommonTagsListResponse = commonTagsListResponse;
-        NoteId = noteId;
+        CommonNoteId = commonNoteId;
     }
 }

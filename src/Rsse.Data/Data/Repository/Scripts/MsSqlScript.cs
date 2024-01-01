@@ -1,5 +1,8 @@
 namespace SearchEngine.Data.Repository.Scripts;
 
+/// <summary>
+/// Инициализация таблицы тегов для MsSql
+/// </summary>
 public static class MsSqlScript
 {
     public const string CreateGenresScript = """

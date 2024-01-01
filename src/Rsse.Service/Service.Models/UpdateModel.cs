@@ -68,7 +68,7 @@ public class UpdateModel
         catch (Exception ex)
         {
             _logger.LogError(ex, GetOriginalNoteError);
-            return new NoteDto { ErrorMessageResponse = GetOriginalNoteError };
+            return new NoteDto { CommonErrorMessageResponse = GetOriginalNoteError };
         }
     }
 
@@ -81,22 +81,22 @@ public class UpdateModel
                 || string.IsNullOrEmpty(updatedNote.TitleRequest)
                 || updatedNote.TagsCheckedRequest.Count == 0)
             {
-                return await GetOriginalNote(updatedNote.NoteId);
+                return await GetOriginalNote(updatedNote.CommonNoteId);
             }
 
             var initialNoteTags = await _repo
-                .ReadNoteTags(updatedNote.NoteId)
+                .ReadNoteTags(updatedNote.CommonNoteId)
                 .ToListAsync();
 
             await _repo.UpdateNote(initialNoteTags, updatedNote);
 
-            return await GetOriginalNote(updatedNote.NoteId);
+            return await GetOriginalNote(updatedNote.CommonNoteId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, UpdateNoteError);
 
-            return new NoteDto { ErrorMessageResponse = UpdateNoteError };
+            return new NoteDto { CommonErrorMessageResponse = UpdateNoteError };
         }
     }
 }

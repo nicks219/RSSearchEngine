@@ -47,7 +47,7 @@ public class CatalogTests
 
         // asserts:
         Assert.AreEqual(NotesPerPage, response.CatalogPage?.Count);
-        Assert.AreEqual(_notesCount, response.SongsCount);
+        Assert.AreEqual(_notesCount, response.NotesCount);
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class CatalogTests
         var response = await _catalogModel!.DeleteNote(-300, -200);
 
         // assert:
-        Assert.AreEqual(0, response.SongsCount);
+        Assert.AreEqual(0, response.NotesCount);
     }
 
     [TestMethod]

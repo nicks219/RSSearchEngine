@@ -53,7 +53,7 @@ public class CreateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, OnGetGenreListError);
-            return new NoteDto { ErrorMessageResponse = OnGetGenreListError };
+            return new NoteDto { CommonErrorMessageResponse = OnGetGenreListError };
         }
     }
 
@@ -67,13 +67,13 @@ public class CreateController : ControllerBase
 
             var result = await model.CreateNote(dto);
 
-            if (string.IsNullOrEmpty(result.ErrorMessageResponse))
+            if (string.IsNullOrEmpty(result.CommonErrorMessageResponse))
             {
                 await model.CreateTagFromTitle(dto);
 
                 var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
 
-                tokenizer.Create(result.NoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+                tokenizer.Create(result.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
                 // создадим дамп при выставленном флаге CreateBackupForNewSong:
                 if (_baseOptions.CreateBackupForNewSong)
@@ -88,7 +88,7 @@ public class CreateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, CreateNoteError);
-            return new NoteDto { ErrorMessageResponse = CreateNoteError };
+            return new NoteDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }
 }

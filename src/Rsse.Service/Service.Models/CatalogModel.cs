@@ -54,7 +54,7 @@ public class CatalogModel
     {
         try
         {
-            var direction = catalog.Direction();
+            var direction = catalog.GetDirection();
 
             var pageNumber = catalog.PageNumber;
 
@@ -127,7 +127,7 @@ public class CatalogModel
         {
             PageNumber = pageNumber,
             CatalogPage = catalogPage ?? new List<Tuple<string, int>>(),
-            SongsCount = songsCount
+            NotesCount = songsCount
         };
     }
 }

@@ -33,6 +33,12 @@
 * fix: отключена модификация cookie для prod
 * upd: https ready: изменен манифест ingress для поддержи DV SSL сертификата (kubectl create secret tls secret-tls --key=... --cert=...)
 
+#### v5.1.2
+* upd: переименованы файлы GitHub CI/CD
+* upd: переименованы файлы манифестов K3S
+* upd: проекты очищены от лишних комментариев
+* upd: добавлены summary
+
 ### next versions
 * planned upd:
     - I... тесты: для JS

@@ -7,11 +7,20 @@ namespace SearchEngine.Data.Entities;
 /// </summary>
 public class UserEntity
 {
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
     public int Id { get; set; }
 
+    /// <summary>
+    /// Email для авторизации
+    /// </summary>
     [MaxLength(30)]
     public string? Email { get; set; }
 
+    /// <summary>
+    /// Пароль для авторизации
+    /// </summary>
     [MaxLength(30)]
     public string? Password { get; set; }
 }

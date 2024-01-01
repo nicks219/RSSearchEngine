@@ -1,16 +1,27 @@
 namespace SearchEngine.Data.Configuration;
 
+/// <summary>
+/// Константы для данных
+/// </summary>
 public static class CommonDataConstants
 {
-    // максимальная длина текста в символах, дефолт 4000:
+    /// <summary>
+    /// Максимальная длина текста в символах, дефолт 4000
+    /// </summary>
     public const int MaxTextLength = 5000;
 
-    // максимальная длина названия в символах, дефолт 50:
+    /// <summary>
+    /// Максимальная длина названия в символах, дефолт 50
+    /// </summary>
     public const int MaxTitleLength = 50;
 
-    // email для логина, используется только в инициализирующем скрипте:
+    /// <summary>
+    /// Email для логина, используется только в инициализирующем скрипте
+    /// </summary>
     public const string Email = "1@2";
 
-    // пароль для логина, используется только в инициализирующем скрипте:
+    /// <summary>
+    /// Пароль для логина, используется только в инициализирующем скрипте
+    /// </summary>
     public const string Password = "12";
 }

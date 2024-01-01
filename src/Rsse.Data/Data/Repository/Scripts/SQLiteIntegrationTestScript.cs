@@ -2,7 +2,7 @@ namespace SearchEngine.Data.Repository.Scripts;
 
 /// <summary>
 /// Скрипт инициализируется при запуске интеграционных тестов
-/// Ссылка на особенности SQLite: https://www.sqlite.org/lang.html
+/// Ссылка на информацию по SQLite: https://www.sqlite.org/lang.html
 /// </summary>
 // ReSharper disable once InconsistentNaming
 public static class SQLiteIntegrationTestScript

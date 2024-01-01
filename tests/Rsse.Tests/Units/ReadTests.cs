@@ -73,7 +73,7 @@ public class ReadTests
 
         // asserts:
         Assert.AreEqual(ReadModel.ElectNoteError, _logger.ErrorMessage);
-        Assert.AreEqual(ReadModel.ElectNoteError, result.ErrorMessageResponse);
+        Assert.AreEqual(ReadModel.ElectNoteError, result.CommonErrorMessageResponse);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class ReadTests
 
             var response = await _readModel.ElectNote(request);
 
-            var id = response.NoteId;
+            var id = response.CommonNoteId;
 
             if (!result.TryAdd(id, 1))
             {
