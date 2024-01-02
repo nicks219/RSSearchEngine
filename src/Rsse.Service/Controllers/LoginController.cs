@@ -46,13 +46,19 @@ public class LoginController : ControllerBase
     /// </summary>
     /// <param name="email">email</param>
     /// <param name="password">пароль</param>
+    /// <param name="returnUrl">пиздец</param>
     /// <returns>объект OkObjectResult с результатом</returns>
     [HttpGet("login")]
-    public async Task<ActionResult<string>> Login(string? email, string? password)
+    public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
+        if (returnUrl != null)
+        {
+            return Unauthorized("Authorize please: redirect detected");
+        }
+
         if (email == null || password == null)
         {
-            return Unauthorized("Authorize please");
+            return Unauthorized("Authorize please: empty credentials detected");
         }
 
         var loginDto = new LoginDto(Email: email, Password: password);

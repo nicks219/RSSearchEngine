@@ -747,14 +747,14 @@
       "CatalogDto": {
         "type": "object",
         "properties": {
-          "titlesAndIds": {
+          "catalogPage": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StringInt32Tuple"
             },
             "nullable": true
           },
-          "songsCount": {
+          "notesCount": {
             "type": "integer",
             "format": "int32"
           },
@@ -766,7 +766,7 @@
             "type": "string",
             "nullable": true
           },
-          "navigationButtons": {
+          "direction": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -780,7 +780,7 @@
       "NoteDto": {
         "type": "object",
         "properties": {
-          "checkedCheckboxesJs": {
+          "tagsCheckedRequest": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -788,41 +788,41 @@
             },
             "nullable": true
           },
-          "titleJs": {
+          "titleRequest": {
             "type": "string",
             "nullable": true
           },
-          "textJs": {
+          "textRequest": {
             "type": "string",
             "nullable": true
           },
-          "isGenreCheckedCS": {
+          "tagsCheckedUncheckedResponse": {
             "type": "array",
             "items": {
               "type": "string"
             },
             "nullable": true
           },
-          "titleCS": {
+          "titleResponse": {
             "type": "string",
             "nullable": true
           },
-          "textCS": {
+          "textResponse": {
             "type": "string",
             "nullable": true
           },
-          "genresNamesCS": {
+          "structuredTagsListResponse": {
             "type": "array",
             "items": {
               "type": "string"
             },
             "nullable": true
           },
-          "savedTextId": {
+          "commonNoteID": {
             "type": "integer",
             "format": "int32"
           },
-          "commonErrorMessageResponse": {
+          "errorMessageResponse": {
             "type": "string",
             "nullable": true
           }

@@ -7,7 +7,6 @@ import {
     getTextResponse,
     getTitleResponse, setTextResponse
 } from "../dto/dto.note.tsx";
-import { LoginBoxHandler } from "./login.component.tsx";
 
 interface IState {
     data: any;
@@ -43,7 +42,6 @@ class UpdateView extends React.Component<IProps, IState> {
     componentDidMount() {
         this.formId = this.mainForm.current;
         LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
-        LoginBoxHandler.Visible(this, LoaderComponent.logoutUrl);
     }
 
     componentWillUnmount() {

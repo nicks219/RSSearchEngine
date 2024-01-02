@@ -46,7 +46,9 @@ export class LoaderComponent {
         LoginBoxHandler.Invisible();
 
         try {
-            const response = await fetch(this.corsServiceBaseUrl + url, {credentials: this.corsCredentialsPolicy});
+            const response = await fetch(this.corsServiceBaseUrl + url, {
+                credentials: this.corsCredentialsPolicy, redirect: "follow"
+            });
             const data = await response.json().catch(() => LoginBoxHandler.Visible(component, url));
             if (component.mounted) component.setState({data});
         } catch {

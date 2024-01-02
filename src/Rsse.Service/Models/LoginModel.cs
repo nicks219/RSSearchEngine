@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Cms;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 
@@ -15,7 +14,7 @@ namespace SearchEngine.Models;
 /// </summary>
 public class LoginModel
 {
-    private const string TryLoginError = $"[{nameof(LoginModel)}: {nameof(SignIn)} system error]";
+    private const string SignInError = $"[{nameof(LoginModel)}: {nameof(SignIn)} system error]";
 
     private readonly IDataRepository _repo;
     private readonly ILogger<LoginModel> _logger;
@@ -59,7 +58,7 @@ public class LoginModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, TryLoginError);
+            _logger.LogError(ex, SignInError);
             return null;
         }
     }

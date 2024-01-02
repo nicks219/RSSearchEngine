@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Runtime;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -66,7 +68,10 @@ public class Startup
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
-            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "RSSearchEngine API", Version = "v5.1" });
+            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            {
+                Title = "RSSearchEngine API", Version = "v5.1"
+            });
         });
 
         services.Configure<CommonBaseOptions>(_configuration.GetSection(nameof(CommonBaseOptions)));
@@ -95,7 +100,18 @@ public class Startup
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
-                options.LoginPath = new PathString("/Account/Login/");
+                options.LoginPath = new PathString("/account/login");
+                options.LogoutPath = new PathString("/account/logout");
+                options.ReturnUrlParameter = "returnUrl";
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.Headers.Add("Shift","301 Cancelled");
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         services.AddCors(builder =>
@@ -120,7 +136,10 @@ public class Startup
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "rsse v5.1"); });
+            app.UseSwaggerUI(uiOptions =>
+            {
+                uiOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "rsse v5.1");
+            });
         }
         else
         {
