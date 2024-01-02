@@ -8,19 +8,19 @@ using SearchEngine.Models;
 namespace SearchEngine.Controllers;
 
 /// <summary>
-/// Контроллер для поддержки функционала поиска
+/// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
 
-[Route("api/find")]
+[Route("api/compliance")]
 
-public class CompliantController : ControllerBase
+public class ComplianceController : ControllerBase
 {
-    private const string FindError = $"[{nameof(CompliantController)}] {nameof(GetComplianceIndices)} error: search indices may corrupted";
+    private const string FindError = $"[{nameof(ComplianceController)}] {nameof(GetComplianceIndices)} error: search indices may corrupted";
 
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<CompliantController> _logger;
+    private readonly ILogger<ComplianceController> _logger;
 
-    public CompliantController(IServiceScopeFactory scopeFactory, ILogger<CompliantController> logger)
+    public ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -31,7 +31,7 @@ public class CompliantController : ControllerBase
     /// </summary>
     /// <param name="text">строка с поисковым запросом</param>
     /// <returns>объект OkObjectResult с результатом поиска</returns>
-    [HttpGet]
+    [HttpGet("indices")]
     public ActionResult GetComplianceIndices(string text)
     {
         if (string.IsNullOrEmpty(text))

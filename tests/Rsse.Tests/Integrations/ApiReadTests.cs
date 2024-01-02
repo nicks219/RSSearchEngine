@@ -11,7 +11,7 @@ using SearchEngine.Tests.Integrations.Infra;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ReadTests
+public class ApiReadTests
 {
     [TestMethod]
     public async Task Integration_ReadNoteTitleById_ShouldPassCorrectly()

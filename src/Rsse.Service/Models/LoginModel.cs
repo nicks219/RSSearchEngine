@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Cms;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 
@@ -34,7 +35,7 @@ public class LoginModel
     {
         try
         {
-            if (login.Email == null || login.Password == null)
+            if (string.IsNullOrEmpty(login.Email) || string.IsNullOrEmpty(login.Password))
             {
                 return null;
             }

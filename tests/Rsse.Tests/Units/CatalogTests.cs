@@ -58,7 +58,7 @@ public class CatalogTests
 
         // arrange:
         TestCatalogRepository.CreateStubData(50);
-        var request = new CatalogDto { NavigationButtons = new List<int> { forwardConst }, PageNumber = page };
+        var request = new CatalogDto { Direction = new List<int> { forwardConst }, PageNumber = page };
 
         // act:
         var response = await _catalogModel!.NavigateCatalog(request);
@@ -83,7 +83,7 @@ public class CatalogTests
     public async Task CatalogModel_OnInvalidRequest_ShouldLogError()
     {
         // arrange:
-        var request = new CatalogDto { NavigationButtons = new List<int> { 1000, 2000 } };
+        var request = new CatalogDto { Direction = new List<int> { 1000, 2000 } };
 
         // act:
         var result = await _catalogModel!.NavigateCatalog(request);

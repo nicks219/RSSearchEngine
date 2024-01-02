@@ -95,8 +95,8 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <summary>
     /// Получить страницу каталога
     /// </summary>
-    /// <param name="pageNumber"></param>
-    /// <param name="pageSize"></param>
+    /// <param name="pageNumber">номер страницы</param>
+    /// <param name="pageSize">размер страницы</param>
     /// <returns></returns>
     IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize);
 

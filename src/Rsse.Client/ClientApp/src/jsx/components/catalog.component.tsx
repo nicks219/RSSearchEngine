@@ -1,5 +1,10 @@
 ﻿import * as React from 'react';
 import { LoaderComponent } from "./loader.component.tsx";
+import {
+    getNotesCount,
+    getPageNumber,
+    getCatalogPage
+} from "../dto/dto.catalog.tsx";
 
 interface IState {
     data: any;
@@ -35,8 +40,8 @@ class CatalogView extends React.Component<IProps, IState> {
         e.preventDefault();
         let target = Number(e.target.id.slice(7));
         const item = {
-            pageNumber: this.state.data.pageNumber,
-            navigationButtons: [target]
+            "pageNumber": getPageNumber(this.state.data),
+            "direction": [target]
         };
         let requestBody = JSON.stringify(item);
         LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.catalogUrl);
@@ -45,21 +50,19 @@ class CatalogView extends React.Component<IProps, IState> {
     createDump = (e: any) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.backupCreateUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationCreateUrl);
     }
 
     restoreDump = (e: any) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.backupRestoreUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationRestoreUrl);
     }
 
     logout = (e: any) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
-
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
-
         LoaderComponent.fireAndForgetWithQuery(LoaderComponent.logoutUrl, "", callback, this);
     }
 
@@ -73,7 +76,7 @@ class CatalogView extends React.Component<IProps, IState> {
         e.preventDefault();
         let id = Number(e.target.id);
         console.log('You want to delete song with id: ' + id);
-        LoaderComponent.unusedPromise = LoaderComponent.deleteDataById(this, id, LoaderComponent.catalogUrl, this.state.data.pageNumber);
+        LoaderComponent.unusedPromise = LoaderComponent.deleteDataById(this, id, LoaderComponent.catalogUrl, getPageNumber(this.state.data));
     }
 
     render() {
@@ -108,20 +111,20 @@ class CatalogView extends React.Component<IProps, IState> {
             this.onDumpRenderingCounterState = 0;
         }
         // на отладке можно получить исключение и пустой стейт:
-        else if(this.state.data.titlesAndIds !== null && this.state.data.titlesAndIds !== undefined)
+        else if( getCatalogPage(this.state.data) !== null && getCatalogPage(this.state.data) !== undefined )
         {
-            for (let i = 0; i < this.state.data.titlesAndIds.length; i++) {
+            for (let i = 0; i < getCatalogPage(this.state.data).length; i++) {
                 songs.push(
                     <tr key={"song " + i} className="bg-warning">
                         <td></td>
                         <td>
-                            <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2}
-                                    onClick={this.redirect}>{this.state.data.titlesAndIds[i].item1}
+                            <button className="btn btn-outline-light" id={ getCatalogPage(this.state.data)[i].item2 }
+                                    onClick={ this.redirect }>{ getCatalogPage(this.state.data)[i].item1 }
                             </button>
                         </td>
                         <td>
-                            <button className="btn btn-outline-light" id={this.state.data.titlesAndIds[i].item2}
-                                    onClick={this.delete}>
+                            <button className="btn btn-outline-light" id={ getCatalogPage(this.state.data)[i].item2 }
+                                    onClick={ this.delete }>
                                 &#10060;
                             </button>
                         </td>
@@ -132,8 +135,8 @@ class CatalogView extends React.Component<IProps, IState> {
         return (
             <div className="row" id="renderContainer">
                 <p style={{ marginLeft: 12 + '%' }}>
-                    Всего песен: {this.state.data.songsCount} &nbsp;
-                    Страница: {this.state.data.pageNumber} &nbsp;
+                    Всего песен: { getNotesCount(this.state.data) } &nbsp;
+                    Страница: { getPageNumber(this.state.data) } &nbsp;
                 </p>
                 <p></p>
                 <p></p>

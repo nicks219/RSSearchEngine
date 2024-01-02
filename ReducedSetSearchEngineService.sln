@@ -19,24 +19,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 		README.md = README.md
 		drafts.md = drafts.md
 		CHANGELOG.md = CHANGELOG.md
-		src\Rsse.Service\Controllers\api.v5.json = src\Rsse.Service\Controllers\api.v5.json
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
 		.common\scripts.docker.md = .common\scripts.docker.md
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
+		.common\rsse.api.v5.1.json = .common\rsse.api.v5.1.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
 		src\Rsse.Client\ClientApp\src\index.tsx = src\Rsse.Client\ClientApp\src\index.tsx
-		src\Rsse.Client\ClientApp\src\jsx\catalog.component.tsx = src\Rsse.Client\ClientApp\src\jsx\catalog.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\menu.router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu.router.tsx
-		src\Rsse.Client\ClientApp\src\jsx\read.component.tsx = src\Rsse.Client\ClientApp\src\jsx\read.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\create.component.tsx = src\Rsse.Client\ClientApp\src\jsx\create.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\login.component.tsx = src\Rsse.Client\ClientApp\src\jsx\login.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\menu.handler.tsx = src\Rsse.Client\ClientApp\src\jsx\menu.handler.tsx
-		src\Rsse.Client\ClientApp\src\jsx\update.component.tsx = src\Rsse.Client\ClientApp\src\jsx\update.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\loader.component.tsx = src\Rsse.Client\ClientApp\src\jsx\loader.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\catalog.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\catalog.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\create.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\create.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\loader.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\loader.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\login.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\login.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\read.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\read.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\update.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\update.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\dto\dto.catalog.tsx = src\Rsse.Client\ClientApp\src\jsx\dto\dto.catalog.tsx
+		src\Rsse.Client\ClientApp\src\jsx\dto\dto.note.tsx = src\Rsse.Client\ClientApp\src\jsx\dto\dto.note.tsx
+		src\Rsse.Client\ClientApp\src\jsx\menu\menu.handler.tsx = src\Rsse.Client\ClientApp\src\jsx\menu\menu.handler.tsx
+		src\Rsse.Client\ClientApp\src\jsx\menu\menu.router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu\menu.router.tsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"

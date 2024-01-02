@@ -1,5 +1,5 @@
-﻿import {LoginBoxHandler} from "./login.component.tsx";
-import {Component} from "react";
+﻿import { LoginBoxHandler } from "./login.component.tsx";
+import { Component } from "react";
 
 export class LoaderComponent {
     static createUrl: string = "/api/create";
@@ -9,10 +9,10 @@ export class LoaderComponent {
     static catalogUrl: string = "/api/catalog";
     static loginUrl: string = "/account/login";
     static logoutUrl: string = "/account/logout";
-    static findUrl: string = "/api/find";
+    static complianceIndicesUrl: string = "/api/compliance/indices";
 
-    static backupCreateUrl: string = "/create";
-    static backupRestoreUrl: string = "/restore";
+    static migrationCreateUrl: string = "/migration/create";
+    static migrationRestoreUrl: string = "/migration/restore";
 
     static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
     static corsServiceBaseUrl: string = "";

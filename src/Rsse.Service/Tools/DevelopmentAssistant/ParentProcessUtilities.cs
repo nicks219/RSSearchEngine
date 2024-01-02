@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SearchEngine.Tools.ClientDevelopmentIntegration;
+namespace SearchEngine.Tools.DevelopmentAssistant;
 
 /// <summary>
 /// Утилита для определения родительского процесса

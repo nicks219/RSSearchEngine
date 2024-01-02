@@ -28,7 +28,7 @@ public class LoginController : ControllerBase
     private const string ModifyCookieMessage = $"[{nameof(LoginController)}] {nameof(ModifyCookie)}";
 
     private const string SameSiteLax = "samesite=lax";
-    private const string SameSiteNone = "samesite=none; secure";
+    private const string SameSiteNone = "samesite=none; secure; partitioned";
 
     private readonly ILogger<LoginController> _logger;
     private readonly IServiceScopeFactory _scope;
@@ -55,7 +55,7 @@ public class LoginController : ControllerBase
             return Unauthorized("Authorize please");
         }
 
-        var loginDto = new LoginDto(email, password);
+        var loginDto = new LoginDto(Email: email, Password: password);
         var response = await Login(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }

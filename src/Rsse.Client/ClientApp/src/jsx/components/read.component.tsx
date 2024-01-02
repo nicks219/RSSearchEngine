@@ -1,8 +1,14 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { LoaderComponent } from "./loader.component.tsx";
-import { menuHandler } from "./menu.handler.tsx";
+import { menuHandler } from "../menu/menu.handler.tsx";
 import { RouteComponentProps } from 'react-router';
+import {
+    getCommonNoteId,
+    getStructuredTagsListResponse,
+    getTextResponse,
+    getTitleResponse
+} from "../dto/dto.note.tsx";
 
 interface IState {
     data: any;
@@ -80,7 +86,9 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
         if (this.props.match.params.textId && !this.displayed) {
             console.log("Get text id from path params: " + this.props.match.params.textId);
 
-            const item = { CheckedCheckboxesJS: [] };
+            const item = {
+                "tagsCheckedRequest": []
+            };
             let requestBody = JSON.stringify(item);
             let id = this.props.match.params.textId;
             this.readFromCatalog = true;
@@ -91,7 +99,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
 
         let checkboxes = [];
         if (this.state.data != null) {
-            for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
+            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
                 checkboxes.push(<Checkbox key={`checkbox ${i}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
             }
         }
@@ -104,7 +112,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
                     {checkboxes}
                 </form>
                 <div id="messageBox">
-                    {this.state.data != null && this.state.data.textCS != null &&
+                    {this.state.data != null && getTextResponse(this.state.data) != null &&
                         <Message formId={this.formId} jsonStorage={this.state.data} subscription={null} id={null}/>
                     }
                 </div>
@@ -116,7 +124,7 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
 class Checkbox extends React.Component<IProps> {
     render() {
         let getTagName = (i: number) => {
-            return this.props.jsonStorage.genresNamesCS[i];
+            return getStructuredTagsListResponse(this.props.jsonStorage)[i];
         };
         return (
             <div id="checkboxStyle">
@@ -162,19 +170,19 @@ class Message extends React.Component<IProps> {
     }
 
     render() {
-        if (this.props.jsonStorage && Number(this.props.jsonStorage.savedTextId) !== 0) {
-            window.textId = Number(this.props.jsonStorage.savedTextId);
+        if (this.props.jsonStorage && Number(getCommonNoteId(this.props.jsonStorage)) !== 0) {
+            window.textId = Number(getCommonNoteId(this.props.jsonStorage));
         }
 
         return (
             <span>
-                {this.props.jsonStorage != null ? (this.props.jsonStorage.textCS != null ?
+                {this.props.jsonStorage != null ? (getTextResponse(this.props.jsonStorage) != null ?
                     <span>
                         <div id="songTitle" onClick={this.hideMenu}>
-                            {this.props.jsonStorage.titleCS}
+                            { getTitleResponse(this.props.jsonStorage) }
                         </div>
                         <div id="songBody">
-                            <WithLinks text={this.props.jsonStorage.textCS} />
+                            <WithLinks text={ getTextResponse(this.props.jsonStorage) } />
                         </div>
                     </span>
                     : "выберите тег")
@@ -197,7 +205,7 @@ class SubmitButton extends React.Component<IProps> {
         let formData = new FormData(this.props.formId);
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
         const item = {
-            CheckedCheckboxesJS: checkboxesArray
+            "tagsCheckedRequest": checkboxesArray
         };
         let requestBody = JSON.stringify(item);
         LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.readUrl);

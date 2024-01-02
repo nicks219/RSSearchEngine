@@ -2,13 +2,14 @@
 import * as ReactDOM from 'react-dom';
 
 import { LoaderComponent } from "./loader.component.tsx";
+import { getPageNumber } from "../dto/dto.catalog.tsx";
 
 interface IState {
     style: any;
 }
 
 declare global {
-    interface Window { textId: number, temp: any, url: string }
+    interface Window { textId: number, temp: any, url: string, pageNumber: number }
 }
 
 interface IProps {
@@ -31,11 +32,11 @@ export class LoginBoxHandler {
                 // Loader в случае ошибки вызовет MessageOn()
                 LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, window.textId, window.url);
                 // login для catalog:
-            } else if (window.url === LoaderComponent.catalogUrl){
-                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, component.state.data.pageNumber, window.url);
+            } else if (window.url === LoaderComponent.catalogUrl) {
+                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, getPageNumber(window), window.url);
             }
-            // login для остальных компонентов:
-            else {
+            // login для остальных компонентов, кроме случая когда последним лействием было logout:
+            else if (window.url !== LoaderComponent.logoutUrl) {
                 LoaderComponent.unusedPromise = LoaderComponent.getData(component, window.url);
             }
         }
@@ -52,6 +53,7 @@ export class LoginBoxHandler {
     static Visible(component: any, url: string) {
         window.temp = component;
         window.url = url;
+        window.pageNumber = getPageNumber(component.state.data);
 
         (document.getElementById("loginMessage")as HTMLElement).style.display = "block";
         (document.getElementById("login")as HTMLElement).style.display = "block";
@@ -80,8 +82,8 @@ export class LoginComponent extends React.Component<IProps, IState> {
 
     submit(e: any) {
         e.preventDefault();
-        let email = "test_e";
-        let password = "test_p";
+        let email = "test@email";
+        let password = "password";
         let emailElement = document.getElementById('email') as HTMLInputElement;
         let passwordElement = document.getElementById('password') as HTMLInputElement;
         if (emailElement) email = emailElement.value;
@@ -122,12 +124,12 @@ export class LoginComponent extends React.Component<IProps, IState> {
                 {/*<div id={this.state.style}>*/}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <span>
-                    <input type="text" id="email" name="email" />
+                    <input type="text" id="email" name="email" autoComplete={ "on" } />
                 </span>
                 {/*<div id={this.state.style}>*/}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <span>
-                    <input type="text" id="password" name="password" />
+                    <input type="text" id="password" name="password" autoComplete={ "on" } />
                 </span>
             </div>
         );

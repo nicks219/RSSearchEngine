@@ -6,7 +6,7 @@ using System.Linq;
 
 #pragma warning disable CS0162 // Unreachable code detected
 
-namespace SearchEngine.Tools.ClientDevelopmentIntegration;
+namespace SearchEngine.Tools.DevelopmentAssistant;
 
 /// <summary>
 /// Подъём и остановка среды разработки JS
@@ -29,7 +29,7 @@ internal static class ClientLauncher
     private const string NodeProcessName = "node";
 
     private static readonly char SeparatorChar = Path.DirectorySeparatorChar;
-    private static readonly string ShellFolder = $"Tools{SeparatorChar}ClientDevelopmentIntegration{SeparatorChar}";
+    private static readonly string ShellFolder = $"Tools{SeparatorChar}DevelopmentAssistant{SeparatorChar}";
     private static readonly object Lock = new();
     private static volatile bool _initialized;
 

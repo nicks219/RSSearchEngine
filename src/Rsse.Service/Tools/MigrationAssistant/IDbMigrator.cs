@@ -1,4 +1,4 @@
-namespace SearchEngine.Tools.Migrator;
+namespace SearchEngine.Tools.MigrationAssistant;
 
 /// <summary>
 /// Контракт функционала работы с миграциями бд

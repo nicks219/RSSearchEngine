@@ -132,13 +132,13 @@ public class ReadTests
         // TODO: сделать метод, добавляющий N случайных заметок для проведения теста
         const double coefficient = 0.7D;
 
-        const int songsCount = 389;
+        const int notesCount = 389;
 
         var count = 100;
 
         var tempCount = count;
 
-        var expectedSongsCount = Math.Min(songsCount, count) * coefficient;
+        var expectedNotesCount = Math.Min(notesCount, count) * coefficient;
 
         var request = new NoteDto { TagsCheckedRequest = new List<int>() };
 
@@ -172,9 +172,9 @@ public class ReadTests
 
         result.Count
             .Should()
-            .BeGreaterThan((int)expectedSongsCount);
+            .BeGreaterThan((int)expectedNotesCount);
 
-        Console.WriteLine("[get: {0} from: {1} by: {2} calls with songs > {3} repeats:]", result.Count, songsCount, tempCount, max);
+        Console.WriteLine("[get: {0} from: {1} by: {2} calls with songs > {3} repeats:]", result.Count, notesCount, tempCount, max);
 
         foreach (var (key, value) in result)
         {

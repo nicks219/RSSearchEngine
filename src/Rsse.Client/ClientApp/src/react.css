@@ -238,6 +238,17 @@ button.pas {
     border-radius: 15px;
 }
 
+#submitButtonDuplicate[type="checkbox"] + label {
+    background-color: #E94F37;
+    border: solid 1px black;
+    color: white;
+    font-weight: bold;
+    font-size: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 15px;
+}
+
 #submitButtonGreen[type="checkbox"] + label {
 	background-color: #4cff00;
 	border: solid 1px black;

@@ -1,52 +1,10 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "RS-SearchEngine Service",
-    "version": "v5"
+    "title": "RSSearchEngine API",
+    "version": "v5.1"
   },
   "paths": {
-    "/create": {
-      "get": {
-        "tags": [
-          "Backup"
-        ],
-        "parameters": [
-          {
-            "name": "fileName",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/restore": {
-      "get": {
-        "tags": [
-          "Backup"
-        ],
-        "parameters": [
-          {
-            "name": "fileName",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/catalog": {
       "get": {
         "tags": [
@@ -177,6 +135,27 @@
         }
       }
     },
+    "/api/compliance/indices": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/create": {
       "get": {
         "tags": [
@@ -252,27 +231,6 @@
         }
       }
     },
-    "/api/find": {
-      "get": {
-        "tags": [
-          "Find"
-        ],
-        "parameters": [
-          {
-            "name": "text",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/account/login": {
       "get": {
         "tags": [
@@ -343,6 +301,48 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/migration/create": {
+      "get": {
+        "tags": [
+          "Migration"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/migration/restore": {
+      "get": {
+        "tags": [
+          "Migration"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -464,7 +464,7 @@
         }
       }
     },
-    "/version": {
+    "/test/get/version": {
       "get": {
         "tags": [
           "Test"
@@ -476,7 +476,7 @@
         }
       }
     },
-    "/test.traffic": {
+    "/test/get/object": {
       "get": {
         "tags": [
           "Test"
@@ -498,7 +498,7 @@
         }
       }
     },
-    "/start": {
+    "/test/task/start": {
       "get": {
         "tags": [
           "Test"
@@ -510,7 +510,7 @@
         }
       }
     },
-    "/stop": {
+    "/test/task/stop": {
       "get": {
         "tags": [
           "Test"
@@ -522,7 +522,7 @@
         }
       }
     },
-    "/gc": {
+    "/test/task/gc": {
       "get": {
         "tags": [
           "Test"
@@ -534,7 +534,7 @@
         }
       }
     },
-    "/test": {
+    "/test/get/logs": {
       "get": {
         "tags": [
           "Test"
@@ -546,7 +546,7 @@
         }
       }
     },
-    "/test.every.nth": {
+    "/test/get/log": {
       "get": {
         "tags": [
           "Test"
@@ -569,7 +569,7 @@
         }
       }
     },
-    "/live": {
+    "/test/live/sync": {
       "get": {
         "tags": [
           "Test"
@@ -598,7 +598,7 @@
         }
       }
     },
-    "/live.async": {
+    "/test/live/async": {
       "get": {
         "tags": [
           "Test"
@@ -627,7 +627,7 @@
         }
       }
     },
-    "/live.task": {
+    "/test/live/task": {
       "get": {
         "tags": [
           "Test"
@@ -754,14 +754,6 @@
             },
             "nullable": true
           },
-          "navigationButtons": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
           "songsCount": {
             "type": "integer",
             "format": "int32"
@@ -772,6 +764,14 @@
           },
           "errorMessage": {
             "type": "string",
+            "nullable": true
+          },
+          "navigationButtons": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
             "nullable": true
           }
         },
@@ -822,7 +822,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "errorMessageResponse": {
+          "commonErrorMessageResponse": {
             "type": "string",
             "nullable": true
           }

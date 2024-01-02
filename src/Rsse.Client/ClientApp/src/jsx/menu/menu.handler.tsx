@@ -1,4 +1,4 @@
-// login: MessageOn - MessageOff ?
+// Засена видимости меню на противоположное, см. login: MessageOn - MessageOff и hideMenu по коду
 export function menuHandler(cssProperty: string): any {
     if (cssProperty !== "none") {
         cssProperty = "none";

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace SearchEngine.Data.Dto;
 
@@ -9,19 +10,16 @@ namespace SearchEngine.Data.Dto;
 /// </summary>
 public record CatalogDto
 {
-    private const int Backward = 1;
-    private const int Forward = 2;
-
     /// <summary>
-    /// Название и соответствующее ему Id из бд
+    /// Названия заметок и соответствующие им Id
     /// </summary>
-    [JsonPropertyName("titlesAndIds")]
+    [JsonPropertyName("catalogPage")]
     public List<Tuple<string, int>>? CatalogPage { get; init; }
 
     /// <summary>
     /// Количество заметок
     /// </summary>
-    [JsonPropertyName("songsCount")]
+    [JsonPropertyName("notesCount")]
     public int NotesCount { get; init; }
 
     /// <summary>
@@ -39,24 +37,6 @@ public record CatalogDto
     /// <summary>
     /// Направление перемещения по каталогу
     /// </summary>
-    [JsonPropertyName("navigationButtons")]
-    public List<int>? NavigationButtons { get; init; }
-
-    /// <summary>
-    /// Получить направление перемещения по каталогу в виде константы
-    /// </summary>
-    public int GetDirection()
-    {
-        if (NavigationButtons is null)
-        {
-            return 0;
-        }
-
-        return NavigationButtons[0] switch
-        {
-            Backward => Backward,
-            Forward => Forward,
-            _ => throw new NotImplementedException($"[{nameof(GetDirection)}] unknown direction")
-        };
-    }
+    [JsonPropertyName("direction")]
+    public List<int> Direction { get; init; }
 }

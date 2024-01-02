@@ -1,11 +1,11 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { HomeView } from "./read.component.tsx";
-import UpdateView from "./update.component.tsx";
-import CreateView from "./create.component.tsx";
-import CatalogView from "./catalog.component.tsx";
-import { LoginComponent } from "./login.component.tsx";
+import { HomeView } from "../components/read.component.tsx";
+import UpdateView from "../components/update.component.tsx";
+import CreateView from "../components/create.component.tsx";
+import CatalogView from "../components/catalog.component.tsx";
+import { LoginComponent } from "../components/login.component.tsx";
 
 import {
     HashRouter,

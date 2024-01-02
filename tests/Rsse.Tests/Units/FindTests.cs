@@ -24,9 +24,9 @@ public class FindTests
     public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<CompliantController>>();
+        var logger = Substitute.For<ILogger<ComplianceController>>();
         var factory = new TestServiceScopeFactory(new TestServiceCollection<TokenizerService>().Provider);
-        var findController = new CompliantController(factory, logger);
+        var findController = new ComplianceController(factory, logger);
 
         // act:
         var response = (OkObjectResult)findController.GetComplianceIndices(Text);

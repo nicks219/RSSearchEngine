@@ -1,6 +1,13 @@
 ﻿import * as React from 'react';
-import {LoaderComponent} from "./loader.component.tsx";
-import { menuHandler } from "./menu.handler.tsx";
+import { LoaderComponent } from "./loader.component.tsx";
+import { menuHandler } from "../menu/menu.handler.tsx";
+import {
+    getStructuredTagsListResponse,
+    getTagsCheckedUncheckedResponse,
+    getTextResponse,
+    getTitleResponse, setTextResponse
+} from "../dto/dto.note.tsx";
+import { LoginBoxHandler } from "./login.component.tsx";
 
 interface IState {
     data: any;
@@ -36,6 +43,7 @@ class UpdateView extends React.Component<IProps, IState> {
     componentDidMount() {
         this.formId = this.mainForm.current;
         LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
+        LoginBoxHandler.Visible(this, LoaderComponent.logoutUrl);
     }
 
     componentWillUnmount() {
@@ -45,7 +53,7 @@ class UpdateView extends React.Component<IProps, IState> {
     render() {
         let checkboxes = [];
         if (this.state != null && this.state.data != null) {
-            for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
+            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
                 checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} subscribe={null} formId={null}/>);
             }
         }
@@ -58,7 +66,7 @@ class UpdateView extends React.Component<IProps, IState> {
                         <SubmitButton subscribe={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
                     }
                 </form>
-                {this.state != null && this.state.data != null && this.state.data.textCS != null &&
+                {this.state != null && this.state.data != null && getTextResponse(this.state.data) != null &&
                     <Message formId={this.formId} jsonStorage={this.state.data} subscribe={null} id={null}/>
                 }
             </div>
@@ -69,9 +77,9 @@ class UpdateView extends React.Component<IProps, IState> {
 class Checkbox extends React.Component<IProps> {
 
     render() {
-        let checked = this.props.jsonStorage.isGenreCheckedCS[this.props.id] === "checked";
+        let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
         let getGenreName = (i: number) => {
-            return this.props.jsonStorage.genresNamesCS[i];
+            return getStructuredTagsListResponse(this.props.jsonStorage)[i];
         };
         return (
             <div id="checkboxStyle">
@@ -109,10 +117,11 @@ class Message extends React.Component<IProps> {
 
     hideMenu() {
         this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+        (document.getElementById("login")as HTMLElement).style.display = "block";
     }
 
     inputText = (e: any) => {
-        this.props.jsonStorage.textCS = e.target.value;
+        setTextResponse(this.props.jsonStorage, e.target.value);
         this.forceUpdate();
     }
 
@@ -120,14 +129,14 @@ class Message extends React.Component<IProps> {
         return (
             <div >
                 <p />
-                {this.props.jsonStorage != null ? (this.props.jsonStorage.textCS != null ?
+                {this.props.jsonStorage != null ? ( getTextResponse(this.props.jsonStorage) != null ?
                     <div>
                         <h1 onClick={this.hideMenu}>
-                            {this.props.jsonStorage.titleCS}
+                            { getTitleResponse(this.props.jsonStorage) }
                         </h1>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={this.props.jsonStorage.textCS} onChange={this.inputText} />
+                                value={ getTextResponse(this.props.jsonStorage) } onChange={this.inputText} />
                         </h5>
                     </div>
                     : "выберите заметку")
@@ -150,10 +159,10 @@ class SubmitButton extends React.Component<IProps> {
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
         let formMessage = formData.get("msg");
         const item = {
-            CheckedCheckboxesJS: checkboxesArray,
-            TextJS: formMessage,
-            TitleJS: this.props.jsonStorage.titleCS,
-            SavedTextId: window.textId
+            "tagsCheckedRequest": checkboxesArray,
+            "textRequest": formMessage,
+            "titleRequest": getTitleResponse(this.props.jsonStorage),
+            "commonNoteID": window.textId
         };
         let requestBody = JSON.stringify(item);
         LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscribe, requestBody, LoaderComponent.updateUrl);

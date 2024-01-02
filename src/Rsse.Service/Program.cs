@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
 using SearchEngine;
-using SearchEngine.Tools.ClientDevelopmentIntegration;
+using SearchEngine.Tools.DevelopmentAssistant;
+
 #if WINDOWS
 
 var standaloneMode = ClientLauncher.Run(args);

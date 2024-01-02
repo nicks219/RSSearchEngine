@@ -10,7 +10,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
-using SearchEngine.Tools.Migrator;
+using SearchEngine.Tools.MigrationAssistant;
 
 namespace SearchEngine.Controllers;
 

@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,7 +25,7 @@ public class UpdateController : ControllerBase
     private readonly ILogger<UpdateController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger, IHttpContextAccessor accessor)
+    public UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;

@@ -18,7 +18,7 @@ using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
-using SearchEngine.Tools.Migrator;
+using SearchEngine.Tools.MigrationAssistant;
 
 namespace SearchEngine;
 
@@ -66,7 +66,7 @@ public class Startup
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
-            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "RS-SearchEngine Service", Version = "v5" });
+            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "RSSearchEngine API", Version = "v5.1" });
         });
 
         services.Configure<CommonBaseOptions>(_configuration.GetSection(nameof(CommonBaseOptions)));
@@ -120,7 +120,7 @@ public class Startup
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nick V1"); });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "rsse v5.1"); });
         }
         else
         {

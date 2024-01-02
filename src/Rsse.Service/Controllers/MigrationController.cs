@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Engine.Contracts;
-using SearchEngine.Tools.Migrator;
+using SearchEngine.Tools.MigrationAssistant;
 
 namespace SearchEngine.Controllers;
 
@@ -12,18 +12,18 @@ namespace SearchEngine.Controllers;
 /// Контроллер для работы с миграциями бд
 /// </summary>
 
-[Authorize, Route("backup"), ApiController]
+[Authorize, Route("migration"), ApiController]
 
-public class DbDumpController : ControllerBase
+public class MigrationController : ControllerBase
 {
-    private const string CreateError = $"[{nameof(DbDumpController)}] {nameof(CreateDump)} error";
-    private const string RestoreError = $"[{nameof(DbDumpController)}] {nameof(RestoreFromDump)} error";
+    private const string CreateError = $"[{nameof(MigrationController)}] {nameof(CreateDump)} error";
+    private const string RestoreError = $"[{nameof(MigrationController)}] {nameof(RestoreFromDump)} error";
 
-    private readonly ILogger<DbDumpController> _logger;
+    private readonly ILogger<MigrationController> _logger;
     private readonly IDbMigrator _migrator;
     private readonly ITokenizerService _tokenizer;
 
-    public DbDumpController(ILogger<DbDumpController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
+    public MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     {
         _logger = logger;
         _migrator = migrator;
@@ -34,7 +34,7 @@ public class DbDumpController : ControllerBase
     /// Создать дамп бд
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
-    [HttpGet("/create")]
+    [HttpGet("create")]
     public IActionResult CreateDump(string? fileName)
     {
         try
@@ -54,7 +54,7 @@ public class DbDumpController : ControllerBase
     /// Накатить дамп
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
-    [HttpGet("/restore")]
+    [HttpGet("restore")]
     public IActionResult RestoreFromDump(string? fileName)
     {
         try

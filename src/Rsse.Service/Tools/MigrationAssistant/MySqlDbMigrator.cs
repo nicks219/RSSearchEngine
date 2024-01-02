@@ -2,7 +2,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 
-namespace SearchEngine.Tools.Migrator;
+namespace SearchEngine.Tools.MigrationAssistant;
 
 /// <summary>
 /// Функционал работы с миграциями бд

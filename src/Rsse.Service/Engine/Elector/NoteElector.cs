@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -75,31 +74,5 @@ internal static class NoteElector
 
             return coin;
         }
-    }
-
-    /// <summary>
-    /// Перемешивание списка, качество зависит от RNG.
-    /// </summary>
-    private static IList<T> Shuffle<T>(this IList<T> list, RandomNumberGenerator rng)
-    {
-        var current = list.Count;
-        while (current > 1)
-        {
-            // var k = rng.Next(n--);
-            var next = GetNextInt32(rng) % current--;
-            (list[current], list[next]) = (list[next], list[current]);
-        }
-
-        return list;
-    }
-
-    /// <summary>
-    /// Использование криптостойкого RNG для генерации.
-    /// </summary>
-    private static int GetNextInt32(RandomNumberGenerator rnd)
-    {
-        var randomInt = new byte[4];
-        rnd.GetBytes(randomInt);
-        return Convert.ToInt32(randomInt[0]);
     }
 }

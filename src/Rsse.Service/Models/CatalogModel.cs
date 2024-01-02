@@ -20,8 +20,8 @@ public class CatalogModel
     private const string ReadCatalogPageError = $"[{nameof(CatalogModel)}: {nameof(ReadPage)} error]";
     private const string DeleteNoteError = $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]";
 
-    private const int Forward = 2;
     private const int Backward = 1;
+    private const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
     private readonly IDataRepository _repo;
@@ -48,7 +48,7 @@ public class CatalogModel
 
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
-            return CreateCatalogDto(pageNumber, notesCount, catalogPage);
+            return new CatalogDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
@@ -67,7 +67,7 @@ public class CatalogModel
     {
         try
         {
-            var direction = catalog.GetDirection();
+            var direction = GetDirection(catalog.Direction);
 
             var pageNumber = catalog.PageNumber;
 
@@ -77,7 +77,7 @@ public class CatalogModel
 
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
-            return CreateCatalogDto(pageNumber, notesCount, catalogPage);
+            return new CatalogDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
@@ -109,13 +109,31 @@ public class CatalogModel
         }
     }
 
-    private static int NavigateCatalogPages(int navigation, int pageNumber, int songsCount)
+    /// <summary>
+    /// Получить направление перемещения по каталогу в виде константы
+    /// </summary>
+    private static int GetDirection(List<int>? direction)
     {
-        switch (navigation)
+        if (direction is null)
+        {
+            return 0;
+        }
+
+        return direction[0] switch
+        {
+            Backward => Backward,
+            Forward => Forward,
+            _ => throw new NotImplementedException($"[{nameof(GetDirection)}] unknown direction")
+        };
+    }
+
+    private static int NavigateCatalogPages(int direction, int pageNumber, int notesCount)
+    {
+        switch (direction)
         {
             case Forward:
                 {
-                    var pageCount = Math.DivRem(songsCount, PageSize, out var remainder);
+                    var pageCount = Math.DivRem(notesCount, PageSize, out var remainder);
 
                     if (remainder > 0)
                     {
@@ -136,17 +154,11 @@ public class CatalogModel
                 }
         }
 
-        if (pageNumber < MinimalPageNumber) pageNumber = MinimalPageNumber;
-        return pageNumber;
-    }
-
-    private static CatalogDto CreateCatalogDto(int pageNumber, int songsCount, List<Tuple<string, int>>? catalogPage)
-    {
-        return new CatalogDto
+        if (pageNumber < MinimalPageNumber)
         {
-            PageNumber = pageNumber,
-            CatalogPage = catalogPage ?? new List<Tuple<string, int>>(),
-            NotesCount = songsCount
-        };
+            pageNumber = MinimalPageNumber;
+        }
+
+        return pageNumber;
     }
 }

@@ -13,6 +13,8 @@ namespace SearchEngine.Controllers;
 /// Контроллер с системным функионалом для проверок
 /// </summary>
 
+[Route("test")]
+
 public class TestController : Controller
 {
     private static int _counter;
@@ -27,7 +29,7 @@ public class TestController : Controller
     /// Получить версию сервиса
     /// </summary>
     /// <returns></returns>
-    [HttpGet("version")]
+    [HttpGet("get/version")]
     public ActionResult GetVersion()
     {
         return Ok("v5.1.2: K3S and DV SSL ready");
@@ -48,7 +50,7 @@ public class TestController : Controller
     private static readonly int[] HugeObject = Enumerable.Range(1, Count).ToArray();
 
     // мотивация: вернуть большой объект в ответе
-    [Authorize, HttpGet($"test.traffic")]
+    [Authorize, HttpGet("get/object")]
     public ActionResult GetHugeObject([FromQuery] bool more = false)
     {
         if (!more)
@@ -70,7 +72,7 @@ public class TestController : Controller
     }
 
     // мотивация: запустить создание строки
-    [Authorize, HttpGet("start")]
+    [Authorize, HttpGet("task/start")]
     public ActionResult StartHugeStringCreation()
     {
         _thread = new Thread(IncrementalStringBuilding);
@@ -81,7 +83,7 @@ public class TestController : Controller
     }
 
     // мотивация: остановить создание строки и получить её в ответе
-    [Authorize, HttpGet("stop")]
+    [Authorize, HttpGet("task/stop")]
     public ActionResult StopHugeStringCreation()
     {
         _loop = false;
@@ -100,7 +102,7 @@ public class TestController : Controller
     #endregion
 
     // мотивация: запустить сборку мусора
-    [Authorize, HttpGet("gc")]
+    [Authorize, HttpGet("task/gc")]
     public ActionResult GarbageCollectorCall()
     {
         GC.Collect(2, GCCollectionMode.Forced, true);
@@ -111,7 +113,7 @@ public class TestController : Controller
     }
 
     // мотивация: получить лог и информацию о хипе по запросу
-    [Authorize, HttpGet("test")]
+    [Authorize, HttpGet("get/logs")]
     public ActionResult LogOnEveryRequest()
     {
         var info = GC.GetGCMemoryInfo();
@@ -140,7 +142,7 @@ public class TestController : Controller
     }
 
     // мотивация: получить лог по N-му запросу, и информацию о хипе
-    [Authorize, HttpGet("test.every.nth")]
+    [Authorize, HttpGet("get/log")]
     public ActionResult LogOnEveryNthRequest([FromQuery] int count = 100)
     {
         var info = GC.GetGCMemoryInfo();
@@ -171,14 +173,14 @@ public class TestController : Controller
     }
 
     // мотивация: получить ответ от синхронной ручки
-    [Authorize, HttpGet("live")]
+    [Authorize, HttpGet("live/sync")]
     public string GetLive()
     {
         return "live";
     }
 
     // мотивация: получить ответ от асинхронной ручки
-    [Authorize, HttpGet("live.async")]
+    [Authorize, HttpGet("live/async")]
     public async Task<string> GetLiveAsync()
     {
         await Task.Delay(1);
@@ -186,7 +188,7 @@ public class TestController : Controller
     }
 
     // мотивация: получить ответ от асинхронной ручки
-    [Authorize, HttpGet("live.task")]
+    [Authorize, HttpGet("live/task")]
     public Task<string> GetLiveAsTask()
     {
         return Task.FromResult<string>("live.task");

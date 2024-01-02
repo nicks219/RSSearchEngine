@@ -1,5 +1,14 @@
 ﻿import * as React from 'react';
-import {LoaderComponent} from "./loader.component.tsx";
+import { LoaderComponent } from "./loader.component.tsx";
+import {
+    getCommonNoteId,
+    getStructuredTagsListResponse,
+    getTagsCheckedUncheckedResponse,
+    getTextRequest,
+    getTextResponse,
+    getTitleRequest,
+    getTitleResponse, setTextResponse, setTitleResponse
+} from "../dto/dto.note.tsx";
 
 interface IState {
     data: any;
@@ -55,22 +64,24 @@ class CreateView extends React.Component<IProps, IState> {
         }
 
         let id = 0;
-        if (this.state.data) id = Number(this.state.data.savedTextId);
+        if (this.state.data) id = Number(getCommonNoteId(this.state.data));
         if (id !== 0) window.textId = id;
     }
 
     render() {
         let checkboxes = [];
-        if (this.state.data != null && this.state.data.genresNamesCS != null) {
-            for (let i = 0; i < this.state.data.genresNamesCS.length; i++) {
+        if (this.state.data != null && getStructuredTagsListResponse(this.state.data) != null) {
+            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
                 checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
             }
         }
 
         let jsonStorage = this.state.data;
         if (jsonStorage) {
-            if (!jsonStorage.textCS) jsonStorage.textCS = "";
-            if (!jsonStorage.titleCS) jsonStorage.titleCS = "";
+            if (!getTextResponse(jsonStorage))
+                setTextResponse(jsonStorage, "");
+            if (!getTitleResponse(jsonStorage))
+                setTitleResponse(jsonStorage, "");
         }
 
         return (
@@ -93,9 +104,9 @@ class CreateView extends React.Component<IProps, IState> {
 class Checkbox extends React.Component<IProps> {
 
     render() {
-        let checked = this.props.jsonStorage.isGenreCheckedCS[this.props.id] === "checked";
+        let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
         let getGenreName = (i: number) => {
-            return this.props.jsonStorage.genresNamesCS[i];
+            return getStructuredTagsListResponse(this.props.jsonStorage)[i];
         };
 
         let getGenreId = (i: number) => {
@@ -120,12 +131,12 @@ class Checkbox extends React.Component<IProps> {
 
 class Message extends React.Component<IProps> {
     textHandler = (e: any) => {
-        this.props.jsonStorage.textCS = e.target.value;
+        setTextResponse(this.props.jsonStorage, e.target.value);
         this.forceUpdate();
     }
 
     titleHandler = (e: any) => {
-        this.props.jsonStorage.titleCS = e.target.value;
+        setTitleResponse(this.props.jsonStorage, e.target.value);
         this.forceUpdate();
     }
 
@@ -137,11 +148,11 @@ class Message extends React.Component<IProps> {
                     <div>
                         <h5>
                             <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                value={this.props.jsonStorage.titleCS} onChange={this.titleHandler} />
+                                value={ getTitleResponse(this.props.jsonStorage) } onChange={this.titleHandler} />
                         </h5>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={this.props.jsonStorage.textCS} onChange={this.textHandler} />
+                                value={ getTextResponse(this.props.jsonStorage) } onChange={this.textHandler} />
                         </h5>
                     </div>
                     : "loading.."}
@@ -188,13 +199,13 @@ class SubmitButton extends React.Component<IProps> {
         SubmitButton.state = undefined;
         this.submitState = 0;
 
-        let text = JSON.parse(this.requestBody).TextJS;
-        let title = JSON.parse(this.requestBody).TitleJS;
+        let text = getTextRequest(JSON.parse(this.requestBody));
+        let title = getTitleRequest(JSON.parse(this.requestBody));
 
         this.requestBody = JSON.stringify({
-            "CheckedCheckboxesJS":[],
-            "TextJS": text,
-            "TitleJS": title
+            "tagsCheckedRequest":[],
+            "textRequest": text,
+            "titleRequest": title
             });
         LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
     }
@@ -225,9 +236,9 @@ class SubmitButton extends React.Component<IProps> {
         let formMessage = formData.get('msg');
         let formTitle = formData.get('ttl');
         const item = {
-            CheckedCheckboxesJS: checkboxesArray,
-            TextJS: formMessage,
-            TitleJS: formTitle
+            "tagsCheckedRequest": checkboxesArray,
+            "textRequest": formMessage,
+            "titleRequest": formTitle
         };
         this.requestBody = JSON.stringify(item);
 
@@ -258,7 +269,7 @@ class SubmitButton extends React.Component<IProps> {
         let query = "?text=" + formMessage + " " + formTitle;
 
         try {
-            promise = LoaderComponent.getWithPromise(LoaderComponent.findUrl, query, callback);
+            promise = LoaderComponent.getWithPromise(LoaderComponent.complianceIndicesUrl, query, callback);
         } catch (err) {
             console.log("Find when create: try-catch err");
         }
@@ -321,10 +332,10 @@ class SubmitButton extends React.Component<IProps> {
         let time = Date.now();
         // stub:
         data = {
-            "genresNamesCS": this.storage,
-            "isGenreCheckedCS": [],
-            "textCS": JSON.parse(this.requestBody).TextJS,
-            "titleCS": JSON.parse(this.requestBody).TitleJS,
+            "structuredTagsListResponse": this.storage,
+            "tagsCheckedUncheckedResponse": [],
+            "textResponse": getTextRequest(JSON.parse(this.requestBody)),
+            "titleResponse": getTitleRequest(JSON.parse(this.requestBody)),
             "genresNamesId": this.storageId
         };
         // subscription на CreateView:
@@ -341,7 +352,7 @@ class SubmitButton extends React.Component<IProps> {
                 <input type="checkbox" id="submitButton" className="regular-checkbox" />
                 <label htmlFor="submitButton" onClick={this.submit}>Создать</label>
                   <div id="cancelButton">
-                    <input type="checkbox" id="submitButton" className="regular-checkbox" />
+                    <input type="checkbox" id="submitButtonDuplicate" className="regular-checkbox" />
                     <label htmlFor="submitButton" onClick={this.cancel}>Отменить</label>
                   </div>
             </div>
