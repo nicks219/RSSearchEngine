@@ -7,20 +7,20 @@ namespace SearchEngine.Data.Entities;
 /// <summary>
 /// Представление строки таблицы бд с тегами заметок
 /// </summary>
-[Table("Genre")]
+[Table("Tag")]
 public class TagEntity
 {
     /// <summary>
     /// Номер тега
     /// </summary>
-    [Column("GenreID")]
+    [Column("TagId")]
     public int TagId { get; set; }
 
     /// <summary>
     /// Именование тега
     /// </summary>
     [MaxLength(30)]
-    [Column("Genre")]
+    [Column("Tag")]
     public string? Tag { get; set; }
 
     /// <summary>

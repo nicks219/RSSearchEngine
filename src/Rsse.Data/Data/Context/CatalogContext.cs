@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Scripts;
@@ -31,17 +32,29 @@ public sealed class CatalogContext : DbContext
             switch (Database.ProviderName)
             {
                 case "Pomelo.EntityFrameworkCore.MySql":
-                    if (created) Database.ExecuteSqlRaw(MySqlScript.CreateGenresScript);
-                    break;
-
-                case "Microsoft.EntityFrameworkCore.SqlServer":
-                    if (created) Database.ExecuteSqlRaw(MsSqlScript.CreateGenresScript);
+                    if (created)
+                    {
+                        var raws = Database.ExecuteSqlRaw(MySqlScript.CreateStubData);
+                        Console.WriteLine($"[ROWS AFFECTED] {raws}");
+                    }
                     break;
 
                 // SQLite используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // TODO можно инициализировать тестовую базу на каждый вызов контекста:
-                    if (created) Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateGenresScript);
+                    if (created)
+                    {
+                        var raws = Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);
+                        Console.WriteLine($"[ROWS AFFECTED] {raws}");
+                    }
+                    break;
+
+                case "Microsoft.EntityFrameworkCore.SqlServer":
+                    if (created)
+                    {
+                        var raws = Database.ExecuteSqlRaw(MsSqlScript.CreateStubData);
+                        Console.WriteLine($"[ROWS AFFECTED] {raws}");
+                    }
                     break;
             }
         }

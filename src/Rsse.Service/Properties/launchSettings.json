@@ -14,7 +14,7 @@
     "ServerOnly": {
       "commandName": "Project",
       "commandLineArgs": "--js false",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "version",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

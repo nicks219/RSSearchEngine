@@ -70,7 +70,8 @@ public class Startup
         {
             swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
             {
-                Title = "RSSearchEngine API", Version = "v5.1"
+                Title = "RSSearchEngine API",
+                Version = "v5.1"
             });
         });
 
@@ -108,7 +109,7 @@ public class Startup
                     OnRedirectToLogin = context =>
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.Headers.Add("Shift","301 Cancelled");
+                        context.Response.Headers.Add("Shift", "301 Cancelled");
                         return Task.CompletedTask;
                     }
                 };

@@ -6,7 +6,6 @@ using SearchEngine;
 using SearchEngine.Tools.DevelopmentAssistant;
 
 #if WINDOWS
-
 var standaloneMode = ClientLauncher.Run(args);
 if (standaloneMode) return;
 #endif

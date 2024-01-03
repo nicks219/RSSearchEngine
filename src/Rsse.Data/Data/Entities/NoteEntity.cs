@@ -8,13 +8,13 @@ namespace SearchEngine.Data.Entities;
 /// <summary>
 /// Представление строки таблицы бд с заметками
 /// </summary>
-[Table("Text")]
+[Table("Note")]
 public class NoteEntity
 {
     /// <summary>
     /// Номер заметки
     /// </summary>
-    [Column("TextID")]
+    [Column("NoteId")]
     public int NoteId { get; set; }
 
     /// <summary>
@@ -27,7 +27,7 @@ public class NoteEntity
     /// <summary>
     /// Текст заметки
     /// </summary>
-    [Column("Song")]
+    [Column("Text")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Text { get; set; }
 

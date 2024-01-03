@@ -24,8 +24,4 @@
       <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Tools\" />
-    </ItemGroup>
-
 </Project>

@@ -5,13 +5,13 @@ namespace SearchEngine.Data.Entities;
 /// <summary>
 /// Представление строки таблицы бд, связывающей заметки и теги
 /// </summary>
-[Table("GenreText")]
+[Table("TagsToNotes")]
 public class TagsToNotesEntity
 {
     /// <summary>
     /// Идентификатор тега
     /// </summary>
-    [Column("GenreID")]
+    [Column("TagId")]
     public int TagId { get; set; }
 
     /// <summary>
@@ -22,7 +22,7 @@ public class TagsToNotesEntity
     /// <summary>
     /// Идентификатор заметки
     /// </summary>
-    [Column("TextID")]
+    [Column("NoteId")]
     public int NoteId { get; set; }
 
     /// <summary>
