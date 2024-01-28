@@ -1,3 +1,4 @@
+#if WINDOWS
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -145,3 +146,4 @@ internal class MySqlDumpTooling
         convertor.Convert(ddlFrom, ddlTo, pathToDump);
     }
 }
+#endif

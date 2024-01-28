@@ -1,8 +1,7 @@
 ﻿import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-
 import { LoaderComponent } from "./loader.component.tsx";
 import { getPageNumber } from "../dto/dto.catalog.tsx";
+import {createRoot} from "react-dom/client";
 
 interface IState {
     style: any;
@@ -21,6 +20,8 @@ interface IProps {
 
 export class LoginBoxHandler {
     static login = false;
+    static loginMessageElement = document.querySelector("#loginMessage") ?? new Element();
+    static loginMessageRoot = createRoot(this.loginMessageElement);
 
     // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации:
     static ContinueLoading() {
@@ -58,11 +59,10 @@ export class LoginBoxHandler {
         (document.getElementById("loginMessage")as HTMLElement).style.display = "block";
         (document.getElementById("login")as HTMLElement).style.display = "block";
         this.login = true;
-        ReactDOM.render(
+        LoginBoxHandler.loginMessageRoot.render(
             <h1>
                 LOGIN PLEASE
             </h1>
-            , document.querySelector("#loginMessage")
         );
     }
 }

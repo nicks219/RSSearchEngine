@@ -9,6 +9,8 @@
     <PackageVersion Include="MySqlBackup.NET" Version="[2.3.7]" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="[6.5.0]" />
     <!-- DATA -->
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="[7.0.0]" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="[8.0.0-beta.2]" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="[8.0.0]" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="[8.0.0]" />
   </ItemGroup>
 </Project>

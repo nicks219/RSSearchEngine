@@ -109,7 +109,7 @@ public class Startup
                     OnRedirectToLogin = context =>
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.Headers.Add("Shift", "301 Cancelled");
+                        context.Response.Headers["Shift"] = "301 Cancelled";
                         return Task.CompletedTask;
                     }
                 };
