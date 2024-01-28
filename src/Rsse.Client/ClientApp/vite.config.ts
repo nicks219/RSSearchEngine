@@ -67,7 +67,13 @@ export default defineConfig(({ command }) => {
             build: {
                 outDir: 'build',
                 // sourcemap: true
-            }
+            },
+            // vitest testing:
+            //test: {
+            //    global: true,
+            //    environment: 'jsdom',
+            //    setupFiles: 'setupTests.js'
+            //},
         }
     }
     else {

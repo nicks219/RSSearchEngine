@@ -20,7 +20,7 @@ interface IProps {
 
 export class LoginBoxHandler {
     static login = false;
-    static loginMessageElement = document.querySelector("#loginMessage") ?? new Element();
+    static loginMessageElement = document.querySelector("#loginMessage") ?? document.createElement('login-tag');
     static loginMessageRoot = createRoot(this.loginMessageElement);
 
     // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации:
