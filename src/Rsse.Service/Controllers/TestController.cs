@@ -32,7 +32,7 @@ public class TestController : Controller
     [HttpGet("get/version")]
     public ActionResult GetVersion()
     {
-        return Ok("v5.1.2: K3S and DV SSL ready");
+        return Ok("v5.2.0: .NET8 + React 18");
     }
 
     // TODO последующие ручки переписать либо удалить:
