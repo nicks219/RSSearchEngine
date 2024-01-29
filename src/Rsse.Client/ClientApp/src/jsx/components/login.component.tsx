@@ -73,7 +73,7 @@ export class LoginComponent extends React.Component<IProps, IState> {
         style: "submitStyle"
     }
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
 
@@ -81,7 +81,7 @@ export class LoginComponent extends React.Component<IProps, IState> {
         loginElement.style.display = "block";
     }
 
-    submit(e: any) {
+    submit(e: React.SyntheticEvent) {
         e.preventDefault();
         let email = "test@email";
         let password = "password";

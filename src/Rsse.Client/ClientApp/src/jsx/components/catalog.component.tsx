@@ -9,20 +9,17 @@ import {
 interface IState {
     data: CatalogDto|null;
 }
-interface IProps {
-    subscription: any;
-}
+interface IProps {}
 
 class CatalogView extends React.Component<IProps, IState> {
     mounted: boolean;
     onDumpRenderingCounterState: number;
-    //unused: any;
 
     public state: IState = {
     data: null
 }
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.mounted = true;
         this.onDumpRenderingCounterState = 0;

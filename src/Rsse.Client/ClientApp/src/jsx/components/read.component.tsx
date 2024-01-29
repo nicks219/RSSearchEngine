@@ -41,7 +41,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: any) {
+    constructor(props: {textId: string|undefined}) {
         // из "каталога" я попаду в конструктор, далее в DidMount, id песни { data: 1 } будет в props:
         super(props);
 
@@ -112,7 +112,6 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
 
         return (
             <div>
-
                 <form ref={this.mainForm}
                     id="dizzy">
                     {checkboxes}
@@ -147,7 +146,7 @@ interface IWithLinks{
 
 class WithLinks extends React.Component<IWithLinks> {
 
-    constructor(props: any) {
+    constructor(props: IWithLinks) {
         super(props);
     }
 
@@ -166,7 +165,7 @@ class WithLinks extends React.Component<IWithLinks> {
 }
 
 class Message extends React.Component<IProps> {
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.hideMenu = this.hideMenu.bind(this);
     }
@@ -200,7 +199,7 @@ class Message extends React.Component<IProps> {
 
 class SubmitButton extends React.Component<IProps> {
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
     }

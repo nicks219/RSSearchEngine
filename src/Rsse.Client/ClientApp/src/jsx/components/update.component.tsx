@@ -31,7 +31,7 @@ class UpdateView extends React.Component<IProps, IState> {
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.formId = null;
         this.mounted = true;
@@ -90,7 +90,7 @@ class Checkbox extends React.Component<IProps> {
 }
 
 class Message extends React.Component<IProps> {
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.hideMenu = this.hideMenu.bind(this);
     }
@@ -118,8 +118,8 @@ class Message extends React.Component<IProps> {
         (document.getElementById("login")as HTMLElement).style.display = "block";
     }
 
-    inputText = (e: any) => {
-        setTextResponse(this.props.jsonStorage, e.target.value);
+    inputText = (e: string) => {
+        setTextResponse(this.props.jsonStorage, e);
         this.forceUpdate();
     }
 
@@ -134,7 +134,7 @@ class Message extends React.Component<IProps> {
                         </h1>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={ getTextResponse(this.props.jsonStorage) } onChange={this.inputText} />
+                                value={ getTextResponse(this.props.jsonStorage) } onChange={e => this.inputText(e.target.value)} />
                         </h5>
                     </div>
                     : "выберите заметку")
@@ -146,12 +146,12 @@ class Message extends React.Component<IProps> {
 
 class SubmitButton extends React.Component<IProps> {
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
     }
 
-    submit(e: any) {
+    submit(e: React.SyntheticEvent) {
         e.preventDefault();
         let formData = new FormData(this.props.formId);
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);

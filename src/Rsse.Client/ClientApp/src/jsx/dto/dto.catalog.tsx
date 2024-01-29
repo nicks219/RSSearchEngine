@@ -15,6 +15,6 @@ export class CatalogDto {
 }
 
 class Item {
-    item1? : any;
-    item2? : any;
+    item1? : string;
+    item2? : string;
 }

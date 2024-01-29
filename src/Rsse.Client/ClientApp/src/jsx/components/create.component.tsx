@@ -36,7 +36,7 @@ class CreateView extends React.Component<IProps, IState> {
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.formId = null;
         this.mounted = true;
@@ -130,13 +130,13 @@ class Checkbox extends React.Component<IProps> {
 }
 
 class Message extends React.Component<IProps> {
-    textHandler = (e: any) => {
-        setTextResponse(this.props.jsonStorage, e.target.value);
+    textHandler = (e: string) => {
+        setTextResponse(this.props.jsonStorage, e);
         this.forceUpdate();
     }
 
-    titleHandler = (e: any) => {
-        setTitleResponse(this.props.jsonStorage, e.target.value);
+    titleHandler = (e: string) => {
+        setTitleResponse(this.props.jsonStorage, e);
         this.forceUpdate();
     }
 
@@ -148,11 +148,11 @@ class Message extends React.Component<IProps> {
                     <div>
                         <h5>
                             <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                value={ getTitleResponse(this.props.jsonStorage) } onChange={this.titleHandler} />
+                                value={ getTitleResponse(this.props.jsonStorage) } onChange={e => this.titleHandler(e.target.value)} />
                         </h5>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={ getTextResponse(this.props.jsonStorage) } onChange={this.textHandler} />
+                                value={ getTextResponse(this.props.jsonStorage) } onChange={e => this.textHandler(e.target.value)} />
                         </h5>
                     </div>
                     : "loading.."}
@@ -171,7 +171,7 @@ class SubmitButton extends React.Component<IProps> {
     static state: any;
     static listener: any;
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
         // подтверждение или отмена:
@@ -180,11 +180,11 @@ class SubmitButton extends React.Component<IProps> {
     }
 
     // чекбоксы превращаются в ссылки на каталог заметок:
-    static loadNoteOnClick: any = (e: React.SyntheticEvent) => {
+    static loadNoteOnClick: any = (e: React.SyntheticEvent) => {//React.SyntheticEvent
         if (SubmitButton.state !== undefined) {
 
-            let title = e.target.innerText;
-            let id = e.target.attributes.about.nodeValue;
+            let title = e.currentTarget.innerHTML.valueOf();
+            let id = e.currentTarget.attributes.item(1)?.nodeValue;
 
             // subscription на компонент create.
             console.log("Submitted: " + SubmitButton.state + " " + title + " " + id);
