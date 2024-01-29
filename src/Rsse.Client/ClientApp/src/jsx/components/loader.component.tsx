@@ -41,7 +41,7 @@ export class LoaderComponent {
     }
 
     // GET request: /api/controller
-    static async getData(component: any, url: any) {
+    static async getData(component: Component & IMountedComponent, url: string) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
@@ -57,7 +57,7 @@ export class LoaderComponent {
     }
 
     // GET request: /api/controller?id=
-    static async getDataById<T>(component: any, requestId: any, url: any) {
+    static async getDataById<T>(component: any, requestId: number|undefined, url: string) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
@@ -71,7 +71,7 @@ export class LoaderComponent {
     }
 
     // POST request: /api/controller
-    static async postData(component: any, requestBody: any, url: any, id: any = null) {
+    static async postData(component: Component & IMountedComponent, requestBody: string, url: string, id: number|string|null = null) {
         LoaderComponent.setDevelopmentCredos();
         let time = String(Date.now());
         LoginBoxHandler.Invisible();
@@ -92,7 +92,7 @@ export class LoaderComponent {
     }
 
     // DELETE request: /api/controller?id=
-    static async deleteDataById(component: any, requestId: any, url: any, pageNumber: any) {
+    static async deleteDataById(component: any, requestId: number, url: string, pageNumber: number|undefined) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
@@ -125,7 +125,7 @@ export class LoaderComponent {
     }
 
     // CREATE: /api/find?text= or /api/read/title?id=
-    static async getWithPromise(url: string, query: string, callback: any): Promise<any> {
+    static async getWithPromise(url: string, query: string, callback: (data: any)=>Promise<void>|void): Promise<any> {
         LoaderComponent.setDevelopmentCredos();
 
         try {
@@ -135,4 +135,8 @@ export class LoaderComponent {
             console.log("Loader: promise exception");
         }
     }
+}
+
+export interface IMountedComponent {
+    mounted: boolean;
 }

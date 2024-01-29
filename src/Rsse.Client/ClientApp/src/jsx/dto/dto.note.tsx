@@ -1,8 +1,8 @@
 ﻿// Note: именование заметки в запросе
-export const getTitleRequest = (dto: any) => dto.titleRequest;
+export const getTitleRequest = (dto: NoteRequestDto) => dto.titleRequest;
 
 // Note: текст заметки в запросе
-export const getTextRequest = (dto: any) => dto.textRequest;
+export const getTextRequest = (dto: NoteRequestDto) => dto.textRequest;
 
 // Note: func(tagsCheckedUncheckedResponse) представление списка тегов в виде строк "отмечено-не отмечено" в ответе
 export const getTagsCheckedUncheckedResponse = (props: any) => props.jsonStorage.tagsCheckedUncheckedResponse[props.id];
@@ -25,7 +25,7 @@ export const getStructuredTagsListResponse = (dto: any) => dto.structuredTagsLis
 // Note: поле для хранения идентификатора сохраненной/измененной заметки
 export const getCommonNoteId = (dto: any) => dto.commonNoteID;
 
-class NoteDto {
+export class NoteDto {
     titleResponse? : string;
     textResponse? : string;
     tagsCheckedUncheckedResponse?: object;// "checked","checked","unchecked" ?
@@ -33,7 +33,7 @@ class NoteDto {
     commonNoteID? : number;
 }
 
-class NoteDtoRequest {
+export class NoteRequestDto {
     titleRequest? : string;
     textRequest? : string;
     tagsCheckedRequest?: number[];

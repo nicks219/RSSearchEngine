@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import { LoaderComponent, IMountedComponent } from "./loader.component.tsx";
 import {
     getCommonNoteId,
     getStructuredTagsListResponse,
@@ -16,14 +16,20 @@ interface IState {
     menuListener: any;
 }
 
-interface IProps {
-    subscription: any;
+interface ISimpleProps {
     formId: any;
     jsonStorage: any;
     id: any;
 }
 
-class CreateView extends React.Component<IProps, IState> {
+interface ISubscribed {
+    subscription: CreateView;
+}
+
+interface IProps extends ISimpleProps, ISubscribed {
+}
+
+class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
     formId: any;
     mounted: boolean;
 
@@ -72,7 +78,7 @@ class CreateView extends React.Component<IProps, IState> {
         let checkboxes = [];
         if (this.state.data != null && getStructuredTagsListResponse(this.state.data) != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} /*subscription={null}*/ formId={null}/>);
             }
         }
 
@@ -94,14 +100,14 @@ class CreateView extends React.Component<IProps, IState> {
                     }
                 </form>
                 {this.state.data != null &&
-                    <Message formId={this.formId} jsonStorage={jsonStorage} subscription={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={jsonStorage} /*subscription={null}*/ id={null}/>
                 }
             </div>
         );
     }
 }
 
-class Checkbox extends React.Component<IProps> {
+class Checkbox extends React.Component<ISimpleProps> {
 
     render() {
         let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
@@ -129,7 +135,7 @@ class Checkbox extends React.Component<IProps> {
     }
 }
 
-class Message extends React.Component<IProps> {
+class Message extends React.Component<ISimpleProps> {
     textHandler = (e: string) => {
         setTextResponse(this.props.jsonStorage, e);
         this.forceUpdate();
@@ -163,7 +169,7 @@ class Message extends React.Component<IProps> {
 
 class SubmitButton extends React.Component<IProps> {
 
-    requestBody: any;
+    requestBody: string = "";
     storage: string[] = [];
     storageId: string[] = [];
     submitState: any;
@@ -207,7 +213,7 @@ class SubmitButton extends React.Component<IProps> {
             "textRequest": text,
             "titleRequest": title
             });
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);//
     }
 
     componentDidMount() {
