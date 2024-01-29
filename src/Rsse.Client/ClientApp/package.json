@@ -29,6 +29,6 @@
     "preview": "vite preview",
     "test:unit": "vitest --run",
     "coverage": "vitest run --coverage",
-    "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run --ignore-path ../../../.gitignore"
+    "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run"
   }
 }
