@@ -51,6 +51,8 @@
 * upd: React 18 + Router 6
 * upd: добавлен тестовый фреймворк для React: Vitest 1.2.2
 * upd: запуск JS тестов на CI
+* fix: подняты версии раннеров и SQLite (баг)
+* fix: разделена конфигурация Vite для тестов и разработки
 
 #### next versions
 #### planned upd:
