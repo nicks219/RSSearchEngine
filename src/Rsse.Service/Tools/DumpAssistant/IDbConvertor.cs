@@ -1,4 +1,4 @@
-﻿namespace SearchEngine.Tools.DumpAssistant;
+namespace SearchEngine.Tools.DumpAssistant;
 
 /// <summary/> Контракт конвертации дампа
 internal interface IDbConvertor

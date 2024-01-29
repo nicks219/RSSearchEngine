@@ -51,11 +51,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{783F77EB-C548-44FA-9E9C-03B9185033F1}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\cd.deploy.k3s.yml = .github\workflows\cd.deploy.k3s.yml
-		.github\workflows\cd.dploy.server.yml = .github\workflows\cd.dploy.server.yml
 		.github\workflows\ci.docker.build.yml = .github\workflows\ci.docker.build.yml
 		.github\workflows\ci.docker.publish.yml = .github\workflows\ci.docker.publish.yml
 		.github\workflows\ci.dotnet.build.yml = .github\workflows\ci.dotnet.build.yml
 		.github\workflows\ci.node.js.build.yml = .github\workflows\ci.node.js.build.yml
+		.github\workflows\cd.deploy.server.yml = .github\workflows\cd.deploy.server.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"

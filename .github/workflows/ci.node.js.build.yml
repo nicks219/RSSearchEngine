@@ -5,7 +5,7 @@ name: Build.Node
 
 on:
   push:
-    branches: [ "master", "feature**/**", "!feature-ci/**" ]
+    branches: [ "master", "feature**/**", "!feature-ci/**", "develop" ]
     # tags-ignore: [ 'v*.*.*' ]
   pull_request:
     branches: [ "master" ]
