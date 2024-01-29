@@ -7,7 +7,7 @@
 
 ## Технологии
 * ```text
-  .NET 8 | MSTest | TS React | Router | Vite
+  .NET 8 | MSTest | TS React | Router | Vite | Vitest
   ```    
 * ```text
   MySQL | SQLite | EF

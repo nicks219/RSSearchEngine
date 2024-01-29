@@ -30,7 +30,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     mounted: boolean;
     displayed: boolean;
 
-    static searchButtonOneElement = document.querySelector("#searchButton1") ?? new Element();
+    static searchButtonOneElement = document.querySelector("#searchButton1") ?? document.createElement('searchButton1');
     static searchButtonRoot: Root = createRoot(this.searchButtonOneElement);
 
     readFromCatalog: boolean;

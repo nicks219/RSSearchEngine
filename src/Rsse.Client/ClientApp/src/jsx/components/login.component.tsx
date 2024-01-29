@@ -20,7 +20,7 @@ interface IProps {
 
 export class LoginBoxHandler {
     static login = false;
-    static loginMessageElement = document.querySelector("#loginMessage") ?? new Element();
+    static loginMessageElement = document.querySelector("#loginMessage") ?? document.createElement('loginMessage');
     static loginMessageRoot = createRoot(this.loginMessageElement);
 
     // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации:
@@ -77,7 +77,8 @@ export class LoginComponent extends React.Component<IProps, IState> {
         super(props);
         this.submit = this.submit.bind(this);
 
-        (document.getElementById("login")as HTMLElement).style.display = "block";
+        let loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
+        loginElement.style.display = "block";
     }
 
     submit(e: any) {

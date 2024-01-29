@@ -1,25 +1,32 @@
 {
-  "name": "Rsse.Client",
+  "name": "rsse.client",
   "version": "5.2.x",
   "private": true,
   "type": "module",
+
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "6.21.3",
     "web-vitals": "^2.1.4"
   },
+
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@testing-library/jest-dom": "^6.3.0",
+    "@testing-library/react": "^14.1.2",
     "@vitejs/plugin-react": "^4.2.1",
+    "jsdom": "^24.0.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.11"
+    "vite": "^5.0.11",
+    "vitest": "^1.2.2"
   },
+
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "vitest --root src/",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run --ignore-path .gitignore"
   }
 }

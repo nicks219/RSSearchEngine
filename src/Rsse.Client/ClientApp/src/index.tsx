@@ -4,7 +4,7 @@ import './react.css';
 import MenuRouter from "./jsx/menu/menu.router.tsx";
 
 console.log('start');
-const rootElement = document.getElementById("root") ?? new HTMLElement();
+const rootElement = document.getElementById("root") ?? document.createElement('root');
 createRoot(rootElement).render(<MenuRouter />);
 
 

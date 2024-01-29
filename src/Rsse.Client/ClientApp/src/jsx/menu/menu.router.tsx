@@ -50,5 +50,5 @@ export default class MenuRouter extends React.Component<any, any> {
     }
 }
 
-const renderLoginFormElement = document.getElementById("renderLoginForm") ?? new HTMLElement();
+const renderLoginFormElement = document.getElementById("renderLoginForm") ?? document.createElement('renderLoginForm');
 createRoot(renderLoginFormElement).render(<LoginComponent subscription={this} formId={null} jsonStorage={null} id={null}/>);
