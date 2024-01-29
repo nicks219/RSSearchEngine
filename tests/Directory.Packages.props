@@ -12,8 +12,8 @@
     <PackageVersion Include="MSTest.TestFramework" Version="[3.1.1]" />
     <PackageVersion Include="coverlet.collector" Version="[3.2.0]" />
     <PackageVersion Include="NSubstitute" Version="[5.1.0]" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.14" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="[7.0.14]" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[7.0.14]" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[8.0.1]" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="[8.0.1]" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[8.0.1]" />
   </ItemGroup>
 </Project>
