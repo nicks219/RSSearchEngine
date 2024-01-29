@@ -72,7 +72,7 @@ export default defineConfig(({ command }) => {
             test: {
                 global: true,
                 environment: 'jsdom',
-                setupFiles: '../setupTest.ts'
+                setupFiles: ['setupTest.ts']
             },
         }
     }
