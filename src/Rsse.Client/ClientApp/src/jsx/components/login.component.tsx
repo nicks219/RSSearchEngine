@@ -1,14 +1,14 @@
 ﻿import * as React from 'react';
 import { LoaderComponent } from "./loader.component.tsx";
 import { getPageNumber } from "../dto/dto.catalog.tsx";
-import {createRoot} from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 interface IState {
     style: any;
 }
 
 declare global {
-    interface Window { textId: number, temp: any, url: string, pageNumber: number }
+    interface Window { textId: number, temp: any, url: string, pageNumber: number|undefined }
 }
 
 interface IProps {

@@ -3,11 +3,11 @@ import { LoaderComponent } from "./loader.component.tsx";
 import {
     getNotesCount,
     getPageNumber,
-    getCatalogPage
+    getCatalogPage, CatalogDto
 } from "../dto/dto.catalog.tsx";
 
 interface IState {
-    data: any;
+    data: CatalogDto|null;
 }
 interface IProps {
     subscription: any;
@@ -16,7 +16,7 @@ interface IProps {
 class CatalogView extends React.Component<IProps, IState> {
     mounted: boolean;
     onDumpRenderingCounterState: number;
-    unused: any;
+    //unused: any;
 
     public state: IState = {
     data: null
@@ -33,12 +33,12 @@ class CatalogView extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
-        LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, 1, LoaderComponent.catalogUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.getDataById<CatalogDto>(this, 1, LoaderComponent.catalogUrl);
     }
 
-    click = (e: any) => {
+    click = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let target = Number(e.target.id.slice(7));
+        let target = Number(e.currentTarget.id.slice(7));
         const item = {
             "pageNumber": getPageNumber(this.state.data),
             "direction": [target]
@@ -47,34 +47,34 @@ class CatalogView extends React.Component<IProps, IState> {
         LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.catalogUrl);
     }
 
-    createDump = (e: any) => {
+    createDump = (e: React.SyntheticEvent) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
         LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationCreateUrl);
     }
 
-    restoreDump = (e: any) => {
+    restoreDump = (e: React.SyntheticEvent) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
         LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationRestoreUrl);
     }
 
-    logout = (e: any) => {
+    logout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
         LoaderComponent.fireAndForgetWithQuery(LoaderComponent.logoutUrl, "", callback, this);
     }
 
-    redirect = (e: any) => {
+    redirect = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let noteId = Number(e.target.id);
+        let noteId = Number(e.currentTarget.id);
         LoaderComponent.redirectToMenu("/#/read/" + noteId);
     }
 
-    delete = (e: any) => {
+    delete = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let id = Number(e.target.id);
+        let id = Number(e.currentTarget.id);
         console.log('You want to delete song with id: ' + id);
         LoaderComponent.unusedPromise = LoaderComponent.deleteDataById(this, id, LoaderComponent.catalogUrl, getPageNumber(this.state.data));
     }
@@ -85,45 +85,47 @@ class CatalogView extends React.Component<IProps, IState> {
         }
 
         let songs = [];
+        let data = this.state.data;
+        let itemArray = getCatalogPage(data);
 
         // если работаем с дампами:
-        if(this.state.data.res && this.onDumpRenderingCounterState === 1)
+        if(data.res && this.onDumpRenderingCounterState === 1)
         {
             songs.push(
                 <tr key={"song "} className="bg-warning">
                     <td></td>
-                    <td>{this.state.data.res}</td>
+                    <td>{data.res}</td>
                 </tr>);
 
             const link = document.createElement('a');
-            link.href = this.state.data.res;
-            link.download = this.state.data.res;
+            link.href = data.res;
+            link.download = data.res;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
             this.onDumpRenderingCounterState = 2;
         }
-        else if(this.state.data.res && this.onDumpRenderingCounterState === 2)
+        else if(data.res && this.onDumpRenderingCounterState === 2)
         {
             // если после обработки дампа нажата кнопка "Каталог":
             this.componentDidMount();
             this.onDumpRenderingCounterState = 0;
         }
         // на отладке можно получить исключение и пустой стейт:
-        else if( getCatalogPage(this.state.data) !== null && getCatalogPage(this.state.data) !== undefined )
+        else if( itemArray !== null && itemArray !== undefined )
         {
-            for (let i = 0; i < getCatalogPage(this.state.data).length; i++) {
+            for (let i = 0; i < itemArray.length; i++) {
                 songs.push(
                     <tr key={"song " + i} className="bg-warning">
                         <td></td>
                         <td>
-                            <button className="btn btn-outline-light" id={ getCatalogPage(this.state.data)[i].item2 }
-                                    onClick={ this.redirect }>{ getCatalogPage(this.state.data)[i].item1 }
+                            <button className="btn btn-outline-light" id={ itemArray[i].item2 }
+                                    onClick={ this.redirect }>{ itemArray[i].item1 }
                             </button>
                         </td>
                         <td>
-                            <button className="btn btn-outline-light" id={ getCatalogPage(this.state.data)[i].item2 }
+                            <button className="btn btn-outline-light" id={ itemArray[i].item2 }
                                     onClick={ this.delete }>
                                 &#10060;
                             </button>

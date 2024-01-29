@@ -180,7 +180,7 @@ class SubmitButton extends React.Component<IProps> {
     }
 
     // чекбоксы превращаются в ссылки на каталог заметок:
-    static loadNoteOnClick: any = (e: any) => {
+    static loadNoteOnClick: any = (e: React.SyntheticEvent) => {
         if (SubmitButton.state !== undefined) {
 
             let title = e.target.innerText;
@@ -192,7 +192,7 @@ class SubmitButton extends React.Component<IProps> {
         }
     }
 
-    cancel = (e: any) => {
+    cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
         this.btn.style.display = "none";
         // отмена - сохраняем текст и название:
@@ -215,7 +215,7 @@ class SubmitButton extends React.Component<IProps> {
         this.btn.style.display = "none";
     }
 
-    async submit(e: any) {
+    async submit(e: React.SyntheticEvent) {
         e.preventDefault();
 
         this.btn.style.display = "none";

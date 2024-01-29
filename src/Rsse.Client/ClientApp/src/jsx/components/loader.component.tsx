@@ -57,14 +57,14 @@ export class LoaderComponent {
     }
 
     // GET request: /api/controller?id=
-    static async getDataById(component: any, requestId: any, url: any) {
+    static async getDataById<T>(component: any, requestId: any, url: any) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(requestId), {credentials: this.corsCredentialsPolicy});
-            const data = await response.json().catch(() => LoginBoxHandler.Visible(component, url));
-            if (component.mounted) component.setState({data});
+            const data: T = await response.json().catch(() => LoginBoxHandler.Visible(component, url));
+            if (component.mounted) component.setState({data});// data это dto
         } catch {
             console.log("Loader: getById exception");
         }
@@ -111,7 +111,7 @@ export class LoaderComponent {
     }
 
     // LOGIN & LOGOUT request: /account/login?email= &password= or /account/logout
-    static fireAndForgetWithQuery(url: string, query: string, callback: any, component: Component | null) {
+    static fireAndForgetWithQuery(url: string, query: string, callback: (v: Response)=>Response|PromiseLike<Response>|void, component: Component|null) {
         LoaderComponent.setDevelopmentCredos();
 
         try {
