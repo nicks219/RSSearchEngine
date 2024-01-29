@@ -1,14 +1,14 @@
 ﻿import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { LoaderComponent } from "./loader.component.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
-import { RouteComponentProps } from 'react-router';
+import { useParams } from "react-router-dom";
 import {
     getCommonNoteId,
     getStructuredTagsListResponse,
     getTextResponse,
     getTitleResponse
 } from "../dto/dto.note.tsx";
+import {createRoot, Root} from "react-dom/client";
 
 interface IState {
     data: any;
@@ -20,10 +20,18 @@ interface IProps {
     id: any;
 }
 
-export class HomeView extends React.Component<RouteComponentProps<{textId: string}>, IState> {
+export function HomeView() {
+    const params = useParams();
+    return <HomeViewParams textId={params.textId} />;
+}
+
+export class HomeViewParams extends React.Component<{textId: string|undefined}, IState> {
     formId: any;
     mounted: boolean;
     displayed: boolean;
+
+    static searchButtonOneElement = document.querySelector("#searchButton1") ?? document.createElement('searchButton1');
+    static searchButtonRoot: Root = createRoot(this.searchButtonOneElement);
 
     readFromCatalog: boolean;
 
@@ -62,11 +70,10 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     }
 
     componentDidUpdate() {
-        ReactDOM.render(
+        HomeViewParams.searchButtonRoot.render(
             <div>
                 <SubmitButton subscription={this} formId={this.formId} jsonStorage={null} id={null}/>
-            </div>,
-            document.querySelector("#searchButton1")
+            </div>
         );
         (document.getElementById("header")as HTMLElement).style.backgroundColor = "#e9ecee";//???
     }
@@ -74,23 +81,22 @@ export class HomeView extends React.Component<RouteComponentProps<{textId: strin
     componentWillUnmount() {
         this.mounted = false;
         // убираем отображение кнопки "Поиск":
-        ReactDOM.render(
+        HomeViewParams.searchButtonRoot.render(
             <div>
-            </div>,
-            document.querySelector("#searchButton1")
+            </div>
         );
     }
 
     render() {
         // читаем заметку из каталога:
-        if (this.props.match.params.textId && !this.displayed) {
-            console.log("Get text id from path params: " + this.props.match.params.textId);
+        if (this.props./*match.params.*/textId && !this.displayed) {
+            console.log("Get text id from path params: " + this.props./*match.params.*/textId);
 
             const item = {
                 "tagsCheckedRequest": []
             };
             let requestBody = JSON.stringify(item);
-            let id = this.props.match.params.textId;
+            let id = this.props./*match.params.*/textId;
             this.readFromCatalog = true;
 
             LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.readUrl, id);

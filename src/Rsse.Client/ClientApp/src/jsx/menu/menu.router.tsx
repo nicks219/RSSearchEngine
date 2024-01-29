@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from "react-dom/client";
 
 import { HomeView } from "../components/read.component.tsx";
 import UpdateView from "../components/update.component.tsx";
@@ -10,6 +10,7 @@ import { LoginComponent } from "../components/login.component.tsx";
 import {
     HashRouter,
     NavLink,
+    Routes,
     Route
 } from 'react-router-dom';
 
@@ -20,36 +21,31 @@ declare global {
 window.textId = 0;
 window.React = React;
 
-export default class MenuRouter extends React.Component<any, any> {
-
-    render() {
+export const MenuRouter = () => {
         return (
             <HashRouter>
                 <div>
                     <div id="header">
                         <ul>
-                            <li><NavLink exact to="/">Посмотреть</NavLink></li>
+                            <li><NavLink to="/">Посмотреть</NavLink></li>
                             <li><NavLink to="/update">Поменять</NavLink></li>
                             <li><NavLink to="/create">Создать</NavLink></li>
                             <li><NavLink to="/catalog">Каталог</NavLink></li>
                         </ul>
                     </div>
 
-
                     <div id="renderContainer1">
-                        <Route exact path="/" component={HomeView}/>
-                        <Route exact path="/read/:textId" component={HomeView}/>
-                        <Route path="/update" component={UpdateView}/>
-                        <Route path="/create" component={CreateView}/>
-                        <Route path="/catalog" component={CatalogView}/>
+                        <Routes>
+                            <Route path="/" element={<HomeView />}/>
+                            <Route path="/read/:textId" element={<HomeView />}/>
+                            <Route path="/update" element={<UpdateView formId={""} id={""} jsonStorage={""} subscription={""} />}/>
+                            <Route path="/create" element={<CreateView formId={""} id={""} jsonStorage={""} subscription={""} />}/>
+                            <Route path="/catalog" element={<CatalogView  subscription={""} />}/>
+                        </Routes>
                     </div>
                 </div>
             </HashRouter>);
-    }
 }
 
-ReactDOM.render(
-    <LoginComponent subscription={this} formId={null} jsonStorage={null} id={null}/>
-    , document.querySelector("#renderLoginForm")
-);
-
+const renderLoginFormElement = document.getElementById("renderLoginForm") ?? document.createElement('renderLoginForm');
+createRoot(renderLoginFormElement).render(<LoginComponent subscription={this} formId={null} jsonStorage={null} id={null}/>);

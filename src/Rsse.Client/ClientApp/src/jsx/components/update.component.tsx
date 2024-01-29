@@ -14,7 +14,7 @@ interface IState {
 }
 
 interface IProps {
-    subscribe: any;
+    subscription: any;
     formId: any;
     jsonStorage: any;
     id: any;
@@ -52,7 +52,7 @@ class UpdateView extends React.Component<IProps, IState> {
         let checkboxes = [];
         if (this.state != null && this.state.data != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} subscribe={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
             }
         }
 
@@ -61,11 +61,11 @@ class UpdateView extends React.Component<IProps, IState> {
                 <form ref={this.mainForm} id="dizzy">
                     {checkboxes}
                     {this.state != null && this.state.data != null &&
-                        <SubmitButton subscribe={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
+                        <SubmitButton subscription={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
                     }
                 </form>
                 {this.state != null && this.state.data != null && getTextResponse(this.state.data) != null &&
-                    <Message formId={this.formId} jsonStorage={this.state.data} subscribe={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={this.state.data} subscription={null} id={null}/>
                 }
             </div>
         );
@@ -163,7 +163,7 @@ class SubmitButton extends React.Component<IProps> {
             "commonNoteID": window.textId
         };
         let requestBody = JSON.stringify(item);
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscribe, requestBody, LoaderComponent.updateUrl);
+        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.updateUrl);
     }
 
     componentWillUnmount() {

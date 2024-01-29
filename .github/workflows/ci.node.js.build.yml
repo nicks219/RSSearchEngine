@@ -5,7 +5,7 @@ name: Build.Node
 
 on:
   push:
-    branches: [ "master", "feature**/**", "!feature-ci/**" ]
+    branches: [ "master", "feature**/**", "!feature-ci/**", "develop" ]
     # tags-ignore: [ 'v*.*.*' ]
   pull_request:
     branches: [ "master" ]
@@ -24,9 +24,9 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           # создаётся кэш в actions/caches
           node-version: ${{ matrix.node-version }}
@@ -34,3 +34,4 @@ jobs:
           cache-dependency-path: ./src/Rsse.Client/ClientApp/package-lock.json
       - run: npm ci
       - run: npm run build --if-present
+      - run: npm run test:unit

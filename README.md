@@ -7,7 +7,7 @@
 
 ## Технологии
 * ```text
-  .NET 7 | MSTest | TS React | Router | Vite
+  .NET 8 | MSTest | TS React | Router | Vite | Vitest
   ```    
 * ```text
   MySQL | SQLite | EF
@@ -16,9 +16,7 @@
   GitHub CI/CD | Docker | K3S ready | DV SSL ready
   ```
 
----------------------------------------------
 ![cover.png](.common/cover.png)
----------------------------------------------
 
 ## I. Информация..
 * **API**: актуальная версия доступна онлайн на **[bumps.sh](https://bump.sh/nicks219/doc/rsse)**

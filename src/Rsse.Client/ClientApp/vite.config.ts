@@ -39,8 +39,17 @@ if (process.env.NODE_ENV === "development" && (!fs.existsSync(certFilePath) || !
 
 // https://vitejs.dev/config/
 // https://vitejs.dev/config/#conditional-config
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
     if (command === 'serve') {
+        // конфигурация для запуска тестов:
+        if (mode === 'test') return {
+            // vitest testing:
+            test: {
+                global: true,
+                environment: 'jsdom',
+                setupFiles: ['setupTest.ts']
+            },
+        };
         // конфигурация для разработки:
         return {
             plugins: [plugin()],
