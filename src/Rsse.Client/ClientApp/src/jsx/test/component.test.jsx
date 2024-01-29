@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest';
-import MenuRouter from "../menu/menu.router.tsx";
+import { MenuRouter } from "../menu/menu.router.tsx";
 import { render, screen } from '@testing-library/react';
 
 describe('MenuRouter component tests', () => {

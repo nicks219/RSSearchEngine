@@ -3,30 +3,31 @@
   "version": "5.2.x",
   "private": true,
   "type": "module",
-
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "6.21.3",
     "web-vitals": "^2.1.4"
   },
-
   "devDependencies": {
     "@testing-library/jest-dom": "^6.3.0",
     "@testing-library/react": "^14.1.2",
+    "@types/node": "^20.11.10",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.56.0",
     "jsdom": "^24.0.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.3",
     "vite": "^5.0.11",
     "vitest": "^1.2.2"
   },
-
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test:unit": "vitest --root src/",
     "coverage": "vitest run --coverage",
-    "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run --ignore-path .gitignore"
+    "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run --ignore-path ../../../.gitignore"
   }
 }

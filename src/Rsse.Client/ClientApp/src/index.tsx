@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import './bootstrap.css';
 import './react.css';
-import MenuRouter from "./jsx/menu/menu.router.tsx";
+import { MenuRouter } from "./jsx/menu/menu.router.tsx";
 
 console.log('start');
 const rootElement = document.getElementById("root") ?? document.createElement('root');

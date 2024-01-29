@@ -21,9 +21,7 @@ declare global {
 window.textId = 0;
 window.React = React;
 
-export default class MenuRouter extends React.Component<any, any> {
-
-    render() {
+export const MenuRouter = () => {
         return (
             <HashRouter>
                 <div>
@@ -47,7 +45,6 @@ export default class MenuRouter extends React.Component<any, any> {
                     </div>
                 </div>
             </HashRouter>);
-    }
 }
 
 const renderLoginFormElement = document.getElementById("renderLoginForm") ?? document.createElement('renderLoginForm');
