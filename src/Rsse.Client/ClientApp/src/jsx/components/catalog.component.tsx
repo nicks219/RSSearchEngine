@@ -9,9 +9,8 @@ import {
 interface IState {
     data: CatalogDto|null;
 }
-interface IProps {}
 
-class CatalogView extends React.Component<IProps, IState> implements IMountedComponent {
+class CatalogView extends React.Component<unknown, IState> implements IMountedComponent {
     mounted: boolean;
     onDumpRenderingCounterState: number;
 
@@ -19,7 +18,7 @@ class CatalogView extends React.Component<IProps, IState> implements IMountedCom
     data: null
 }
 
-    constructor(props: IProps) {
+    constructor(props: unknown) {
         super(props);
         this.mounted = true;
         this.onDumpRenderingCounterState = 0;

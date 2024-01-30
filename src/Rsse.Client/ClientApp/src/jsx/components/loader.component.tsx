@@ -111,7 +111,7 @@ export class LoaderComponent {
     }
 
     // LOGIN & LOGOUT request: /account/login?email= &password= or /account/logout
-    static fireAndForgetWithQuery(url: string, query: string, callback: (v: Response)=>Response|PromiseLike<Response>|void, component: Component|null) {
+    static fireAndForgetWithQuery(url: string, query: string, callback: (v: Response)=>Response|PromiseLike<Response>|void, component: (Component&IMountedComponent)|null) {
         LoaderComponent.setDevelopmentCredos();
 
         try {

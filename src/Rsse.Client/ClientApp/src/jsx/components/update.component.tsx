@@ -7,21 +7,20 @@ import {
     getTextResponse,
     getTitleResponse, setTextResponse
 } from "../dto/dto.note.tsx";
+import {ISimpleProps} from "../contracts/i.simple.props.tsx";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
+import {ISubscribed} from "../contracts/i.subscribed.tsx";
 
 interface IState {
-    data: any;
-    time: any;
+    data: NoteResponseDto|null;
+    time: number|null;
 }
 
-interface IProps {
-    subscription: any;
-    formId: any;
-    jsonStorage: any;
-    id: any;
+interface IProps extends ISimpleProps, ISubscribed<UpdateView> {
 }
 
-class UpdateView extends React.Component<IProps, IState> implements IMountedComponent {
-    formId: any;
+class UpdateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
+    formId?: HTMLFormElement;
     mounted: boolean;
 
     public state: IState = {
@@ -33,14 +32,14 @@ class UpdateView extends React.Component<IProps, IState> implements IMountedComp
 
     constructor(props: IProps) {
         super(props);
-        this.formId = null;
+        this.formId = undefined;
         this.mounted = true;
 
         this.mainForm = React.createRef();
     }
 
     componentDidMount() {
-        this.formId = this.mainForm.current;
+        this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
         LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
     }
 
@@ -52,7 +51,7 @@ class UpdateView extends React.Component<IProps, IState> implements IMountedComp
         let checkboxes = [];
         if (this.state != null && this.state.data != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
             }
         }
 
@@ -61,18 +60,18 @@ class UpdateView extends React.Component<IProps, IState> implements IMountedComp
                 <form ref={this.mainForm} id="dizzy">
                     {checkboxes}
                     {this.state != null && this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} jsonStorage={this.state.data} id={null}/>
+                        <SubmitButton subscription={this} formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
                     }
                 </form>
                 {this.state != null && this.state.data != null && getTextResponse(this.state.data) != null &&
-                    <Message formId={this.formId} jsonStorage={this.state.data} subscription={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
                 }
             </div>
         );
     }
 }
 
-class Checkbox extends React.Component<IProps> {
+class Checkbox extends React.Component<ISimpleProps> {
 
     render() {
         let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
@@ -83,14 +82,14 @@ class Checkbox extends React.Component<IProps> {
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox"
                     defaultChecked={checked} />
-                <label htmlFor={this.props.id}>{getGenreName(this.props.id)}</label>
+                <label htmlFor={this.props.id}>{getGenreName(Number(this.props.id))}</label>
             </div>
         );
     }
 }
 
-class Message extends React.Component<IProps> {
-    constructor(props: IProps) {
+class Message extends React.Component<ISimpleProps> {
+    constructor(props: ISimpleProps) {
         super(props);
         this.hideMenu = this.hideMenu.bind(this);
     }
@@ -114,7 +113,7 @@ class Message extends React.Component<IProps> {
     }
 
     hideMenu() {
-        this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+        if (this.props.formId) this.props.formId.style.display = menuHandler(this.props.formId.style.display);
         (document.getElementById("login")as HTMLElement).style.display = "block";
     }
 

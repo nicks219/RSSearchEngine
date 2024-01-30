@@ -7,8 +7,11 @@ import {
     getTextRequest,
     getTextResponse,
     getTitleRequest,
-    getTitleResponse, NoteResponseDto, setTextResponse, setTitleResponse
+    getTitleResponse, setTextResponse, setTitleResponse
 } from "../dto/dto.note.tsx";
+import {ISimpleProps} from "../contracts/i.simple.props.tsx";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
+import {ISubscribed} from "../contracts/i.subscribed.tsx";
 
 interface IState {
     data?: NoteResponseDto;
@@ -16,17 +19,7 @@ interface IState {
     stateStorage?: string|null;
 }
 
-interface ISimpleProps {
-    formId?: HTMLFormElement;
-    jsonStorage?: NoteResponseDto;
-    id?: string;
-}
-
-interface ISubscribed {
-    subscription: CreateView;
-}
-
-interface IProps extends ISimpleProps, ISubscribed {
+interface IProps extends ISimpleProps, ISubscribed<CreateView> {
 }
 
 class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
