@@ -20,16 +20,16 @@ export const getTextResponse = (dto: any) => dto.textResponse;
 export const setTextResponse = (dto: any, value: string) => dto.textResponse = value;
 
 // Note: список тегов в формате "имя : количество записей"
-export const getStructuredTagsListResponse = (dto: any) => dto.structuredTagsListResponse;
+export const getStructuredTagsListResponse = (dto?: NoteResponseDto) => dto?.structuredTagsListResponse ?? [];
 
 // Note: поле для хранения идентификатора сохраненной/измененной заметки
-export const getCommonNoteId = (dto: any) => dto.commonNoteID;
+export const getCommonNoteId = (dto: NoteResponseDto) => dto.commonNoteID;
 
-export class NoteDto {
+export class NoteResponseDto {
     titleResponse? : string;
     textResponse? : string;
-    tagsCheckedUncheckedResponse?: object;// "checked","checked","unchecked" ?
-    structuredTagsListResponse?: object;//jazz:42 ?
+    tagsCheckedUncheckedResponse?: string[];
+    structuredTagsListResponse?: string[];
     commonNoteID? : number;
 }
 

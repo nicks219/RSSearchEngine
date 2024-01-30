@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
 import { useParams } from "react-router-dom";
 import {
@@ -22,10 +22,10 @@ interface IProps {
 
 export function HomeView() {
     const params = useParams();
-    return <HomeViewParams textId={params.textId} />;
+    return <HomeViewParametrized textId={params.textId} />;
 }
 
-export class HomeViewParams extends React.Component<{textId: string|undefined}, IState> {
+class HomeViewParametrized extends React.Component<{textId: string|undefined}, IState> implements IMountedComponent {
     formId: any;
     mounted: boolean;
     displayed: boolean;
@@ -70,7 +70,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     }
 
     componentDidUpdate() {
-        HomeViewParams.searchButtonRoot.render(
+        HomeViewParametrized.searchButtonRoot.render(
             <div>
                 <SubmitButton subscription={this} formId={this.formId} jsonStorage={null} id={null}/>
             </div>
@@ -81,7 +81,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     componentWillUnmount() {
         this.mounted = false;
         // убираем отображение кнопки "Поиск":
-        HomeViewParams.searchButtonRoot.render(
+        HomeViewParametrized.searchButtonRoot.render(
             <div>
             </div>
         );

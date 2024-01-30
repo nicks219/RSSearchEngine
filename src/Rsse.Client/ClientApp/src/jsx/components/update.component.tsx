@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
 import {
     getStructuredTagsListResponse,
@@ -20,7 +20,7 @@ interface IProps {
     id: any;
 }
 
-class UpdateView extends React.Component<IProps, IState> {
+class UpdateView extends React.Component<IProps, IState> implements IMountedComponent {
     formId: any;
     mounted: boolean;
 

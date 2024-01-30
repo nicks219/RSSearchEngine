@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import { IMountedComponent, LoaderComponent } from "./loader.component.tsx";
 import {
     getNotesCount,
     getPageNumber,
@@ -11,7 +11,7 @@ interface IState {
 }
 interface IProps {}
 
-class CatalogView extends React.Component<IProps, IState> {
+class CatalogView extends React.Component<IProps, IState> implements IMountedComponent {
     mounted: boolean;
     onDumpRenderingCounterState: number;
 

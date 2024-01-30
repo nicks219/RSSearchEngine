@@ -18,7 +18,7 @@ export class LoaderComponent {
     static corsServiceBaseUrl: string = "";
     static redirectHostSchema = "http";
 
-    static unusedPromise: any;
+    static unusedPromise: Promise<void>;
 
     static setDevelopmentCredos() {
         if (process.env.NODE_ENV === "development") {
@@ -57,7 +57,7 @@ export class LoaderComponent {
     }
 
     // GET request: /api/controller?id=
-    static async getDataById<T>(component: any, requestId: number|undefined, url: string) {
+    static async getDataById<T>(component: Component & IMountedComponent, requestId: number|undefined, url: string) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
@@ -92,7 +92,7 @@ export class LoaderComponent {
     }
 
     // DELETE request: /api/controller?id=
-    static async deleteDataById(component: any, requestId: number, url: string, pageNumber: number|undefined) {
+    static async deleteDataById(component: Component & IMountedComponent, requestId: number, url: string, pageNumber: number|undefined) {
         LoaderComponent.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
@@ -125,7 +125,7 @@ export class LoaderComponent {
     }
 
     // CREATE: /api/find?text= or /api/read/title?id=
-    static async getWithPromise(url: string, query: string, callback: (data: any)=>Promise<void>|void): Promise<any> {
+    static async getWithPromise(url: string, query: string, callback: (data: Response)=>Promise<void>|void): Promise<void> {
         LoaderComponent.setDevelopmentCredos();
 
         try {
