@@ -152,21 +152,22 @@ interface IWithLinks{
     text: string;
 }
 
-class NoteTextWithLinks extends React.Component<IWithLinks> {
+class NoteTextSupportLinks extends React.Component<IWithLinks> {
 
     constructor(props: IWithLinks) {
         super(props);
     }
 
     render() {
-        let res: any = [];
-
+        // deprecated: JSX 
+        let res: (string|JSX.Element)[] = [];
         // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
         this.props.text && this.props.text.replace(
             /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
-            (_, link, text) => {
-            return res.push(link ? <a href={(link[0]==="w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
-        })
+            (_: string, link: string, text: string):string => {
+                res.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
+                return "";
+            })
 
         return <div className="user-text">{res}</div>
     }
@@ -197,7 +198,7 @@ class Message extends React.Component<ISimpleProps> {
                             { getTitleResponse(this.props.jsonStorage) }
                         </div>
                         <div id="songBody">
-                            <NoteTextWithLinks text={ getTextResponse(this.props.jsonStorage) ?? "" } />
+                            <NoteTextSupportLinks text={ getTextResponse(this.props.jsonStorage) ?? "" } />
                         </div>
                     </span>
                     : "выберите тег")

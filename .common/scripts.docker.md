@@ -57,4 +57,4 @@ num   pkts bytes target     prot opt in     out     source               destina
 4      107 27639 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
 ```
 
-
+docker run --env=MYSQL_USER=1 --env=MYSQL_PASSWORD=1 --env=MYSQL_DATABASE=tagit --env=MYSQL_ROOT_PASSWORD=1 --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=GOSU_VERSION=1.14 --env=MYSQL_MAJOR=8.0 --env=MYSQL_VERSION=8.0.31 --volume=src_mysql-volume:/var/lib/mysql:rw --volume=/var/lib/mysql -p 3306:3306 --name mysql_8 --runtime=runc -d mysql:8.0.31-debian
