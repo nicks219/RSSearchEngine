@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
+import { Loader } from "./loader.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
 import { useParams } from "react-router-dom";
 import {
@@ -7,9 +7,10 @@ import {
     getStructuredTagsListResponse,
     getTextResponse,
     getTitleResponse
-} from "../dto/dto.note.tsx";
-import {createRoot, Root} from "react-dom/client";
-import {NoteResponseDto} from "../dto/note.response.dto.tsx";
+} from "../dto/handler.note.tsx";
+import { createRoot, Root } from "react-dom/client";
+import { NoteResponseDto } from "../dto/note.response.dto.tsx";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
 
 interface IState {
     data: NoteResponseDto|null;
@@ -66,7 +67,7 @@ class HomeViewParametrized extends React.Component<{textId: string|undefined}, I
 
         // если заметка вызвана из каталога, то не обновляем содержимое компонента:
         if (!this.readFromCatalog) {
-            LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.readUrl);
+            Loader.unusedPromise = Loader.getData(this, Loader.readUrl);
         }
         else{
             // убираем чекбоксы и логин если вызов произошёл из каталога:
@@ -107,7 +108,7 @@ class HomeViewParametrized extends React.Component<{textId: string|undefined}, I
             let id = this.props./*match.params.*/textId;
             this.readFromCatalog = true;
 
-            LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.readUrl, id);
+            Loader.unusedPromise = Loader.postData(this, requestBody, Loader.readUrl, id);
             this.displayed = true;
         }
 
@@ -159,7 +160,7 @@ class NoteTextSupportLinks extends React.Component<IWithLinks> {
     }
 
     render() {
-        // deprecated: JSX 
+        // deprecated: JSX
         let res: (string|JSX.Element)[] = [];
         // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
         this.props.text && this.props.text.replace(
@@ -224,7 +225,7 @@ class SubmitButton extends React.Component<IProps> {
             "tagsCheckedRequest": checkboxesArray
         };
         let requestBody = JSON.stringify(item);
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.readUrl);
+        Loader.unusedPromise = Loader.postData(this.props.subscription, requestBody, Loader.readUrl);
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey";
     }
 

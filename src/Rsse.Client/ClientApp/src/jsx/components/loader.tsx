@@ -1,7 +1,8 @@
 ﻿import { LoginBoxHandler } from "./login.component.tsx";
 import { Component } from "react";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
 
-export class LoaderComponent {
+export class Loader {
     static createUrl: string = "/api/create";
     static readUrl: string = "/api/read";
     static readTitleUrl: string = "/api/read/title";
@@ -20,7 +21,7 @@ export class LoaderComponent {
 
     static unusedPromise: Promise<void>;
 
-    static setDevelopmentCredos() {
+    static setDevelopmentCredos = () => {
         if (process.env.NODE_ENV === "development") {
             this.corsCredentialsPolicy = "include";
             this.corsServiceBaseUrl = "http://127.0.0.1:5000";
@@ -28,8 +29,8 @@ export class LoaderComponent {
         }
     }
 
-    static redirectToMenu(url: string) {
-        LoaderComponent.setDevelopmentCredos();
+    static redirectToMenu = (url: string) => {
+        Loader.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
@@ -41,8 +42,8 @@ export class LoaderComponent {
     }
 
     // GET request: /api/controller
-    static async getData(component: Component & IMountedComponent, url: string) {
-        LoaderComponent.setDevelopmentCredos();
+    static getData = async(component: Component & IMountedComponent, url: string) => {
+        Loader.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
         try {
@@ -58,7 +59,7 @@ export class LoaderComponent {
 
     // GET request: /api/controller?id=
     static async getDataById<T>(component: Component & IMountedComponent, requestId: number|undefined, url: string) {
-        LoaderComponent.setDevelopmentCredos();
+        Loader.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
         try {
@@ -71,8 +72,8 @@ export class LoaderComponent {
     }
 
     // POST request: /api/controller
-    static async postData(component: Component & IMountedComponent, requestBody: string, url: string, id: number|string|null = null) {
-        LoaderComponent.setDevelopmentCredos();
+    static postData = async(component: Component & IMountedComponent, requestBody: string, url: string, id: number|string|null = null) => {
+        Loader.setDevelopmentCredos();
         let time = String(Date.now());
         LoginBoxHandler.Invisible();
 
@@ -92,8 +93,8 @@ export class LoaderComponent {
     }
 
     // DELETE request: /api/controller?id=
-    static async deleteDataById(component: Component & IMountedComponent, requestId: number, url: string, pageNumber: number|undefined) {
-        LoaderComponent.setDevelopmentCredos();
+    static deleteDataById = async(component: Component & IMountedComponent, requestId: number, url: string, pageNumber?: number) => {
+        Loader.setDevelopmentCredos();
         LoginBoxHandler.Invisible();
 
         try {
@@ -111,8 +112,8 @@ export class LoaderComponent {
     }
 
     // LOGIN & LOGOUT request: /account/login?email= &password= or /account/logout
-    static fireAndForgetWithQuery(url: string, query: string, callback: (v: Response)=>Response|PromiseLike<Response>|void, component: (Component&IMountedComponent)|null) {
-        LoaderComponent.setDevelopmentCredos();
+    static fireAndForgetWithQuery = (url: string, query: string, callback: (v: Response)=>Response|PromiseLike<Response>|void, component: (Component&IMountedComponent)|null) => {
+        Loader.setDevelopmentCredos();
 
         try {
             fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy}).then(callback);
@@ -125,8 +126,8 @@ export class LoaderComponent {
     }
 
     // CREATE: /api/find?text= or /api/read/title?id=
-    static async getWithPromise(url: string, query: string, callback: (data: Response)=>Promise<void>|void): Promise<void> {
-        LoaderComponent.setDevelopmentCredos();
+    static getWithPromise = async(url: string, query: string, callback: (data: Response)=>Promise<void>|void): Promise<void> => {
+        Loader.setDevelopmentCredos();
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy});
@@ -135,8 +136,4 @@ export class LoaderComponent {
             console.log("Loader: promise exception");
         }
     }
-}
-
-export interface IMountedComponent {
-    mounted: boolean;
 }

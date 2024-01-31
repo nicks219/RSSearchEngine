@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent, IMountedComponent } from "./loader.component.tsx";
+import { Loader } from "./loader.tsx";
 import {
     getCommonNoteId,
     getStructuredTagsListResponse,
@@ -8,10 +8,11 @@ import {
     getTextResponse,
     getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
-} from "../dto/dto.note.tsx";
-import {ISimpleProps} from "../contracts/i.simple.props.tsx";
-import {NoteResponseDto} from "../dto/note.response.dto.tsx";
-import {ISubscribed} from "../contracts/i.subscribed.tsx";
+} from "../dto/handler.note.tsx";
+import { ISimpleProps } from "../contracts/i.simple.props.tsx";
+import { NoteResponseDto } from "../dto/note.response.dto.tsx";
+import { ISubscribed } from "../contracts/i.subscribed.tsx";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
 
 interface IState {
     data?: NoteResponseDto;
@@ -43,7 +44,7 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
 
     componentDidMount() {
         this.formId = this.mainForm.current ?? undefined;
-        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.createUrl);
+        Loader.unusedPromise = Loader.getData(this, Loader.createUrl);
     }
 
     componentWillUnmount() {
@@ -57,7 +58,7 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
     componentDidUpdate() {
         if (this.state.stateStorage){
             console.log("Redirected: " + this.state.stateStorage);
-            LoaderComponent.redirectToMenu("/#/read/" + this.state.stateStorage);
+            Loader.redirectToMenu("/#/read/" + this.state.stateStorage);
         }
 
         let id = 0;
@@ -210,7 +211,7 @@ class SubmitButton extends React.Component<IProps> {
             "textRequest": text,
             "titleRequest": title
             });
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
+        Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
     }
 
     componentDidMount() {
@@ -231,7 +232,7 @@ class SubmitButton extends React.Component<IProps> {
             SubmitButton.state = undefined;
 
             this.submitState = 0;
-            LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
+            Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
             return;
         }
 
@@ -259,7 +260,7 @@ class SubmitButton extends React.Component<IProps> {
         }
 
         // совпадения не обнаружены:
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, this.requestBody, LoaderComponent.createUrl);
+        Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
     }
 
     findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
@@ -273,7 +274,7 @@ class SubmitButton extends React.Component<IProps> {
         let query = "?text=" + formMessage + " " + formTitle;
 
         try {
-            promise = LoaderComponent.getWithPromise(LoaderComponent.complianceIndicesUrl, query, callback);
+            promise = Loader.getWithPromise(Loader.complianceIndicesUrl, query, callback);
         } catch (err) {
             console.log("Find when create: try-catch err");
         }
@@ -321,7 +322,7 @@ class SubmitButton extends React.Component<IProps> {
             let query = "?id=" + i;
 
             try {
-                promise = LoaderComponent.getWithPromise(LoaderComponent.readTitleUrl, query, callback);
+                promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
             } catch (err) {
                 console.log("Find when create: try-catch err");
             }

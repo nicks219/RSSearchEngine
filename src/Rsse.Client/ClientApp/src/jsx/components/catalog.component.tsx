@@ -1,10 +1,12 @@
 ﻿import * as React from 'react';
-import { IMountedComponent, LoaderComponent } from "./loader.component.tsx";
+import { Loader } from "./loader.tsx";
 import {
     getNotesCount,
     getPageNumber,
-    getCatalogPage, CatalogDto
-} from "../dto/dto.catalog.tsx";
+    getCatalogPage
+} from "../dto/handler.catalog.tsx";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
+import { CatalogDto } from "../dto/catalog.dto.tsx";
 
 interface IState {
     data: CatalogDto|null;
@@ -29,7 +31,7 @@ class CatalogView extends React.Component<unknown, IState> implements IMountedCo
     }
 
     componentDidMount() {
-        LoaderComponent.unusedPromise = LoaderComponent.getDataById<CatalogDto>(this, 1, LoaderComponent.catalogUrl);
+        Loader.unusedPromise = Loader.getDataById<CatalogDto>(this, 1, Loader.catalogUrl);
     }
 
     click = (e: React.SyntheticEvent) => {
@@ -40,39 +42,39 @@ class CatalogView extends React.Component<unknown, IState> implements IMountedCo
             "direction": [target]
         };
         let requestBody = JSON.stringify(item);
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this, requestBody, LoaderComponent.catalogUrl);
+        Loader.unusedPromise = Loader.postData(this, requestBody, Loader.catalogUrl);
     }
 
     createDump = (e: React.SyntheticEvent) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationCreateUrl);
+        Loader.unusedPromise = Loader.getData(this, Loader.migrationCreateUrl);
     }
 
     restoreDump = (e: React.SyntheticEvent) => {
         this.onDumpRenderingCounterState = 1;
         e.preventDefault();
-        LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.migrationRestoreUrl);
+        Loader.unusedPromise = Loader.getData(this, Loader.migrationRestoreUrl);
     }
 
     logout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
-        LoaderComponent.fireAndForgetWithQuery(LoaderComponent.logoutUrl, "", callback, this);
+        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, this);
     }
 
     redirect = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let noteId = Number(e.currentTarget.id);
-        LoaderComponent.redirectToMenu("/#/read/" + noteId);
+        Loader.redirectToMenu("/#/read/" + noteId);
     }
 
     delete = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let id = Number(e.currentTarget.id);
         console.log('You want to delete song with id: ' + id);
-        LoaderComponent.unusedPromise = LoaderComponent.deleteDataById(this, id, LoaderComponent.catalogUrl, getPageNumber(this.state.data));
+        Loader.unusedPromise = Loader.deleteDataById(this, id, Loader.catalogUrl, getPageNumber(this.state.data));
     }
 
     render() {

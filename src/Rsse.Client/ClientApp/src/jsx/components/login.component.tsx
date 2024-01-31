@@ -1,9 +1,10 @@
 ﻿import * as React from 'react';
-import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
-import { getPageNumber } from "../dto/dto.catalog.tsx";
+import { Loader } from "./loader.tsx";
+import { getPageNumber } from "../dto/handler.catalog.tsx";
 import { createRoot } from "react-dom/client";
-import {ISimpleProps} from "../contracts/i.simple.props.tsx";
-import {Component} from "react";
+import { ISimpleProps } from "../contracts/i.simple.props.tsx";
+import { Component } from "react";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
 
 interface IState {
     style: CSSStyleDeclaration|string;
@@ -24,16 +25,16 @@ export class LoginBoxHandler {
 
         if (component) {
             // login для update:
-            if (window.url === LoaderComponent.updateUrl) {
+            if (window.url === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, window.textId, window.url);
+                Loader.unusedPromise = Loader.getDataById(component, window.textId, window.url);
                 // login для catalog:
-            } else if (window.url === LoaderComponent.catalogUrl) {
-                LoaderComponent.unusedPromise = LoaderComponent.getDataById(component, getPageNumber(window), window.url);
+            } else if (window.url === Loader.catalogUrl) {
+                Loader.unusedPromise = Loader.getDataById(component, getPageNumber(window), window.url);
             }
             // login для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (window.url !== LoaderComponent.logoutUrl) {
-                LoaderComponent.unusedPromise = LoaderComponent.getData(component, window.url);
+            else if (window.url !== Loader.logoutUrl) {
+                Loader.unusedPromise = Loader.getData(component, window.url);
             }
         }
 
@@ -92,7 +93,7 @@ export class LoginComponent extends React.Component<ISimpleProps, IState> {
         let query = "?email=" + String(email) + "&password=" + String(password);
         let callback = (response: Response) => response.ok ? this.loginOk() : this.loginErr();
 
-        LoaderComponent.fireAndForgetWithQuery(LoaderComponent.loginUrl, query, callback, null);
+        Loader.fireAndForgetWithQuery(Loader.loginUrl, query, callback, null);
     }
 
     loginErr = () => {

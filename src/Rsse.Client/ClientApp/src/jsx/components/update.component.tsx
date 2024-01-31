@@ -1,15 +1,16 @@
 ﻿import * as React from 'react';
-import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
+import { Loader} from "./loader.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
 import {
     getStructuredTagsListResponse,
     getTagsCheckedUncheckedResponse,
     getTextResponse,
     getTitleResponse, setTextResponse
-} from "../dto/dto.note.tsx";
-import {ISimpleProps} from "../contracts/i.simple.props.tsx";
-import {NoteResponseDto} from "../dto/note.response.dto.tsx";
-import {ISubscribed} from "../contracts/i.subscribed.tsx";
+} from "../dto/handler.note.tsx";
+import { ISimpleProps } from "../contracts/i.simple.props.tsx";
+import { NoteResponseDto } from "../dto/note.response.dto.tsx";
+import { ISubscribed } from "../contracts/i.subscribed.tsx";
+import { IMountedComponent } from "../contracts/i.mounted.tsx";
 
 interface IState {
     data: NoteResponseDto|null;
@@ -40,7 +41,7 @@ class UpdateView extends React.Component<ISimpleProps, IState> implements IMount
 
     componentDidMount() {
         this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
-        LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
+        Loader.unusedPromise = Loader.getDataById(this, window.textId, Loader.updateUrl);
     }
 
     componentWillUnmount() {
@@ -162,7 +163,7 @@ class SubmitButton extends React.Component<IProps> {
             "commonNoteID": window.textId
         };
         let requestBody = JSON.stringify(item);
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.updateUrl);
+        Loader.unusedPromise = Loader.postData(this.props.subscription, requestBody, Loader.updateUrl);
     }
 
     componentWillUnmount() {
