@@ -1,6 +1,16 @@
-﻿import { ISimpleProps } from "../contracts/i.simple.props.tsx";
-import { NoteResponseDto } from "./note.response.dto.tsx";
-import { NoteRequestDto } from "./note.request.dto.tsx";
+﻿import { CatalogResponseDto, NoteResponseDto, NoteRequestDto } from "../dto/request.response.dto.tsx";
+import { ISimpleProps } from "./contracts.tsx";
+
+
+// Catalog: страница каталога представляет из себя названия заметок и соответствующие им Id
+export const getCatalogPage = (dto: CatalogResponseDto) => dto.catalogPage;
+
+// Catalog: количество заметок
+export const getNotesCount = (dto: CatalogResponseDto) => dto.notesCount;
+
+// Catalog: номер страницы
+export const getPageNumber = (dto: CatalogResponseDto|null) => dto ? dto.pageNumber : 1;
+
 
 // Note: именование заметки в запросе
 export const getTitleRequest = (dto: NoteRequestDto) => dto.titleRequest;
@@ -30,5 +40,3 @@ export const getStructuredTagsListResponse = (dto?: NoteResponseDto) => dto?.str
 
 // Note: поле для хранения идентификатора сохраненной/измененной заметки
 export const getCommonNoteId = (dto: NoteResponseDto) => dto.commonNoteID;
-
-// добавить: ?? null - тк у меня в коде часто встречается проверка на null (либо исправить на проверку на undefined)

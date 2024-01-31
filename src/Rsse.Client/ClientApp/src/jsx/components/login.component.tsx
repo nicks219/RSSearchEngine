@@ -1,42 +1,14 @@
 ﻿import * as React from 'react';
-import { Loader } from "./loader.tsx";
-import { getPageNumber } from "../dto/handler.catalog.tsx";
-import { createRoot } from "react-dom/client";
 import { Component, useState } from "react";
-import { IMountedComponent } from "../contracts/i.mounted.tsx";
+import { Loader } from "../common/loader.tsx";
+import { IMountedComponent } from "../common/contracts.tsx";
+import { FunctionComponentStateWrapper } from "../common/state.wrappers.tsx";
+import { getPageNumber } from "../common/dto.handlers.tsx";
+import { LoginBoxHandler } from "../common/visibility.handlers.tsx";
 
 declare global {
-    interface Window { textId: number, temp: Component & IMountedComponent, url: string, pageNumber: number|undefined }
-}
-
-export class LoginBoxHandler {
-    static login = false;
-    static loginMessageElement = document.querySelector("#loginMessage") ?? document.createElement('loginMessage');
-    static loginMessageRoot = createRoot(this.loginMessageElement);
-
-    static Invisible = () => {
-        if (!LoginBoxHandler.login) return;
-        (document.getElementById("loginMessage") as HTMLElement).style.display = "none";
-    }
-
-    static Visible = (component: Component & IMountedComponent, url: string) => {
-        window.temp = component;
-        window.url = url;
-        const state: Readonly<object> = component.state;
-        if (Object.prototype.hasOwnProperty.call(state, 'data')) {
-            const data = 'data' as keyof typeof state;
-            window.pageNumber = getPageNumber(state[data]);
-        }
-
-        (document.getElementById("loginMessage") as HTMLElement).style.display = "block";
-        (document.getElementById("login") as HTMLElement).style.display = "block";
-        LoginBoxHandler.login = true;
-        LoginBoxHandler.loginMessageRoot.render(
-            <h1>
-                LOGIN PLEASE
-            </h1>
-        );
-    }
+    // избавляйся от <any>: тип данных для смены стейта знает только компонент отображения (и Loader) - нужно ли продолжение загрузки?
+    interface Window { textId: number, temp: (Component & IMountedComponent)|FunctionComponentStateWrapper<any>, url: string, pageNumber: number|undefined }
 }
 
 export const LoginComponent = () => {
@@ -45,7 +17,7 @@ export const LoginComponent = () => {
     let loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
     loginElement.style.display = "block";
 
-    const submit = (e: React.SyntheticEvent) => {
+    const onSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let email = "test@email";
         let password = "password";
@@ -74,32 +46,32 @@ export const LoginComponent = () => {
         }, 1500);
     }
 
-    // восстанавливаем данные (но не последнее действие), не полученные из-за ошибки авторизации:
+    // загружаем в компонент данные, не отданные сервисом из-за ошибки авторизации:
     const continueLoading = () => {
         let component = window.temp;
 
         if (component) {
-            // login для update:
+            // продолжение для update:
             if (window.url === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
                 Loader.unusedPromise = Loader.getDataById(component, window.textId, window.url);
-                // login для catalog:
+            // продолжение для catalog:
             } else if (window.url === Loader.catalogUrl) {
                 Loader.unusedPromise = Loader.getDataById(component, getPageNumber(window), window.url);
             }
-            // login для остальных компонентов, кроме случая когда последним лействием было logout:
+            // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
             else if (window.url !== Loader.logoutUrl) {
                 Loader.unusedPromise = Loader.getData(component, window.url);
             }
         }
 
-        LoginBoxHandler.Invisible();
+        LoginBoxHandler.SetInvisible();
     }
 
     return (
         <div>
             <div id={style}>
-                <input type="checkbox" id="loginButton" className="regular-checkbox" onClick={submit}/>
+                <input type="checkbox" id="loginButton" className="regular-checkbox" onClick={onSubmit}/>
                 <label htmlFor="loginButton">Войти</label>
             </div>
             &nbsp;&nbsp;&nbsp;&nbsp;

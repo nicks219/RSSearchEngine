@@ -1,18 +1,12 @@
 ﻿import * as React from 'react';
-import { Loader } from "./loader.tsx";
+import { Loader } from "../common/loader.tsx";
 import {
-    getCommonNoteId,
-    getStructuredTagsListResponse,
-    getTagsCheckedUncheckedResponse,
-    getTextRequest,
-    getTextResponse,
-    getTitleRequest,
+    getCommonNoteId, getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
+    getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
-} from "../dto/handler.note.tsx";
-import { ISimpleProps } from "../contracts/i.simple.props.tsx";
-import { NoteResponseDto } from "../dto/note.response.dto.tsx";
-import { ISubscribed } from "../contracts/i.subscribed.tsx";
-import { IMountedComponent } from "../contracts/i.mounted.tsx";
+} from "../common/dto.handlers.tsx";
+import { ISimpleProps, ISubscribed, IMountedComponent } from "../common/contracts.tsx";
+import { NoteResponseDto, ComplianceResponseDto } from "../dto/request.response.dto.tsx";
 
 interface IState {
     data?: NoteResponseDto;
@@ -73,7 +67,7 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
 
     render() {
         let checkboxes = [];
-        if (this.state.data != /*null*/undefined && getStructuredTagsListResponse(this.state.data) != null) {
+        if (this.state.data != undefined && getStructuredTagsListResponse(this.state.data) != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
                 checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} /*subscription={null}*/ formId={undefined}/>);
             }
@@ -367,10 +361,6 @@ class SubmitButton extends React.Component<IProps> {
             </div>
         );
     }
-}
-
-class ComplianceResponseDto {
-    res: {[key: number]: number} = [];
 }
 
 export default CreateView;

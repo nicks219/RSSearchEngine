@@ -1,16 +1,12 @@
 ﻿import * as React from 'react';
-import { Loader} from "./loader.tsx";
-import { menuHandler } from "../menu/menu.handler.tsx";
+import { Loader} from "../common/loader.tsx";
 import {
-    getStructuredTagsListResponse,
-    getTagsCheckedUncheckedResponse,
-    getTextResponse,
+    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
     getTitleResponse, setTextResponse
-} from "../dto/handler.note.tsx";
-import { ISimpleProps } from "../contracts/i.simple.props.tsx";
-import { NoteResponseDto } from "../dto/note.response.dto.tsx";
-import { ISubscribed } from "../contracts/i.subscribed.tsx";
-import { IMountedComponent } from "../contracts/i.mounted.tsx";
+} from "../common/dto.handlers.tsx";
+import { ISimpleProps, ISubscribed, IMountedComponent } from "../common/contracts.tsx";
+import { NoteResponseDto } from "../dto/request.response.dto.tsx";
+import { toggleMenuVisibility } from '../common/visibility.handlers.tsx';
 
 interface IState {
     data: NoteResponseDto|null;
@@ -52,7 +48,8 @@ class UpdateView extends React.Component<ISimpleProps, IState> implements IMount
         let checkboxes = [];
         if (this.state != null && this.state.data != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
+                // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
+                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
             }
         }
 
@@ -114,7 +111,7 @@ class Message extends React.Component<ISimpleProps> {
     }
 
     hideMenu() {
-        if (this.props.formId) this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+        if (this.props.formId) this.props.formId.style.display = toggleMenuVisibility(this.props.formId.style.display);
         (document.getElementById("login")as HTMLElement).style.display = "block";
     }
 

@@ -1,40 +1,28 @@
 ﻿import * as React from 'react';
-import { Loader } from "./loader.tsx";
-import { menuHandler } from "../menu/menu.handler.tsx";
+import { Loader } from "../common/loader.tsx";
 import { useParams } from "react-router-dom";
 import {
-    getCommonNoteId,
-    getStructuredTagsListResponse,
-    getTextResponse,
-    getTitleResponse
-} from "../dto/handler.note.tsx";
+    getCommonNoteId, getStructuredTagsListResponse,
+    getTextResponse, getTitleResponse
+} from "../common/dto.handlers.tsx";
 import { createRoot, Root } from "react-dom/client";
-import { NoteResponseDto } from "../dto/note.response.dto.tsx";
-import { IMountedComponent } from "../contracts/i.mounted.tsx";
+import { NoteResponseDto } from "../dto/request.response.dto.tsx";
+import {IMountedComponent, ISimpleProps, ISubscribed} from "../common/contracts.tsx";
+import {toggleMenuVisibility} from "../common/visibility.handlers.tsx";
 
 interface IState {
     data: NoteResponseDto|null;
 }
 
-interface ISimpleProps {
-    formId?: HTMLFormElement;
-    jsonStorage?: NoteResponseDto;
-    id?: string;
+interface IProps extends ISimpleProps, ISubscribed<ReadViewParametrized> {
 }
 
-interface ISubscribed<T> {
-    subscription: T;
-}
-
-interface IProps extends ISimpleProps, ISubscribed<HomeViewParametrized> {
-}
-
-export function HomeView() {
+export const ReadView = () => {
     const params = useParams();
-    return <HomeViewParametrized textId={params.textId} />;
+    return <ReadViewParametrized textId={params.textId} />;
 }
 
-class HomeViewParametrized extends React.Component<{textId: string|undefined}, IState> implements IMountedComponent {
+class ReadViewParametrized extends React.Component<{textId: string|undefined}, IState> implements IMountedComponent {
     formId?: HTMLFormElement;
     mounted: boolean;
     displayed: boolean;
@@ -65,12 +53,11 @@ class HomeViewParametrized extends React.Component<{textId: string|undefined}, I
     componentDidMount() {
         this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
 
-        // если заметка вызвана из каталога, то не обновляем содержимое компонента:
         if (!this.readFromCatalog) {
             Loader.unusedPromise = Loader.getData(this, Loader.readUrl);
         }
         else{
-            // убираем чекбоксы и логин если вызов произошёл из каталога:
+            // если заметка вызвана из каталога, то не обновляем содержимое компонента, а также убираем чекбоксы и логин:
             if (this.formId) this.formId.style.display = "none";
             (document.getElementById("login")as HTMLElement).style.display = "none";
         }
@@ -79,7 +66,7 @@ class HomeViewParametrized extends React.Component<{textId: string|undefined}, I
     }
 
     componentDidUpdate() {
-        HomeViewParametrized.searchButtonRoot.render(
+        ReadViewParametrized.searchButtonRoot.render(
             <div>
                 <SubmitButton subscription={this} formId={this.formId} jsonStorage={undefined} id={undefined}/>
             </div>
@@ -90,7 +77,7 @@ class HomeViewParametrized extends React.Component<{textId: string|undefined}, I
     componentWillUnmount() {
         this.mounted = false;
         // убираем отображение кнопки "Поиск":
-        HomeViewParametrized.searchButtonRoot.render(
+        ReadViewParametrized.searchButtonRoot.render(
             <div>
             </div>
         );
@@ -182,7 +169,7 @@ class Message extends React.Component<ISimpleProps> {
 
     hideMenu() {
         if (this.props.formId) {
-            this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+            this.props.formId.style.display = toggleMenuVisibility(this.props.formId.style.display);
         }
     }
 

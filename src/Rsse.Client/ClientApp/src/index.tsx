@@ -1,11 +1,11 @@
 import { createRoot } from "react-dom/client";
 import './bootstrap.css';
 import './react.css';
-import { MenuRouter } from "./jsx/menu/menu.router.tsx";
+import { MenuWithRouter } from "./jsx/components/menu.component.tsx";
 
 console.log('start');
 const rootElement = document.getElementById("root") ?? document.createElement('root');
-createRoot(rootElement).render(<MenuRouter />);
+createRoot(rootElement).render(<MenuWithRouter />);
 
 
 // If you want to start measuring performance in your app, pass a function

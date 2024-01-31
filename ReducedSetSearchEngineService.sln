@@ -34,11 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", 
 		src\Rsse.Client\ClientApp\src\jsx\components\login.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\login.component.tsx
 		src\Rsse.Client\ClientApp\src\jsx\components\read.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\read.component.tsx
 		src\Rsse.Client\ClientApp\src\jsx\components\update.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\update.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\dto\handler.catalog.tsx = src\Rsse.Client\ClientApp\src\jsx\dto\handler.catalog.tsx
-		src\Rsse.Client\ClientApp\src\jsx\dto\handler.note.tsx = src\Rsse.Client\ClientApp\src\jsx\dto\handler.note.tsx
-		src\Rsse.Client\ClientApp\src\jsx\menu\menu.handler.tsx = src\Rsse.Client\ClientApp\src\jsx\menu\menu.handler.tsx
-		src\Rsse.Client\ClientApp\src\jsx\menu\menu.router.tsx = src\Rsse.Client\ClientApp\src\jsx\menu\menu.router.tsx
-		src\Rsse.Client\ClientApp\src\jsx\components\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\components\loader.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx
+		src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
