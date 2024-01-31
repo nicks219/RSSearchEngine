@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import { LoaderComponent, IMountedComponent } from "./loader.component.tsx";
 import {
     getCommonNoteId,
     getStructuredTagsListResponse,
@@ -9,43 +9,40 @@ import {
     getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../dto/dto.note.tsx";
+import {ISimpleProps} from "../contracts/i.simple.props.tsx";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
+import {ISubscribed} from "../contracts/i.subscribed.tsx";
 
 interface IState {
-    data: any;
-    time: any;
-    menuListener: any;
+    data?: NoteResponseDto;
+    time: number|null;
+    stateStorage?: string|null;
 }
 
-interface IProps {
-    subscription: any;
-    formId: any;
-    jsonStorage: any;
-    id: any;
+interface IProps extends ISimpleProps, ISubscribed<CreateView> {
 }
 
-class CreateView extends React.Component<IProps, IState> {
-    formId: any;
+class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
+    formId?: HTMLFormElement;
     mounted: boolean;
 
     public state: IState = {
-        data: null,
         // NB использовать реальное время более корректно для key:
         time: null,
-        menuListener: null
+        stateStorage: null
     }
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
-        this.formId = null;
         this.mounted = true;
 
         this.mainForm = React.createRef();
     }
 
     componentDidMount() {
-        this.formId = this.mainForm.current;
+        this.formId = this.mainForm.current ?? undefined;
         LoaderComponent.unusedPromise = LoaderComponent.getData(this, LoaderComponent.createUrl);
     }
 
@@ -58,21 +55,26 @@ class CreateView extends React.Component<IProps, IState> {
     }
 
     componentDidUpdate() {
-        if (this.state.menuListener){
-            console.log("Redirected: " + this.state.menuListener);
-            LoaderComponent.redirectToMenu("/#/read/" + this.state.menuListener);
+        if (this.state.stateStorage){
+            console.log("Redirected: " + this.state.stateStorage);
+            LoaderComponent.redirectToMenu("/#/read/" + this.state.stateStorage);
         }
 
         let id = 0;
-        if (this.state.data) id = Number(getCommonNoteId(this.state.data));
-        if (id !== 0) window.textId = id;
+        if (this.state.data) {
+            id = Number(getCommonNoteId(this.state.data));
+        }
+
+        if (id !== 0) {
+            window.textId = id;
+        }
     }
 
     render() {
         let checkboxes = [];
-        if (this.state.data != null && getStructuredTagsListResponse(this.state.data) != null) {
+        if (this.state.data != /*null*/undefined && getStructuredTagsListResponse(this.state.data) != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} /*subscription={null}*/ formId={undefined}/>);
             }
         }
 
@@ -90,18 +92,18 @@ class CreateView extends React.Component<IProps, IState> {
                     id="dizzy">
                     {checkboxes}
                     {this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} id={null} jsonStorage={null}/>
+                        <SubmitButton subscription={this} formId={this.formId} id={undefined} jsonStorage={undefined}/>
                     }
                 </form>
                 {this.state.data != null &&
-                    <Message formId={this.formId} jsonStorage={jsonStorage} subscription={null} id={null}/>
+                    <Message formId={this.formId} jsonStorage={jsonStorage} /*subscription={null}*/ id={undefined}/>
                 }
             </div>
         );
     }
 }
 
-class Checkbox extends React.Component<IProps> {
+class Checkbox extends React.Component<ISimpleProps> {
 
     render() {
         let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
@@ -110,8 +112,8 @@ class Checkbox extends React.Component<IProps> {
         };
 
         let getGenreId = (i: number) => {
-            if (this.props.jsonStorage.genresNamesId !== undefined) {
-                return this.props.jsonStorage.genresNamesId[i];
+            if (this.props.jsonStorage?.structuredTagsListResponse !== undefined) {
+                return this.props.jsonStorage.structuredTagsListResponse[i];
             }
             else {
                 return "";
@@ -121,22 +123,22 @@ class Checkbox extends React.Component<IProps> {
         return (
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={checked} />
-                <label htmlFor={this.props.id} onClick={SubmitButton.loadNoteOnClick} about={getGenreId(this.props.id)}>
-                    {getGenreName(this.props.id)}
+                <label htmlFor={this.props.id} onClick={SubmitButton.loadNoteOnClick} about={getGenreId(Number(this.props.id))}>
+                    {getGenreName(Number(this.props.id))}
                 </label>
             </div>
         );
     }
 }
 
-class Message extends React.Component<IProps> {
-    textHandler = (e: any) => {
-        setTextResponse(this.props.jsonStorage, e.target.value);
+class Message extends React.Component<ISimpleProps> {
+    textHandler = (e: string) => {
+        setTextResponse(this.props.jsonStorage, e);
         this.forceUpdate();
     }
 
-    titleHandler = (e: any) => {
-        setTitleResponse(this.props.jsonStorage, e.target.value);
+    titleHandler = (e: string) => {
+        setTitleResponse(this.props.jsonStorage, e);
         this.forceUpdate();
     }
 
@@ -148,11 +150,11 @@ class Message extends React.Component<IProps> {
                     <div>
                         <h5>
                             <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                value={ getTitleResponse(this.props.jsonStorage) } onChange={this.titleHandler} />
+                                value={ getTitleResponse(this.props.jsonStorage) } onChange={e => this.titleHandler(e.target.value)} />
                         </h5>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={ getTextResponse(this.props.jsonStorage) } onChange={this.textHandler} />
+                                value={ getTextResponse(this.props.jsonStorage) } onChange={e => this.textHandler(e.target.value)} />
                         </h5>
                     </div>
                     : "loading.."}
@@ -163,38 +165,39 @@ class Message extends React.Component<IProps> {
 
 class SubmitButton extends React.Component<IProps> {
 
-    requestBody: any;
+    requestBody: string = "";
     storage: string[] = [];
     storageId: string[] = [];
-    submitState: any;
-    btn: any;
-    static state: any;
-    static listener: any;
+    submitState: number;
+    static state?: number;
+    static subscriber: CreateView;
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
         // подтверждение или отмена:
         this.submitState = 0;
-        SubmitButton.listener = this.props.subscription;
+        SubmitButton.subscriber = this.props.subscription;
     }
 
     // чекбоксы превращаются в ссылки на каталог заметок:
-    static loadNoteOnClick: any = (e: any) => {
+    static loadNoteOnClick = (e: React.SyntheticEvent) => {
         if (SubmitButton.state !== undefined) {
 
-            let title = e.target.innerText;
-            let id = e.target.attributes.about.nodeValue;
+            let title = e.currentTarget.innerHTML.valueOf();
+            let id = e.currentTarget.attributes.item(1)?.nodeValue;
 
             // subscription на компонент create.
             console.log("Submitted: " + SubmitButton.state + " " + title + " " + id);
-            SubmitButton.listener.setState({menuListener: id});
+            SubmitButton.subscriber.setState({stateStorage: id});
         }
     }
 
-    cancel = (e: any) => {
+    cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        this.btn.style.display = "none";
+        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+        buttonElement.style.display = "none";
+
         // отмена - сохраняем текст и название:
         SubmitButton.state = undefined;
         this.submitState = 0;
@@ -211,14 +214,15 @@ class SubmitButton extends React.Component<IProps> {
     }
 
     componentDidMount() {
-        this.btn  = (document.getElementById('cancelButton') as HTMLInputElement);
-        this.btn.style.display = "none";
+        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+        buttonElement.style.display = "none";
     }
 
-    async submit(e: any) {
+    async submit(e: React.SyntheticEvent) {
         e.preventDefault();
 
-        this.btn.style.display = "none";
+        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+        buttonElement.style.display = "none";
         SubmitButton.state = this.submitState;
 
         if (this.submitState === 1)
@@ -249,7 +253,7 @@ class SubmitButton extends React.Component<IProps> {
         if (this.storage.length > 0)
         {
             // переключение в "подтверждение или отмена":
-            this.btn.style.display = "block";
+            buttonElement.style.display = "block";
             this.submitState = 1;
             return;
         }
@@ -265,7 +269,7 @@ class SubmitButton extends React.Component<IProps> {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
         }
 
-        let callback = (data: any) => this.getNoteTitles(data);
+        let callback = (data: Response) => this.getNoteTitles(data);
         let query = "?text=" + formMessage + " " + formTitle;
 
         try {
@@ -278,18 +282,21 @@ class SubmitButton extends React.Component<IProps> {
             await promise;}
     }
 
-    getNoteTitles = async (res: any) => {
-        let result = [];
-        let response = res['res'];
+    getNoteTitles = async (data: Response) => {
+        let responseDto = data as unknown as ComplianceResponseDto;
+        let response = responseDto.res;
         if (response === undefined) {
             return;
         }
 
-        let array = Object.keys(response).map((key) => [Number(key), response[key]]);
+        //let item = response[1];
+        //let r = item["1"];
+        let array: number[][] = Object.keys(response).map((key) => [Number(key), response[Number(key)]]);
         array.sort(function (a, b) {
             return b[1] - a[1]
         });
 
+        let result = [];
         for (let index in array) {
             result.push(array[index]);
         }
@@ -309,7 +316,7 @@ class SubmitButton extends React.Component<IProps> {
             // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
             let promise;
 
-            let callback = (data: any) => this.getTitle(data, i);
+            let callback = (data: Response) => this.getTitle(data, i);
 
             let query = "?id=" + i;
 
@@ -325,19 +332,20 @@ class SubmitButton extends React.Component<IProps> {
         }
     }
 
-    getTitle = (data: any, i: string) => {
-        this.storage.push((data.res + '\r\n'));
+    getTitle = (input: Response, i: string) => {// в поле data.res сидит string: (new {res}) | any: data.res
+        let responseDto = input as unknown as ComplianceResponseDto;
+        this.storage.push((responseDto.res + '\r\n'));
         this.storageId.push(i);
 
-        let time = Date.now();
         // stub:
-        data = {
+        let data = {
             "structuredTagsListResponse": this.storage,
             "tagsCheckedUncheckedResponse": [],
             "textResponse": getTextRequest(JSON.parse(this.requestBody)),
             "titleResponse": getTitleRequest(JSON.parse(this.requestBody)),
             "genresNamesId": this.storageId
         };
+        let time = Date.now();
         // subscription на CreateView:
         this.props.subscription.setState({ data , time });
     }
@@ -358,6 +366,10 @@ class SubmitButton extends React.Component<IProps> {
             </div>
         );
     }
+}
+
+class ComplianceResponseDto {
+    res: {[key: number]: number} = [];
 }
 
 export default CreateView;

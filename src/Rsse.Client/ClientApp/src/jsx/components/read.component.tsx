@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
 import { menuHandler } from "../menu/menu.handler.tsx";
 import { useParams } from "react-router-dom";
 import {
@@ -9,24 +9,32 @@ import {
     getTitleResponse
 } from "../dto/dto.note.tsx";
 import {createRoot, Root} from "react-dom/client";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 
 interface IState {
-    data: any;
+    data: NoteResponseDto|null;
 }
-interface IProps {
-    subscription: any;
-    formId: any;
-    jsonStorage: any;
-    id: any;
+
+interface ISimpleProps {
+    formId?: HTMLFormElement;
+    jsonStorage?: NoteResponseDto;
+    id?: string;
+}
+
+interface ISubscribed<T> {
+    subscription: T;
+}
+
+interface IProps extends ISimpleProps, ISubscribed<HomeViewParametrized> {
 }
 
 export function HomeView() {
     const params = useParams();
-    return <HomeViewParams textId={params.textId} />;
+    return <HomeViewParametrized textId={params.textId} />;
 }
 
-export class HomeViewParams extends React.Component<{textId: string|undefined}, IState> {
-    formId: any;
+class HomeViewParametrized extends React.Component<{textId: string|undefined}, IState> implements IMountedComponent {
+    formId?: HTMLFormElement;
     mounted: boolean;
     displayed: boolean;
 
@@ -41,11 +49,11 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: any) {
+    constructor(props: {textId: string|undefined}) {
         // из "каталога" я попаду в конструктор, далее в DidMount, id песни { data: 1 } будет в props:
         super(props);
 
-        this.formId = null;
+        this.formId = undefined;
         this.mounted = true;
         this.displayed = false;
 
@@ -54,7 +62,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     }
 
     componentDidMount() {
-        this.formId = this.mainForm.current;
+        this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
 
         // если заметка вызвана из каталога, то не обновляем содержимое компонента:
         if (!this.readFromCatalog) {
@@ -62,7 +70,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
         }
         else{
             // убираем чекбоксы и логин если вызов произошёл из каталога:
-            this.formId.style.display = "none";
+            if (this.formId) this.formId.style.display = "none";
             (document.getElementById("login")as HTMLElement).style.display = "none";
         }
 
@@ -70,9 +78,9 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     }
 
     componentDidUpdate() {
-        HomeViewParams.searchButtonRoot.render(
+        HomeViewParametrized.searchButtonRoot.render(
             <div>
-                <SubmitButton subscription={this} formId={this.formId} jsonStorage={null} id={null}/>
+                <SubmitButton subscription={this} formId={this.formId} jsonStorage={undefined} id={undefined}/>
             </div>
         );
         (document.getElementById("header")as HTMLElement).style.backgroundColor = "#e9ecee";//???
@@ -81,7 +89,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     componentWillUnmount() {
         this.mounted = false;
         // убираем отображение кнопки "Поиск":
-        HomeViewParams.searchButtonRoot.render(
+        HomeViewParametrized.searchButtonRoot.render(
             <div>
             </div>
         );
@@ -106,20 +114,19 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
         let checkboxes = [];
         if (this.state.data != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}`} id={i} jsonStorage={this.state.data} subscription={null} formId={null}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}`} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
             }
         }
 
         return (
             <div>
-
                 <form ref={this.mainForm}
                     id="dizzy">
                     {checkboxes}
                 </form>
                 <div id="messageBox">
                     {this.state.data != null && getTextResponse(this.state.data) != null &&
-                        <Message formId={this.formId} jsonStorage={this.state.data} subscription={null} id={null}/>
+                        <Message formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
                     }
                 </div>
             </div>
@@ -127,7 +134,7 @@ export class HomeViewParams extends React.Component<{textId: string|undefined}, 
     }
 }
 
-class Checkbox extends React.Component<IProps> {
+class Checkbox extends React.Component<ISimpleProps> {
     render() {
         let getTagName = (i: number) => {
             return getStructuredTagsListResponse(this.props.jsonStorage)[i];
@@ -135,7 +142,7 @@ class Checkbox extends React.Component<IProps> {
         return (
             <div id="checkboxStyle">
                 <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={false} />
-                <label htmlFor={this.props.id}>{getTagName(this.props.id)}</label>
+                <label htmlFor={this.props.id}>{getTagName(Number(this.props.id))}</label>
             </div>
         );
     }
@@ -145,34 +152,37 @@ interface IWithLinks{
     text: string;
 }
 
-class WithLinks extends React.Component<IWithLinks> {
+class NoteTextSupportLinks extends React.Component<IWithLinks> {
 
-    constructor(props: any) {
+    constructor(props: IWithLinks) {
         super(props);
     }
 
     render() {
-        let res: any = [];
-
+        // deprecated: JSX 
+        let res: (string|JSX.Element)[] = [];
         // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
         this.props.text && this.props.text.replace(
             /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
-            (_, link, text) => {
-            return res.push(link ? <a href={(link[0]==="w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
-        })
+            (_: string, link: string, text: string):string => {
+                res.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
+                return "";
+            })
 
         return <div className="user-text">{res}</div>
     }
 }
 
-class Message extends React.Component<IProps> {
-    constructor(props: any) {
+class Message extends React.Component<ISimpleProps> {
+    constructor(props: ISimpleProps) {
         super(props);
         this.hideMenu = this.hideMenu.bind(this);
     }
 
     hideMenu() {
-        this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+        if (this.props.formId) {
+            this.props.formId.style.display = menuHandler(this.props.formId.style.display);
+        }
     }
 
     render() {
@@ -188,7 +198,7 @@ class Message extends React.Component<IProps> {
                             { getTitleResponse(this.props.jsonStorage) }
                         </div>
                         <div id="songBody">
-                            <WithLinks text={ getTextResponse(this.props.jsonStorage) } />
+                            <NoteTextSupportLinks text={ getTextResponse(this.props.jsonStorage) ?? "" } />
                         </div>
                     </span>
                     : "выберите тег")
@@ -200,12 +210,12 @@ class Message extends React.Component<IProps> {
 
 class SubmitButton extends React.Component<IProps> {
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.submit = this.submit.bind(this);
     }
 
-    submit(e: any) {
+    submit(e: React.SyntheticEvent) {
         e.preventDefault();
         (document.getElementById("login") as HTMLElement).style.display = "none";
         let formData = new FormData(this.props.formId);

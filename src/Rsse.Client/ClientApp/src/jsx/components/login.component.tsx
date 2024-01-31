@@ -1,21 +1,16 @@
 ﻿import * as React from 'react';
-import { LoaderComponent } from "./loader.component.tsx";
+import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
 import { getPageNumber } from "../dto/dto.catalog.tsx";
-import {createRoot} from "react-dom/client";
+import { createRoot } from "react-dom/client";
+import {ISimpleProps} from "../contracts/i.simple.props.tsx";
+import {Component} from "react";
 
 interface IState {
-    style: any;
+    style: CSSStyleDeclaration|string;
 }
 
 declare global {
-    interface Window { textId: number, temp: any, url: string, pageNumber: number }
-}
-
-interface IProps {
-    subscription: any;
-    formId: any;
-    jsonStorage: any;
-    id: any;
+    interface Window { textId: number, temp: Component & IMountedComponent, url: string, pageNumber: number|undefined }
 }
 
 export class LoginBoxHandler {
@@ -51,10 +46,14 @@ export class LoginBoxHandler {
     }
 
     // hideMenu ?
-    static Visible(component: any, url: string) {
+    static Visible(component: Component & IMountedComponent, url: string) {
         window.temp = component;
         window.url = url;
-        window.pageNumber = getPageNumber(component.state.data);
+        const state: Readonly<object> = component.state;
+        if (Object.prototype.hasOwnProperty.call(state, 'data')){
+            const data = 'data' as keyof typeof state;
+            window.pageNumber = getPageNumber(state[data]);
+        }
 
         (document.getElementById("loginMessage")as HTMLElement).style.display = "block";
         (document.getElementById("login")as HTMLElement).style.display = "block";
@@ -67,13 +66,13 @@ export class LoginBoxHandler {
     }
 }
 
-export class LoginComponent extends React.Component<IProps, IState> {
+export class LoginComponent extends React.Component<ISimpleProps, IState> {
 
     public state: IState = {
         style: "submitStyle"
     }
 
-    constructor(props: any) {
+    constructor(props: ISimpleProps) {
         super(props);
         this.submit = this.submit.bind(this);
 
@@ -81,7 +80,7 @@ export class LoginComponent extends React.Component<IProps, IState> {
         loginElement.style.display = "block";
     }
 
-    submit(e: any) {
+    submit(e: React.SyntheticEvent) {
         e.preventDefault();
         let email = "test@email";
         let password = "password";
@@ -118,7 +117,7 @@ export class LoginComponent extends React.Component<IProps, IState> {
     render() {
         return (
             <div>
-                <div id={this.state.style}>
+                <div id={String(this.state.style)}>
                     <input type="checkbox" id="loginButton" className="regular-checkbox" onClick={this.submit} />
                     <label htmlFor="loginButton">Войти</label>
                 </div>

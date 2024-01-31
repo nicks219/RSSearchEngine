@@ -38,9 +38,9 @@ export const MenuRouter = () => {
                         <Routes>
                             <Route path="/" element={<HomeView />}/>
                             <Route path="/read/:textId" element={<HomeView />}/>
-                            <Route path="/update" element={<UpdateView formId={""} id={""} jsonStorage={""} subscription={""} />}/>
-                            <Route path="/create" element={<CreateView formId={""} id={""} jsonStorage={""} subscription={""} />}/>
-                            <Route path="/catalog" element={<CatalogView  subscription={""} />}/>
+                            <Route path="/update" element={<UpdateView />}/>
+                            <Route path="/create" element={<CreateView />}/>
+                            <Route path="/catalog" element={<CatalogView />}/>
                         </Routes>
                     </div>
                 </div>
@@ -48,4 +48,6 @@ export const MenuRouter = () => {
 }
 
 const renderLoginFormElement = document.getElementById("renderLoginForm") ?? document.createElement('renderLoginForm');
-createRoot(renderLoginFormElement).render(<LoginComponent subscription={this} formId={null} jsonStorage={null} id={null}/>);
+const renderRoot = createRoot(renderLoginFormElement);
+renderRoot?.render(<LoginComponent />);
+
