@@ -18,6 +18,7 @@ interface IState {
 interface ISubscribeProps extends ISimpleProps, ISubscribed<CreateView> {
 }
 
+//class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
 class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
     formId?: HTMLFormElement;
     mounted: boolean;
@@ -98,13 +99,16 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
 }
 
 const Checkbox = (props: ISimpleProps) => {
-    let checked = getTagsCheckedUncheckedResponse(props) === "checked";
-    let getTagName = (i: number) => {
+    const checked = getTagsCheckedUncheckedResponse(props) === "checked";
+
+    const getTagName = (i: number) => {
         return getStructuredTagsListResponse(props.jsonStorage)[i];
     };
 
-    let getTagId = (i: number) => {
-        if (props.jsonStorage?.structuredTagsListResponse !== undefined) {
+    const getTagId = (i: number) => {
+        if (props.jsonStorage?.tagIdsInternal && props.jsonStorage?.tagIdsInternal.length > 0){
+            return props.jsonStorage.tagIdsInternal[i];
+        } else if (props.jsonStorage?.structuredTagsListResponse) {
             return props.jsonStorage.structuredTagsListResponse[i];
         } else {
             return "";
@@ -157,13 +161,14 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
+//class SubmitButton extends React.Component<ISubscribeProps> {
 class SubmitButton extends React.Component<ISubscribeProps> {
 
     requestBody: string = "";
     storage: string[] = [];
     storageId: string[] = [];
     submitState: number;
-    static state?: number;
+    static submitStateStorage?: number;
     static subscriber: CreateView;
 
     constructor(props: ISubscribeProps) {
@@ -176,13 +181,16 @@ class SubmitButton extends React.Component<ISubscribeProps> {
 
     // чекбоксы превращаются в ссылки на каталог заметок:
     static loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (SubmitButton.state !== undefined) {
+        if (SubmitButton.submitStateStorage !== undefined) {
 
+            SubmitButton.submitStateStorage = undefined;
             let title = e.currentTarget.innerHTML.valueOf();
+            // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
 
             // subscription на компонент create.
-            console.log("Submitted: " + SubmitButton.state + " " + title + " " + id);
+            console.log("Submitted: " + SubmitButton.submitStateStorage + " " + title + " " + id);
+            // установка stateStorage приведет к вызову редиректа на перерисовке CreateView:
             SubmitButton.subscriber.setState({stateStorage: id});
         }
     }
@@ -193,7 +201,7 @@ class SubmitButton extends React.Component<ISubscribeProps> {
         buttonElement.style.display = "none";
 
         // отмена - сохраняем текст и название:
-        SubmitButton.state = undefined;
+        SubmitButton.submitStateStorage = undefined;
         this.submitState = 0;
 
         let text = getTextRequest(JSON.parse(this.requestBody));
@@ -217,12 +225,12 @@ class SubmitButton extends React.Component<ISubscribeProps> {
 
         let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        SubmitButton.state = this.submitState;
+        SubmitButton.submitStateStorage = undefined;
 
         if (this.submitState === 1)
         {
             // подтверждение:
-            SubmitButton.state = undefined;
+            //SubmitButton.submitStateStorage = undefined;
 
             this.submitState = 0;
             Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
@@ -247,12 +255,14 @@ class SubmitButton extends React.Component<ISubscribeProps> {
         if (this.storage.length > 0)
         {
             // переключение в "подтверждение или отмена":
+            SubmitButton.submitStateStorage = this.submitState;
             buttonElement.style.display = "block";
             this.submitState = 1;
             return;
         }
 
-        // совпадения не обнаружены:
+        // совпадения не обнаружены, сохраняем заметку:
+        //SubmitButton.submitStateStorage = undefined;
         Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
     }
 
@@ -337,7 +347,7 @@ class SubmitButton extends React.Component<ISubscribeProps> {
             "tagsCheckedUncheckedResponse": [],
             "textResponse": getTextRequest(JSON.parse(this.requestBody)),
             "titleResponse": getTitleRequest(JSON.parse(this.requestBody)),
-            "genresNamesId": this.storageId
+            "tagIdsInternal": this.storageId
         };
         let time = Date.now();
         // subscription на CreateView:

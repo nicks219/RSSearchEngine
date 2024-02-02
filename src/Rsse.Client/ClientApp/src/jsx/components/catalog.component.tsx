@@ -56,7 +56,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const onDelete = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let id = Number(e.currentTarget.id);
-        console.log('You want to delete song with id: ' + id);
+        console.log('Try to delete song id: ' + id);
         Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data));
     }
 

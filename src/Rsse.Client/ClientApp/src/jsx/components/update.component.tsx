@@ -4,70 +4,71 @@ import {
     getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
     getTitleResponse, setTextResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, ISubscribed, IMountedComponent} from "../common/contracts.tsx";
+import {ISimpleProps, ISubscribed} from "../common/contracts.tsx";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
 import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
-import {useEffect, useReducer} from "react";
+import {useEffect, useReducer, useRef, useState} from "react";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
 
-interface IState {
-    data: NoteResponseDto|null;
-    time: number|null;
+interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentStateWrapper<NoteResponseDto>> {
 }
 
-interface ISubscribeProps extends ISimpleProps, ISubscribed<UpdateView> {
+export interface IDataTimeState {
+    data: NoteResponseDto | null;
+    time?: number | null;
 }
 
-class UpdateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
-    formId?: HTMLFormElement;
-    mounted: boolean;
+export const UpdateView = () => {
+    // используются два типа: результат фетча NoteResponseDto, и тип стейта IDataTimeState с полями {data,time}
+    const [data, setData] = useState<IDataTimeState | null>({data: null, time: null});// I.
+    const mounted = useState(true);
+    // где используется поле data для wrapper?
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setData);// II.
 
-    public state: IState = {
-        data: null,
-        time: null
+    const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
+    let formId: HTMLFormElement | undefined = refObject.current;
+
+    const componentDidMount = () => {
+        formId = refObject.current;
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.textId, Loader.updateUrl);// зачем тут {data,state} из stateWrapper?
     }
 
-    mainForm: React.RefObject<HTMLFormElement>;
-
-    constructor(props: ISubscribeProps) {
-        super(props);
-        this.formId = undefined;
-        this.mounted = true;
-
-        this.mainForm = React.createRef();
+    const componentWillUnmount = () => {
+        mounted[0] = false;
     }
 
-    componentDidMount() {
-        this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
-        Loader.unusedPromise = Loader.getDataById(this, window.textId, Loader.updateUrl);
-    }
+    useEffect(() => {
+        componentDidMount();
+        return componentWillUnmount;
+    }, []);
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    render() {
-        let checkboxes = [];
-        if (this.state != null && this.state.data != null) {
-            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
-            }
+    let checkboxes = [];
+    if (data != null && data.data != null) {
+        for (let i = 0; i < getStructuredTagsListResponse(data.data).length; i++) {
+            // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
+            // TODO: попробоавть не записывать time лоадером в стейт: data.time, а создавать в коде перед добавлением компонента.
+            // разберись: ре-рендерингу требуется key или уникальное поле в стейте?
+            checkboxes.push(<Checkbox key={`checkbox ${i}${data.time}`}
+                                      id={String(i)}
+                                      jsonStorage={data.data}
+                                      formId={undefined}/>);
         }
-
-        return (
-            <div id="renderContainer">
-                <form ref={this.mainForm} id="dizzy">
-                    {checkboxes}
-                    {this.state != null && this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
-                    }
-                </form>
-                {this.state != null && this.state.data != null && getTextResponse(this.state.data) != null &&
-                    <Message formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
-                }
-            </div>
-        );
     }
+
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
+    return (
+        <div id="renderContainer">
+            <form ref={castedRefObject} id="dizzy">
+                {checkboxes}
+                {data != null && data.data != null &&
+                    <SubmitButton subscription={stateWrapper} formId={formId} jsonStorage={data.data} id={undefined}/>// III.
+                }
+            </form>
+            {data != null && data.data != null && getTextResponse(data.data) != null &&
+                <Message formId={formId} jsonStorage={data.data} id={undefined}/>
+            }
+        </div>
+    );
 }
 
 const Checkbox = (props: ISimpleProps) => {
@@ -86,12 +87,6 @@ const Checkbox = (props: ISimpleProps) => {
 }
 
 const Message = (props: ISimpleProps) => {
-    //constructor(props: ISimpleProps) {
-    //    super(props);
-    //    this.hideMenu = this.hideMenu.bind(this);
-    //}
-
-    //componentDidMount() {this.getCookie();}
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
@@ -115,11 +110,6 @@ const Message = (props: ISimpleProps) => {
         if (props.formId) props.formId.style.display = toggleMenuVisibility(props.formId.style.display);
         (document.getElementById("login") as HTMLElement).style.display = "block";
     }
-
-    //inputText = (e: string) => {
-    //    setTextResponse(this.props.jsonStorage, e);
-    //    this.forceUpdate();
-    //}
 
     const inputText = (e: string) => {
         setTextResponse(props.jsonStorage, e);
@@ -170,4 +160,3 @@ const SubmitButton = (props: ISubscribeProps) => {
     );
 }
 
-export default UpdateView;

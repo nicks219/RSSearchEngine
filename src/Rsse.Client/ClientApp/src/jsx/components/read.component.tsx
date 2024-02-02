@@ -27,7 +27,7 @@ interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentSta
 }
 
 const ReadViewParametrized = ({textId}: PathParameters) => {
-    const [data, setData] = useState<NoteResponseDto | null>(null);
+    const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData, data);
 
@@ -36,22 +36,21 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
 
     const componentDidMount = () => {
         formId = refObject.current;
-
-        if (!StateStorageWrapper.gotNoteById) {
+        if (!StateStorageWrapper.redirectCall) {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         } else {
-            // если заметка вызвана из каталога (read/id), то не обновляем содержимое компонента, а также убираем чекбоксы и логин:
+            // при редиректе из каталога (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             if (formId) formId.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
         }
 
-        StateStorageWrapper.gotNoteById = false;
+        StateStorageWrapper.redirectCall = false;
     }
 
     const componentWillUnmount = () => {
         mounted[0] = false;
-        StateStorageWrapper.displayed = false;
-        StateStorageWrapper.gotNoteById = false;
+        StateStorageWrapper.renderedAfterRedirect = false;
+        StateStorageWrapper.redirectCall = false;
         // убираем отображение кнопки "Поиск":
         SearchButtonContainer.getRoot.render(
             <div>
@@ -77,7 +76,8 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
         componentDidUpdate();
     }, [data]);
 
-    if (textId && !StateStorageWrapper.displayed) {
+    if (textId && !StateStorageWrapper.renderedAfterRedirect) {
+        // редирект из каталога:
         console.log(`Get text id from path params: ${textId}`);
 
         const item = {
@@ -85,8 +85,8 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
         };
         let requestBody = JSON.stringify(item);
 
-        StateStorageWrapper.gotNoteById = true;
-        StateStorageWrapper.displayed = true;
+        StateStorageWrapper.redirectCall = true;
+        StateStorageWrapper.renderedAfterRedirect = true;
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, textId);
     }
 

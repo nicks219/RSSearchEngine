@@ -2,6 +2,8 @@
 import { Component } from "react";
 import { IMountedComponent } from "./contracts.tsx";
 import { FunctionComponentStateWrapper } from "./state.wrappers.tsx";
+import {IDataTimeState} from "../components/update.component.tsx";
+import {NoteResponseDto} from "../dto/request.response.dto.tsx";
 
 export class Loader {
     static createUrl: string = "/api/create";
@@ -42,6 +44,7 @@ export class Loader {
         }
     }
 
+    // TODO: после модификации create.component переписать функцию:
     static async processResponse<T>(response: Response,
                                     component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
                                     url: string,
@@ -53,14 +56,22 @@ export class Loader {
             let mounted: boolean;
             let setComponentState: (data: T) => void;
 
+            // весь postData - с полем time:
             const isFunctionalComponent = component instanceof FunctionComponentStateWrapper;
             switch (isFunctionalComponent) {
                 case true: {
                     const castedFcComponent = component as FunctionComponentStateWrapper<T>;
                     mounted = castedFcComponent.mounted[0];
-                    setComponentState = (data: T) => {
-                        castedFcComponent.setData(data)
-                    };
+                    if (castedFcComponent.setComplexData) {
+                        // FC + multi state:
+                        setComponentState = (data: T) => {
+                            // предопределенный тип:
+                            const complexState: IDataTimeState = {data: data as NoteResponseDto, time: Number(time)};
+                            castedFcComponent.setComplexData!(complexState);// {data: T,time: number}
+                        };
+                    } else {
+                        setComponentState = (data: T) => castedFcComponent.setData!(data);// {data: T}
+                    }
                     data = await response.json().catch(() => LoginBoxHandler.SetVisible(castedFcComponent, url));
                     break;
                 }

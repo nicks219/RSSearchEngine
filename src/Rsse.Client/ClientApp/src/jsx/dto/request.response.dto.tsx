@@ -10,6 +10,8 @@ export class NoteResponseDto {
     tagsCheckedUncheckedResponse?: string[];
     structuredTagsListResponse?: string[];
     commonNoteID? : number;
+    /** поле хранит идентификаторы заметок, выведенных в чекбоксах */
+    tagIdsInternal?: string[];
 }
 
 export class CatalogResponseDto {
