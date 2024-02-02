@@ -1,12 +1,13 @@
 ﻿import * as React from 'react';
-import { Loader } from "../common/loader.tsx";
+import {Loader} from "../common/loader.tsx";
 import {
     getCommonNoteId, getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
     getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
-import { ISimpleProps, ISubscribed, IMountedComponent } from "../common/contracts.tsx";
-import { NoteResponseDto, ComplianceResponseDto } from "../dto/request.response.dto.tsx";
+import {ISimpleProps, ISubscribed, IMountedComponent} from "../common/contracts.tsx";
+import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
+import {useReducer} from "react";
 
 interface IState {
     data?: NoteResponseDto;
@@ -14,7 +15,7 @@ interface IState {
     stateStorage?: string|null;
 }
 
-interface IProps extends ISimpleProps, ISubscribed<CreateView> {
+interface ISubscribeProps extends ISimpleProps, ISubscribed<CreateView> {
 }
 
 class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
@@ -29,7 +30,7 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
 
     mainForm: React.RefObject<HTMLFormElement>;
 
-    constructor(props: IProps) {
+    constructor(props: ISubscribeProps) {
         super(props);
         this.mounted = true;
 
@@ -69,7 +70,7 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
         let checkboxes = [];
         if (this.state.data != undefined && getStructuredTagsListResponse(this.state.data) != null) {
             for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} /*subscription={null}*/ formId={undefined}/>);
+                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
             }
         }
 
@@ -87,78 +88,76 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
                     id="dizzy">
                     {checkboxes}
                     {this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} id={undefined} jsonStorage={undefined}/>
-                    }
+                        <SubmitButton subscription={this} formId={this.formId} id={undefined} jsonStorage={undefined}/>}
                 </form>
                 {this.state.data != null &&
-                    <Message formId={this.formId} jsonStorage={jsonStorage} /*subscription={null}*/ id={undefined}/>
-                }
+                    <Message formId={this.formId} jsonStorage={jsonStorage} /*subscription={null}*/ id={undefined}/>}
             </div>
         );
     }
 }
 
-class Checkbox extends React.Component<ISimpleProps> {
+const Checkbox = (props: ISimpleProps) => {
+    let checked = getTagsCheckedUncheckedResponse(props) === "checked";
+    let getTagName = (i: number) => {
+        return getStructuredTagsListResponse(props.jsonStorage)[i];
+    };
 
-    render() {
-        let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
-        let getGenreName = (i: number) => {
-            return getStructuredTagsListResponse(this.props.jsonStorage)[i];
-        };
+    let getTagId = (i: number) => {
+        if (props.jsonStorage?.structuredTagsListResponse !== undefined) {
+            return props.jsonStorage.structuredTagsListResponse[i];
+        } else {
+            return "";
+        }
+    };
 
-        let getGenreId = (i: number) => {
-            if (this.props.jsonStorage?.structuredTagsListResponse !== undefined) {
-                return this.props.jsonStorage.structuredTagsListResponse[i];
-            }
-            else {
-                return "";
-            }
-        };
-
-        return (
-            <div id="checkboxStyle">
-                <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox" defaultChecked={checked} />
-                <label htmlFor={this.props.id} onClick={SubmitButton.loadNoteOnClick} about={getGenreId(Number(this.props.id))}>
-                    {getGenreName(Number(this.props.id))}
-                </label>
-            </div>
-        );
-    }
+    return (
+        <div id="checkboxStyle">
+            <input name="chkButton" value={props.id} type="checkbox" id={props.id}
+                   className="regular-checkbox"
+                   defaultChecked={checked}/>
+            <label htmlFor={props.id}
+                   onClick={SubmitButton.loadNoteOnClick}
+                   about={getTagId(Number(props.id))}>{getTagName(Number(props.id))}</label>
+        </div>
+    );
 }
 
-class Message extends React.Component<ISimpleProps> {
-    textHandler = (e: string) => {
-        setTextResponse(this.props.jsonStorage, e);
-        this.forceUpdate();
+const Message = (props: ISimpleProps) => {
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+    const textHandler = (e: string) => {
+        setTextResponse(props.jsonStorage, e);
+        forceUpdate();
     }
 
-    titleHandler = (e: string) => {
-        setTitleResponse(this.props.jsonStorage, e);
-        this.forceUpdate();
+    const titleHandler = (e: string) => {
+        setTitleResponse(props.jsonStorage, e);
+        forceUpdate();
     }
 
-    render() {
-        return (
-            <div >
-                <p />
-                {this.props.jsonStorage != null ?
-                    <div>
-                        <h5>
-                            <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                value={ getTitleResponse(this.props.jsonStorage) } onChange={e => this.titleHandler(e.target.value)} />
-                        </h5>
-                        <h5>
-                            <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={ getTextResponse(this.props.jsonStorage) } onChange={e => this.textHandler(e.target.value)} />
-                        </h5>
-                    </div>
-                    : "loading.."}
-            </div>
-        );
-    }
+    return (
+        <div>
+            <p/>
+            {props.jsonStorage != null ?
+                <div>
+                    <h5>
+                        <textarea name="ttl" cols={66} rows={1} form="dizzy"
+                                  value={getTitleResponse(props.jsonStorage)}
+                                  onChange={e => titleHandler(e.target.value)}/>
+                    </h5>
+                    <h5>
+                        <textarea name="msg" cols={66} rows={30} form="dizzy"
+                                  value={getTextResponse(props.jsonStorage)}
+                                  onChange={e => textHandler(e.target.value)}/>
+                    </h5>
+                </div>
+                : "loading.."}
+        </div>
+    );
 }
 
-class SubmitButton extends React.Component<IProps> {
+class SubmitButton extends React.Component<ISubscribeProps> {
 
     requestBody: string = "";
     storage: string[] = [];
@@ -167,7 +166,7 @@ class SubmitButton extends React.Component<IProps> {
     static state?: number;
     static subscriber: CreateView;
 
-    constructor(props: IProps) {
+    constructor(props: ISubscribeProps) {
         super(props);
         this.submit = this.submit.bind(this);
         // подтверждение или отмена:
@@ -213,7 +212,7 @@ class SubmitButton extends React.Component<IProps> {
         buttonElement.style.display = "none";
     }
 
-    async submit(e: React.SyntheticEvent) {
+    submit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
         let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
@@ -343,10 +342,6 @@ class SubmitButton extends React.Component<IProps> {
         let time = Date.now();
         // subscription на CreateView:
         this.props.subscription.setState({ data , time });
-    }
-
-    componentWillUnmount() {
-        // TODO отменить подписки и асинхронную загрузку
     }
 
     render() {

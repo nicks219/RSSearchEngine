@@ -22,7 +22,7 @@ export class Loader {
 
     static unusedPromise: Promise<void>;
 
-    static setDevelopmentCredos = () => {
+    static setupDevEnvironment = () => {
         if (process.env.NODE_ENV === "development") {
             this.corsCredentialsPolicy = "include";
             this.corsServiceBaseUrl = "http://127.0.0.1:5000";
@@ -31,7 +31,7 @@ export class Loader {
     }
 
     static redirectToMenu = (url: string) => {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
@@ -51,14 +51,14 @@ export class Loader {
             // FC / IMounted switch:
             let data: T;
             let mounted: boolean;
-            let changeDataState: (data: T) => void;
+            let setComponentState: (data: T) => void;
 
             const isFunctionalComponent = component instanceof FunctionComponentStateWrapper;
             switch (isFunctionalComponent) {
                 case true: {
                     const castedFcComponent = component as FunctionComponentStateWrapper<T>;
                     mounted = castedFcComponent.mounted[0];
-                    changeDataState = (data: T) => {
+                    setComponentState = (data: T) => {
                         castedFcComponent.setData(data)
                     };
                     data = await response.json().catch(() => LoginBoxHandler.SetVisible(castedFcComponent, url));
@@ -68,9 +68,9 @@ export class Loader {
                     const castedComponent = component as (Component & IMountedComponent);
                     mounted = castedComponent.mounted;
                     if (time) {
-                        changeDataState = (data: T) => castedComponent.setState({data, time});
+                        setComponentState = (data: T) => castedComponent.setState({data, time});
                     } else {
-                        changeDataState = (data: T) => castedComponent.setState({data});
+                        setComponentState = (data: T) => castedComponent.setState({data});
                     }
                     data = await response.json().catch(() => LoginBoxHandler.SetVisible(castedComponent, url));
                     break;
@@ -78,7 +78,7 @@ export class Loader {
             }
 
             if (mounted) {
-                changeDataState(data);
+                setComponentState(data);
             }
 
         } catch(ex) {
@@ -90,7 +90,7 @@ export class Loader {
     // GET request: /api/controller
     static async getData<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
                             url: string): Promise<void> {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
         const error: string = "Loader: get exception";
 
@@ -109,7 +109,7 @@ export class Loader {
     static async getDataById<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
                                 requestId: number|undefined,
                                 url: string): Promise<void> {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
         const error: string = "Loader: getById exception";
 
@@ -127,7 +127,7 @@ export class Loader {
                              requestBody: string,
                              url: string,
                              id: number|string|null = null): Promise<void> {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
         const error: string = "Loader: post exception";
 
@@ -138,9 +138,6 @@ export class Loader {
                 body: requestBody,
                 credentials: this.corsCredentialsPolicy
             });
-
-            // использовался стейт {data, time}:
-            // if (component.mounted) component.setState({data, time});
 
             let time = String(Date.now());
             await this.processResponse(response, component, url, error, time);
@@ -154,7 +151,7 @@ export class Loader {
                                    requestId: number,
                                    url: string,
                                    pageNumber?: number): Promise<void> {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
         const error: string = "Loader: delete exception";
 
@@ -176,7 +173,7 @@ export class Loader {
                                      query: string,
                                      callback: (v: Response)=>Response|PromiseLike<Response>|void,
                                      component: (Component&IMountedComponent)|FunctionComponentStateWrapper<T>|null): void {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         const error: string = "Loader: login/logout exception";
 
         try {
@@ -191,7 +188,7 @@ export class Loader {
 
     // CREATE: /api/find?text= or /api/read/title?id=
     static getWithPromise = async(url: string, query: string, callback: (data: Response)=>Promise<void>|void): Promise<void> => {
-        Loader.setDevelopmentCredos();
+        Loader.setupDevEnvironment();
         const error: string = "Loader: promise exception";
 
         try {

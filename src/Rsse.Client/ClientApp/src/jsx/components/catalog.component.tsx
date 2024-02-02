@@ -1,9 +1,9 @@
 ﻿import * as React from 'react';
-import { useEffect, useState } from "react";
-import { getNotesCount, getPageNumber, getCatalogPage } from "../common/dto.handlers.tsx";
-import { Loader } from "../common/loader.tsx";
-import { CatalogResponseDto } from "../dto/request.response.dto.tsx";
-import { DumpStateWrapper, FunctionComponentStateWrapper } from "../common/state.wrappers.tsx";
+import {useEffect, useState} from "react";
+import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers.tsx";
+import {Loader} from "../common/loader.tsx";
+import {CatalogResponseDto} from "../dto/request.response.dto.tsx";
+import {StateStorageWrapper, FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
@@ -29,13 +29,13 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
 
     const onCreateDump = (e: React.SyntheticEvent) => {
-        DumpStateWrapper.setState(1);
+        StateStorageWrapper.setState(1);
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
     }
 
     const onRestoreDump = (e: React.SyntheticEvent) => {
-        DumpStateWrapper.setState(1);
+        StateStorageWrapper.setState(1);
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl);
     }
@@ -66,7 +66,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     let itemArray = getCatalogPage(data);
 
     // работа с дампами:
-    if (data.res && DumpStateWrapper.getState() === 1) {
+    if (data.res && StateStorageWrapper.getState() === 1) {
         notes.push(
             <tr key={"song "} className="bg-warning">
                 <td></td>
@@ -80,11 +80,11 @@ export const CatalogView = (): JSX.Element|undefined => {
         link.click();
         document.body.removeChild(link);
 
-        DumpStateWrapper.setState(2);
-    } else if (data.res && DumpStateWrapper.getState() === 2) {
+        StateStorageWrapper.setState(2);
+    } else if (data.res && StateStorageWrapper.getState() === 2) {
         // после обработки дампа нажата кнопка "Каталог":
         Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);// вместо DidMount
-        DumpStateWrapper.setState(0);
+        StateStorageWrapper.setState(0);
     }
     // на отладке можно получить пустой стейт и исключение:
     else if (itemArray !== null && itemArray !== undefined) {

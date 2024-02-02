@@ -1,7 +1,7 @@
 ﻿import * as React from "react";
 import { Dispatch, SetStateAction } from "react";
 
-/** Обёртка для манипуляций со стейтом функциональных компонентов приложения */
+/** Обёртка, позволяющая загрузчику работать со стейтом функциональных компонентов приложения */
 export class FunctionComponentStateWrapper<T> {
     public mounted: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
     public setData: Dispatch<SetStateAction<T|null>>;
@@ -15,11 +15,14 @@ export class FunctionComponentStateWrapper<T> {
     }
 }
 
-/** Обёртка для манипуляций со стейтом функционала работы с дампами */
-export class DumpStateWrapper {
+/** Синглтон, инициализирующий некоторое состояние независимо от компонента */
+export class StateStorageWrapper {
     static state: number = 0;
+    static displayed: boolean = false;
+    static gotNoteById: boolean = false;
+
     static setState = (state: number) => {
-        DumpStateWrapper.state = state;
+        StateStorageWrapper.state = state;
     }
-    static getState = () => DumpStateWrapper.state;
+    static getState = () => StateStorageWrapper.state;
 }
