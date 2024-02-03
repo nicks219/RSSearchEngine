@@ -2,7 +2,7 @@
 import {createRoot} from "react-dom/client";
 import {ReadView} from "./read.component.tsx";
 import {UpdateView} from "./update.component.tsx";
-import CreateView from "./create.component.tsx";
+import {CreateView} from "./create.component.tsx";
 import {CatalogView} from "./catalog.component.tsx";
 import {LoginComponent} from "./login.component.tsx";
 

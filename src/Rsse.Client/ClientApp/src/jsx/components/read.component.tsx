@@ -49,6 +49,7 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
 
     const componentWillUnmount = () => {
         mounted[0] = false;
+        // перед выходом восстанавливаем состояние обёртки:
         StateStorageWrapper.renderedAfterRedirect = false;
         StateStorageWrapper.redirectCall = false;
         // убираем отображение кнопки "Поиск":

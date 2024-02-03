@@ -13,7 +13,9 @@ export const CatalogView = (): JSX.Element|undefined => {
     useEffect(() => {
         Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);
         return function onUnmount() {
-            mounted[0] = false
+            mounted[0] = false;
+            // перед выходом восстанавливаем состояние обёртки:
+            StateStorageWrapper.setState(0);
         };
     }, []);
 

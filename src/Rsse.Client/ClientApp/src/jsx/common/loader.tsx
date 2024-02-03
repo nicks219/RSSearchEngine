@@ -63,7 +63,7 @@ export class Loader {
                     const castedFcComponent = component as FunctionComponentStateWrapper<T>;
                     mounted = castedFcComponent.mounted[0];
                     if (castedFcComponent.setComplexData) {
-                        // FC + multi state:
+                        // FC + multi state: мультистейт не нужен, тк поле time можно инициализировать в компонентах:
                         setComponentState = (data: T) => {
                             // предопределенный тип:
                             const complexState: IDataTimeState = {data: data as NoteResponseDto, time: Number(time)};

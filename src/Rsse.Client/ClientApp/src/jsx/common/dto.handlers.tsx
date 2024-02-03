@@ -36,7 +36,7 @@ export const getTextResponse = (dto?: NoteResponseDto) => dto?.textResponse;
 export const setTextResponse = (dto?: NoteResponseDto, value?: string) => { if (dto) dto.textResponse = value };
 
 // Note: список тегов в формате "имя : количество записей"
-export const getStructuredTagsListResponse = (dto?: NoteResponseDto) => dto?.structuredTagsListResponse ?? [];
+export const getStructuredTagsListResponse = (dto?: NoteResponseDto|null) => dto?.structuredTagsListResponse ?? [];
 
 // Note: поле для хранения идентификатора сохраненной/измененной заметки
 export const getCommonNoteId = (dto: NoteResponseDto) => dto.commonNoteID;

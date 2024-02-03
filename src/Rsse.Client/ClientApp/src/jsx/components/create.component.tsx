@@ -5,61 +5,45 @@ import {
     getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, ISubscribed, IMountedComponent} from "../common/contracts.tsx";
+import {ISimpleProps, ISubscribed} from "../common/contracts.tsx";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
-import {useReducer} from "react";
+import {useEffect, useReducer, useRef, useState} from "react";
+import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
+import {IDataTimeState} from "./update.component.tsx";
 
-interface IState {
-    data?: NoteResponseDto;
-    time: number|null;
-    stateStorage?: string|null;
-}
+interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentStateWrapper<NoteResponseDto>> {}
 
-interface ISubscribeProps extends ISimpleProps, ISubscribed<CreateView> {
-}
+export const CreateView = () => {
+    const [data, setState] = useState<IDataTimeState | null>({data: null, time: null, stateStorage: null});
+    const mounted = useState(true);
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setState);
+    const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
+    let formId: HTMLFormElement | undefined = refObject.current;
 
-//class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
-class CreateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
-    formId?: HTMLFormElement;
-    mounted: boolean;
-
-    public state: IState = {
-        // NB использовать реальное время более корректно для key:
-        time: null,
-        stateStorage: null
+    const componentDidMount = () => {
+        formId = refObject.current;
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
     }
-
-    mainForm: React.RefObject<HTMLFormElement>;
-
-    constructor(props: ISubscribeProps) {
-        super(props);
-        this.mounted = true;
-
-        this.mainForm = React.createRef();
-    }
-
-    componentDidMount() {
-        this.formId = this.mainForm.current ?? undefined;
-        Loader.unusedPromise = Loader.getData(this, Loader.createUrl);
-    }
-
-    componentWillUnmount() {
+    const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(window.textId)) {
-            window.textId = 0;
-        }
-        this.mounted = false;
+        if (isNaN(window.textId)) window.textId = 0;
+        mounted[0] = false;
     }
 
-    componentDidUpdate() {
-        if (this.state.stateStorage){
-            console.log("Redirected: " + this.state.stateStorage);
-            Loader.redirectToMenu("/#/read/" + this.state.stateStorage);
+    useEffect(() => {
+        componentDidMount();
+        return componentWillUnmount;
+    }, []);
+
+    const componentDidUpdate = () => {
+        if (data?.stateStorage) {
+            console.log("Redirected: " + data?.stateStorage);
+            Loader.redirectToMenu("/#/read/" + data?.stateStorage);
         }
 
         let id = 0;
-        if (this.state.data) {
-            id = Number(getCommonNoteId(this.state.data));
+        if (data?.data) {
+            id = Number(getCommonNoteId(data?.data));
         }
 
         if (id !== 0) {
@@ -67,38 +51,42 @@ class CreateView extends React.Component<ISimpleProps, IState> implements IMount
         }
     }
 
-    render() {
-        let checkboxes = [];
-        if (this.state.data != undefined && getStructuredTagsListResponse(this.state.data) != null) {
-            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={`checkbox ${i}${this.state.time}`} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
-            }
-        }
+    useEffect(() => {
+        componentDidUpdate();
+    }, [data]);
 
-        let jsonStorage = this.state.data;
-        if (jsonStorage) {
-            if (!getTextResponse(jsonStorage))
-                setTextResponse(jsonStorage, "");
-            if (!getTitleResponse(jsonStorage))
-                setTitleResponse(jsonStorage, "");
+    let checkboxes = [];
+    if (data && getStructuredTagsListResponse(data.data) != null) {
+        for (let i = 0; i < getStructuredTagsListResponse(data.data).length; i++) {
+            let time = String(Date.now());
+            // subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
+            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)}
+                                      jsonStorage={data.data!} formId={undefined} subscription={stateWrapper}/>);
         }
-
-        return (
-            <div id="renderContainer">
-                <form ref={this.mainForm}
-                    id="dizzy">
-                    {checkboxes}
-                    {this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} id={undefined} jsonStorage={undefined}/>}
-                </form>
-                {this.state.data != null &&
-                    <Message formId={this.formId} jsonStorage={jsonStorage} /*subscription={null}*/ id={undefined}/>}
-            </div>
-        );
     }
+
+    let jsonStorage = data?.data;
+    if (jsonStorage) {
+        if (!getTextResponse(jsonStorage)) setTextResponse(jsonStorage, "");
+        if (!getTitleResponse(jsonStorage)) setTitleResponse(jsonStorage, "");
+    }
+
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
+    return (
+        <div id="renderContainer">
+            <form ref={castedRefObject}
+                  id="dizzy">
+                {checkboxes}
+                {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
+                {data?.data != null &&
+                    <SubmitButton subscription={stateWrapper} formId={formId} id={undefined} jsonStorage={undefined}/>}
+            </form>
+            {data?.data != null && <Message formId={formId} jsonStorage={jsonStorage!} id={undefined}/>}
+        </div>
+    );
 }
 
-const Checkbox = (props: ISimpleProps) => {
+const Checkbox = (props: ISubscribeProps) => {
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
@@ -106,7 +94,7 @@ const Checkbox = (props: ISimpleProps) => {
     };
 
     const getTagId = (i: number) => {
-        if (props.jsonStorage?.tagIdsInternal && props.jsonStorage?.tagIdsInternal.length > 0){
+        if (props.jsonStorage?.tagIdsInternal && props.jsonStorage?.tagIdsInternal.length > 0) {
             return props.jsonStorage.tagIdsInternal[i];
         } else if (props.jsonStorage?.structuredTagsListResponse) {
             return props.jsonStorage.structuredTagsListResponse[i];
@@ -115,13 +103,28 @@ const Checkbox = (props: ISimpleProps) => {
         }
     };
 
+    const loadNoteOnClick = (e: React.SyntheticEvent) => {
+        if (StateStorageWrapper.submitStateStorage !== undefined) {
+            let title = e.currentTarget.innerHTML.valueOf();
+            // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
+            let id = e.currentTarget.attributes.item(1)?.nodeValue;
+
+            // subscription на компонент create.
+            console.log("Submitted: " + StateStorageWrapper.submitStateStorage + " " + title + " " + id);
+
+            // установка stateStorage приведет к вызову редиректа на перерисовке CreateView:
+            StateStorageWrapper.submitStateStorage = undefined;
+            props.subscription.setComplexData!({data: null, time: null, stateStorage: id});// переименуй в id storage // ???
+        }
+    }
+
     return (
         <div id="checkboxStyle">
             <input name="chkButton" value={props.id} type="checkbox" id={props.id}
                    className="regular-checkbox"
                    defaultChecked={checked}/>
             <label htmlFor={props.id}
-                   onClick={SubmitButton.loadNoteOnClick}
+                   onClick={loadNoteOnClick}
                    about={getTagId(Number(props.id))}>{getTagName(Number(props.id))}</label>
         </div>
     );
@@ -161,83 +164,64 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-//class SubmitButton extends React.Component<ISubscribeProps> {
-class SubmitButton extends React.Component<ISubscribeProps> {
+const SubmitButton = (props: ISubscribeProps) => {
+    let requestBody: string = "";// храним во внешнем стейте
+    let storage: string[] = [];
+    const storageId: string[] = [];
 
-    requestBody: string = "";
-    storage: string[] = [];
-    storageId: string[] = [];
-    submitState: number;
-    static submitStateStorage?: number;
-    static subscriber: CreateView;
-
-    constructor(props: ISubscribeProps) {
-        super(props);
-        this.submit = this.submit.bind(this);
-        // подтверждение или отмена:
-        this.submitState = 0;
-        SubmitButton.subscriber = this.props.subscription;
-    }
-
-    // чекбоксы превращаются в ссылки на каталог заметок:
-    static loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (SubmitButton.submitStateStorage !== undefined) {
-
-            SubmitButton.submitStateStorage = undefined;
-            let title = e.currentTarget.innerHTML.valueOf();
-            // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
-            let id = e.currentTarget.attributes.item(1)?.nodeValue;
-
-            // subscription на компонент create.
-            console.log("Submitted: " + SubmitButton.submitStateStorage + " " + title + " " + id);
-            // установка stateStorage приведет к вызову редиректа на перерисовке CreateView:
-            SubmitButton.subscriber.setState({stateStorage: id});
-        }
-    }
-
-    cancel = (e: React.SyntheticEvent) => {
+    const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
         // отмена - сохраняем текст и название:
-        SubmitButton.submitStateStorage = undefined;
-        this.submitState = 0;
+        StateStorageWrapper.submitStateStorage = undefined;
+        StateStorageWrapper.setState(0);
+        // восстановим requestBody из внешнего стейта
+        if (requestBody == "") requestBody = StateStorageWrapper.requestBody;
 
-        let text = getTextRequest(JSON.parse(this.requestBody));
-        let title = getTitleRequest(JSON.parse(this.requestBody));
+        let text = getTextRequest(JSON.parse(requestBody));
+        let title = getTitleRequest(JSON.parse(requestBody));
 
-        this.requestBody = JSON.stringify({
-            "tagsCheckedRequest":[],
+        requestBody = JSON.stringify({
+            "tagsCheckedRequest": [],
             "textRequest": text,
             "titleRequest": title
-            });
-        Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
+        });
+        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
     }
 
-    componentDidMount() {
-        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+    const componentDidMount = () => {
+        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
     }
+    const componentWillUnmount = () => {
+        // перед выходом восстанавливаем состояние обёртки:
+        StateStorageWrapper.setState(0);
+        StateStorageWrapper.submitStateStorage = undefined;
+        StateStorageWrapper.requestBody = "";
+    }
 
-    submit = async (e: React.SyntheticEvent) => {
+    useEffect(() => {
+        componentDidMount();
+        return componentWillUnmount;
+    }, []);
+
+    const submit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
-        let buttonElement  = (document.getElementById('cancelButton') as HTMLInputElement);
+        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        SubmitButton.submitStateStorage = undefined;
+        StateStorageWrapper.submitStateStorage = undefined;
 
-        if (this.submitState === 1)
-        {
-            // подтверждение:
-            //SubmitButton.submitStateStorage = undefined;
-
-            this.submitState = 0;
-            Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
+        if (StateStorageWrapper.getState() === 1) {
+            // подтверждение в режиме "подтверждение/отмена":
+            StateStorageWrapper.setState(0);
+            Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
             return;
         }
 
-        let formData = new FormData(this.props.formId);
+        let formData = new FormData(props.formId);
         let checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
         let formMessage = formData.get('msg');
         let formTitle = formData.get('ttl');
@@ -246,36 +230,34 @@ class SubmitButton extends React.Component<ISubscribeProps> {
             "textRequest": formMessage,
             "titleRequest": formTitle
         };
-        this.requestBody = JSON.stringify(item);
+        requestBody = JSON.stringify(item);
+        // сохраним requestBody во внешний стейт
+        StateStorageWrapper.requestBody = requestBody;
 
-        this.storage = [];
-        let promise = this.findSimilarNotes(formMessage, formTitle);
+        storage = [];
+        let promise = findSimilarNotes(formMessage, formTitle);
         await promise;
 
-        if (this.storage.length > 0)
-        {
-            // переключение в "подтверждение или отмена":
-            SubmitButton.submitStateStorage = this.submitState;
+        if (storage.length > 0) {
+            // переключение в режим "подтверждение/отмена":
+            StateStorageWrapper.submitStateStorage = StateStorageWrapper.getState();
             buttonElement.style.display = "block";
-            this.submitState = 1;
+            StateStorageWrapper.setState(1);
             return;
         }
 
-        // совпадения не обнаружены, сохраняем заметку:
-        //SubmitButton.submitStateStorage = undefined;
-        Loader.unusedPromise = Loader.postData(this.props.subscription, this.requestBody, Loader.createUrl);
+        // совпадения не обнаружены, сохраняем заметку (стандртный режим):
+        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
     }
 
-    findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
+    const findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
         let promise;
-
         if (typeof formMessage === "string") {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
         }
 
-        let callback = (data: Response) => this.getNoteTitles(data);
+        let callback = (data: Response) => getNoteTitles(data);
         let query = "?text=" + formMessage + " " + formTitle;
-
         try {
             promise = Loader.getWithPromise(Loader.complianceIndicesUrl, query, callback);
         } catch (err) {
@@ -283,18 +265,17 @@ class SubmitButton extends React.Component<ISubscribeProps> {
         }
 
         if (promise !== undefined) {
-            await promise;}
+            await promise;
+        }
     }
 
-    getNoteTitles = async (data: Response) => {
+    const getNoteTitles = async (data: Response) => {
         let responseDto = data as unknown as ComplianceResponseDto;
         let response = responseDto.res;
         if (response === undefined) {
             return;
         }
 
-        //let item = response[1];
-        //let r = item["1"];
         let array: number[][] = Object.keys(response).map((key) => [Number(key), response[Number(key)]]);
         array.sort(function (a, b) {
             return b[1] - a[1]
@@ -311,19 +292,15 @@ class SubmitButton extends React.Component<ISubscribeProps> {
 
         for (let ind = 0; ind < result.length; ind++) {
             // лучше сделать reject:
-            if (this.storage.length >= 10) {
+            if (storage.length >= 10) {
                 continue;
             }
 
             let i = String(result[ind][0]);
-
             // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
             let promise;
-
-            let callback = (data: Response) => this.getTitle(data, i);
-
+            let callback = (data: Response) => getTitle(data, i);
             let query = "?id=" + i;
-
             try {
                 promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
             } catch (err) {
@@ -336,36 +313,32 @@ class SubmitButton extends React.Component<ISubscribeProps> {
         }
     }
 
-    getTitle = (input: Response, i: string) => {// в поле data.res сидит string: (new {res}) | any: data.res
+    const getTitle = (input: Response, i: string) => {
         let responseDto = input as unknown as ComplianceResponseDto;
-        this.storage.push((responseDto.res + '\r\n'));
-        this.storageId.push(i);
+        storage.push((responseDto.res + '\r\n'));
+        storageId.push(i);
 
         // stub:
         let data = {
-            "structuredTagsListResponse": this.storage,
+            "structuredTagsListResponse": storage,
             "tagsCheckedUncheckedResponse": [],
-            "textResponse": getTextRequest(JSON.parse(this.requestBody)),
-            "titleResponse": getTitleRequest(JSON.parse(this.requestBody)),
-            "tagIdsInternal": this.storageId
+            "textResponse": getTextRequest(JSON.parse(requestBody)),
+            "titleResponse": getTitleRequest(JSON.parse(requestBody)),
+            "tagIdsInternal": storageId
         };
         let time = Date.now();
-        // subscription на CreateView:
-        this.props.subscription.setState({ data , time });
+        // subscription - на CreateView:
+        props.subscription.setComplexData!({data, time});
     }
 
-    render() {
-        return (
-            <div id="submitStyle">
-                <input type="checkbox" id="submitButton" className="regular-checkbox" />
-                <label htmlFor="submitButton" onClick={this.submit}>Создать</label>
-                  <div id="cancelButton">
-                    <input type="checkbox" id="submitButtonDuplicate" className="regular-checkbox" />
-                    <label htmlFor="submitButton" onClick={this.cancel}>Отменить</label>
-                  </div>
+    return (
+        <div id="submitStyle">
+            <input type="checkbox" id="submitButton" className="regular-checkbox"/>
+            <label htmlFor="submitButton" onClick={submit}>Создать</label>
+            <div id="cancelButton">
+                <input type="checkbox" id="submitButtonDuplicate" className="regular-checkbox"/>
+                <label htmlFor="submitButton" onClick={cancel}>Отменить</label>
             </div>
-        );
-    }
+        </div>
+    );
 }
-
-export default CreateView;

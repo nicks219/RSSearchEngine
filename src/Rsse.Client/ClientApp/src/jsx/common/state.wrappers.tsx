@@ -7,7 +7,7 @@ export class FunctionComponentStateWrapper<T> {
     public mounted: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
     public setData: Dispatch<SetStateAction<T|null>>|null;
     public data: T|null;// <= где используется это поле?
-    public setComplexData?: Dispatch<SetStateAction<IDataTimeState|null>>;// <= предопределенный тип
+    public setComplexData?: Dispatch<SetStateAction<IDataTimeState|null>>;// <= предопределенный тип IDataTimeState
 
     constructor(mounted: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
                 setData: Dispatch<SetStateAction<T|null>>|null,
@@ -25,6 +25,10 @@ export class StateStorageWrapper {
     static state: number = 0;
     static renderedAfterRedirect: boolean = false;
     static redirectCall: boolean = false;
+
+    /** CreateComponent.SubmitButton state: */
+    static submitStateStorage? : number;
+    static requestBody: string = "";
 
     static setState = (state: number) => {
         StateStorageWrapper.state = state;

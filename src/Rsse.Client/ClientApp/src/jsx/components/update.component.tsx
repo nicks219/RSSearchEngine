@@ -16,14 +16,16 @@ interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentSta
 export interface IDataTimeState {
     data: NoteResponseDto | null;
     time?: number | null;
+    /** требуется только в компоненте Create */
+    stateStorage?: string|null;
 }
 
 export const UpdateView = () => {
     // используются два типа: результат фетча NoteResponseDto, и тип стейта IDataTimeState с полями {data,time}
-    const [data, setData] = useState<IDataTimeState | null>({data: null, time: null});// I.
+    const [data, setData] = useState<IDataTimeState|null>({data: null, time: null});
     const mounted = useState(true);
     // где используется поле data для wrapper?
-    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setData);// II.
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setData);
 
     const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
     let formId: HTMLFormElement | undefined = refObject.current;
@@ -46,9 +48,9 @@ export const UpdateView = () => {
     if (data != null && data.data != null) {
         for (let i = 0; i < getStructuredTagsListResponse(data.data).length; i++) {
             // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
-            // TODO: попробоавть не записывать time лоадером в стейт: data.time, а создавать в коде перед добавлением компонента.
-            // разберись: ре-рендерингу требуется key или уникальное поле в стейте?
-            checkboxes.push(<Checkbox key={`checkbox ${i}${data.time}`}
+            // можно создавать time в коде перед добавлением компонента:
+            let time = String(Date.now());
+            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
                                       id={String(i)}
                                       jsonStorage={data.data}
                                       formId={undefined}/>);
