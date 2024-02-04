@@ -17,7 +17,7 @@ declare global {
     interface Window { textId: number }
 }
 
-window.textId = 0;
+window.noteIdStorage = 0;
 window.React = React;
 
 export const MenuWithRouter = () => {

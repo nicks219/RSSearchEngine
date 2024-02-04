@@ -1,9 +1,5 @@
-﻿import { LoginBoxHandler } from "./visibility.handlers.tsx";
-import { Component } from "react";
-import { IMountedComponent } from "./contracts.tsx";
-import { FunctionComponentStateWrapper } from "./state.wrappers.tsx";
-import {IDataTimeState} from "../components/update.component.tsx";
-import {NoteResponseDto} from "../dto/request.response.dto.tsx";
+﻿import {LoginBoxHandler} from "./visibility.handlers.tsx";
+import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
 
 export class Loader {
     static createUrl: string = "/api/create";
@@ -44,62 +40,27 @@ export class Loader {
         }
     }
 
-    // TODO: после модификации create.component переписать функцию:
     static async processResponse<T>(response: Response,
-                                    component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
+                                    stateWrapper: FunctionComponentStateWrapper<T>,
                                     url: string,
-                                    error: string,
-                                    time?: string): Promise<void> {
+                                    error: string): Promise<void> {
         try {
-            // FC / IMounted switch:
-            let data: T;
-            let mounted: boolean;
-            let setComponentState: (data: T) => void;
-
-            // весь postData - с полем time:
-            const isFunctionalComponent = component instanceof FunctionComponentStateWrapper;
-            switch (isFunctionalComponent) {
-                case true: {
-                    const castedFcComponent = component as FunctionComponentStateWrapper<T>;
-                    mounted = castedFcComponent.mounted[0];
-                    if (castedFcComponent.setComplexData) {
-                        // FC + multi state: мультистейт не нужен, тк поле time можно инициализировать в компонентах:
-                        setComponentState = (data: T) => {
-                            // предопределенный тип:
-                            const complexState: IDataTimeState = {data: data as NoteResponseDto, time: Number(time)};
-                            castedFcComponent.setComplexData!(complexState);// {data: T,time: number}
-                        };
-                    } else {
-                        setComponentState = (data: T) => castedFcComponent.setData!(data);// {data: T}
-                    }
-                    data = await response.json().catch(() => LoginBoxHandler.SetVisible(castedFcComponent, url));
-                    break;
-                }
-                default: {
-                    const castedComponent = component as (Component & IMountedComponent);
-                    mounted = castedComponent.mounted;
-                    if (time) {
-                        setComponentState = (data: T) => castedComponent.setState({data, time});
-                    } else {
-                        setComponentState = (data: T) => castedComponent.setState({data});
-                    }
-                    data = await response.json().catch(() => LoginBoxHandler.SetVisible(castedComponent, url));
-                    break;
-                }
-            }
+            const mounted = stateWrapper.mounted[0];
+            const setComponentState = (data: T) => stateWrapper.setData(data);
+            const data: T = await response.json().catch(() => LoginBoxHandler.SetVisible(stateWrapper, url));
 
             if (mounted) {
                 setComponentState(data);
             }
 
-        } catch(ex) {
+        } catch (exception) {
             console.log(error);
-            console.log(ex);
+            console.log(exception);
         }
     }
 
     // GET request: /api/controller
-    static async getData<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
+    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                             url: string): Promise<void> {
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
@@ -110,14 +71,14 @@ export class Loader {
                 credentials: this.corsCredentialsPolicy, redirect: "follow"
             });
 
-            await this.processResponse(response, component, url, error);
+            await this.processResponse(response, stateWrapper, url, error);
         } catch {
             console.log(error);
         }
     }
 
     // GET request: /api/controller?id=
-    static async getDataById<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
+    static async getDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                                 requestId: number|undefined,
                                 url: string): Promise<void> {
         Loader.setupDevEnvironment();
@@ -127,14 +88,14 @@ export class Loader {
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(requestId), {credentials: this.corsCredentialsPolicy});
 
-            await this.processResponse(response, component, url, error);
+            await this.processResponse(response, stateWrapper, url, error);
         } catch {
             console.log(error);
         }
     }
 
     // POST request: /api/controller
-    static async postData<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
+    static async postData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                              requestBody: string,
                              url: string,
                              id: number|string|null = null): Promise<void> {
@@ -150,15 +111,14 @@ export class Loader {
                 credentials: this.corsCredentialsPolicy
             });
 
-            let time = String(Date.now());
-            await this.processResponse(response, component, url, error, time);
+            await this.processResponse(response, stateWrapper, url, error);
         } catch {
             console.log(error);
         }
     }
 
     // DELETE request: /api/controller?id=
-    static async deleteDataById<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>,
+    static async deleteDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                                    requestId: number,
                                    url: string,
                                    pageNumber?: number): Promise<void> {
@@ -173,7 +133,7 @@ export class Loader {
                     credentials: this.corsCredentialsPolicy
                 });
 
-            await this.processResponse(response, component, url, error);
+            await this.processResponse(response, stateWrapper, url, error);
         } catch {
             console.log(error);
         }
@@ -183,14 +143,14 @@ export class Loader {
     static fireAndForgetWithQuery<T>(url: string,
                                      query: string,
                                      callback: (v: Response)=>Response|PromiseLike<Response>|void,
-                                     component: (Component&IMountedComponent)|FunctionComponentStateWrapper<T>|null): void {
+                                     stateWrapper: FunctionComponentStateWrapper<T>|null): void {
         Loader.setupDevEnvironment();
         const error: string = "Loader: login/logout exception";
 
         try {
             fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy}).then(callback);
-            if (component !== null) {
-                LoginBoxHandler.SetVisible(component, url);
+            if (stateWrapper !== null) {
+                LoginBoxHandler.SetVisible(stateWrapper, url);
             }
         } catch {
             console.log(error);

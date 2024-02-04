@@ -1,15 +1,7 @@
 ﻿import * as React from 'react';
-import { Component, useState } from "react";
-import { Loader } from "../common/loader.tsx";
-import { IMountedComponent } from "../common/contracts.tsx";
-import { FunctionComponentStateWrapper } from "../common/state.wrappers.tsx";
-import { getPageNumber } from "../common/dto.handlers.tsx";
-import { LoginBoxHandler } from "../common/visibility.handlers.tsx";
-
-declare global {
-    // избавляйся от <any>: тип данных для смены стейта знает только компонент отображения (и Loader) - нужно ли продолжение загрузки?
-    interface Window { textId: number, temp: (Component & IMountedComponent)|FunctionComponentStateWrapper<any>, url: string, pageNumber: number|undefined }
-}
+import {useState} from "react";
+import {Loader} from "../common/loader.tsx";
+import {LoginBoxHandler} from "../common/visibility.handlers.tsx";
 
 export const LoginComponent = () => {
     const [style, setStyle] = useState("submitStyle");
@@ -48,20 +40,21 @@ export const LoginComponent = () => {
 
     // загружаем в компонент данные, не отданные сервисом из-за ошибки авторизации:
     const continueLoading = () => {
-        let component = window.temp;
+        const stateWrapper = window.stateWrapperStorage;
 
-        if (component) {
+        if (stateWrapper) {
             // продолжение для update:
-            if (window.url === Loader.updateUrl) {
+            if (window.urlStorage === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(component, window.textId, window.url);
-            // продолжение для catalog:
-            } else if (window.url === Loader.catalogUrl) {
-                Loader.unusedPromise = Loader.getDataById(component, getPageNumber(window), window.url);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, window.urlStorage);
+            // продолжение для catalog: загрузка первой страницы:
+            } else if (window.urlStorage === Loader.catalogUrl) {
+                const id = 1;
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, window.urlStorage);
             }
             // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (window.url !== Loader.logoutUrl) {
-                Loader.unusedPromise = Loader.getData(component, window.url);
+            else if (window.urlStorage !== Loader.logoutUrl) {
+                Loader.unusedPromise = Loader.getData(stateWrapper, window.urlStorage);
             }
         }
 

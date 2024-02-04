@@ -5,18 +5,15 @@ import {
     getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, ISubscribed} from "../common/contracts.tsx";
+import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
 import {useEffect, useReducer, useRef, useState} from "react";
 import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
-import {IDataTimeState} from "./update.component.tsx";
-
-interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentStateWrapper<NoteResponseDto>> {}
 
 export const CreateView = () => {
-    const [data, setState] = useState<IDataTimeState | null>({data: null, time: null, stateStorage: null});
+    const [data, setState] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
-    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setState);
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
     const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
     let formId: HTMLFormElement | undefined = refObject.current;
 
@@ -26,7 +23,7 @@ export const CreateView = () => {
     }
     const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(window.textId)) window.textId = 0;
+        if (isNaN(window.noteIdStorage)) window.noteIdStorage = 0;
         mounted[0] = false;
     }
 
@@ -36,18 +33,21 @@ export const CreateView = () => {
     }, []);
 
     const componentDidUpdate = () => {
-        if (data?.stateStorage) {
-            console.log("Redirected: " + data?.stateStorage);
-            Loader.redirectToMenu("/#/read/" + data?.stateStorage);
+        const redirectId = data?.commonNoteID;
+        // TODO: в commonNoteID записывается также id созданной заметки, поправь:
+        const okResponse: string = "[OK]";
+        if (redirectId && data?.titleResponse !== okResponse) {
+            console.log("Redirected: " + redirectId);
+            Loader.redirectToMenu("/#/read/" + redirectId);
         }
 
         let id = 0;
-        if (data?.data) {
-            id = Number(getCommonNoteId(data?.data));
+        if (data) {
+            id = Number(getCommonNoteId(data));
         }
 
         if (id !== 0) {
-            window.textId = id;
+            window.noteIdStorage = id;
         }
     }
 
@@ -56,19 +56,18 @@ export const CreateView = () => {
     }, [data]);
 
     let checkboxes = [];
-    if (data && getStructuredTagsListResponse(data.data) != null) {
-        for (let i = 0; i < getStructuredTagsListResponse(data.data).length; i++) {
+    if (data && getStructuredTagsListResponse(data)) {
+        for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             let time = String(Date.now());
             // subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
             checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)}
-                                      jsonStorage={data.data!} formId={undefined} subscription={stateWrapper}/>);
+                                      jsonStorage={data} formId={undefined} subscriber={stateWrapper}/>);
         }
     }
 
-    let jsonStorage = data?.data;
-    if (jsonStorage) {
-        if (!getTextResponse(jsonStorage)) setTextResponse(jsonStorage, "");
-        if (!getTitleResponse(jsonStorage)) setTitleResponse(jsonStorage, "");
+    if (data) {
+        if (!getTextResponse(data)) setTextResponse(data, "");
+        if (!getTitleResponse(data)) setTitleResponse(data, "");
     }
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
@@ -78,15 +77,14 @@ export const CreateView = () => {
                   id="dizzy">
                 {checkboxes}
                 {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
-                {data?.data != null &&
-                    <SubmitButton subscription={stateWrapper} formId={formId} id={undefined} jsonStorage={undefined}/>}
+                {data && <SubmitButton subscriber={stateWrapper} formId={formId} id={undefined} jsonStorage={undefined}/>}
             </form>
-            {data?.data != null && <Message formId={formId} jsonStorage={jsonStorage!} id={undefined}/>}
+            {data && <Message formId={formId} jsonStorage={data!} id={undefined}/>}
         </div>
     );
 }
 
-const Checkbox = (props: ISubscribeProps) => {
+const Checkbox = (props: IComplexProps) => {
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
@@ -108,13 +106,14 @@ const Checkbox = (props: ISubscribeProps) => {
             let title = e.currentTarget.innerHTML.valueOf();
             // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-
-            // subscription на компонент create.
-            console.log("Submitted: " + StateStorageWrapper.submitStateStorage + " " + title + " " + id);
-
-            // установка stateStorage приведет к вызову редиректа на перерисовке CreateView:
+            console.log(`Submitted & redirected: ${StateStorageWrapper.submitStateStorage} ${title} ${id}`);
             StateStorageWrapper.submitStateStorage = undefined;
-            props.subscription.setComplexData!({data: null, time: null, stateStorage: id});// переименуй в id storage // ???
+
+            const noteResponseDto = new NoteResponseDto();
+            // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
+            // commonNoteID также выставляется при сохранении новой заметки:
+            noteResponseDto.commonNoteID = Number(id);
+            props.subscriber.setData(noteResponseDto);
         }
     }
 
@@ -146,7 +145,7 @@ const Message = (props: ISimpleProps) => {
     return (
         <div>
             <p/>
-            {props.jsonStorage != null ?
+            {props.jsonStorage ?
                 <div>
                     <h5>
                         <textarea name="ttl" cols={66} rows={1} form="dizzy"
@@ -164,10 +163,10 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const SubmitButton = (props: ISubscribeProps) => {
+const SubmitButton = (props: IComplexProps) => {
     let requestBody: string = "";// храним во внешнем стейте
-    let storage: string[] = [];
-    const storageId: string[] = [];
+    let similarNoteNameStorage: string[] = [];
+    const similarNotesIdStorage: string[] = [];
 
     const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -177,8 +176,8 @@ const SubmitButton = (props: ISubscribeProps) => {
         // отмена - сохраняем текст и название:
         StateStorageWrapper.submitStateStorage = undefined;
         StateStorageWrapper.setState(0);
-        // восстановим requestBody из внешнего стейта
-        if (requestBody == "") requestBody = StateStorageWrapper.requestBody;
+        // восстанавливаем requestBody - из внешнего стейта:
+        if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
 
         let text = getTextRequest(JSON.parse(requestBody));
         let title = getTitleRequest(JSON.parse(requestBody));
@@ -188,7 +187,7 @@ const SubmitButton = (props: ISubscribeProps) => {
             "textRequest": text,
             "titleRequest": title
         });
-        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
     }
 
     const componentDidMount = () => {
@@ -199,7 +198,7 @@ const SubmitButton = (props: ISubscribeProps) => {
         // перед выходом восстанавливаем состояние обёртки:
         StateStorageWrapper.setState(0);
         StateStorageWrapper.submitStateStorage = undefined;
-        StateStorageWrapper.requestBody = "";
+        StateStorageWrapper.requestBodyStorage = "";
     }
 
     useEffect(() => {
@@ -217,7 +216,9 @@ const SubmitButton = (props: ISubscribeProps) => {
         if (StateStorageWrapper.getState() === 1) {
             // подтверждение в режиме "подтверждение/отмена":
             StateStorageWrapper.setState(0);
-            Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
+            // восстановим requestBody из внешнего стейта:
+            if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
+            Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
             return;
         }
 
@@ -231,14 +232,14 @@ const SubmitButton = (props: ISubscribeProps) => {
             "titleRequest": formTitle
         };
         requestBody = JSON.stringify(item);
-        // сохраним requestBody во внешний стейт
-        StateStorageWrapper.requestBody = requestBody;
+        // сохраним requestBody во внешний стейт:
+        StateStorageWrapper.requestBodyStorage = requestBody;
 
-        storage = [];
+        similarNoteNameStorage = [];
         let promise = findSimilarNotes(formMessage, formTitle);
         await promise;
 
-        if (storage.length > 0) {
+        if (similarNoteNameStorage.length > 0) {
             // переключение в режим "подтверждение/отмена":
             StateStorageWrapper.submitStateStorage = StateStorageWrapper.getState();
             buttonElement.style.display = "block";
@@ -246,8 +247,8 @@ const SubmitButton = (props: ISubscribeProps) => {
             return;
         }
 
-        // совпадения не обнаружены, сохраняем заметку (стандртный режим):
-        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.createUrl);
+        // совпадения не обнаружены, сохраняем заметку ("стандартный" режим):
+        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
     }
 
     const findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
@@ -261,10 +262,10 @@ const SubmitButton = (props: ISubscribeProps) => {
         try {
             promise = Loader.getWithPromise(Loader.complianceIndicesUrl, query, callback);
         } catch (err) {
-            console.log("Find when create: try-catch err");
+            console.log("Find similar notes on create: err in try-catch scope");
         }
 
-        if (promise !== undefined) {
+        if (promise) {
             await promise;
         }
     }
@@ -272,7 +273,7 @@ const SubmitButton = (props: ISubscribeProps) => {
     const getNoteTitles = async (data: Response) => {
         let responseDto = data as unknown as ComplianceResponseDto;
         let response = responseDto.res;
-        if (response === undefined) {
+        if (!response) {
             return;
         }
 
@@ -292,7 +293,7 @@ const SubmitButton = (props: ISubscribeProps) => {
 
         for (let ind = 0; ind < result.length; ind++) {
             // лучше сделать reject:
-            if (storage.length >= 10) {
+            if (similarNoteNameStorage.length >= 10) {
                 continue;
             }
 
@@ -307,7 +308,7 @@ const SubmitButton = (props: ISubscribeProps) => {
                 console.log("Find when create: try-catch err");
             }
 
-            if (promise !== undefined) {
+            if (promise) {
                 await promise;
             }
         }
@@ -315,20 +316,19 @@ const SubmitButton = (props: ISubscribeProps) => {
 
     const getTitle = (input: Response, i: string) => {
         let responseDto = input as unknown as ComplianceResponseDto;
-        storage.push((responseDto.res + '\r\n'));
-        storageId.push(i);
+        similarNoteNameStorage.push((responseDto.res + '\r\n'));
+        similarNotesIdStorage.push(i);
 
         // stub:
         let data = {
-            "structuredTagsListResponse": storage,
+            "structuredTagsListResponse": similarNoteNameStorage,
             "tagsCheckedUncheckedResponse": [],
             "textResponse": getTextRequest(JSON.parse(requestBody)),
             "titleResponse": getTitleRequest(JSON.parse(requestBody)),
-            "tagIdsInternal": storageId
+            "tagIdsInternal": similarNotesIdStorage
         };
-        let time = Date.now();
-        // subscription - на CreateView:
-        props.subscription.setComplexData!({data, time});
+        // subscriber: CreateView:
+        props.subscriber.setData(data);
     }
 
     return (

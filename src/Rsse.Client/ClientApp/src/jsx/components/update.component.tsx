@@ -4,35 +4,23 @@ import {
     getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
     getTitleResponse, setTextResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, ISubscribed} from "../common/contracts.tsx";
+import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
 import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
 import {useEffect, useReducer, useRef, useState} from "react";
 import {FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
 
-interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentStateWrapper<NoteResponseDto>> {
-}
-
-export interface IDataTimeState {
-    data: NoteResponseDto | null;
-    time?: number | null;
-    /** требуется только в компоненте Create */
-    stateStorage?: string|null;
-}
-
 export const UpdateView = () => {
-    // используются два типа: результат фетча NoteResponseDto, и тип стейта IDataTimeState с полями {data,time}
-    const [data, setData] = useState<IDataTimeState|null>({data: null, time: null});
+    const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
-    // где используется поле data для wrapper?
-    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, null, null, setData);
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
 
     const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
     let formId: HTMLFormElement | undefined = refObject.current;
 
     const componentDidMount = () => {
         formId = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.textId, Loader.updateUrl);// зачем тут {data,state} из stateWrapper?
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, Loader.updateUrl);
     }
 
     const componentWillUnmount = () => {
@@ -45,14 +33,14 @@ export const UpdateView = () => {
     }, []);
 
     let checkboxes = [];
-    if (data != null && data.data != null) {
-        for (let i = 0; i < getStructuredTagsListResponse(data.data).length; i++) {
+    if (data) {
+        for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
             // можно создавать time в коде перед добавлением компонента:
             let time = String(Date.now());
             checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
                                       id={String(i)}
-                                      jsonStorage={data.data}
+                                      jsonStorage={data}
                                       formId={undefined}/>);
         }
     }
@@ -62,12 +50,10 @@ export const UpdateView = () => {
         <div id="renderContainer">
             <form ref={castedRefObject} id="dizzy">
                 {checkboxes}
-                {data != null && data.data != null &&
-                    <SubmitButton subscription={stateWrapper} formId={formId} jsonStorage={data.data} id={undefined}/>// III.
+                {data && <SubmitButton subscriber={stateWrapper} formId={formId} jsonStorage={data} id={undefined}/>
                 }
             </form>
-            {data != null && data.data != null && getTextResponse(data.data) != null &&
-                <Message formId={formId} jsonStorage={data.data} id={undefined}/>
+            {data && getTextResponse(data) && <Message formId={formId} jsonStorage={data} id={undefined}/>
             }
         </div>
     );
@@ -138,7 +124,7 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const SubmitButton = (props: ISubscribeProps) => {
+const SubmitButton = (props: IComplexProps) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let formData = new FormData(props.formId);
@@ -148,10 +134,10 @@ const SubmitButton = (props: ISubscribeProps) => {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.jsonStorage),
-            "commonNoteID": window.textId
+            "commonNoteID": window.noteIdStorage
         };
         let requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.updateUrl);
+        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.updateUrl);
     }
 
     return (

@@ -1,37 +1,32 @@
 ﻿import * as React from "react";
-import { Dispatch, SetStateAction } from "react";
-import {IDataTimeState} from "../components/update.component.tsx";
+import {Dispatch, SetStateAction} from "react";
 
-/** Обёртка, позволяющая загрузчику работать со стейтом функциональных компонентов приложения */
+/** Обёртка, позволяющая загрузчику менять стейт функциональных компонентов приложения */
 export class FunctionComponentStateWrapper<T> {
     public mounted: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
-    public setData: Dispatch<SetStateAction<T|null>>|null;
-    public data: T|null;// <= где используется это поле?
-    public setComplexData?: Dispatch<SetStateAction<IDataTimeState|null>>;// <= предопределенный тип IDataTimeState
+    public setData: Dispatch<SetStateAction<T|null>>;
 
     constructor(mounted: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
-                setData: Dispatch<SetStateAction<T|null>>|null,
-                data: T|null,// <= где используется это поле?
-                setComplexData?: Dispatch<SetStateAction<IDataTimeState|null>>) {
+                setData: Dispatch<SetStateAction<T|null>>) {
         this.mounted = mounted;
         this.setData = setData;
-        this.data = data;
-        this.setComplexData = setComplexData;
     }
 }
 
 /** Синглтон, инициализирующий некоторое состояние независимо от компонента */
 export class StateStorageWrapper {
-    static state: number = 0;
-    static renderedAfterRedirect: boolean = false;
-    static redirectCall: boolean = false;
+    private static _state: number = 0;
+
+    /** ReadComponent: вызов (редирект) из каталога */
+    public static renderedAfterRedirect: boolean = false;
+    public static redirectCall: boolean = false;
 
     /** CreateComponent.SubmitButton state: */
-    static submitStateStorage? : number;
-    static requestBody: string = "";
+    public static submitStateStorage? : number;
+    public static requestBodyStorage: string = "";
 
     static setState = (state: number) => {
-        StateStorageWrapper.state = state;
+        StateStorageWrapper._state = state;
     }
-    static getState = () => StateStorageWrapper.state;
+    static getState = () => StateStorageWrapper._state;
 }

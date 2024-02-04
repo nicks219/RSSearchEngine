@@ -7,7 +7,7 @@ import {
 } from "../common/dto.handlers.tsx";
 import {createRoot, Root} from "react-dom/client";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {ISimpleProps, ISubscribed} from "../common/contracts.tsx";
+import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {toggleMenuVisibility} from "../common/visibility.handlers.tsx";
 import {useEffect, useRef, useState} from "react";
 import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
@@ -22,14 +22,10 @@ class SearchButtonContainer {
     static getRoot: Root = createRoot(this.searchButtonOneElement);
 }
 
-// переделай контракты на типы
-interface ISubscribeProps extends ISimpleProps, ISubscribed<FunctionComponentStateWrapper<NoteResponseDto>> {
-}
-
 const ReadViewParametrized = ({textId}: PathParameters) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
-    const stateWrapper = new FunctionComponentStateWrapper(mounted, setData, data);
+    const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formId: HTMLFormElement|undefined = refObject.current;
@@ -67,7 +63,7 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
     const componentDidUpdate = () => {
         SearchButtonContainer.getRoot.render(
             <div>
-                <SubmitButton subscription={stateWrapper} formId={formId} jsonStorage={undefined} id={undefined}/>
+                <SubmitButton subscriber={stateWrapper} formId={formId} jsonStorage={undefined} id={undefined}/>
             </div>
         );
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "#405060";//"#e9ecee"
@@ -92,7 +88,7 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
     }
 
     let checkboxes = [];
-    if (data != null) {
+    if (data) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             checkboxes.push(<Checkbox key={`checkbox ${i}`} id={String(i)} jsonStorage={data} formId={undefined}/>);
         }
@@ -103,8 +99,7 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
         <div>
             <form ref={castedRefObject} id="dizzy">{checkboxes}</form>
             <div id="messageBox">
-                {data != null && getTextResponse(data) != null &&
-                    <Message formId={formId} jsonStorage={data} id={undefined}/>}
+                {data && getTextResponse(data) && <Message formId={formId} jsonStorage={data} id={undefined}/>}
             </div>
         </div>
     );
@@ -132,12 +127,12 @@ const Message = (props: ISimpleProps) => {
     }
 
     if (props.jsonStorage && Number(getCommonNoteId(props.jsonStorage)) !== 0) {
-        window.textId = Number(getCommonNoteId(props.jsonStorage));
+        window.noteIdStorage = Number(getCommonNoteId(props.jsonStorage));
     }
 
     return (
         <span>
-                {props.jsonStorage != null ? (getTextResponse(props.jsonStorage) != null ?
+                {props.jsonStorage ? (getTextResponse(props.jsonStorage) ?
                         <span>
                         <div id="songTitle" onClick={hideMenu}>
                             {getTitleResponse(props.jsonStorage)}
@@ -146,7 +141,7 @@ const Message = (props: ISimpleProps) => {
                             <NoteTextSupportsLinks text={getTextResponse(props.jsonStorage) ?? ""}/>
                         </div>
                     </span>
-                        : "выберите тег")
+                        : "select tag please")
                     : ""}
             </span>
     );
@@ -166,7 +161,7 @@ const NoteTextSupportsLinks = ({text}: TextWithLinksProps) => {
     return <div className="user-text">{res}</div>
 }
 
-const SubmitButton = (props: ISubscribeProps) => {
+const SubmitButton = (props: IComplexProps) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         (document.getElementById("login") as HTMLElement).style.display = "none";
@@ -176,7 +171,7 @@ const SubmitButton = (props: ISubscribeProps) => {
             "tagsCheckedRequest": checkboxesArray
         };
         let requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.subscription, requestBody, Loader.readUrl);
+        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.readUrl);
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey";
     }
 

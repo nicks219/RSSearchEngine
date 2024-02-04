@@ -1,11 +1,7 @@
 ﻿import {createRoot} from "react-dom/client";
-import {Component} from "react";
-import {IMountedComponent} from "./contracts.tsx";
 import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
-import {getPageNumber} from "./dto.handlers.tsx";
-import {CatalogResponseDto} from "../dto/request.response.dto.tsx";
 
-/** Изменить видимость контейнера с меню на противоположную, см. login: Visible/Invisible и hideMenu() по коду */
+/** Изменить видимость контейнера с меню на противоположную, см. по коду LoginBoxHandler: Visible/Invisible + hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
     if (cssProperty !== "none") {
         cssProperty = "none";
@@ -28,30 +24,15 @@ export class LoginBoxHandler {
         (document.getElementById("loginMessage") as HTMLElement).style.display = "none";
     }
 
-    static SetVisible<T>(component: (Component & IMountedComponent)|FunctionComponentStateWrapper<T>, url: string) {
-        window.temp = component;
-        window.url = url;
-
-        // FC / IMounted switch:
-        if (component instanceof FunctionComponentStateWrapper) {
-            const castedComponent = component as FunctionComponentStateWrapper<T>;
-            window.pageNumber = getPageNumber(castedComponent.data as CatalogResponseDto);
-        }
-        else {
-            const state: Readonly<object> = (component as (Component & IMountedComponent)).state;
-            if (Object.prototype.hasOwnProperty.call(state, 'data')) {
-                const data = 'data' as keyof typeof state;
-                window.pageNumber = getPageNumber(state[data]);
-            }
-        }
+    static SetVisible<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string) {
+        window.stateWrapperStorage = stateWrapper;
+        window.urlStorage = url;
 
         (document.getElementById("loginMessage") as HTMLElement).style.display = "block";
         (document.getElementById("login") as HTMLElement).style.display = "block";
         LoginBoxHandler.login = true;
         LoginBoxHandler.loginMessageRoot.render(
-            <h1>
-                LOGIN PLEASE
-            </h1>
+            <h1>Login please</h1>
         );
     }
 }

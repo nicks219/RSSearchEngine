@@ -9,9 +9,11 @@ export class NoteResponseDto {
     textResponse? : string;
     tagsCheckedUncheckedResponse?: string[];
     structuredTagsListResponse?: string[];
-    commonNoteID? : number;
-    /** поле хранит идентификаторы заметок, выведенных в чекбоксах */
+
+    /** Create: поле хранит идентификаторы заметок, выведенных в чекбоксах */
     tagIdsInternal?: string[];
+    /** Create: хранение id созданной заметки, дополнительно хранение идинтификатора для редиректа */
+    commonNoteID? : number;
 }
 
 export class CatalogResponseDto {

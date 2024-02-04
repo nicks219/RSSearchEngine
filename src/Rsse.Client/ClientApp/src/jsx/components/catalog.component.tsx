@@ -8,7 +8,7 @@ import {StateStorageWrapper, FunctionComponentStateWrapper} from "../common/stat
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
     const mounted = useState(true);
-    const stateWrapper = new FunctionComponentStateWrapper(mounted, setData, data);
+    const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
 
     useEffect(() => {
         Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);
