@@ -1,11 +1,10 @@
 ﻿import * as React from 'react';
-import { createRoot } from "react-dom/client";
-
-import { HomeView } from "../components/read.component.tsx";
-import UpdateView from "../components/update.component.tsx";
-import CreateView from "../components/create.component.tsx";
-import CatalogView from "../components/catalog.component.tsx";
-import { LoginComponent } from "../components/login.component.tsx";
+import {createRoot} from "react-dom/client";
+import {ReadView} from "./read.component.tsx";
+import {UpdateView} from "./update.component.tsx";
+import {CreateView} from "./create.component.tsx";
+import {CatalogView} from "./catalog.component.tsx";
+import {LoginComponent} from "./login.component.tsx";
 
 import {
     HashRouter,
@@ -18,10 +17,10 @@ declare global {
     interface Window { textId: number }
 }
 
-window.textId = 0;
+window.noteIdStorage = 0;
 window.React = React;
 
-export const MenuRouter = () => {
+export const MenuWithRouter = () => {
         return (
             <HashRouter>
                 <div>
@@ -36,8 +35,8 @@ export const MenuRouter = () => {
 
                     <div id="renderContainer1">
                         <Routes>
-                            <Route path="/" element={<HomeView />}/>
-                            <Route path="/read/:textId" element={<HomeView />}/>
+                            <Route path="/" element={<ReadView />}/>
+                            <Route path="/read/:textId" element={<ReadView />}/>
                             <Route path="/update" element={<UpdateView />}/>
                             <Route path="/create" element={<CreateView />}/>
                             <Route path="/catalog" element={<CatalogView />}/>

@@ -1,182 +1,149 @@
 ﻿import * as React from 'react';
-import {IMountedComponent, LoaderComponent} from "./loader.component.tsx";
-import { menuHandler } from "../menu/menu.handler.tsx";
+import {Loader} from "../common/loader.tsx";
 import {
-    getStructuredTagsListResponse,
-    getTagsCheckedUncheckedResponse,
-    getTextResponse,
+    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
     getTitleResponse, setTextResponse
-} from "../dto/dto.note.tsx";
-import {ISimpleProps} from "../contracts/i.simple.props.tsx";
-import {NoteResponseDto} from "../dto/note.response.dto.tsx";
-import {ISubscribed} from "../contracts/i.subscribed.tsx";
+} from "../common/dto.handlers.tsx";
+import {NoteResponseDto} from "../dto/request.response.dto.tsx";
+import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
+import {useEffect, useReducer, useRef, useState} from "react";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
 
-interface IState {
-    data: NoteResponseDto|null;
-    time: number|null;
-}
+export const UpdateView = () => {
+    const [data, setData] = useState<NoteResponseDto|null>(null);
+    const mounted = useState(true);
+    const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
 
-interface IProps extends ISimpleProps, ISubscribed<UpdateView> {
-}
+    const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
+    let formElement: HTMLFormElement|undefined = refObject.current;
 
-class UpdateView extends React.Component<ISimpleProps, IState> implements IMountedComponent {
-    formId?: HTMLFormElement;
-    mounted: boolean;
-
-    public state: IState = {
-        data: null,
-        time: null
+    const componentDidMount = () => {
+        formElement = refObject.current;
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, Loader.updateUrl);
     }
 
-    mainForm: React.RefObject<HTMLFormElement>;
-
-    constructor(props: IProps) {
-        super(props);
-        this.formId = undefined;
-        this.mounted = true;
-
-        this.mainForm = React.createRef();
+    const componentWillUnmount = () => {
+        mounted[0] = false;
     }
 
-    componentDidMount() {
-        this.formId = this.mainForm.current == null ? undefined : this.mainForm.current;
-        LoaderComponent.unusedPromise = LoaderComponent.getDataById(this, window.textId, LoaderComponent.updateUrl);
-    }
+    useEffect(() => {
+        componentDidMount();
+        return componentWillUnmount;
+    }, []);
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    render() {
-        let checkboxes = [];
-        if (this.state != null && this.state.data != null) {
-            for (let i = 0; i < getStructuredTagsListResponse(this.state.data).length; i++) {
-                checkboxes.push(<Checkbox key={"checkbox " + i + this.state.time} id={String(i)} jsonStorage={this.state.data} formId={undefined}/>);
-            }
+    const checkboxes = [];
+    if (data) {
+        for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
+            // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
+            // можно создавать time в коде перед добавлением компонента:
+            let time = String(Date.now());
+            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
+                                      id={String(i)}
+                                      noteDto={data} />);
         }
-
-        return (
-            <div id="renderContainer">
-                <form ref={this.mainForm} id="dizzy">
-                    {checkboxes}
-                    {this.state != null && this.state.data != null &&
-                        <SubmitButton subscription={this} formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
-                    }
-                </form>
-                {this.state != null && this.state.data != null && getTextResponse(this.state.data) != null &&
-                    <Message formId={this.formId} jsonStorage={this.state.data} id={undefined}/>
-                }
-            </div>
-        );
     }
+
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
+    return (
+        <div id="renderContainer">
+            <form ref={castedRefObject} id="dizzy">
+                {checkboxes}
+                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
+            </form>
+            {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />}
+        </div>
+    );
 }
 
-class Checkbox extends React.Component<ISimpleProps> {
-
-    render() {
-        let checked = getTagsCheckedUncheckedResponse(this.props) === "checked";
-        let getGenreName = (i: number) => {
-            return getStructuredTagsListResponse(this.props.jsonStorage)[i];
-        };
-        return (
-            <div id="checkboxStyle">
-                <input name="chkButton" value={this.props.id} type="checkbox" id={this.props.id} className="regular-checkbox"
-                    defaultChecked={checked} />
-                <label htmlFor={this.props.id}>{getGenreName(Number(this.props.id))}</label>
-            </div>
-        );
-    }
+const Checkbox = (props: {noteDto: NoteResponseDto, id: string}) => {
+    const checked = getTagsCheckedUncheckedResponse(props) === "checked";
+    const getTagName = (i: number) => {
+        return getStructuredTagsListResponse(props.noteDto)[i];
+    };
+    return (
+        <div id="checkboxStyle">
+            <input name="chkButton" value={props.id} type="checkbox" id={props.id}
+                   className="regular-checkbox"
+                   defaultChecked={checked}/>
+            <label htmlFor={props.id}>{getTagName(Number(props.id))}</label>
+        </div>
+    );
 }
 
-class Message extends React.Component<ISimpleProps> {
-    constructor(props: ISimpleProps) {
-        super(props);
-        this.hideMenu = this.hideMenu.bind(this);
-    }
+const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-    componentDidMount() {
-        this.getCookie();
-    }
+    useEffect(() => {
+        getCookie();
+    }, []);
 
     // именование кук ASP.NET: ".AspNetCore.Cookies"
-    getCookie = () => {
+    // учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
+    const getCookie = () => {
         // куки выставляются в компоненте Login:
         const name = "rsse_auth";
-        let matches = document.cookie.match(new RegExp(
+        const matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
         ));
 
-        if (matches == null || decodeURIComponent(matches[1]) === 'false')
-        {
-            this.hideMenu();
+        if (matches == null || decodeURIComponent(matches[1]) === 'false') {
+            hideMenu();
         }
     }
 
-    hideMenu() {
-        if (this.props.formId) this.props.formId.style.display = menuHandler(this.props.formId.style.display);
-        (document.getElementById("login")as HTMLElement).style.display = "block";
+    const hideMenu = () => {
+        if (props.formElement) props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
+        (document.getElementById("login") as HTMLElement).style.display = "block";
     }
 
-    inputText = (e: string) => {
-        setTextResponse(this.props.jsonStorage, e);
-        this.forceUpdate();
+    const inputText = (e: string) => {
+        setTextResponse(props.noteDto, e);
+        forceUpdate();
     }
 
-    render() {
-        return (
-            <div >
-                <p />
-                {this.props.jsonStorage != null ? ( getTextResponse(this.props.jsonStorage) != null ?
+    return (
+        <div>
+            <p/>
+            {props.noteDto != null ? (getTextResponse(props.noteDto) != null ?
                     <div>
-                        <h1 onClick={this.hideMenu}>
-                            { getTitleResponse(this.props.jsonStorage) }
+                        <h1 onClick={hideMenu}>
+                            {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                value={ getTextResponse(this.props.jsonStorage) } onChange={e => this.inputText(e.target.value)} />
+                                      value={getTextResponse(props.noteDto)}
+                                      onChange={e => inputText(e.target.value)}/>
                         </h5>
                     </div>
                     : "выберите заметку")
-                    : "loading.."}
-            </div>
-        );
-    }
+                : "loading.."}
+        </div>
+    );
 }
 
-class SubmitButton extends React.Component<IProps> {
-
-    constructor(props: IProps) {
-        super(props);
-        this.submit = this.submit.bind(this);
-    }
-
-    submit(e: React.SyntheticEvent) {
+const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+    const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let formData = new FormData(this.props.formId);
-        let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
-        let formMessage = formData.get("msg");
+        const formData = new FormData(props.formElement);
+        const checkboxesArray =
+            (formData.getAll("chkButton"))
+            .map(a => Number(a) + 1);
+        const formMessage = formData.get("msg");
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
-            "titleRequest": getTitleResponse(this.props.jsonStorage),
-            "commonNoteID": window.textId
+            "titleRequest": getTitleResponse(props.noteDto),
+            "commonNoteID": window.noteIdStorage
         };
-        let requestBody = JSON.stringify(item);
-        LoaderComponent.unusedPromise = LoaderComponent.postData(this.props.subscription, requestBody, LoaderComponent.updateUrl);
+        const requestBody = JSON.stringify(item);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);
     }
 
-    componentWillUnmount() {
-        // отменяй подписки и асинхронную загрузку
-    }
-
-    render() {
-        return (
-            <div id="submitStyle">
-                <input type="checkbox" id="submitButton" className="regular-checkbox" onClick={this.submit} />
-                <label htmlFor="submitButton">Сохранить</label>
-            </div>
-        );
-    }
+    return (
+        <div id="submitStyle">
+            <input type="checkbox" id="submitButton" className="regular-checkbox" onClick={submit}/>
+            <label htmlFor="submitButton">Сохранить</label>
+        </div>
+    );
 }
 
-export default UpdateView;
