@@ -13,7 +13,9 @@ export class FunctionComponentStateWrapper<T> {
     }
 }
 
-/** Синглтон, инициализирующий некоторое состояние независимо от компонента */
+// TODO: сократи количество полей для внешнего стейта
+
+/** Глобальный стейт с некоторой инициализацией */
 export class StateStorageWrapper {
     private static _state: number = 0;
 
@@ -29,4 +31,16 @@ export class StateStorageWrapper {
         StateStorageWrapper._state = state;
     }
     static getState = () => StateStorageWrapper._state;
+}
+
+/** Дополнительный глобальный стейт */
+declare global {
+    interface Window {
+        /** передача номера заметки между компонентами */
+        noteIdStorage: number,
+        /** выставляется в SetVisible<T> */
+        stateWrapperStorage: FunctionComponentStateWrapper<any>,
+        /** выставляется в SetVisible<T> */
+        urlStorage: string
+    }
 }

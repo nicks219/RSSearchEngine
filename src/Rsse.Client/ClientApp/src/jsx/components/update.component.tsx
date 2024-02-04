@@ -31,7 +31,7 @@ export const UpdateView = () => {
         return componentWillUnmount;
     }, []);
 
-    let checkboxes = [];
+    const checkboxes = [];
     if (data) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
@@ -48,18 +48,16 @@ export const UpdateView = () => {
         <div id="renderContainer">
             <form ref={castedRefObject} id="dizzy">
                 {checkboxes}
-                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />
-                }
+                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
             </form>
-            {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />
-            }
+            {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />}
         </div>
     );
 }
 
 const Checkbox = (props: {noteDto: NoteResponseDto, id: string}) => {
-    let checked = getTagsCheckedUncheckedResponse(props) === "checked";
-    let getTagName = (i: number) => {
+    const checked = getTagsCheckedUncheckedResponse(props) === "checked";
+    const getTagName = (i: number) => {
         return getStructuredTagsListResponse(props.noteDto)[i];
     };
     return (
@@ -80,10 +78,11 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
     }, []);
 
     // именование кук ASP.NET: ".AspNetCore.Cookies"
+    // учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
     const getCookie = () => {
         // куки выставляются в компоненте Login:
         const name = "rsse_auth";
-        let matches = document.cookie.match(new RegExp(
+        const matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
         ));
 
@@ -125,16 +124,18 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
 const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let formData = new FormData(props.formElement);
-        let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
-        let formMessage = formData.get("msg");
+        const formData = new FormData(props.formElement);
+        const checkboxesArray =
+            (formData.getAll("chkButton"))
+            .map(a => Number(a) + 1);
+        const formMessage = formData.get("msg");
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.noteDto),
             "commonNoteID": window.noteIdStorage
         };
-        let requestBody = JSON.stringify(item);
+        const requestBody = JSON.stringify(item);
         Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);
     }
 

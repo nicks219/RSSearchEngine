@@ -6,7 +6,7 @@ import {
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
-import {useEffect, useReducer, useRef, useState} from "react";
+import {Dispatch, SetStateAction, useEffect, useReducer, useRef, useState} from "react";
 import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
 
 export const CreateView = () => {
@@ -59,7 +59,7 @@ export const CreateView = () => {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             let time = String(Date.now());
             // subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
-            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)} noteDto={data} stateWrapper={stateWrapper}/>);
+            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)} noteDto={data} onClick={stateWrapper.setData}/>);
         }
     }
 
@@ -75,14 +75,14 @@ export const CreateView = () => {
                   id="dizzy">
                 {checkboxes}
                 {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
-                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} />}
+                {data && <SubmitButton formElement={formElement} stateWrapper={stateWrapper} />}
             </form>
             {data && <Note noteDto={data} />}
         </div>
     );
 }
 
-const Checkbox = (props: {noteDto: NoteResponseDto, id: string, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatch<SetStateAction<NoteResponseDto|null>>}) => {
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
@@ -111,7 +111,7 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, stateWrapper: Fu
             // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
             // commonNoteID также выставляется при сохранении новой заметки:
             noteResponseDto.commonNoteID = Number(id);
-            props.stateWrapper.setData(noteResponseDto);
+            props.onClick(noteResponseDto);
         }
     }
 
@@ -168,7 +168,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
 
     const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
+        const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
         // отмена - сохраняем текст и название:
@@ -177,8 +177,8 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         // восстанавливаем requestBody - из внешнего стейта:
         if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
 
-        let text = getTextRequest(JSON.parse(requestBody));
-        let title = getTitleRequest(JSON.parse(requestBody));
+        const text = getTextRequest(JSON.parse(requestBody));
+        const title = getTitleRequest(JSON.parse(requestBody));
 
         requestBody = JSON.stringify({
             "tagsCheckedRequest": [],
@@ -207,7 +207,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     const submit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
-        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
+        const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
         StateStorageWrapper.submitStateStorage = undefined;
 
@@ -220,10 +220,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
             return;
         }
 
-        let formData = new FormData(props.formElement);
-        let checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
-        let formMessage = formData.get('msg');
-        let formTitle = formData.get('ttl');
+        const formData = new FormData(props.formElement);
+        const checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
+        const formMessage = formData.get('msg');
+        const formTitle = formData.get('ttl');
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
@@ -234,8 +234,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         StateStorageWrapper.requestBodyStorage = requestBody;
 
         similarNoteNameStorage = [];
-        let promise = findSimilarNotes(formMessage, formTitle);
-        await promise;
+        await findSimilarNotes(formMessage, formTitle);
 
         if (similarNoteNameStorage.length > 0) {
             // переключение в режим "подтверждение/отмена":
@@ -250,37 +249,32 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     }
 
     const findSimilarNotes = async (formMessage: FormDataEntryValue|null, formTitle: FormDataEntryValue|null) => {
-        let promise;
         if (typeof formMessage === "string") {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
         }
 
-        let callback = (data: Response) => getNoteTitles(data);
-        let query = "?text=" + formMessage + " " + formTitle;
+        const query = "?text=" + formMessage + " " + formTitle;
+        const callback = (data: Response) => getNoteTitles(data);
         try {
-            promise = Loader.getWithPromise(Loader.complianceIndicesUrl, query, callback);
+            await Loader.getWithPromise(Loader.complianceIndicesUrl, query, callback);
         } catch (err) {
-            console.log("Find similar notes on create: err in try-catch scope");
-        }
-
-        if (promise) {
-            await promise;
+            console.log(`Find similar notes on create: ${err} in try-catch scope`);
         }
     }
 
     const getNoteTitles = async (response: Response) => {
-        let responseDto = response as unknown as ComplianceResponseDto;
-        let responseResult = responseDto.res;
+        const responseDto = response as unknown as ComplianceResponseDto;
+        const responseResult = responseDto.res;
         if (!responseResult) {
             return;
         }
 
-        let array: number[][] = Object.keys(responseResult).map((key) => [Number(key), responseResult[Number(key)]]);
+        const array: number[][] = Object.keys(responseResult).map((key) => [Number(key), responseResult[Number(key)]]);
         array.sort(function (a, b) {
             return b[1] - a[1]
         });
 
-        let result = [];
+        const result = [];
         for (let index in array) {
             result.push(array[index]);
         }
@@ -296,36 +290,29 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
             }
 
             // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
-            let promise;
-            let id = String(result[index][0]);
-            let callback = (data: Response) => getTitle(data, id);
-            let query = "?id=" + id;
+            const id = String(result[index][0]);
+            const query = "?id=" + id;
+            const callback = (data: Response) => getTitle(data, id);
             try {
-                promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
+                await Loader.getWithPromise(Loader.readTitleUrl, query, callback);
             } catch (err) {
-                console.log("Find when create: try-catch err");
-            }
-
-            if (promise) {
-                await promise;
+                console.log(`Get note titles on create: ${err} in try-catch scope`);
             }
         }
     }
 
     const getTitle = (response: Response, id: string) => {
-        let responseDto = response as unknown as ComplianceResponseDto;
+        const responseDto = response as unknown as ComplianceResponseDto;
         similarNoteNameStorage.push((responseDto.res + '\r\n'));
         similarNotesIdStorage.push(id);
 
-        // stub:
-        let data = {
+        const data = {
             "structuredTagsListResponse": similarNoteNameStorage,
             "tagsCheckedUncheckedResponse": [],
             "textResponse": getTextRequest(JSON.parse(requestBody)),
             "titleResponse": getTitleRequest(JSON.parse(requestBody)),
             "tagIdsInternal": similarNotesIdStorage
         };
-        // subscriber: CreateView:
         props.stateWrapper.setData(data);
     }
 

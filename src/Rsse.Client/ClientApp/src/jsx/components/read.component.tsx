@@ -32,12 +32,12 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        if (!StateStorageWrapper.redirectCall) {
-            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
-        } else {
+        if (StateStorageWrapper.redirectCall) {
             // при редиректе из каталога (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
+        } else {
+            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         }
 
         StateStorageWrapper.redirectCall = false;
@@ -76,11 +76,8 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     if (props.noteId && !StateStorageWrapper.renderedAfterRedirect) {
         // редирект из каталога:
         console.log(`Get text id from path params: ${props.noteId}`);
-
-        const item = {
-            "tagsCheckedRequest": []
-        };
-        let requestBody = JSON.stringify(item);
+        const item = {"tagsCheckedRequest": []};
+        const requestBody = JSON.stringify(item);
 
         StateStorageWrapper.redirectCall = true;
         StateStorageWrapper.renderedAfterRedirect = true;
@@ -89,8 +86,8 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
 
     let checkboxes = [];
     if (data) {
-        for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
-            checkboxes.push(<Checkbox key={`checkbox ${i}`} id={String(i)} noteDto={data} />);
+        for (let index = 0; index < getStructuredTagsListResponse(data).length; index++) {
+            checkboxes.push(<Checkbox key={`checkbox ${index}`} id={String(index)} noteDto={data} />);
         }
     }
 
@@ -106,7 +103,7 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
 }
 
 const Checkbox = (props: {id: string, noteDto: NoteResponseDto}) => {
-    let getTagName = (i: number) => getStructuredTagsListResponse(props.noteDto)[i];
+    const getTagName = (i: number) => getStructuredTagsListResponse(props.noteDto)[i];
     return (
         <div id="checkboxStyle">
             <input name="chkButton" value={props.id} type="checkbox" id={props.id}
@@ -147,7 +144,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
 
 const NoteTextSupportsLinks = (props: {noteText: string}): JSX.Element => {
     // deprecated: JSX
-    let res: (string | JSX.Element)[] = [];
+    const res: (string | JSX.Element)[] = [];
     // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
     props && props.noteText.replace(
         /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
@@ -163,12 +160,12 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         (document.getElementById("login") as HTMLElement).style.display = "none";
-        let formData = new FormData(props.formElement);
-        let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
+        const formData = new FormData(props.formElement);
+        const checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
         const item = {
             "tagsCheckedRequest": checkboxesArray
         };
-        let requestBody = JSON.stringify(item);
+        const requestBody = JSON.stringify(item);
         Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.readUrl);
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey";
     }

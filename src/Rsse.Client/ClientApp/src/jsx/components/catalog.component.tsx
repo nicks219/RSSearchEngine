@@ -64,8 +64,8 @@ export const CatalogView = (): JSX.Element|undefined => {
 
     if (!data) return;
 
-    let notes: JSX.Element[] = [];
-    let itemArray = getCatalogPage(data);
+    const notes: JSX.Element[] = [];
+    const itemArray = getCatalogPage(data);
 
     // работа с дампами:
     if (data.res && StateStorageWrapper.getState() === 1) {
@@ -89,18 +89,18 @@ export const CatalogView = (): JSX.Element|undefined => {
         StateStorageWrapper.setState(0);
     }
     // на отладке можно получить пустой стейт и исключение:
-    else if (itemArray !== null && itemArray !== undefined) {
-        for (let i = 0; i < itemArray.length; i++) {
+    else if (itemArray) {
+        for (let index = 0; index < itemArray.length; index++) {
             notes.push(
-                <tr key={"song " + i} className="bg-warning">
+                <tr key={"song " + index} className="bg-warning">
                     <td></td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[i].item2}
-                                onClick={onRedirect}>{itemArray[i].item1}
+                        <button className="btn btn-outline-light" id={itemArray[index].item2}
+                                onClick={onRedirect}>{itemArray[index].item1}
                         </button>
                     </td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[i].item2}
+                        <button className="btn btn-outline-light" id={itemArray[index].item2}
                                 onClick={onDelete}>
                             &#10060;
                         </button>

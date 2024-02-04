@@ -29,14 +29,16 @@ export class Loader {
     }
 
     static redirectToMenu = (url: string) => {
+        const error = `${Loader.name}: redirectToMenu exception`;
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
+
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
             console.log("Redirect to: " + redirectTo);
             window.location.href = redirectTo;
         } catch {
-            console.log("Loader: redirect exception");
+            console.log(error);
         }
     }
 
@@ -60,11 +62,10 @@ export class Loader {
     }
 
     // GET request: /api/controller
-    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
-                            url: string): Promise<void> {
+    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string): Promise<void> {
+        const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
-        const error: string = "Loader: get exception";
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url, {
@@ -81,9 +82,9 @@ export class Loader {
     static async getDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                                 requestId: number|undefined,
                                 url: string): Promise<void> {
+        const error: string = `${Loader.name}: getDataById exception`;
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
-        const error: string = "Loader: getById exception";
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(requestId), {credentials: this.corsCredentialsPolicy});
@@ -99,9 +100,9 @@ export class Loader {
                              requestBody: string,
                              url: string,
                              id: number|string|null = null): Promise<void> {
+        const error: string = `${Loader.name}: postData exception`;
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
-        const error: string = "Loader: post exception";
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(id), {
@@ -122,9 +123,9 @@ export class Loader {
                                    requestId: number,
                                    url: string,
                                    pageNumber?: number): Promise<void> {
+        const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
         LoginBoxHandler.SetInvisible();
-        const error: string = "Loader: delete exception";
 
         try {
             const response = await fetch(
@@ -144,8 +145,8 @@ export class Loader {
                                      query: string,
                                      callback: (v: Response)=>Response|PromiseLike<Response>|void,
                                      stateWrapper: FunctionComponentStateWrapper<T>|null): void {
+        const error: string = `${Loader.name}: FnF or login/logout exception`;
         Loader.setupDevEnvironment();
-        const error: string = "Loader: login/logout exception";
 
         try {
             fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy}).then(callback);
@@ -159,8 +160,8 @@ export class Loader {
 
     // CREATE: /api/find?text= or /api/read/title?id=
     static getWithPromise = async(url: string, query: string, callback: (data: Response)=>Promise<void>|void): Promise<void> => {
+        const error: string = `${Loader.name}: promise exception`;
         Loader.setupDevEnvironment();
-        const error: string = "Loader: promise exception";
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy});
