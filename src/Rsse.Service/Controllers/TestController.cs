@@ -32,7 +32,7 @@ public class TestController : Controller
     [HttpGet("get/version")]
     public ActionResult GetVersion()
     {
-        return Ok("v5.2.0: .NET8 + React 18");
+        return Ok("v5.2.1: .NET8 + React 18 + FC");
     }
 
     // TODO последующие ручки переписать либо удалить:
