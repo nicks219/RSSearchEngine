@@ -79,7 +79,7 @@ export const CreateView = () => {
                 {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
                 {data && <SubmitButton subscriber={stateWrapper} formId={formId} id={undefined} jsonStorage={undefined}/>}
             </form>
-            {data && <Message formId={formId} jsonStorage={data!} id={undefined}/>}
+            {data && <Message formId={formId} jsonStorage={data} id={undefined}/>}
         </div>
     );
 }

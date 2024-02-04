@@ -22,7 +22,7 @@ class SearchButtonContainer {
     static getRoot: Root = createRoot(this.searchButtonOneElement);
 }
 
-const ReadViewParametrized = ({textId}: PathParameters) => {
+const ReadViewParametrized = (props: {textId?: string}) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
@@ -73,9 +73,9 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
         componentDidUpdate();
     }, [data]);
 
-    if (textId && !StateStorageWrapper.renderedAfterRedirect) {
+    if (props.textId && !StateStorageWrapper.renderedAfterRedirect) {
         // редирект из каталога:
-        console.log(`Get text id from path params: ${textId}`);
+        console.log(`Get text id from path params: ${props.textId}`);
 
         const item = {
             "tagsCheckedRequest": []
@@ -84,7 +84,7 @@ const ReadViewParametrized = ({textId}: PathParameters) => {
 
         StateStorageWrapper.redirectCall = true;
         StateStorageWrapper.renderedAfterRedirect = true;
-        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, textId);
+        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.textId);
     }
 
     let checkboxes = [];
@@ -147,11 +147,11 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const NoteTextSupportsLinks = ({text}: TextWithLinksProps) => {
+const NoteTextSupportsLinks = (props: {text:string}): JSX.Element => {
     // deprecated: JSX
     let res: (string | JSX.Element)[] = [];
     // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
-    text && text.replace(
+    props && props.text.replace(
         /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
         (_: string, link: string, text: string): string => {
             res.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
@@ -181,12 +181,4 @@ const SubmitButton = (props: IComplexProps) => {
             <label htmlFor="submitButton">Поиск</label>
         </div>
     );
-}
-
-type TextWithLinksProps = {
-    text: string;
-}
-
-type PathParameters = {
-    textId?: string;
 }
