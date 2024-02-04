@@ -4,7 +4,6 @@ import {
     getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
     getTitleResponse, setTextResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
 import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
 import {useEffect, useReducer, useRef, useState} from "react";
@@ -15,11 +14,11 @@ export const UpdateView = () => {
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
 
-    const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
-    let formId: HTMLFormElement | undefined = refObject.current;
+    const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
+    let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
-        formId = refObject.current;
+        formElement = refObject.current;
         Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, Loader.updateUrl);
     }
 
@@ -40,29 +39,28 @@ export const UpdateView = () => {
             let time = String(Date.now());
             checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
                                       id={String(i)}
-                                      jsonStorage={data}
-                                      formId={undefined}/>);
+                                      noteDto={data} />);
         }
     }
 
-    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div id="renderContainer">
             <form ref={castedRefObject} id="dizzy">
                 {checkboxes}
-                {data && <SubmitButton subscriber={stateWrapper} formId={formId} jsonStorage={data} id={undefined}/>
+                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />
                 }
             </form>
-            {data && getTextResponse(data) && <Message formId={formId} jsonStorage={data} id={undefined}/>
+            {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />
             }
         </div>
     );
 }
 
-const Checkbox = (props: ISimpleProps) => {
+const Checkbox = (props: {noteDto: NoteResponseDto, id: string}) => {
     let checked = getTagsCheckedUncheckedResponse(props) === "checked";
     let getTagName = (i: number) => {
-        return getStructuredTagsListResponse(props.jsonStorage)[i];
+        return getStructuredTagsListResponse(props.noteDto)[i];
     };
     return (
         <div id="checkboxStyle">
@@ -74,7 +72,7 @@ const Checkbox = (props: ISimpleProps) => {
     );
 }
 
-const Message = (props: ISimpleProps) => {
+const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
@@ -95,26 +93,26 @@ const Message = (props: ISimpleProps) => {
     }
 
     const hideMenu = () => {
-        if (props.formId) props.formId.style.display = toggleMenuVisibility(props.formId.style.display);
+        if (props.formElement) props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
         (document.getElementById("login") as HTMLElement).style.display = "block";
     }
 
     const inputText = (e: string) => {
-        setTextResponse(props.jsonStorage, e);
+        setTextResponse(props.noteDto, e);
         forceUpdate();
     }
 
     return (
         <div>
             <p/>
-            {props.jsonStorage != null ? (getTextResponse(props.jsonStorage) != null ?
+            {props.noteDto != null ? (getTextResponse(props.noteDto) != null ?
                     <div>
                         <h1 onClick={hideMenu}>
-                            {getTitleResponse(props.jsonStorage)}
+                            {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
                             <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                      value={getTextResponse(props.jsonStorage)}
+                                      value={getTextResponse(props.noteDto)}
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>
                     </div>
@@ -124,20 +122,20 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const SubmitButton = (props: IComplexProps) => {
+const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let formData = new FormData(props.formId);
+        let formData = new FormData(props.formElement);
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
         let formMessage = formData.get("msg");
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
-            "titleRequest": getTitleResponse(props.jsonStorage),
+            "titleRequest": getTitleResponse(props.noteDto),
             "commonNoteID": window.noteIdStorage
         };
         let requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.updateUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);
     }
 
     return (

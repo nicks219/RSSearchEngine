@@ -7,36 +7,36 @@ import {
 } from "../common/dto.handlers.tsx";
 import {createRoot, Root} from "react-dom/client";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {toggleMenuVisibility} from "../common/visibility.handlers.tsx";
 import {useEffect, useRef, useState} from "react";
 import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
 
 export const ReadView = () => {
     const params = useParams();
-    return <ReadViewParametrized textId={params.textId} />;
+    return <ReadViewParametrized noteId={params.textId} />;
 }
 
 class SearchButtonContainer {
     static searchButtonOneElement = document.querySelector("#searchButton1") ?? document.createElement('searchButton1');
-    static getRoot: Root = createRoot(this.searchButtonOneElement);
+    private static _root?: Root = createRoot(this.searchButtonOneElement);
+    static getRoot: Root = (this._root)? this._root : createRoot(this.searchButtonOneElement);
 }
 
-const ReadViewParametrized = (props: {textId?: string}) => {
+const ReadViewParametrized = (props: {noteId?: string}) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
-    let formId: HTMLFormElement|undefined = refObject.current;
+    let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
-        formId = refObject.current;
+        formElement = refObject.current;
         if (!StateStorageWrapper.redirectCall) {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         } else {
             // при редиректе из каталога (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
-            if (formId) formId.style.display = "none";
+            if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
         }
 
@@ -63,7 +63,7 @@ const ReadViewParametrized = (props: {textId?: string}) => {
     const componentDidUpdate = () => {
         SearchButtonContainer.getRoot.render(
             <div>
-                <SubmitButton subscriber={stateWrapper} formId={formId} jsonStorage={undefined} id={undefined}/>
+                <SubmitButton stateWrapper={stateWrapper} formElement={formElement} />
             </div>
         );
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "#405060";//"#e9ecee"
@@ -73,9 +73,9 @@ const ReadViewParametrized = (props: {textId?: string}) => {
         componentDidUpdate();
     }, [data]);
 
-    if (props.textId && !StateStorageWrapper.renderedAfterRedirect) {
+    if (props.noteId && !StateStorageWrapper.renderedAfterRedirect) {
         // редирект из каталога:
-        console.log(`Get text id from path params: ${props.textId}`);
+        console.log(`Get text id from path params: ${props.noteId}`);
 
         const item = {
             "tagsCheckedRequest": []
@@ -84,31 +84,29 @@ const ReadViewParametrized = (props: {textId?: string}) => {
 
         StateStorageWrapper.redirectCall = true;
         StateStorageWrapper.renderedAfterRedirect = true;
-        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.textId);
+        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.noteId);
     }
 
     let checkboxes = [];
     if (data) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
-            checkboxes.push(<Checkbox key={`checkbox ${i}`} id={String(i)} jsonStorage={data} formId={undefined}/>);
+            checkboxes.push(<Checkbox key={`checkbox ${i}`} id={String(i)} noteDto={data} />);
         }
     }
 
-    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div>
             <form ref={castedRefObject} id="dizzy">{checkboxes}</form>
             <div id="messageBox">
-                {data && getTextResponse(data) && <Message formId={formId} jsonStorage={data} id={undefined}/>}
+                {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />}
             </div>
         </div>
     );
 }
 
-const Checkbox = (props: ISimpleProps) => {
-    let getTagName = (i: number) => {
-        return getStructuredTagsListResponse(props.jsonStorage)[i];
-    };
+const Checkbox = (props: {id: string, noteDto: NoteResponseDto}) => {
+    let getTagName = (i: number) => getStructuredTagsListResponse(props.noteDto)[i];
     return (
         <div id="checkboxStyle">
             <input name="chkButton" value={props.id} type="checkbox" id={props.id}
@@ -119,26 +117,26 @@ const Checkbox = (props: ISimpleProps) => {
     );
 }
 
-const Message = (props: ISimpleProps) => {
+const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const hideMenu = () => {
-        if (props.formId) {
-            props.formId.style.display = toggleMenuVisibility(props.formId.style.display);
+        if (props.formElement) {
+            props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
         }
     }
 
-    if (props.jsonStorage && Number(getCommonNoteId(props.jsonStorage)) !== 0) {
-        window.noteIdStorage = Number(getCommonNoteId(props.jsonStorage));
+    if (props.noteDto && Number(getCommonNoteId(props.noteDto)) !== 0) {
+        window.noteIdStorage = Number(getCommonNoteId(props.noteDto));
     }
 
     return (
         <span>
-                {props.jsonStorage ? (getTextResponse(props.jsonStorage) ?
+                {props.noteDto ? (getTextResponse(props.noteDto) ?
                         <span>
                         <div id="songTitle" onClick={hideMenu}>
-                            {getTitleResponse(props.jsonStorage)}
+                            {getTitleResponse(props.noteDto)}
                         </div>
                         <div id="songBody">
-                            <NoteTextSupportsLinks text={getTextResponse(props.jsonStorage) ?? ""}/>
+                            <NoteTextSupportsLinks noteText={getTextResponse(props.noteDto) ?? ""}/>
                         </div>
                     </span>
                         : "select tag please")
@@ -147,11 +145,11 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const NoteTextSupportsLinks = (props: {text:string}): JSX.Element => {
+const NoteTextSupportsLinks = (props: {noteText: string}): JSX.Element => {
     // deprecated: JSX
     let res: (string | JSX.Element)[] = [];
     // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
-    props && props.text.replace(
+    props && props.noteText.replace(
         /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
         (_: string, link: string, text: string): string => {
             res.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
@@ -161,17 +159,17 @@ const NoteTextSupportsLinks = (props: {text:string}): JSX.Element => {
     return <div className="user-text">{res}</div>
 }
 
-const SubmitButton = (props: IComplexProps) => {
+const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         (document.getElementById("login") as HTMLElement).style.display = "none";
-        let formData = new FormData(props.formId);
+        let formData = new FormData(props.formElement);
         let checkboxesArray = (formData.getAll("chkButton")).map(a => Number(a) + 1);
         const item = {
             "tagsCheckedRequest": checkboxesArray
         };
         let requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.readUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.readUrl);
         (document.getElementById("header") as HTMLElement).style.backgroundColor = "slategrey";
     }
 

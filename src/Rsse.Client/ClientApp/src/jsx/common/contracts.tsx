@@ -1,25 +1,16 @@
-﻿import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
+﻿import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
 
-// TODO: переделать эти контракты без методов в типы?
+// TODO: данные контракты были нужны на этапе рефакторинга, сейчас следует избавиться от них
 
-export interface ISimpleProps {
-    formId?: HTMLFormElement;
-    jsonStorage?: NoteResponseDto;
-    id?: string;
-}
+// export interface ISimpleProps {formElement?: HTMLFormElement; noteDto?: NoteResponseDto; id?: string;}
+// export interface ISubscribedProps<T> {stateWrapper: T;}
+// export interface IComplexProps extends ISimpleProps, ISubscribedProps<FunctionComponentStateWrapper<NoteResponseDto>> {}
 
-export interface ISubscribedProps<T> {
-    subscriber: T;
-}
+// TODO: избавиться от данного "интрефейса" (хранилища глобального стейта): требуется ли явное "продолжение загрузки"?
+// TODO: избавиться от <any> в FunctionComponentStateWrapper<any>: тип данных для смены стейта знает только компонент отображения и Loader:
+// stateWrapperStorage/url выставляются в SetVisible<T>; noteIdStorage используется для передачи номера заметки между компонентами:
 
-export interface IComplexProps extends ISimpleProps, ISubscribedProps<FunctionComponentStateWrapper<NoteResponseDto>> {
-}
-
-// TODO: избавиться от этого "интрефейса" (по сути, хранилища глобального стейта): требуется ли явное "продолжение загрузки"?
-// stateWrapperStorage и url выставляются в SetVisible<T>; noteIdStorage используется для передачи номера заметки между компонентами:
 declare global {
-    // TODO: избавиться от <any>: тип данных для смены стейта знает только компонент отображения и Loader:
     interface Window {
         noteIdStorage: number,
         stateWrapperStorage: FunctionComponentStateWrapper<any>,

@@ -5,7 +5,6 @@ import {
     getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
-import {ISimpleProps, IComplexProps} from "../common/contracts.tsx";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
 import {useEffect, useReducer, useRef, useState} from "react";
 import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
@@ -14,11 +13,11 @@ export const CreateView = () => {
     const [data, setState] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
-    const refObject: React.MutableRefObject<HTMLFormElement | undefined> = useRef();
-    let formId: HTMLFormElement | undefined = refObject.current;
+    const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
+    let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
-        formId = refObject.current;
+        formElement = refObject.current;
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
     }
     const componentWillUnmount = () => {
@@ -60,8 +59,7 @@ export const CreateView = () => {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             let time = String(Date.now());
             // subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
-            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)}
-                                      jsonStorage={data} formId={undefined} subscriber={stateWrapper}/>);
+            checkboxes.push(<Checkbox key={`checkbox ${i}${time}`} id={String(i)} noteDto={data} stateWrapper={stateWrapper}/>);
         }
     }
 
@@ -70,32 +68,32 @@ export const CreateView = () => {
         if (!getTitleResponse(data)) setTitleResponse(data, "");
     }
 
-    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement> | undefined;
+    const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div id="renderContainer">
             <form ref={castedRefObject}
                   id="dizzy">
                 {checkboxes}
                 {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
-                {data && <SubmitButton subscriber={stateWrapper} formId={formId} id={undefined} jsonStorage={undefined}/>}
+                {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} />}
             </form>
-            {data && <Message formId={formId} jsonStorage={data} id={undefined}/>}
+            {data && <Note noteDto={data} />}
         </div>
     );
 }
 
-const Checkbox = (props: IComplexProps) => {
+const Checkbox = (props: {noteDto: NoteResponseDto, id: string, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
-        return getStructuredTagsListResponse(props.jsonStorage)[i];
+        return getStructuredTagsListResponse(props.noteDto)[i];
     };
 
     const getTagId = (i: number) => {
-        if (props.jsonStorage?.tagIdsInternal && props.jsonStorage?.tagIdsInternal.length > 0) {
-            return props.jsonStorage.tagIdsInternal[i];
-        } else if (props.jsonStorage?.structuredTagsListResponse) {
-            return props.jsonStorage.structuredTagsListResponse[i];
+        if (props.noteDto.tagIdsInternal && props.noteDto.tagIdsInternal.length > 0) {
+            return props.noteDto.tagIdsInternal[i];
+        } else if (props.noteDto.structuredTagsListResponse) {
+            return props.noteDto.structuredTagsListResponse[i];
         } else {
             return "";
         }
@@ -113,7 +111,7 @@ const Checkbox = (props: IComplexProps) => {
             // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
             // commonNoteID также выставляется при сохранении новой заметки:
             noteResponseDto.commonNoteID = Number(id);
-            props.subscriber.setData(noteResponseDto);
+            props.stateWrapper.setData(noteResponseDto);
         }
     }
 
@@ -129,32 +127,32 @@ const Checkbox = (props: IComplexProps) => {
     );
 }
 
-const Message = (props: ISimpleProps) => {
+const Note = (props: {noteDto: NoteResponseDto}) => {
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     const textHandler = (e: string) => {
-        setTextResponse(props.jsonStorage, e);
+        setTextResponse(props.noteDto, e);
         forceUpdate();
     }
 
     const titleHandler = (e: string) => {
-        setTitleResponse(props.jsonStorage, e);
+        setTitleResponse(props.noteDto, e);
         forceUpdate();
     }
 
     return (
         <div>
             <p/>
-            {props.jsonStorage ?
+            {props.noteDto ?
                 <div>
                     <h5>
                         <textarea name="ttl" cols={66} rows={1} form="dizzy"
-                                  value={getTitleResponse(props.jsonStorage)}
+                                  value={getTitleResponse(props.noteDto)}
                                   onChange={e => titleHandler(e.target.value)}/>
                     </h5>
                     <h5>
                         <textarea name="msg" cols={66} rows={30} form="dizzy"
-                                  value={getTextResponse(props.jsonStorage)}
+                                  value={getTextResponse(props.noteDto)}
                                   onChange={e => textHandler(e.target.value)}/>
                     </h5>
                 </div>
@@ -163,7 +161,7 @@ const Message = (props: ISimpleProps) => {
     );
 }
 
-const SubmitButton = (props: IComplexProps) => {
+const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     let requestBody: string = "";// храним во внешнем стейте
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
@@ -187,7 +185,7 @@ const SubmitButton = (props: IComplexProps) => {
             "textRequest": text,
             "titleRequest": title
         });
-        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
     }
 
     const componentDidMount = () => {
@@ -218,11 +216,11 @@ const SubmitButton = (props: IComplexProps) => {
             StateStorageWrapper.setState(0);
             // восстановим requestBody из внешнего стейта:
             if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
-            Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
+            Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
             return;
         }
 
-        let formData = new FormData(props.formId);
+        let formData = new FormData(props.formElement);
         let checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
         let formMessage = formData.get('msg');
         let formTitle = formData.get('ttl');
@@ -248,10 +246,10 @@ const SubmitButton = (props: IComplexProps) => {
         }
 
         // совпадения не обнаружены, сохраняем заметку ("стандартный" режим):
-        Loader.unusedPromise = Loader.postData(props.subscriber, requestBody, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
     }
 
-    const findSimilarNotes = async (formMessage: string | File | null, formTitle: string | File | null) => {
+    const findSimilarNotes = async (formMessage: FormDataEntryValue|null, formTitle: FormDataEntryValue|null) => {
         let promise;
         if (typeof formMessage === "string") {
             formMessage = formMessage.replace(/\r\n|\r|\n/g, " ");
@@ -270,14 +268,14 @@ const SubmitButton = (props: IComplexProps) => {
         }
     }
 
-    const getNoteTitles = async (data: Response) => {
-        let responseDto = data as unknown as ComplianceResponseDto;
-        let response = responseDto.res;
-        if (!response) {
+    const getNoteTitles = async (response: Response) => {
+        let responseDto = response as unknown as ComplianceResponseDto;
+        let responseResult = responseDto.res;
+        if (!responseResult) {
             return;
         }
 
-        let array: number[][] = Object.keys(response).map((key) => [Number(key), response[Number(key)]]);
+        let array: number[][] = Object.keys(responseResult).map((key) => [Number(key), responseResult[Number(key)]]);
         array.sort(function (a, b) {
             return b[1] - a[1]
         });
@@ -291,17 +289,17 @@ const SubmitButton = (props: IComplexProps) => {
             return;
         }
 
-        for (let ind = 0; ind < result.length; ind++) {
+        for (let index = 0; index < result.length; index++) {
             // лучше сделать reject:
             if (similarNoteNameStorage.length >= 10) {
                 continue;
             }
 
-            let i = String(result[ind][0]);
             // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
             let promise;
-            let callback = (data: Response) => getTitle(data, i);
-            let query = "?id=" + i;
+            let id = String(result[index][0]);
+            let callback = (data: Response) => getTitle(data, id);
+            let query = "?id=" + id;
             try {
                 promise = Loader.getWithPromise(Loader.readTitleUrl, query, callback);
             } catch (err) {
@@ -314,10 +312,10 @@ const SubmitButton = (props: IComplexProps) => {
         }
     }
 
-    const getTitle = (input: Response, i: string) => {
-        let responseDto = input as unknown as ComplianceResponseDto;
+    const getTitle = (response: Response, id: string) => {
+        let responseDto = response as unknown as ComplianceResponseDto;
         similarNoteNameStorage.push((responseDto.res + '\r\n'));
-        similarNotesIdStorage.push(i);
+        similarNotesIdStorage.push(id);
 
         // stub:
         let data = {
@@ -328,7 +326,7 @@ const SubmitButton = (props: IComplexProps) => {
             "tagIdsInternal": similarNotesIdStorage
         };
         // subscriber: CreateView:
-        props.subscriber.setData(data);
+        props.stateWrapper.setData(data);
     }
 
     return (

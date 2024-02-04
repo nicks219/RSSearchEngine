@@ -1,5 +1,4 @@
 ﻿import { CatalogResponseDto, NoteResponseDto, NoteRequestDto } from "../dto/request.response.dto.tsx";
-import { ISimpleProps } from "./contracts.tsx";
 
 
 /** Catalog: страница каталога представляет из себя названия заметок и соответствующие им Id */
@@ -19,8 +18,8 @@ export const getTitleRequest = (dto: NoteRequestDto) => dto.titleRequest;
 export const getTextRequest = (dto: NoteRequestDto) => dto.textRequest;
 
 /** Note: func(tagsCheckedUncheckedResponse) представление списка тегов в виде строк "отмечено-не отмечено" в ответе */
-export const getTagsCheckedUncheckedResponse = (props: Readonly<ISimpleProps>) : string|undefined => {
-    if (props.jsonStorage?.tagsCheckedUncheckedResponse) return props.jsonStorage.tagsCheckedUncheckedResponse[Number(props.id)];
+export const getTagsCheckedUncheckedResponse = (props: Readonly<{noteDto: NoteResponseDto, id: string}>) : string|undefined => {
+    if (props.noteDto?.tagsCheckedUncheckedResponse) return props.noteDto.tagsCheckedUncheckedResponse[Number(props.id)];
 };
 
 /** Note: получить именование заметки в ответе */
