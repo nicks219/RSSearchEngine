@@ -1,5 +1,6 @@
-﻿import {LoginBoxHandler} from "./visibility.handlers";
-import {FunctionComponentStateWrapper} from "./state.wrappers";
+﻿import {LoginBoxVisibility} from "./visibility.handlers";
+import {CommonStateStorage, FunctionComponentStateWrapper} from "./state.wrappers";
+import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
 
 export class Loader {
     static createUrl: string = "/api/create";
@@ -31,7 +32,7 @@ export class Loader {
     static redirectToMenu = (url: string) => {
         const error = `${Loader.name}: redirectToMenu exception`;
         Loader.setupDevEnvironment();
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
 
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
@@ -45,11 +46,12 @@ export class Loader {
     static async processResponse<T>(response: Response,
                                     stateWrapper: FunctionComponentStateWrapper<T>,
                                     url: string,
-                                    error: string): Promise<void> {
+                                    error: string,
+                                    recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
         try {
             const mounted = stateWrapper.mounted[0];
             const setComponentState = (data: T) => stateWrapper.setData(data);
-            const data: T = await response.json().catch(() => LoginBoxHandler.SetVisible(stateWrapper, url));
+            const data: T = await response.json().catch(() => LoginBoxVisibility(true, stateWrapper, url, recoveryContext));
 
             if (mounted) {
                 setComponentState(data);
@@ -62,17 +64,19 @@ export class Loader {
     }
 
     // GET request: /api/controller
-    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string): Promise<void> {
+    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
+                            url: string,
+                            recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
         const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url, {
                 credentials: this.corsCredentialsPolicy, redirect: "follow"
             });
 
-            await this.processResponse(response, stateWrapper, url, error);
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
         } catch {
             console.log(error);
         }
@@ -84,7 +88,7 @@ export class Loader {
                                 url: string): Promise<void> {
         const error: string = `${Loader.name}: getDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(requestId), {credentials: this.corsCredentialsPolicy});
@@ -99,10 +103,11 @@ export class Loader {
     static async postData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                              requestBody: string,
                              url: string,
-                             id: number|string|null = null): Promise<void> {
+                             id: number|string|null = null,
+                             recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
         const error: string = `${Loader.name}: postData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
 
         try {
             const response = await fetch(this.corsServiceBaseUrl + url + "?id=" + String(id), {
@@ -112,7 +117,7 @@ export class Loader {
                 credentials: this.corsCredentialsPolicy
             });
 
-            await this.processResponse(response, stateWrapper, url, error);
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
         } catch {
             console.log(error);
         }
@@ -122,10 +127,11 @@ export class Loader {
     static async deleteDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
                                    requestId: number,
                                    url: string,
-                                   pageNumber?: number): Promise<void> {
+                                   pageNumber?: number,
+                                   recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
         const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
 
         try {
             const response = await fetch(
@@ -134,7 +140,7 @@ export class Loader {
                     credentials: this.corsCredentialsPolicy
                 });
 
-            await this.processResponse(response, stateWrapper, url, error);
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
         } catch {
             console.log(error);
         }
@@ -144,17 +150,19 @@ export class Loader {
     static fireAndForgetWithQuery<T>(url: string,
                                      query: string,
                                      callback: (v: Response)=>Response|PromiseLike<Response>|void,
-                                     stateWrapper: FunctionComponentStateWrapper<T>|null): void {
+                                     stateWrapper: FunctionComponentStateWrapper<T>|null,
+                                     recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): void {
         const error: string = `${Loader.name}: FnF or login/logout exception`;
         Loader.setupDevEnvironment();
 
         try {
             fetch(this.corsServiceBaseUrl + url + query, {credentials: this.corsCredentialsPolicy}).then(callback);
             if (stateWrapper !== null) {
-                LoginBoxHandler.SetVisible(stateWrapper, url);
+                LoginBoxVisibility(true, stateWrapper, url, recoveryContext);
             }
-        } catch {
+        } catch(exception) {
             console.log(error);
+            console.log(exception);
         }
     }
 

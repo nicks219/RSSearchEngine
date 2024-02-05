@@ -1,13 +1,14 @@
 ﻿import * as React from 'react';
-import {useState} from "react";
+import {useContext, useState} from "react";
 import {Loader} from "../common/loader";
-import {LoginBoxHandler} from "../common/visibility.handlers";
-import {CommonStateStorage} from "../common/state.wrappers";
+import {LoginBoxVisibility} from "../common/visibility.handlers";
+import {CommonContext} from "../common/context.provider";
 
 export const LoginComponent = () => {
-    const [style, setStyle] = useState("submitStyle");
+    const style = useState("submitStyle");
+    const context = useContext(CommonContext);
 
-    let loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
+    const loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
     loginElement.style.display = "block";
 
     const onSubmit = (e: React.SyntheticEvent) => {
@@ -32,39 +33,40 @@ export const LoginComponent = () => {
     const loginOk = () => {
         document.cookie = 'rsse_auth = true';
         console.log("Login ok.");
-        setStyle("submitStyleGreen");
+        style[1]("submitStyleGreen");
         continueLoading();
         setTimeout(() => {
-            (document.getElementById("login") as HTMLElement).style.display = "none";
+            const loginElement = document.getElementById("login") as HTMLElement;
+            loginElement.style.display = "none";
         }, 1500);
     }
 
-    // загружаем в компонент данные, не отданные сервисом из-за ошибки авторизации:
+    // загружаем в компонент данные, не полученные из-за ошибки авторизации:
     const continueLoading = () => {
-        const stateWrapper = CommonStateStorage.stateWrapperStorage;
+        const stateWrapper = context.stateWrapper;
 
         if (stateWrapper) {
             // продолжение для update:
-            if (CommonStateStorage.commonString === Loader.updateUrl) {
+            if (context.commonString === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.commonNumber, CommonStateStorage.commonString);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, context.commonNumber, context.commonString);
             // продолжение для catalog: загрузка первой страницы:
-            } else if (CommonStateStorage.commonString === Loader.catalogUrl) {
+            } else if (context.commonString === Loader.catalogUrl) {
                 const id = 1;
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, CommonStateStorage.commonString);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, context.commonString);
             }
             // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (CommonStateStorage.commonString !== Loader.logoutUrl) {
-                Loader.unusedPromise = Loader.getData(stateWrapper, CommonStateStorage.commonString);
+            else if (context.commonString !== Loader.logoutUrl) {
+                Loader.unusedPromise = Loader.getData(stateWrapper, context.commonString);
             }
         }
 
-        LoginBoxHandler.SetInvisible();
+        LoginBoxVisibility(false);
     }
 
     return (
-        <div>
-            <div id={style}>
+        <div id="login">
+            <div id={style[0]}>
                 <input type="checkbox" id="loginButton" className="regular-checkbox" onClick={onSubmit}/>
                 <label htmlFor="loginButton">Войти</label>
             </div>

@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
 import {createRoot, Root} from "react-dom/client";
 
@@ -7,7 +7,8 @@ import {Loader} from "../common/loader";
 import {getCommonNoteId, getStructuredTagsListResponse, getTextResponse, getTitleResponse} from "../common/dto.handlers";
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {toggleMenuVisibility} from "../common/visibility.handlers";
-import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CommonContext} from "../common/context.provider";
 
 export const ReadView = () => {
     const params = useParams();
@@ -24,13 +25,14 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
+    const context = useContext(CommonContext);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        if (props.noteId || CommonStateStorage.commonState == 1) {
+        if (props.noteId || context.commonState == 1) {
             // при редиректе из каталога или из Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
@@ -38,13 +40,13 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         }
 
-        CommonStateStorage.commonState = 0;
+        context.commonState = 0;
     }
 
     const componentWillUnmount = () => {
         mounted[0] = false;
         // перед выходом восстанавливаем состояние обёртки:
-        CommonStateStorage.init();
+        context.init();
         // убираем отображение кнопки "Поиск":
         SearchButtonContainer.getRoot.render(<div></div>);
     }
@@ -67,13 +69,13 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
         componentDidUpdate();
     }, [data]);
 
-    if (props.noteId && CommonStateStorage.commonState == 0) {
+    if (props.noteId && context.commonState == 0) {
         // редирект из каталога:
         console.log(`Get text id from path params: ${props.noteId}`);
         const item = {"tagsCheckedRequest": []};
         const requestBody = JSON.stringify(item);
 
-        CommonStateStorage.commonState = 1;
+        context.commonState = 1;
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.noteId);
     }
 
@@ -108,6 +110,7 @@ const Checkbox = (props: {id: string, noteDto: NoteResponseDto}) => {
 }
 
 const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+    const context = useContext(CommonContext);
     const hideMenu = () => {
         if (props.formElement) {
             props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
@@ -115,23 +118,23 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
     }
 
     if (props.noteDto && Number(getCommonNoteId(props.noteDto)) !== 0) {
-        CommonStateStorage.commonNumber = Number(getCommonNoteId(props.noteDto));
+        context.commonNumber = Number(getCommonNoteId(props.noteDto));
     }
 
     return (
         <span>
-                {props.noteDto ? (getTextResponse(props.noteDto) ?
-                        <span>
-                        <div id="noteTitle" onClick={hideMenu}>
-                            {getTitleResponse(props.noteDto)}
-                        </div>
-                        <div id="noteText">
-                            <TextSupportsLinks text={getTextResponse(props.noteDto) ?? ""}/>
-                        </div>
-                    </span>
-                        : "select tag please")
-                    : ""}
-            </span>
+            {props.noteDto ? (getTextResponse(props.noteDto) ?
+                <span>
+                    <div id="noteTitle" onClick={hideMenu}>
+                        {getTitleResponse(props.noteDto)}
+                    </div>
+                    <div id="noteText">
+                        <TextSupportsLinks text={getTextResponse(props.noteDto) ?? ""}/>
+                    </div>
+                </span>
+                : "select tag please")
+            : ""}
+        </span>
     );
 }
 

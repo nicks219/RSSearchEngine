@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import {Dispatch, SetStateAction, useEffect, useReducer, useRef, useState} from "react";
+import {Dispatch, SetStateAction, useContext, useEffect, useReducer, useRef, useState} from "react";
 import {Loader} from "../common/loader";
 import {
     getCommonNoteId, getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
@@ -7,24 +7,26 @@ import {
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto";
-import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CommonContext} from "../common/context.provider";
 
 export const CreateView = () => {
     const [data, setState] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
+    const context = useContext(CommonContext);
     const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl, context);
     }
     const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(CommonStateStorage.commonNumber)) CommonStateStorage.commonNumber = 0;
+        if (isNaN(context.commonNumber)) context.commonNumber = 0;
         // перед выходом восстанавливаем состояние обёртки:
-        CommonStateStorage.init();
+        context.init();
         mounted[0] = false;
     }
 
@@ -40,17 +42,16 @@ export const CreateView = () => {
         if (redirectId && data?.titleResponse !== okResponse) {
             console.log("Redirected: " + redirectId);
             // по сути это переход на другой компонент, поэтому сбросим общий стейт:
-            CommonStateStorage.init();
+            context.init();
             Loader.redirectToMenu("/#/read/" + redirectId);
         }
 
-        let id = 0;
         if (data) {
-            id = Number(getCommonNoteId(data));
-        }
-
-        if (id !== 0) {
-            CommonStateStorage.commonNumber = id;
+            const id = Number(getCommonNoteId(data));
+            // if (id !== 0) {
+            if (id !== 0) {
+                context.commonNumber = id;
+            }
         }
     }
 
@@ -87,6 +88,7 @@ export const CreateView = () => {
 }
 
 const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatch<SetStateAction<NoteResponseDto|null>>}) => {
+    const context = useContext(CommonContext);
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
@@ -104,11 +106,11 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
     };
 
     const loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (CommonStateStorage.commonState == 1) {
+        if (context.commonState == 1) {
             let title = e.currentTarget.innerHTML.valueOf();
             // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-            console.log(`Submitted & redirected: state: ${CommonStateStorage.commonState} title: ${title} id: ${id}`);
+            console.log(`Submitted & redirected: state: ${context.commonState} title: ${title} id: ${id}`);
 
             const noteResponseDto = new NoteResponseDto();
             // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
@@ -169,14 +171,15 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
 
+    const context = useContext(CommonContext);
     const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        CommonStateStorage.commonState = 0;
+        context.commonState = 0;
 
         // отмена - сохраняем текст и название: восстанавливаем requestBody из внешнего стейта:
-        if (jsonString == "") jsonString = CommonStateStorage.commonString;
+        if (jsonString == "") jsonString = context.commonString;
         const text = getTextRequest(JSON.parse(jsonString));
         const title = getTitleRequest(JSON.parse(jsonString));
         jsonString = JSON.stringify({
@@ -194,7 +197,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     }
     const componentWillUnmount = () => {
         // перед выходом восстанавливаем состояние обёртки:
-        CommonStateStorage.init();
+        context.init();
     }
 
     useEffect(() => {
@@ -208,10 +211,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
-        if (CommonStateStorage.commonState === 1) {
+        if (context.commonState === 1) {
             // подтверждение: режим "подтверждение/отмена": восстанавливаем requestBody из внешнего стейта:
-            CommonStateStorage.commonState = 0;
-            if (jsonString == "") jsonString = CommonStateStorage.commonString;
+            context.commonState = 0;
+            if (jsonString == "") jsonString = context.commonString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
@@ -230,10 +233,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         await findSimilarNotes(formMessage, formTitle);
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
-            CommonStateStorage.commonString = jsonString;
+            context.commonString = jsonString;
             // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
-            CommonStateStorage.commonState = 1;
+            context.commonState = 1;
             return;
         }
 

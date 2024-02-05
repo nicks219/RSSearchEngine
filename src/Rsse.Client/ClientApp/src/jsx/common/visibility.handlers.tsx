@@ -1,7 +1,7 @@
-﻿import {createRoot} from "react-dom/client";
-import {FunctionComponentStateWrapper, CommonStateStorage} from "./state.wrappers";
+﻿import {CommonStateStorage, FunctionComponentStateWrapper} from "./state.wrappers";
+import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
 
-/** Изменить видимость контейнера с меню на противоположную, см. по коду LoginBoxHandler: Visible/Invisible + hideMenu */
+/** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
     if (cssProperty !== "none") {
         cssProperty = "none";
@@ -13,26 +13,40 @@ export const toggleMenuVisibility = (cssProperty: string): string => {
     return cssProperty;
 }
 
-/** Функционал изменения видимости контейнера с логином */
-export class LoginBoxHandler {
-    static login = false;
-    static loginMessageElement = document.querySelector("#loginMessage") ?? document.createElement('loginMessage');
-    static loginMessageRoot = createRoot(this.loginMessageElement);
 
-    static SetInvisible = () => {
-        if (!LoginBoxHandler.login) return;
-        (document.getElementById("loginMessage") as HTMLElement).style.display = "none";
+/** Функционал изменения видимости контейнера с логином.
+* При проявлении компонента необходимо сохранить контест восстановления. */
+export const LoginBoxVisibility = (
+    visibility: boolean,
+    stateWrapper?: FunctionComponentStateWrapper<any>,
+    url?: string,
+    context?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>) => {
+
+    const SetInvisible = () => {
+        const loginMessage = document.getElementById("loginMessage") as HTMLElement;
+        if (loginMessage) {
+            loginMessage.style.display = "none";
+        }
     }
 
-    static SetVisible<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string) {
-        CommonStateStorage.stateWrapperStorage = stateWrapper;
-        CommonStateStorage.commonString = url;
+    const SetVisible = () => {
+        if (context && url && stateWrapper) {
+            context.stateWrapper = stateWrapper as unknown as FunctionComponentStateWrapper<NoteResponseDto | CatalogResponseDto>;
+            context.commonString = url;
+        }
 
-        (document.getElementById("loginMessage") as HTMLElement).style.display = "block";
-        (document.getElementById("login") as HTMLElement).style.display = "block";
-        LoginBoxHandler.login = true;
-        LoginBoxHandler.loginMessageRoot.render(
-            <h1>Login please</h1>
-        );
+        const loginMessageElement = document.getElementById("loginMessage") as HTMLElement;
+        const loginElement = document.getElementById("login") as HTMLElement;
+        loginMessageElement.style.display = "block";
+        loginElement.style.display = "block";
+        // изменение css только в dom браузера, при этом стейт компонента останется submitStyleGreen:
+        const submitElement = loginElement.children[0];
+        submitElement.id = "submitStyle";
+    }
+
+    if (visibility) {
+        SetVisible();
+    } else if (!visibility) {
+        SetInvisible();
     }
 }

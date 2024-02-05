@@ -1,6 +1,6 @@
 ﻿import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import {MenuWithRouter} from "../components/menu.component";
+import {App} from "../components/menu.component";
 
 describe('MenuRouter component tests', () => {
     it('menu elements should render', () => {
@@ -11,7 +11,7 @@ describe('MenuRouter component tests', () => {
         // ).toBeInTheDocument();
 
         // arrange:
-        render(<MenuWithRouter />);
+        render(<App />);
         // act:
         const firstMenuElement = screen.getByText("Посмотреть");
         const secondMenuElement = screen.getByText("Поменять");
