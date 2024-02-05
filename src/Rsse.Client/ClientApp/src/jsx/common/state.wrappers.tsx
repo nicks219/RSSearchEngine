@@ -13,45 +13,30 @@ export class FunctionComponentStateWrapper<T> {
     }
 }
 
-/** Глобальный стейт с начальной инициализацией части полей */
+/** Глобальный стейт с начальной инициализацией некоторых полей */
 export class CommonStateStorage {
-    // .. с начальной инициализацией ..
-
-    /** CreateComponent.SubmitButton state: режим "подтверждение/отмена" */
-    public static jsonStringStorage: string = "";// сохранение/восстановление заметки при отмене и подтверждение в режиме "подтверждение/отмена":
-
-    // .. начальная инициализация не обязательна (?), перенесено из интерфейса Window ..
-    // сделать numberStorage - stringStorage - boolStorage ?
-
     /** Передача номера заметки между компонентами */
     public static noteIdStorage: number = 0;
     /** Выставляется в SetVisible<T> */
     public static stateWrapperStorage: FunctionComponentStateWrapper<any>;
-    /** Выставляется в SetVisible<T> */
-    public static urlStorage: string;
 
 
     /** I: CatalogComponent: работа с дампами; II: CreateComponent: режима "подтверждение/отмена" */
     private static _commonState: number = 0;
-    public static get commonState() {return CommonStateStorage._commonState};
-    public static set commonState(state: number) {CommonStateStorage._commonState = state;}
+    public static get commonState() {return this._commonState};
+    public static set commonState(value: number) {this._commonState = value;}
+
+
+    /** I: Выставляется в Login.SetVisible<T>; II: Используется для хранения JSON string с заметкой в Create в режиме "подтверждение/отмена" */
+    public static _commonString: string;
+    public static get commonString() {return this._commonString};
+    public static set commonString(value: string) {this._commonString = value};
 
 
     /** Восстановление начальных значений */
     static init = () => {
-        // они точно не взаимозаменяемы?
         this._commonState = 0;
-        // this.redirectState = 0;
-        this.jsonStringStorage = "";
+        this._commonString = "";
     }
-
-    /** ReadComponent: редирект из каталога */
-    //private static _redirectState: number = 0;
-    //static get redirectState() {return this._redirectState};
-    //static set redirectState(i: number) {this._redirectState = i};
 }
 
-// catalog: (1) setState: работа с дампами.
-// create: (2) режим поиска похожих заметок.
-// read: (2) вызов из каталога.
-// window: используется в "общем" функционале.

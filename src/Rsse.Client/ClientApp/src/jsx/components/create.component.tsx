@@ -165,7 +165,7 @@ const Note = (props: {noteDto: NoteResponseDto}) => {
 }
 
 const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
-    let jsonString: string = "";// храним во внешнем стейте
+    let jsonString: string = "";
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
 
@@ -176,7 +176,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         CommonStateStorage.commonState = 0;
 
         // отмена - сохраняем текст и название: восстанавливаем requestBody из внешнего стейта:
-        if (jsonString == "") jsonString = CommonStateStorage.jsonStringStorage;
+        if (jsonString == "") jsonString = CommonStateStorage.commonString;
         const text = getTextRequest(JSON.parse(jsonString));
         const title = getTitleRequest(JSON.parse(jsonString));
         jsonString = JSON.stringify({
@@ -194,8 +194,6 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     }
     const componentWillUnmount = () => {
         // перед выходом восстанавливаем состояние обёртки:
-        //StateStorage.commonState = 0;
-        //StateStorage.requestBodyStorage = "";
         CommonStateStorage.init();
     }
 
@@ -213,7 +211,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         if (CommonStateStorage.commonState === 1) {
             // подтверждение: режим "подтверждение/отмена": восстанавливаем requestBody из внешнего стейта:
             CommonStateStorage.commonState = 0;
-            if (jsonString == "") jsonString = CommonStateStorage.jsonStringStorage;
+            if (jsonString == "") jsonString = CommonStateStorage.commonString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
@@ -232,7 +230,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         await findSimilarNotes(formMessage, formTitle);
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
-            CommonStateStorage.jsonStringStorage = jsonString;
+            CommonStateStorage.commonString = jsonString;
             // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
             CommonStateStorage.commonState = 1;
@@ -284,7 +282,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
                 continue;
             }
 
-            // получаем имена возможных совпадений: i:string зто id заметки, можно вместо time его выставлять:
+            // получаем имена возможных совпадений: id: string зто id заметки, можно вместо time его выставлять:
             const id = String(result[index][0]);
             const query = "?id=" + id;
             const callback = (data: Response) => getTitle(data, id);

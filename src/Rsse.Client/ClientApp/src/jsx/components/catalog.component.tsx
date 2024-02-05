@@ -15,7 +15,6 @@ export const CatalogView = (): JSX.Element|undefined => {
         return function onUnmount() {
             mounted[0] = false;
             // перед выходом восстанавливаем состояние обёртки:
-            // StateStorage.commonState = 0;
             CommonStateStorage.init();
         };
     }, []);

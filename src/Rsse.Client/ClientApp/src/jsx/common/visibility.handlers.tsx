@@ -26,7 +26,7 @@ export class LoginBoxHandler {
 
     static SetVisible<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string) {
         CommonStateStorage.stateWrapperStorage = stateWrapper;
-        CommonStateStorage.urlStorage = url;
+        CommonStateStorage.commonString = url;
 
         (document.getElementById("loginMessage") as HTMLElement).style.display = "block";
         (document.getElementById("login") as HTMLElement).style.display = "block";

@@ -35,7 +35,6 @@ export const UpdateView = () => {
     if (data) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
-            // можно создавать time в коде перед добавлением компонента:
             let time = String(Date.now());
             checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
                                       id={String(i)}
@@ -77,8 +76,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
         getCookie();
     }, []);
 
-    // именование кук ASP.NET: ".AspNetCore.Cookies"
-    // учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
+    // именование кук ASP.NET: ".AspNetCore.Cookies": учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
     const getCookie = () => {
         // куки выставляются в компоненте Login:
         const name = "rsse_auth";

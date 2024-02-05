@@ -45,17 +45,17 @@ export const LoginComponent = () => {
 
         if (stateWrapper) {
             // продолжение для update:
-            if (CommonStateStorage.urlStorage === Loader.updateUrl) {
+            if (CommonStateStorage.commonString === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, CommonStateStorage.urlStorage);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, CommonStateStorage.commonString);
             // продолжение для catalog: загрузка первой страницы:
-            } else if (CommonStateStorage.urlStorage === Loader.catalogUrl) {
+            } else if (CommonStateStorage.commonString === Loader.catalogUrl) {
                 const id = 1;
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, CommonStateStorage.urlStorage);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, CommonStateStorage.commonString);
             }
             // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (CommonStateStorage.urlStorage !== Loader.logoutUrl) {
-                Loader.unusedPromise = Loader.getData(stateWrapper, CommonStateStorage.urlStorage);
+            else if (CommonStateStorage.commonString !== Loader.logoutUrl) {
+                Loader.unusedPromise = Loader.getData(stateWrapper, CommonStateStorage.commonString);
             }
         }
 

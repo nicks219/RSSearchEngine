@@ -31,7 +31,7 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     const componentDidMount = () => {
         formElement = refObject.current;
         if (props.noteId || CommonStateStorage.commonState == 1) {
-            // при редиректе из каталога или Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
+            // при редиректе из каталога или из Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
         } else {
@@ -44,7 +44,6 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     const componentWillUnmount = () => {
         mounted[0] = false;
         // перед выходом восстанавливаем состояние обёртки:
-        // StateStorage.redirectState = 0;
         CommonStateStorage.init();
         // убираем отображение кнопки "Поиск":
         SearchButtonContainer.getRoot.render(<div></div>);
@@ -137,7 +136,6 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
 }
 
 const TextSupportsLinks = (props: {text: string}): JSX.Element => {
-    // deprecated: JSX
     const result: (string | JSX.Element)[] = [];
     // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
     props && props.text.replace(
