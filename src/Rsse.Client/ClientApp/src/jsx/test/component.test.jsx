@@ -1,17 +1,17 @@
-﻿import { describe, it, expect } from 'vitest';
-import { MenuWithRouter } from "../components/menu.component.tsx";
-import { render, screen } from '@testing-library/react';
+﻿import {describe, it, expect} from 'vitest';
+import {MenuWithRouter} from "../components/menu.component.tsx";
+import {render, screen} from '@testing-library/react';
 
 describe('MenuRouter component tests', () => {
     it('menu elements should render', () => {
         // tutorial variant:
-        //const { getAllByText } = render(<MenuRouter />);
-        //expect(
-        //    getAllByText('Посмотреть')[0]
-        //).toBeInTheDocument();
+        // const { getAllByText } = render(<MenuRouter />);
+        // expect(
+        //     getAllByText('Посмотреть')[0]
+        // ).toBeInTheDocument();
 
         // arrange:
-        render(<MenuWithRouter/>);
+        render(<MenuWithRouter />);
         // act:
         const firstMenuElement = screen.getByText("Посмотреть");
         const secondMenuElement = screen.getByText("Поменять");

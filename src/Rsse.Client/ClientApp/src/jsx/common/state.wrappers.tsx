@@ -13,34 +13,45 @@ export class FunctionComponentStateWrapper<T> {
     }
 }
 
-// TODO: сократи количество полей для внешнего стейта
+/** Глобальный стейт с начальной инициализацией части полей */
+export class CommonStateStorage {
+    // .. с начальной инициализацией ..
 
-/** Глобальный стейт с некоторой инициализацией */
-export class StateStorageWrapper {
-    private static _state: number = 0;
+    /** CreateComponent.SubmitButton state: режим "подтверждение/отмена" */
+    public static jsonStringStorage: string = "";// сохранение/восстановление заметки при отмене и подтверждение в режиме "подтверждение/отмена":
 
-    /** ReadComponent: вызов (редирект) из каталога */
-    public static renderedAfterRedirect: boolean = false;
-    public static redirectCall: boolean = false;
+    // .. начальная инициализация не обязательна (?), перенесено из интерфейса Window ..
+    // сделать numberStorage - stringStorage - boolStorage ?
 
-    /** CreateComponent.SubmitButton state: */
-    public static submitStateStorage? : number;
-    public static requestBodyStorage: string = "";
+    /** Передача номера заметки между компонентами */
+    public static noteIdStorage: number = 0;
+    /** Выставляется в SetVisible<T> */
+    public static stateWrapperStorage: FunctionComponentStateWrapper<any>;
+    /** Выставляется в SetVisible<T> */
+    public static urlStorage: string;
 
-    static setState = (state: number) => {
-        StateStorageWrapper._state = state;
+
+    /** I: CatalogComponent: работа с дампами; II: CreateComponent: режима "подтверждение/отмена" */
+    private static _commonState: number = 0;
+    public static get commonState() {return CommonStateStorage._commonState};
+    public static set commonState(state: number) {CommonStateStorage._commonState = state;}
+
+
+    /** Восстановление начальных значений */
+    static init = () => {
+        // они точно не взаимозаменяемы?
+        this._commonState = 0;
+        // this.redirectState = 0;
+        this.jsonStringStorage = "";
     }
-    static getState = () => StateStorageWrapper._state;
+
+    /** ReadComponent: редирект из каталога */
+    //private static _redirectState: number = 0;
+    //static get redirectState() {return this._redirectState};
+    //static set redirectState(i: number) {this._redirectState = i};
 }
 
-/** Дополнительный глобальный стейт */
-declare global {
-    interface Window {
-        /** передача номера заметки между компонентами */
-        noteIdStorage: number,
-        /** выставляется в SetVisible<T> */
-        stateWrapperStorage: FunctionComponentStateWrapper<any>,
-        /** выставляется в SetVisible<T> */
-        urlStorage: string
-    }
-}
+// catalog: (1) setState: работа с дампами.
+// create: (2) режим поиска похожих заметок.
+// read: (2) вызов из каталога.
+// window: используется в "общем" функционале.

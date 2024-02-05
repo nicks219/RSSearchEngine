@@ -1,5 +1,4 @@
-﻿import * as React from 'react';
-import {createRoot} from "react-dom/client";
+﻿import {createRoot} from "react-dom/client";
 import {ReadView} from "./read.component.tsx";
 import {UpdateView} from "./update.component.tsx";
 import {CreateView} from "./create.component.tsx";
@@ -12,13 +11,6 @@ import {
     Routes,
     Route
 } from 'react-router-dom';
-
-declare global {
-    interface Window { textId: number }
-}
-
-window.noteIdStorage = 0;
-window.React = React;
 
 export const MenuWithRouter = () => {
         return (

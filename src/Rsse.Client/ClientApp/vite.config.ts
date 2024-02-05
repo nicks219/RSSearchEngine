@@ -1,7 +1,7 @@
-import { fileURLToPath, URL } from 'node:url';
-
-import { defineConfig } from 'vite';
+import {fileURLToPath, URL} from 'node:url';
+import {defineConfig} from 'vite';
 import plugin from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react'
 import fs from 'fs';
 import path from 'path';
 import child_process from 'child_process';
@@ -44,6 +44,7 @@ export default defineConfig(({ command, mode }) => {
         // конфигурация для запуска тестов:
         if (mode === 'test') return {
             // vitest testing:
+            plugins: [react()],
             test: {
                 global: true,
                 environment: 'jsdom',

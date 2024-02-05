@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers.tsx";
 import {Loader} from "../common/loader.tsx";
 import {CatalogResponseDto} from "../dto/request.response.dto.tsx";
-import {StateStorageWrapper, FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
+import {CommonStateStorage, FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
@@ -15,7 +15,8 @@ export const CatalogView = (): JSX.Element|undefined => {
         return function onUnmount() {
             mounted[0] = false;
             // перед выходом восстанавливаем состояние обёртки:
-            StateStorageWrapper.setState(0);
+            // StateStorage.commonState = 0;
+            CommonStateStorage.init();
         };
     }, []);
 
@@ -31,13 +32,13 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
 
     const onCreateDump = (e: React.SyntheticEvent) => {
-        StateStorageWrapper.setState(1);
+        CommonStateStorage.commonState = 1;
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
     }
 
     const onRestoreDump = (e: React.SyntheticEvent) => {
-        StateStorageWrapper.setState(1);
+        CommonStateStorage.commonState = 1;
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl);
     }
@@ -68,7 +69,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const itemArray = getCatalogPage(data);
 
     // работа с дампами:
-    if (data.res && StateStorageWrapper.getState() === 1) {
+    if (data.res && CommonStateStorage.commonState === 1) {
         notes.push(
             <tr key={"song "} className="bg-warning">
                 <td></td>
@@ -82,11 +83,11 @@ export const CatalogView = (): JSX.Element|undefined => {
         link.click();
         document.body.removeChild(link);
 
-        StateStorageWrapper.setState(2);
-    } else if (data.res && StateStorageWrapper.getState() === 2) {
+        CommonStateStorage.commonState = 2;
+    } else if (data.res && CommonStateStorage.commonState === 2) {
         // после обработки дампа нажата кнопка "Каталог":
         Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);// вместо DidMount
-        StateStorageWrapper.setState(0);
+        CommonStateStorage.commonState = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
     else if (itemArray) {

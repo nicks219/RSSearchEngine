@@ -1,13 +1,13 @@
 ﻿import * as React from 'react';
+import {useEffect, useReducer, useRef, useState} from "react";
 import {Loader} from "../common/loader.tsx";
 import {
-    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
-    getTitleResponse, setTextResponse
+    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
+    getTextResponse, getTitleResponse, setTextResponse
 } from "../common/dto.handlers.tsx";
 import {NoteResponseDto} from "../dto/request.response.dto.tsx";
 import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
-import {useEffect, useReducer, useRef, useState} from "react";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
+import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers.tsx";
 
 export const UpdateView = () => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
@@ -19,7 +19,7 @@ export const UpdateView = () => {
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, Loader.updateUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, Loader.updateUrl);
     }
 
     const componentWillUnmount = () => {
@@ -46,7 +46,7 @@ export const UpdateView = () => {
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div id="renderContainer">
-            <form ref={castedRefObject} id="dizzy">
+            <form ref={castedRefObject} id="textbox">
                 {checkboxes}
                 {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
             </form>
@@ -110,7 +110,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
                             {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
-                            <textarea name="msg" cols={66} rows={30} form="dizzy"
+                            <textarea name="msg" cols={66} rows={30} form="textbox"
                                       value={getTextResponse(props.noteDto)}
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>
@@ -127,13 +127,13 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteRespon
         const formData = new FormData(props.formElement);
         const checkboxesArray =
             (formData.getAll("chkButton"))
-            .map(a => Number(a) + 1);
+            .map(item => Number(item) + 1);
         const formMessage = formData.get("msg");
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.noteDto),
-            "commonNoteID": window.noteIdStorage
+            "commonNoteID": CommonStateStorage.noteIdStorage
         };
         const requestBody = JSON.stringify(item);
         Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);

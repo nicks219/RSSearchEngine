@@ -2,6 +2,7 @@
 import {useState} from "react";
 import {Loader} from "../common/loader.tsx";
 import {LoginBoxHandler} from "../common/visibility.handlers.tsx";
+import {CommonStateStorage} from "../common/state.wrappers.tsx";
 
 export const LoginComponent = () => {
     const [style, setStyle] = useState("submitStyle");
@@ -40,21 +41,21 @@ export const LoginComponent = () => {
 
     // загружаем в компонент данные, не отданные сервисом из-за ошибки авторизации:
     const continueLoading = () => {
-        const stateWrapper = window.stateWrapperStorage;
+        const stateWrapper = CommonStateStorage.stateWrapperStorage;
 
         if (stateWrapper) {
             // продолжение для update:
-            if (window.urlStorage === Loader.updateUrl) {
+            if (CommonStateStorage.urlStorage === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, window.urlStorage);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, CommonStateStorage.urlStorage);
             // продолжение для catalog: загрузка первой страницы:
-            } else if (window.urlStorage === Loader.catalogUrl) {
+            } else if (CommonStateStorage.urlStorage === Loader.catalogUrl) {
                 const id = 1;
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, window.urlStorage);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, CommonStateStorage.urlStorage);
             }
             // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (window.urlStorage !== Loader.logoutUrl) {
-                Loader.unusedPromise = Loader.getData(stateWrapper, window.urlStorage);
+            else if (CommonStateStorage.urlStorage !== Loader.logoutUrl) {
+                Loader.unusedPromise = Loader.getData(stateWrapper, CommonStateStorage.urlStorage);
             }
         }
 
@@ -69,12 +70,12 @@ export const LoginComponent = () => {
             </div>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span>
-                    <input type="text" id="email" name="email" autoComplete={"on"}/>
-                </span>
+                <input type="text" id="email" name="email" autoComplete={"on"}/>
+            </span>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span>
-                    <input type="text" id="password" name="password" autoComplete={"on"}/>
-                </span>
+                <input type="text" id="password" name="password" autoComplete={"on"}/>
+            </span>
         </div>
     );
 }

@@ -1,4 +1,5 @@
 ﻿import * as React from 'react';
+import {Dispatch, SetStateAction, useEffect, useReducer, useRef, useState} from "react";
 import {Loader} from "../common/loader.tsx";
 import {
     getCommonNoteId, getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
@@ -6,8 +7,7 @@ import {
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers.tsx";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
-import {Dispatch, SetStateAction, useEffect, useReducer, useRef, useState} from "react";
-import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
+import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers.tsx";
 
 export const CreateView = () => {
     const [data, setState] = useState<NoteResponseDto|null>(null);
@@ -22,7 +22,9 @@ export const CreateView = () => {
     }
     const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(window.noteIdStorage)) window.noteIdStorage = 0;
+        if (isNaN(CommonStateStorage.noteIdStorage)) CommonStateStorage.noteIdStorage = 0;
+        // перед выходом восстанавливаем состояние обёртки:
+        CommonStateStorage.init();
         mounted[0] = false;
     }
 
@@ -37,6 +39,8 @@ export const CreateView = () => {
         const okResponse: string = "[OK]";
         if (redirectId && data?.titleResponse !== okResponse) {
             console.log("Redirected: " + redirectId);
+            // по сути это переход на другой компонент, поэтому сбросим общий стейт:
+            CommonStateStorage.init();
             Loader.redirectToMenu("/#/read/" + redirectId);
         }
 
@@ -46,7 +50,7 @@ export const CreateView = () => {
         }
 
         if (id !== 0) {
-            window.noteIdStorage = id;
+            CommonStateStorage.noteIdStorage = id;
         }
     }
 
@@ -72,7 +76,7 @@ export const CreateView = () => {
     return (
         <div id="renderContainer">
             <form ref={castedRefObject}
-                  id="dizzy">
+                  id="textbox">
                 {checkboxes}
                 {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
                 {data && <SubmitButton formElement={formElement} stateWrapper={stateWrapper} />}
@@ -100,12 +104,11 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
     };
 
     const loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (StateStorageWrapper.submitStateStorage !== undefined) {
+        if (CommonStateStorage.commonState == 1) {
             let title = e.currentTarget.innerHTML.valueOf();
             // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-            console.log(`Submitted & redirected: ${StateStorageWrapper.submitStateStorage} ${title} ${id}`);
-            StateStorageWrapper.submitStateStorage = undefined;
+            console.log(`Submitted & redirected: state: ${CommonStateStorage.commonState} title: ${title} id: ${id}`);
 
             const noteResponseDto = new NoteResponseDto();
             // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
@@ -146,12 +149,12 @@ const Note = (props: {noteDto: NoteResponseDto}) => {
             {props.noteDto ?
                 <div>
                     <h5>
-                        <textarea name="ttl" cols={66} rows={1} form="dizzy"
+                        <textarea name="ttl" cols={66} rows={1} form="textbox"
                                   value={getTitleResponse(props.noteDto)}
                                   onChange={e => titleHandler(e.target.value)}/>
                     </h5>
                     <h5>
-                        <textarea name="msg" cols={66} rows={30} form="dizzy"
+                        <textarea name="msg" cols={66} rows={30} form="textbox"
                                   value={getTextResponse(props.noteDto)}
                                   onChange={e => textHandler(e.target.value)}/>
                     </h5>
@@ -162,7 +165,7 @@ const Note = (props: {noteDto: NoteResponseDto}) => {
 }
 
 const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
-    let requestBody: string = "";// храним во внешнем стейте
+    let jsonString: string = "";// храним во внешнем стейте
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
 
@@ -170,22 +173,19 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
+        CommonStateStorage.commonState = 0;
 
-        // отмена - сохраняем текст и название:
-        StateStorageWrapper.submitStateStorage = undefined;
-        StateStorageWrapper.setState(0);
-        // восстанавливаем requestBody - из внешнего стейта:
-        if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
-
-        const text = getTextRequest(JSON.parse(requestBody));
-        const title = getTitleRequest(JSON.parse(requestBody));
-
-        requestBody = JSON.stringify({
+        // отмена - сохраняем текст и название: восстанавливаем requestBody из внешнего стейта:
+        if (jsonString == "") jsonString = CommonStateStorage.jsonStringStorage;
+        const text = getTextRequest(JSON.parse(jsonString));
+        const title = getTitleRequest(JSON.parse(jsonString));
+        jsonString = JSON.stringify({
             "tagsCheckedRequest": [],
             "textRequest": text,
             "titleRequest": title
         });
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
+
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
     }
 
     const componentDidMount = () => {
@@ -194,9 +194,9 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     }
     const componentWillUnmount = () => {
         // перед выходом восстанавливаем состояние обёртки:
-        StateStorageWrapper.setState(0);
-        StateStorageWrapper.submitStateStorage = undefined;
-        StateStorageWrapper.requestBodyStorage = "";
+        //StateStorage.commonState = 0;
+        //StateStorage.requestBodyStorage = "";
+        CommonStateStorage.init();
     }
 
     useEffect(() => {
@@ -209,14 +209,12 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
 
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        StateStorageWrapper.submitStateStorage = undefined;
 
-        if (StateStorageWrapper.getState() === 1) {
-            // подтверждение в режиме "подтверждение/отмена":
-            StateStorageWrapper.setState(0);
-            // восстановим requestBody из внешнего стейта:
-            if (requestBody == "") requestBody = StateStorageWrapper.requestBodyStorage;
-            Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
+        if (CommonStateStorage.commonState === 1) {
+            // подтверждение: режим "подтверждение/отмена": восстанавливаем requestBody из внешнего стейта:
+            CommonStateStorage.commonState = 0;
+            if (jsonString == "") jsonString = CommonStateStorage.jsonStringStorage;
+            Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
 
@@ -229,23 +227,20 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
             "textRequest": formMessage,
             "titleRequest": formTitle
         };
-        requestBody = JSON.stringify(item);
-        // сохраним requestBody во внешний стейт:
-        StateStorageWrapper.requestBodyStorage = requestBody;
-
+        jsonString = JSON.stringify(item);
         similarNoteNameStorage = [];
         await findSimilarNotes(formMessage, formTitle);
-
         if (similarNoteNameStorage.length > 0) {
+            // сохраним requestBody во внешний стейт:
+            CommonStateStorage.jsonStringStorage = jsonString;
             // переключение в режим "подтверждение/отмена":
-            StateStorageWrapper.submitStateStorage = StateStorageWrapper.getState();
             buttonElement.style.display = "block";
-            StateStorageWrapper.setState(1);
+            CommonStateStorage.commonState = 1;
             return;
         }
 
         // совпадения не обнаружены, сохраняем заметку ("стандартный" режим):
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
     }
 
     const findSimilarNotes = async (formMessage: FormDataEntryValue|null, formTitle: FormDataEntryValue|null) => {
@@ -309,8 +304,8 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         const data = {
             "structuredTagsListResponse": similarNoteNameStorage,
             "tagsCheckedUncheckedResponse": [],
-            "textResponse": getTextRequest(JSON.parse(requestBody)),
-            "titleResponse": getTitleRequest(JSON.parse(requestBody)),
+            "textResponse": getTextRequest(JSON.parse(jsonString)),
+            "titleResponse": getTitleRequest(JSON.parse(jsonString)),
             "tagIdsInternal": similarNotesIdStorage
         };
         props.stateWrapper.setData(data);

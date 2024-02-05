@@ -1,5 +1,5 @@
 ﻿import {createRoot} from "react-dom/client";
-import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
+import {FunctionComponentStateWrapper, CommonStateStorage} from "./state.wrappers.tsx";
 
 /** Изменить видимость контейнера с меню на противоположную, см. по коду LoginBoxHandler: Visible/Invisible + hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
@@ -25,8 +25,8 @@ export class LoginBoxHandler {
     }
 
     static SetVisible<T>(stateWrapper: FunctionComponentStateWrapper<T>, url: string) {
-        window.stateWrapperStorage = stateWrapper;
-        window.urlStorage = url;
+        CommonStateStorage.stateWrapperStorage = stateWrapper;
+        CommonStateStorage.urlStorage = url;
 
         (document.getElementById("loginMessage") as HTMLElement).style.display = "block";
         (document.getElementById("login") as HTMLElement).style.display = "block";
