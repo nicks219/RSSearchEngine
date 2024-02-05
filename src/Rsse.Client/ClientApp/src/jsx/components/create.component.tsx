@@ -1,13 +1,13 @@
 ﻿import * as React from 'react';
 import {Dispatch, SetStateAction, useEffect, useReducer, useRef, useState} from "react";
-import {Loader} from "../common/loader.tsx";
+import {Loader} from "../common/loader";
 import {
     getCommonNoteId, getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
     getTextRequest, getTextResponse, getTitleRequest,
     getTitleResponse, setTextResponse, setTitleResponse
-} from "../common/dto.handlers.tsx";
-import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto.tsx";
-import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers.tsx";
+} from "../common/dto.handlers";
+import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto";
+import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers";
 
 export const CreateView = () => {
     const [data, setState] = useState<NoteResponseDto|null>(null);

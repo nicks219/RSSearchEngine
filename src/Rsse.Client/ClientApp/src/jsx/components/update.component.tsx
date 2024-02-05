@@ -1,13 +1,13 @@
 ﻿import * as React from 'react';
 import {useEffect, useReducer, useRef, useState} from "react";
-import {Loader} from "../common/loader.tsx";
+import {Loader} from "../common/loader";
 import {
     getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
     getTextResponse, getTitleResponse, setTextResponse
-} from "../common/dto.handlers.tsx";
-import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
-import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers.tsx";
+} from "../common/dto.handlers";
+import {NoteResponseDto} from "../dto/request.response.dto";
+import {toggleMenuVisibility} from '../common/visibility.handlers';
+import {FunctionComponentStateWrapper, CommonStateStorage} from "../common/state.wrappers";
 
 export const UpdateView = () => {
     const [data, setData] = useState<NoteResponseDto|null>(null);

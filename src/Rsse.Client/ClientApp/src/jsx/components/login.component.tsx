@@ -1,8 +1,8 @@
 ﻿import * as React from 'react';
 import {useState} from "react";
-import {Loader} from "../common/loader.tsx";
-import {LoginBoxHandler} from "../common/visibility.handlers.tsx";
-import {CommonStateStorage} from "../common/state.wrappers.tsx";
+import {Loader} from "../common/loader";
+import {LoginBoxHandler} from "../common/visibility.handlers";
+import {CommonStateStorage} from "../common/state.wrappers";
 
 export const LoginComponent = () => {
     const [style, setStyle] = useState("submitStyle");

@@ -1,6 +1,6 @@
 ﻿import {describe, it, expect} from 'vitest';
-import {MenuWithRouter} from "../components/menu.component.tsx";
 import {render, screen} from '@testing-library/react';
+import {MenuWithRouter} from "../components/menu.component";
 
 describe('MenuRouter component tests', () => {
     it('menu elements should render', () => {

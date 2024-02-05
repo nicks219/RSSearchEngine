@@ -1,5 +1,5 @@
-﻿import {LoginBoxHandler} from "./visibility.handlers.tsx";
-import {FunctionComponentStateWrapper} from "./state.wrappers.tsx";
+﻿import {LoginBoxHandler} from "./visibility.handlers";
+import {FunctionComponentStateWrapper} from "./state.wrappers";
 
 export class Loader {
     static createUrl: string = "/api/create";

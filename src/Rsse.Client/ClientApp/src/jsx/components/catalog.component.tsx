@@ -1,9 +1,9 @@
 ﻿import * as React from 'react';
 import {useEffect, useState} from "react";
-import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers.tsx";
-import {Loader} from "../common/loader.tsx";
-import {CatalogResponseDto} from "../dto/request.response.dto.tsx";
-import {CommonStateStorage, FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
+import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers";
+import {Loader} from "../common/loader";
+import {CatalogResponseDto} from "../dto/request.response.dto";
+import {CommonStateStorage, FunctionComponentStateWrapper} from "../common/state.wrappers";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
@@ -52,6 +52,8 @@ export const CatalogView = (): JSX.Element|undefined => {
     const onRedirect = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let noteId = Number(e.currentTarget.id);
+        // по сути это переход на другой компонент, поэтому сбросим общий стейт:
+        CommonStateStorage.init();
         Loader.redirectToMenu("/#/read/" + noteId);
     }
 

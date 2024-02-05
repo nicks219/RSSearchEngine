@@ -1,5 +1,5 @@
 ﻿import {createRoot} from "react-dom/client";
-import {FunctionComponentStateWrapper, CommonStateStorage} from "./state.wrappers.tsx";
+import {FunctionComponentStateWrapper, CommonStateStorage} from "./state.wrappers";
 
 /** Изменить видимость контейнера с меню на противоположную, см. по коду LoginBoxHandler: Visible/Invisible + hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
