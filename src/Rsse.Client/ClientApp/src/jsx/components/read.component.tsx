@@ -115,7 +115,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
     }
 
     if (props.noteDto && Number(getCommonNoteId(props.noteDto)) !== 0) {
-        CommonStateStorage.noteIdStorage = Number(getCommonNoteId(props.noteDto));
+        CommonStateStorage.commonNumber = Number(getCommonNoteId(props.noteDto));
     }
 
     return (

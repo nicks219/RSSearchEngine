@@ -15,11 +15,6 @@ export class FunctionComponentStateWrapper<T> {
 
 /** Глобальный стейт с начальной инициализацией некоторых полей */
 export class CommonStateStorage {
-    /** Передача номера заметки между компонентами */
-    public static noteIdStorage: number = 0;
-    /** Выставляется в SetVisible<T> */
-    public static stateWrapperStorage: FunctionComponentStateWrapper<any>;
-
 
     /** I: CatalogComponent: работа с дампами; II: CreateComponent: режима "подтверждение/отмена" */
     private static _commonState: number = 0;
@@ -28,9 +23,21 @@ export class CommonStateStorage {
 
 
     /** I: Выставляется в Login.SetVisible<T>; II: Используется для хранения JSON string с заметкой в Create в режиме "подтверждение/отмена" */
-    public static _commonString: string;
+    private static _commonString: string;
     public static get commonString() {return this._commonString};
     public static set commonString(value: string) {this._commonString = value};
+
+
+    /** Используется для передачи идентификатора заметки между компонентами */
+    private static _commonNumber: number = 0;
+    public static get commonNumber() {return this._commonNumber};
+    public static set commonNumber(value: number) {this._commonNumber = value};
+
+
+    /** Используется для продолжения загрузки: выставляется в Login.SetVisible<T>, восстанавливается в Login.continueLoading */
+    private static _stateWrapperStorage: FunctionComponentStateWrapper<any>;
+    public static get stateWrapperStorage() {return this._stateWrapperStorage};
+    public static set stateWrapperStorage(value: FunctionComponentStateWrapper<any>) {this._stateWrapperStorage = value};
 
 
     /** Восстановление начальных значений */
@@ -38,5 +45,6 @@ export class CommonStateStorage {
         this._commonState = 0;
         this._commonString = "";
     }
+    
 }
 

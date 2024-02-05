@@ -19,7 +19,7 @@ export const UpdateView = () => {
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, Loader.updateUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.commonNumber, Loader.updateUrl);
     }
 
     const componentWillUnmount = () => {
@@ -131,7 +131,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteRespon
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.noteDto),
-            "commonNoteID": CommonStateStorage.noteIdStorage
+            "commonNoteID": CommonStateStorage.commonNumber
         };
         const requestBody = JSON.stringify(item);
         Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);

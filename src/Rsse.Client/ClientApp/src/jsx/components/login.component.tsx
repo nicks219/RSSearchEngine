@@ -47,7 +47,7 @@ export const LoginComponent = () => {
             // продолжение для update:
             if (CommonStateStorage.commonString === Loader.updateUrl) {
                 // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.noteIdStorage, CommonStateStorage.commonString);
+                Loader.unusedPromise = Loader.getDataById(stateWrapper, CommonStateStorage.commonNumber, CommonStateStorage.commonString);
             // продолжение для catalog: загрузка первой страницы:
             } else if (CommonStateStorage.commonString === Loader.catalogUrl) {
                 const id = 1;

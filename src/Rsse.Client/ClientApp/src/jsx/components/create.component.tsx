@@ -22,7 +22,7 @@ export const CreateView = () => {
     }
     const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(CommonStateStorage.noteIdStorage)) CommonStateStorage.noteIdStorage = 0;
+        if (isNaN(CommonStateStorage.commonNumber)) CommonStateStorage.commonNumber = 0;
         // перед выходом восстанавливаем состояние обёртки:
         CommonStateStorage.init();
         mounted[0] = false;
@@ -50,7 +50,7 @@ export const CreateView = () => {
         }
 
         if (id !== 0) {
-            CommonStateStorage.noteIdStorage = id;
+            CommonStateStorage.commonNumber = id;
         }
     }
 
