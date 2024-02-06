@@ -1,5 +1,4 @@
-﻿import {CommonStateStorage, FunctionComponentStateWrapper} from "./state.wrappers";
-import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
+﻿import {CommonStateStorage, FunctionComponentStateWrapper, StateTypesAlias} from "./state.wrappers";
 
 /** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
@@ -18,9 +17,9 @@ export const toggleMenuVisibility = (cssProperty: string): string => {
 * При проявлении компонента необходимо сохранить контест восстановления. */
 export const LoginBoxVisibility = (
     visibility: boolean,
-    stateWrapper?: FunctionComponentStateWrapper<any>,
+    stateWrapper?: FunctionComponentStateWrapper<StateTypesAlias>,
     url?: string,
-    context?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>) => {
+    context?: CommonStateStorage<StateTypesAlias>) => {
 
     const SetInvisible = () => {
         const loginMessage = document.getElementById("loginMessage") as HTMLElement;
@@ -31,7 +30,7 @@ export const LoginBoxVisibility = (
 
     const SetVisible = () => {
         if (context && url && stateWrapper) {
-            context.stateWrapper = stateWrapper as unknown as FunctionComponentStateWrapper<NoteResponseDto | CatalogResponseDto>;
+            context.stateWrapper = stateWrapper as unknown as FunctionComponentStateWrapper<StateTypesAlias>;
             context.commonString = url;
         }
 

@@ -1,5 +1,6 @@
 ﻿import * as React from "react";
 import {Dispatch, SetStateAction} from "react";
+import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
 
 /** Глобальный стейт с начальной инициализацией некоторых полей */
 export class CommonStateStorage<T> {
@@ -46,3 +47,6 @@ export class FunctionComponentStateWrapper<T> {
         this.setData = setData;
     }
 }
+
+/** Альяс возможных типов для обёртки стейта */
+export type StateTypesAlias = NoteResponseDto&CatalogResponseDto;

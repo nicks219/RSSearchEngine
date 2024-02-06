@@ -1,5 +1,5 @@
 ﻿import {LoginBoxVisibility} from "./visibility.handlers";
-import {CommonStateStorage, FunctionComponentStateWrapper} from "./state.wrappers";
+import {CommonStateStorage, FunctionComponentStateWrapper, StateTypesAlias} from "./state.wrappers";
 import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
 
 export class Loader {
@@ -43,15 +43,15 @@ export class Loader {
         }
     }
 
-    static async processResponse<T>(response: Response,
-                                    stateWrapper: FunctionComponentStateWrapper<T>,
+    static async processResponse(response: Response,
+                                    stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                                     url: string,
                                     error: string,
-                                    recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
+                                    recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
         try {
             const mounted = stateWrapper.mounted[0];
-            const setComponentState = (data: T) => stateWrapper.setData(data);
-            const data: T = await response.json().catch(() => LoginBoxVisibility(true, stateWrapper, url, recoveryContext));
+            const setComponentState = (data: StateTypesAlias) => stateWrapper.setData(data);
+            const data: StateTypesAlias = await response.json().catch(() => LoginBoxVisibility(true, stateWrapper, url, recoveryContext));
 
             if (mounted) {
                 setComponentState(data);
@@ -64,9 +64,9 @@ export class Loader {
     }
 
     // GET request: /api/controller
-    static async getData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
+    static async getData(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                             url: string,
-                            recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
+                            recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
         LoginBoxVisibility(false);
@@ -83,7 +83,7 @@ export class Loader {
     }
 
     // GET request: /api/controller?id=
-    static async getDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
+    static async getDataById(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                                 requestId: number|undefined,
                                 url: string): Promise<void> {
         const error: string = `${Loader.name}: getDataById exception`;
@@ -100,7 +100,7 @@ export class Loader {
     }
 
     // POST request: /api/controller
-    static async postData<T>(stateWrapper: FunctionComponentStateWrapper<T>,
+    static async postData(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                              requestBody: string,
                              url: string,
                              id: number|string|null = null,
@@ -124,11 +124,11 @@ export class Loader {
     }
 
     // DELETE request: /api/controller?id=
-    static async deleteDataById<T>(stateWrapper: FunctionComponentStateWrapper<T>,
+    static async deleteDataById(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                                    requestId: number,
                                    url: string,
                                    pageNumber?: number,
-                                   recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): Promise<void> {
+                                   recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
         LoginBoxVisibility(false);
@@ -147,11 +147,11 @@ export class Loader {
     }
 
     // LOGIN & LOGOUT request: /account/login?email= &password= or /account/logout
-    static fireAndForgetWithQuery<T>(url: string,
+    static fireAndForgetWithQuery(url: string,
                                      query: string,
                                      callback: (v: Response)=>Response|PromiseLike<Response>|void,
-                                     stateWrapper: FunctionComponentStateWrapper<T>|null,
-                                     recoveryContext?: CommonStateStorage<NoteResponseDto|CatalogResponseDto>): void {
+                                     stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>|null,
+                                     recoveryContext?: CommonStateStorage<StateTypesAlias>): void {
         const error: string = `${Loader.name}: FnF or login/logout exception`;
         Loader.setupDevEnvironment();
 

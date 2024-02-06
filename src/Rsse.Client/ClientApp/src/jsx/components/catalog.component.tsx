@@ -13,7 +13,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const context = useContext(CommonContext);
 
     useEffect(() => {
-        Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
         return function onUnmount() {
             mounted[0] = false;
             // перед выходом восстанавливаем состояние обёртки:
@@ -89,7 +89,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
     else if (data.res && context.commonState === 2) {
         // после обработки дампа нажата кнопка "Каталог":
-        Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
         context.commonState = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
