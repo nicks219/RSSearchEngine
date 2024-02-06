@@ -21,7 +21,7 @@
 ## I. Информация..
 * **API**: актуальная версия доступна онлайн на **[bumps.sh](https://bump.sh/nicks219/doc/rsse)**
 * **Версии**: разработка фиксируется в **[CHANGELOG.md](CHANGELOG.md)**
-* **K3S**: деплой на [**maintiner.me**](https://maintainer.me), манифесты в папке [**.k8s**](https://github.com/nicks219/RSSearchEngine/tree/master/.k3s)
+* **K3S**: деплой на [**maintiner.me**](https://maintainer.me), манифесты в папке [**.k3s**](https://github.com/nicks219/RSSearchEngine/tree/master/.k3s)
 * **CI/CD**: пайплайны [**GitHub Action**](https://github.com/nicks219/RSSearchEngine/actions)
 * **DV SSL**: выпуск от [**Comodo**](https://www.comodo.com/), ингресс сконфигурирован
 

@@ -1,15 +1,14 @@
 ﻿import * as React from 'react';
-import {Loader} from "../common/loader.tsx";
+import {useContext, useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
-import {
-    getCommonNoteId, getStructuredTagsListResponse,
-    getTextResponse, getTitleResponse
-} from "../common/dto.handlers.tsx";
 import {createRoot, Root} from "react-dom/client";
-import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {toggleMenuVisibility} from "../common/visibility.handlers.tsx";
-import {useEffect, useRef, useState} from "react";
-import {FunctionComponentStateWrapper, StateStorageWrapper} from "../common/state.wrappers.tsx";
+
+import {Loader} from "../common/loader";
+import {getCommonNoteId, getStructuredTagsListResponse, getTextResponse, getTitleResponse} from "../common/dto.handlers";
+import {NoteResponseDto} from "../dto/request.response.dto";
+import {toggleMenuVisibility} from "../common/visibility.handlers";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CommonContext} from "../common/context.provider";
 
 export const ReadView = () => {
     const params = useParams();
@@ -26,33 +25,30 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
+    const context = useContext(CommonContext);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        if (StateStorageWrapper.redirectCall) {
-            // при редиректе из каталога (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
+        if (props.noteId || context.commonState == 1) {
+            // при редиректе из каталога или из Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
         } else {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         }
 
-        StateStorageWrapper.redirectCall = false;
+        context.commonState = 0;
     }
 
     const componentWillUnmount = () => {
         mounted[0] = false;
         // перед выходом восстанавливаем состояние обёртки:
-        StateStorageWrapper.renderedAfterRedirect = false;
-        StateStorageWrapper.redirectCall = false;
+        context.init();
         // убираем отображение кнопки "Поиск":
-        SearchButtonContainer.getRoot.render(
-            <div>
-            </div>
-        );
+        SearchButtonContainer.getRoot.render(<div></div>);
     }
 
     useEffect(() => {
@@ -73,14 +69,13 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
         componentDidUpdate();
     }, [data]);
 
-    if (props.noteId && !StateStorageWrapper.renderedAfterRedirect) {
+    if (props.noteId && context.commonState == 0) {
         // редирект из каталога:
         console.log(`Get text id from path params: ${props.noteId}`);
         const item = {"tagsCheckedRequest": []};
         const requestBody = JSON.stringify(item);
 
-        StateStorageWrapper.redirectCall = true;
-        StateStorageWrapper.renderedAfterRedirect = true;
+        context.commonState = 1;
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.noteId);
     }
 
@@ -94,7 +89,7 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div>
-            <form ref={castedRefObject} id="dizzy">{checkboxes}</form>
+            <form ref={castedRefObject} id="textbox">{checkboxes}</form>
             <div id="messageBox">
                 {data && getTextResponse(data) && <Note formElement={formElement} noteDto={data} />}
             </div>
@@ -115,6 +110,7 @@ const Checkbox = (props: {id: string, noteDto: NoteResponseDto}) => {
 }
 
 const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+    const context = useContext(CommonContext);
     const hideMenu = () => {
         if (props.formElement) {
             props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
@@ -122,38 +118,37 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
     }
 
     if (props.noteDto && Number(getCommonNoteId(props.noteDto)) !== 0) {
-        window.noteIdStorage = Number(getCommonNoteId(props.noteDto));
+        context.commonNumber = Number(getCommonNoteId(props.noteDto));
     }
 
     return (
         <span>
-                {props.noteDto ? (getTextResponse(props.noteDto) ?
-                        <span>
-                        <div id="songTitle" onClick={hideMenu}>
-                            {getTitleResponse(props.noteDto)}
-                        </div>
-                        <div id="songBody">
-                            <NoteTextSupportsLinks noteText={getTextResponse(props.noteDto) ?? ""}/>
-                        </div>
-                    </span>
-                        : "select tag please")
-                    : ""}
-            </span>
+            {props.noteDto ? (getTextResponse(props.noteDto) ?
+                <span>
+                    <div id="noteTitle" onClick={hideMenu}>
+                        {getTitleResponse(props.noteDto)}
+                    </div>
+                    <div id="noteText">
+                        <TextSupportsLinks text={getTextResponse(props.noteDto) ?? ""}/>
+                    </div>
+                </span>
+                : "select tag please")
+            : ""}
+        </span>
     );
 }
 
-const NoteTextSupportsLinks = (props: {noteText: string}): JSX.Element => {
-    // deprecated: JSX
-    const res: (string | JSX.Element)[] = [];
+const TextSupportsLinks = (props: {text: string}): JSX.Element => {
+    const result: (string | JSX.Element)[] = [];
     // https://css-tricks.com/almanac/properties/o/overflow-wrap/#:~:text=overflow%2Dwrap%20is%20generally%20used,%2C%20and%20Korean%20(CJK).
-    props && props.noteText.replace(
+    props && props.text.replace(
         /((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
         (_: string, link: string, text: string): string => {
-            res.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={res.length}>{link}</a> : text);
+            result.push(link ? <a href={(link[0] === "w" ? "//" : "") + link} key={result.length}>{link}</a> : text);
             return "";
         })
 
-    return <div className="user-text">{res}</div>
+    return <div className="user-text">{result}</div>
 }
 
 const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
@@ -172,7 +167,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
 
     return (
         <div id="submitStyle">
-            <input form="dizzy" type="checkbox" id="submitButton" className="regular-checkbox" onClick={submit}/>
+            <input form="textbox" type="checkbox" id="submitButton" className="regular-checkbox" onClick={submit}/>
             <label htmlFor="submitButton">Поиск</label>
         </div>
     );

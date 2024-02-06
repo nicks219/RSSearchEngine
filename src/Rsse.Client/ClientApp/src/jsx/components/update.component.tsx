@@ -1,25 +1,27 @@
 ﻿import * as React from 'react';
-import {Loader} from "../common/loader.tsx";
+import {useContext, useEffect, useReducer, useRef, useState} from "react";
+import {Loader} from "../common/loader";
 import {
-    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse, getTextResponse,
-    getTitleResponse, setTextResponse
-} from "../common/dto.handlers.tsx";
-import {NoteResponseDto} from "../dto/request.response.dto.tsx";
-import {toggleMenuVisibility} from '../common/visibility.handlers.tsx';
-import {useEffect, useReducer, useRef, useState} from "react";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
+    getStructuredTagsListResponse, getTagsCheckedUncheckedResponse,
+    getTextResponse, getTitleResponse, setTextResponse
+} from "../common/dto.handlers";
+import {NoteResponseDto} from "../dto/request.response.dto";
+import {toggleMenuVisibility} from '../common/visibility.handlers';
+import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CommonContext} from "../common/context.provider";
 
 export const UpdateView = () => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
+    const context = useContext(CommonContext);
 
     const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, window.noteIdStorage, Loader.updateUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, context.commonNumber, Loader.updateUrl);
     }
 
     const componentWillUnmount = () => {
@@ -35,7 +37,6 @@ export const UpdateView = () => {
     if (data) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             // без уникального ключа ${i}${this.state.time} при снятии последнего чекбокса он не перендерится после загрузки данных:
-            // можно создавать time в коде перед добавлением компонента:
             let time = String(Date.now());
             checkboxes.push(<Checkbox key={`checkbox ${i}${time}`}
                                       id={String(i)}
@@ -46,7 +47,7 @@ export const UpdateView = () => {
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div id="renderContainer">
-            <form ref={castedRefObject} id="dizzy">
+            <form ref={castedRefObject} id="textbox">
                 {checkboxes}
                 {data && <SubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
             </form>
@@ -77,8 +78,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
         getCookie();
     }, []);
 
-    // именование кук ASP.NET: ".AspNetCore.Cookies"
-    // учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
+    // именование кук ASP.NET: ".AspNetCore.Cookies": учитывая изменения в работе с куками со стороны браузера, вопрос: зачем?
     const getCookie = () => {
         // куки выставляются в компоненте Login:
         const name = "rsse_auth";
@@ -110,7 +110,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
                             {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
-                            <textarea name="msg" cols={66} rows={30} form="dizzy"
+                            <textarea name="msg" cols={66} rows={30} form="textbox"
                                       value={getTextResponse(props.noteDto)}
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>
@@ -122,21 +122,23 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
 }
 
 const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+    const context = useContext(CommonContext);
+
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         const formData = new FormData(props.formElement);
         const checkboxesArray =
             (formData.getAll("chkButton"))
-            .map(a => Number(a) + 1);
+            .map(item => Number(item) + 1);
         const formMessage = formData.get("msg");
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.noteDto),
-            "commonNoteID": window.noteIdStorage
+            "commonNoteID": context.commonNumber
         };
         const requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl, null, context);
     }
 
     return (

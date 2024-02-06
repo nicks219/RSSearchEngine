@@ -1,5 +1,40 @@
 ﻿import * as React from "react";
 import {Dispatch, SetStateAction} from "react";
+import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
+
+/** Глобальный стейт с начальной инициализацией некоторых полей */
+export class CommonStateStorage<T> {
+
+    /** I: CatalogComponent: работа с дампами; II: CreateComponent: режима "подтверждение/отмена" */
+    private _commonState: number = 0;
+    public get commonState() {return this._commonState};
+    public set commonState(value: number) {this._commonState = value;}
+
+
+    /** I: Выставляется в Login.SetVisible<T>; II: Используется для хранения JSON string с заметкой в Create в режиме "подтверждение/отмена" */
+    private _commonString: string = "";
+    public get commonString() {return this._commonString};
+    public set commonString(value: string) {this._commonString = value};
+
+
+    /** Используется для передачи идентификатора заметки между компонентами */
+    private _commonNumber: number = 0;
+    public get commonNumber() {return this._commonNumber};
+    public set commonNumber(value: number) {this._commonNumber = value};
+
+
+    /** Используется для продолжения загрузки: сохраняется на LoginBoxVisibility(true), восстанавливается в Login.continueLoading */
+    private _stateWrapper?: FunctionComponentStateWrapper<T>;
+    public get stateWrapper(): FunctionComponentStateWrapper<T>|undefined {return this._stateWrapper};// возможно, undefined стоит убрать
+    public set stateWrapper(value: FunctionComponentStateWrapper<T>) {this._stateWrapper = value};
+
+
+    /** Восстановление начальных значений */
+    public init = () => {
+        this._commonState = 0;
+        this._commonString = "";
+    }
+}
 
 /** Обёртка, позволяющая загрузчику менять стейт функциональных компонентов приложения */
 export class FunctionComponentStateWrapper<T> {
@@ -13,34 +48,5 @@ export class FunctionComponentStateWrapper<T> {
     }
 }
 
-// TODO: сократи количество полей для внешнего стейта
-
-/** Глобальный стейт с некоторой инициализацией */
-export class StateStorageWrapper {
-    private static _state: number = 0;
-
-    /** ReadComponent: вызов (редирект) из каталога */
-    public static renderedAfterRedirect: boolean = false;
-    public static redirectCall: boolean = false;
-
-    /** CreateComponent.SubmitButton state: */
-    public static submitStateStorage? : number;
-    public static requestBodyStorage: string = "";
-
-    static setState = (state: number) => {
-        StateStorageWrapper._state = state;
-    }
-    static getState = () => StateStorageWrapper._state;
-}
-
-/** Дополнительный глобальный стейт */
-declare global {
-    interface Window {
-        /** передача номера заметки между компонентами */
-        noteIdStorage: number,
-        /** выставляется в SetVisible<T> */
-        stateWrapperStorage: FunctionComponentStateWrapper<any>,
-        /** выставляется в SetVisible<T> */
-        urlStorage: string
-    }
-}
+/** Альяс возможных типов для обёртки стейта */
+export type StateTypesAlias = NoteResponseDto&CatalogResponseDto;

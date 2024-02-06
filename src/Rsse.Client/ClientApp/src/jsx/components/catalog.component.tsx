@@ -1,21 +1,23 @@
 ﻿import * as React from 'react';
-import {useEffect, useState} from "react";
-import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers.tsx";
-import {Loader} from "../common/loader.tsx";
-import {CatalogResponseDto} from "../dto/request.response.dto.tsx";
-import {StateStorageWrapper, FunctionComponentStateWrapper} from "../common/state.wrappers.tsx";
+import {useContext, useEffect, useState} from "react";
+import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers";
+import {Loader} from "../common/loader";
+import {CatalogResponseDto} from "../dto/request.response.dto";
+import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CommonContext} from "../common/context.provider";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
+    const context = useContext(CommonContext);
 
     useEffect(() => {
-        Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
         return function onUnmount() {
             mounted[0] = false;
             // перед выходом восстанавливаем состояние обёртки:
-            StateStorageWrapper.setState(0);
+            context.init();
         };
     }, []);
 
@@ -31,27 +33,29 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
 
     const onCreateDump = (e: React.SyntheticEvent) => {
-        StateStorageWrapper.setState(1);
+        context.commonState = 1;
         e.preventDefault();
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl, context);
     }
 
     const onRestoreDump = (e: React.SyntheticEvent) => {
-        StateStorageWrapper.setState(1);
+        context.commonState = 1;
         e.preventDefault();
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, context);
     }
 
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
-        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper);
+        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, context);
     }
 
     const onRedirect = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let noteId = Number(e.currentTarget.id);
+        // по сути это переход на другой компонент, поэтому сбросим общий стейт:
+        context.init();
         Loader.redirectToMenu("/#/read/" + noteId);
     }
 
@@ -59,7 +63,7 @@ export const CatalogView = (): JSX.Element|undefined => {
         e.preventDefault();
         let id = Number(e.currentTarget.id);
         console.log('Try to delete song id: ' + id);
-        Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data));
+        Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), context);
     }
 
     if (!data) return;
@@ -68,7 +72,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const itemArray = getCatalogPage(data);
 
     // работа с дампами:
-    if (data.res && StateStorageWrapper.getState() === 1) {
+    if (data.res && context.commonState === 1) {
         notes.push(
             <tr key={"song "} className="bg-warning">
                 <td></td>
@@ -81,12 +85,12 @@ export const CatalogView = (): JSX.Element|undefined => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        StateStorageWrapper.setState(2);
-    } else if (data.res && StateStorageWrapper.getState() === 2) {
+        context.commonState = 2;
+    }
+    else if (data.res && context.commonState === 2) {
         // после обработки дампа нажата кнопка "Каталог":
-        Loader.unusedPromise = Loader.getDataById<CatalogResponseDto>(stateWrapper, 1, Loader.catalogUrl);// вместо DidMount
-        StateStorageWrapper.setState(0);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
+        context.commonState = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
     else if (itemArray) {

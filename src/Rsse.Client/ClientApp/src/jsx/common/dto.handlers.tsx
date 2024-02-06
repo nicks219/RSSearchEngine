@@ -1,4 +1,4 @@
-﻿import { CatalogResponseDto, NoteResponseDto, NoteRequestDto } from "../dto/request.response.dto.tsx";
+﻿import {CatalogResponseDto, NoteResponseDto, NoteRequestDto} from "../dto/request.response.dto";
 
 
 /** Catalog: страница каталога представляет из себя названия заметок и соответствующие им Id */
