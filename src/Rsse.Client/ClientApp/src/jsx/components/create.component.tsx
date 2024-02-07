@@ -26,6 +26,7 @@ export const CreateView = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
         if (isNaN(context.commonNumber)) context.commonNumber = 0;
         // перед выходом восстанавливаем состояние обёртки:
+        // TODO: состояние обертки можно аосстанавливать после монтирования компонента, а не на выходе:
         context.init();
         mounted[0] = false;
     }
@@ -178,7 +179,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         buttonElement.style.display = "none";
         context.commonState = 0;
 
-        // отмена - сохраняем текст и название: восстанавливаем requestBody из внешнего стейта:
+        // отмена: восстанавливаем текст и название заметки, при необходимости из внешнего стейта:
         if (jsonString == "") jsonString = context.commonString;
         const text = getTextRequest(JSON.parse(jsonString));
         const title = getTitleRequest(JSON.parse(jsonString));
@@ -212,7 +213,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         buttonElement.style.display = "none";
 
         if (context.commonState === 1) {
-            // подтверждение: режим "подтверждение/отмена": восстанавливаем requestBody из внешнего стейта:
+            // подтверждение: режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
             context.commonState = 0;
             if (jsonString == "") jsonString = context.commonString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);

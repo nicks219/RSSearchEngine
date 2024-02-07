@@ -10,12 +10,11 @@ import {
     Routes,
     Route
 } from 'react-router-dom';
-import {CommonStateStorage} from "../common/state.wrappers";
-import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto";
+import {CommonStateStorage, StateTypesAlias} from "../common/state.wrappers";
 import {CommonContextProvider} from "../common/context.provider";
 
 export const App = () => {
-    const commonStateStorage = new CommonStateStorage<NoteResponseDto|CatalogResponseDto>();
+    const commonStateStorage = new CommonStateStorage<StateTypesAlias>();
     return (
         <HashRouter>
             <div>
