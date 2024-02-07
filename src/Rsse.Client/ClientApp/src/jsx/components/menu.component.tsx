@@ -13,8 +13,28 @@ import {
 import {CommonStateStorage, StateTypesAlias} from "../common/state.wrappers";
 import {CommonContextProvider} from "../common/context.provider";
 
+// REDUX:
+import {ContainerComponent, getCommonState, reducer, setCommonState} from "../common/reducer.tsx";
+import {Provider} from "react-redux";
+import {createStore} from "redux";
+
 export const App = () => {
     const commonStateStorage = new CommonStateStorage<StateTypesAlias>();
+
+    // REDUX:
+    const initialState = {commonState: 0};
+    const reduxStore = createStore(reducer, initialState);
+    console.log(`Startup log: ${reduxStore.getState().commonState}`)
+    reduxStore.subscribe(() => {
+        const value = reduxStore.getState();
+        console.log(`Subscribe log: ${
+            value.commonState
+        }`)
+    });
+    reduxStore.dispatch(setCommonState(24));
+    reduxStore.dispatch(getCommonState());
+    reduxStore.dispatch(getCommonState());
+
     return (
         <HashRouter>
             <div>
@@ -28,16 +48,19 @@ export const App = () => {
                 </div>
 
                 <div id="renderContainer1">
-                    <CommonContextProvider value={commonStateStorage}>
-                        <Routes>
-                            <Route path="/" element={<ReadView/>}/>
-                            <Route path="/read/:textId" element={<ReadView/>}/>
-                            <Route path="/update" element={<UpdateView/>}/>
-                            <Route path="/create" element={<CreateView/>}/>
-                            <Route path="/catalog" element={<CatalogView/>}/>
-                        </Routes>
-                        <LoginComponent />
-                    </CommonContextProvider>
+                    <Provider store={reduxStore}>
+                        <CommonContextProvider value={commonStateStorage}>
+                            <Routes>
+                                <Route path="/" element={<ReadView/>}/>
+                                <Route path="/read/:textId" element={<ReadView/>}/>
+                                <Route path="/update" element={<UpdateView/>}/>
+                                <Route path="/create" element={<CreateView/>}/>
+                                <Route path="/catalog" element={<CatalogView/>}/>
+                            </Routes>
+                            <LoginComponent/>
+                            <ContainerComponent/>{/* redux */}
+                        </CommonContextProvider>
+                    </Provider>
                 </div>
             </div>
         </HashRouter>);

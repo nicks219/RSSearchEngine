@@ -136,11 +136,13 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
 const Note = (props: {noteDto: NoteResponseDto}) => {
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
+    // TODO: напиши новый вариант ввода, без апдейта на каждый символ:
     const textHandler = (e: string) => {
         setTextResponse(props.noteDto, e);
         forceUpdate();
     }
 
+    // TODO: напиши новый вариант ввода, без апдейта на каждый символ:
     const titleHandler = (e: string) => {
         setTitleResponse(props.noteDto, e);
         forceUpdate();
