@@ -1,5 +1,9 @@
 ﻿import {LoginBoxVisibility} from "./visibility.handlers";
-import {CommonStateStorage, FunctionComponentStateWrapper, StateTypesAlias} from "./state.wrappers";
+import {
+    FunctionComponentStateWrapper,
+    RecoveryStateStorage,
+    StateTypesAlias
+} from "./state.wrappers";
 
 export class Loader {
     static createUrl: string = "/api/create";
@@ -46,7 +50,7 @@ export class Loader {
                                  stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                                  url: string,
                                  error: string,
-                                 recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
+                                 recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         try {
             const mounted = stateWrapper.mounted[0];
             const setComponentState = (data: StateTypesAlias) => stateWrapper.setData(data);
@@ -65,7 +69,7 @@ export class Loader {
     // GET request: /api/controller
     static async getData(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                          url: string,
-                         recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
+                         recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
         LoginBoxVisibility(false);
@@ -106,7 +110,7 @@ export class Loader {
                           requestBody: string,
                           url: string,
                           id: number|string|null = null,
-                          recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
+                          recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: postData exception`;
         Loader.setupDevEnvironment();
         LoginBoxVisibility(false);
@@ -130,7 +134,7 @@ export class Loader {
                                 requestId: number,
                                 url: string,
                                 pageNumber?: number,
-                                recoveryContext?: CommonStateStorage<StateTypesAlias>): Promise<void> {
+                                recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
         LoginBoxVisibility(false);
@@ -153,7 +157,7 @@ export class Loader {
                                   query: string,
                                   callback: (v: Response) => Response|PromiseLike<Response>|void,
                                   stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>|null,
-                                  recoveryContext?: CommonStateStorage<StateTypesAlias>): void {
+                                  recoveryContext?: RecoveryStateStorage<StateTypesAlias>): void {
         const error: string = `${Loader.name}: FnF or login/logout exception`;
         Loader.setupDevEnvironment();
 

@@ -8,26 +8,27 @@ import {
 } from "../common/dto.handlers";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.wrappers";
-import {CommonContext} from "../common/context.provider";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 
-export const CreateView = () => {
+export const CreateContainer = () => {
     const [data, setState] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
+    const recoveryContext = useContext(RecoveryContext);
     const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl, context);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl, recoveryContext);
     }
     const componentWillUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
-        if (isNaN(context.commonNumber)) context.commonNumber = 0;
+        if (isNaN(commonContext.commonNumber)) commonContext.commonNumber = 0;
         // перед выходом восстанавливаем состояние обёртки:
-        // TODO: состояние обертки можно аосстанавливать после монтирования компонента, а не на выходе:
-        context.init();
+        // TODO: состояние обертки можно восстанавливать после монтирования компонента, а не на выходе:
+        commonContext.init();
         mounted[0] = false;
     }
 
@@ -43,7 +44,7 @@ export const CreateView = () => {
         if (redirectId && data?.titleResponse !== okResponse) {
             console.log("Redirected: " + redirectId);
             // по сути это переход на другой компонент, поэтому сбросим общий стейт:
-            context.init();
+            commonContext.init();
             Loader.redirectToMenu("/#/read/" + redirectId);
         }
 
@@ -51,7 +52,7 @@ export const CreateView = () => {
             const id = Number(getCommonNoteId(data));
             // if (id !== 0) {
             if (id !== 0) {
-                context.commonNumber = id;
+                commonContext.commonNumber = id;
             }
         }
     }
@@ -107,14 +108,14 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
     };
 
     const loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (context.commonState == 1) {
+        if (context.createComponentState == 1) {
             let title = e.currentTarget.innerHTML.valueOf();
-            // item(1) это аттрибут about, в неём должен храниться id заметки, на который указывает данный чекбокс:
+            // item(1) это аттрибут about, в нём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-            console.log(`Submitted & redirected: state: ${context.commonState} title: ${title} id: ${id}`);
+            console.log(`Submitted & redirected: state: ${context.createComponentState} title: ${title} id: ${id}`);
 
             const noteResponseDto = new NoteResponseDto();
-            // установка commonNoteID приведет к вызову редиректа на перерисовке CreateView:
+            // установка commonNoteID приведет к вызову редиректа после перерисовки CreateView:
             // commonNoteID также выставляется при сохранении новой заметки:
             noteResponseDto.commonNoteID = Number(id);
             props.onClick(noteResponseDto);
@@ -179,10 +180,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        context.commonState = 0;
+        context.createComponentState = 0;
 
         // отмена: восстанавливаем текст и название заметки, при необходимости из внешнего стейта:
-        if (jsonString == "") jsonString = context.commonString;
+        if (jsonString == "") jsonString = context.createComponentString;
         const text = getTextRequest(JSON.parse(jsonString));
         const title = getTitleRequest(JSON.parse(jsonString));
         jsonString = JSON.stringify({
@@ -214,10 +215,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
-        if (context.commonState === 1) {
+        if (context.createComponentState === 1) {
             // подтверждение: режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
-            context.commonState = 0;
-            if (jsonString == "") jsonString = context.commonString;
+            context.createComponentState = 0;
+            if (jsonString == "") jsonString = context.createComponentString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
@@ -236,10 +237,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         await findSimilarNotes(formMessage, formTitle);
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
-            context.commonString = jsonString;
+            context.createComponentString = jsonString;
             // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
-            context.commonState = 1;
+            context.createComponentState = 1;
             return;
         }
 

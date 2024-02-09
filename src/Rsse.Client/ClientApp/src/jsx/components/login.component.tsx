@@ -2,11 +2,12 @@
 import {useContext, useState} from "react";
 import {Loader} from "../common/loader";
 import {LoginBoxVisibility} from "../common/visibility.handlers";
-import {CommonContext} from "../common/context.provider";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 
 export const LoginComponent = () => {
     const style = useState("submitStyle");
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
+    const recoveryContext = useContext(RecoveryContext);
 
     const loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
     loginElement.style.display = "block";
@@ -43,21 +44,34 @@ export const LoginComponent = () => {
 
     // загружаем в компонент данные, не полученные из-за ошибки авторизации:
     const continueLoading = () => {
-        const stateWrapper = context.stateWrapper;
+        const stateWrapper = recoveryContext.recoveryStateWrapper;
 
+        // TODO: замени на свич
         if (stateWrapper) {
-            // продолжение для update:
-            if (context.commonString === Loader.updateUrl) {
-                // Loader в случае ошибки вызовет MessageOn()
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, context.commonNumber, context.commonString);
-            // продолжение для catalog: загрузка первой страницы:
-            } else if (context.commonString === Loader.catalogUrl) {
-                const id = 1;
-                Loader.unusedPromise = Loader.getDataById(stateWrapper, id, context.commonString);
-            }
-            // продолжение для остальных компонентов, кроме случая когда последним лействием было logout:
-            else if (context.commonString !== Loader.logoutUrl) {
-                Loader.unusedPromise = Loader.getData(stateWrapper, context.commonString);
+            switch (recoveryContext.recoveryString) {
+                // продолжение для update:
+                case Loader.updateUrl: {
+                    const id = commonContext.commonNumber;
+                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.updateUrl);
+                    break;
+                }
+                // продолжение для delete (catalog): загрузка первой страницы:
+                case Loader.catalogUrl: {
+                    const id = 1;
+                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.catalogUrl);
+                    break;
+                }
+                case Loader.migrationRestoreUrl:
+                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl);
+                    break;
+                case Loader.migrationCreateUrl:
+                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
+                    break;
+                case Loader.createUrl:
+                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
+                    break;
+                default:
+                    throw new Error(`Unknown recovery url saved: ${recoveryContext.recoveryString}`);
             }
         }
 

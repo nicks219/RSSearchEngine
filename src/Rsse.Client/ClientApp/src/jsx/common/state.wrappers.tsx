@@ -1,21 +1,9 @@
 ﻿import * as React from "react";
 import {Dispatch, SetStateAction} from "react";
-import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto.tsx";
+import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto";
 
-/** Глобальный стейт с начальной инициализацией некоторых полей */
-export class CommonStateStorage<T> {
-
-    /** I: CatalogComponent: работа с дампами; II: CreateComponent: режима "подтверждение/отмена" */
-    private _commonState: number = 0;
-    public get commonState() {return this._commonState};
-    public set commonState(value: number) {this._commonState = value;}
-
-
-    /** I: Выставляется в Login.SetVisible<T>; II: Используется для хранения JSON string с заметкой в Create в режиме "подтверждение/отмена" */
-    private _commonString: string = "";
-    public get commonString() {return this._commonString};
-    public set commonString(value: string) {this._commonString = value};
-
+/** Глобальный общий стейт с начальной инициализацией некоторых полей */
+export class CommonStateStorage {
 
     /** Используется для передачи идентификатора заметки между компонентами */
     private _commonNumber: number = 0;
@@ -23,17 +11,39 @@ export class CommonStateStorage<T> {
     public set commonNumber(value: number) {this._commonNumber = value};
 
 
-    /** Используется для продолжения загрузки: сохраняется на LoginBoxVisibility(true), восстанавливается в Login.continueLoading */
-    private _stateWrapper?: FunctionComponentStateWrapper<T>;
-    public get stateWrapper(): FunctionComponentStateWrapper<T>|undefined {return this._stateWrapper};// возможно, undefined стоит убрать
-    public set stateWrapper(value: FunctionComponentStateWrapper<T>) {this._stateWrapper = value};
+    /** CreateComponent: используется для режима "подтверждение/отмена" */
+    // TODO: принимает значения 0/1 - переделать в false/true:
+    private _createComponentState: number = 0;
+    public get createComponentState() {return this._createComponentState};
+    public set createComponentState(value: number) {this._createComponentState = value;}
+
+
+    /** CreateComponent: Используется для хранения JSON string с заметкой при режиме "подтверждение/отмена" */
+    private _createComponentString: string = "";
+    public get createComponentString() {return this._createComponentString};
+    public set createComponentString(value: string) {this._createComponentString = value};
 
 
     /** Восстановление начальных значений */
     public init = () => {
-        this._commonState = 0;
-        this._commonString = "";
+        this._createComponentState = 0;
+        this._createComponentString = "";
     }
+}
+
+/** Глобальный стейт для восстановления компонента после ошибки авторизации */
+export class RecoveryStateStorage<T> {
+
+    /** Сохраняется на LoginBoxVisibility(true), восстанавливается в Login.continueLoading */
+    private _recoveryString: string = "";
+    public get recoveryString() {return this._recoveryString};
+    public set recoveryString(value: string) {this._recoveryString = value};
+
+
+    /** Сохраняется на LoginBoxVisibility(true), восстанавливается в Login.continueLoading */
+    private _recoveryStateWrapper?: FunctionComponentStateWrapper<T>;
+    public get recoveryStateWrapper(): FunctionComponentStateWrapper<T>|undefined {return this._recoveryStateWrapper};// возможно, undefined стоит убрать
+    public set recoveryStateWrapper(value: FunctionComponentStateWrapper<T>) {this._recoveryStateWrapper = value};
 }
 
 /** Обёртка, позволяющая загрузчику менять стейт функциональных компонентов приложения */

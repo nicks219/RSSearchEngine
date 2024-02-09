@@ -8,20 +8,20 @@ import {
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {toggleMenuVisibility} from '../common/visibility.handlers';
 import {FunctionComponentStateWrapper} from "../common/state.wrappers";
-import {CommonContext} from "../common/context.provider";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 
-export const UpdateView = () => {
+export const UpdateContainer = () => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
 
     const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
     const componentDidMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, context.commonNumber, Loader.updateUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, commonContext.commonNumber, Loader.updateUrl);
     }
 
     const componentWillUnmount = () => {
@@ -122,7 +122,8 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
 }
 
 const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
-    const context = useContext(CommonContext);
+    const recoveryContext = useContext(RecoveryContext);
+    const commonContext = useContext(CommonContext);
 
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -135,10 +136,11 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteRespon
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
             "titleRequest": getTitleResponse(props.noteDto),
-            "commonNoteID": context.commonNumber
+            "commonNoteID": commonContext.commonNumber
         };
         const requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl, null, context);
+        // используется recovery context
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl, null, recoveryContext);
     }
 
     return (

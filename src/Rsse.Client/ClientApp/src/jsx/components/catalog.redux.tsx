@@ -4,13 +4,13 @@ import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handle
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.wrappers";
-import {CommonContext} from "../common/context.provider";
+import {RecoveryContext} from "../common/context.provider";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto | null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
-    const recoveryContext = useContext(CommonContext);
+    const recoveryContext = useContext(RecoveryContext);
 
     useEffect(() => {
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
