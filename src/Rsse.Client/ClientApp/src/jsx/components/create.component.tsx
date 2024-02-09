@@ -7,7 +7,7 @@ import {
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {CreateComponentMode, FunctionComponentStateWrapper} from "../common/state.wrappers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 
 export const CreateContainer = () => {
@@ -19,11 +19,11 @@ export const CreateContainer = () => {
     const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
-    const componentDidMount = () => {
+    const onMount = () => {
         formElement = refObject.current;
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl, recoveryContext);
     }
-    const componentWillUnmount = () => {
+    const onUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):
         if (isNaN(commonContext.commonNumber)) commonContext.commonNumber = 0;
         // перед выходом восстанавливаем состояние обёртки:
@@ -33,8 +33,8 @@ export const CreateContainer = () => {
     }
 
     useEffect(() => {
-        componentDidMount();
-        return componentWillUnmount;
+        onMount();
+        return onUnmount;
     }, []);
 
     const componentDidUpdate = () => {
@@ -108,11 +108,11 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
     };
 
     const loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (context.createComponentState == 1) {
+        if (context.createComponentMode == CreateComponentMode.ExtendedMode) {
             let title = e.currentTarget.innerHTML.valueOf();
             // item(1) это аттрибут about, в нём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-            console.log(`Submitted & redirected: state: ${context.createComponentState} title: ${title} id: ${id}`);
+            console.log(`Submitted & redirected: state: ${context.createComponentMode} title: ${title} id: ${id}`);
 
             const noteResponseDto = new NoteResponseDto();
             // установка commonNoteID приведет к вызову редиректа после перерисовки CreateView:
@@ -180,7 +180,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        context.createComponentState = 0;
+        context.createComponentMode = CreateComponentMode.ClassicMode;
 
         // отмена: восстанавливаем текст и название заметки, при необходимости из внешнего стейта:
         if (jsonString == "") jsonString = context.createComponentString;
@@ -215,9 +215,9 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
-        if (context.createComponentState === 1) {
+        if (context.createComponentMode === CreateComponentMode.ExtendedMode) {
             // подтверждение: режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
-            context.createComponentState = 0;
+            context.createComponentMode = CreateComponentMode.ClassicMode;
             if (jsonString == "") jsonString = context.createComponentString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
@@ -240,7 +240,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
             context.createComponentString = jsonString;
             // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
-            context.createComponentState = 1;
+            context.createComponentMode = CreateComponentMode.ExtendedMode;
             return;
         }
 

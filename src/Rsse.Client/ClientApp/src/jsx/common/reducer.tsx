@@ -3,7 +3,7 @@ import {CatalogContainer} from "../components/catalog.redux.tsx";
 
 // Рефакторинг под react-redux: результаты:
 // I. стейт разделен на recovery и common: в Catalog и Read убраны стейт-машины:
-// II. [] попробуй убрать стейт у create
+// II. [] попробуй убрать стейт у create: Checkbox - SubmitButton либо прикрутить redux к стейту classic/extended mode:
 // III. [] вынеси презентационные компоненты в отдельные файлы
 // IV. [] так при чём тут был redux?)
 
