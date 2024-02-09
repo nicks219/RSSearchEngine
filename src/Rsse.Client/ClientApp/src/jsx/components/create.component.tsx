@@ -7,7 +7,7 @@ import {
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers";
 import {NoteResponseDto, ComplianceResponseDto} from "../dto/request.response.dto";
-import {CreateComponentMode, FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {ComponentMode, FunctionComponentStateWrapper} from "../common/state.wrappers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 
 export const CreateContainer = () => {
@@ -90,7 +90,7 @@ export const CreateContainer = () => {
 }
 
 const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatch<SetStateAction<NoteResponseDto|null>>}) => {
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
     const checked = getTagsCheckedUncheckedResponse(props) === "checked";
 
     const getTagName = (i: number) => {
@@ -108,11 +108,11 @@ const Checkbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatc
     };
 
     const loadNoteOnClick = (e: React.SyntheticEvent) => {
-        if (context.createComponentMode == CreateComponentMode.ExtendedMode) {
+        if (commonContext.componentMode == ComponentMode.ExtendedMode) {
             let title = e.currentTarget.innerHTML.valueOf();
             // item(1) это аттрибут about, в нём должен храниться id заметки, на который указывает данный чекбокс:
             let id = e.currentTarget.attributes.item(1)?.nodeValue;
-            console.log(`Submitted & redirected: state: ${context.createComponentMode} title: ${title} id: ${id}`);
+            console.log(`Submitted & redirected: state: ${commonContext.componentMode} title: ${title} id: ${id}`);
 
             const noteResponseDto = new NoteResponseDto();
             // установка commonNoteID приведет к вызову редиректа после перерисовки CreateView:
@@ -175,15 +175,15 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
 
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
     const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        context.createComponentMode = CreateComponentMode.ClassicMode;
+        commonContext.componentMode = ComponentMode.ClassicMode;
 
         // отмена: восстанавливаем текст и название заметки, при необходимости из внешнего стейта:
-        if (jsonString == "") jsonString = context.createComponentString;
+        if (jsonString == "") jsonString = commonContext.componentString;
         const text = getTextRequest(JSON.parse(jsonString));
         const title = getTitleRequest(JSON.parse(jsonString));
         jsonString = JSON.stringify({
@@ -201,7 +201,7 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
     }
     const componentWillUnmount = () => {
         // перед выходом восстанавливаем состояние обёртки:
-        context.init();
+        commonContext.init();
     }
 
     useEffect(() => {
@@ -215,10 +215,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
-        if (context.createComponentMode === CreateComponentMode.ExtendedMode) {
+        if (commonContext.componentMode === ComponentMode.ExtendedMode) {
             // подтверждение: режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
-            context.createComponentMode = CreateComponentMode.ClassicMode;
-            if (jsonString == "") jsonString = context.createComponentString;
+            commonContext.componentMode = ComponentMode.ClassicMode;
+            if (jsonString == "") jsonString = commonContext.componentString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
@@ -237,10 +237,10 @@ const SubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: Funct
         await findSimilarNotes(formMessage, formTitle);
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
-            context.createComponentString = jsonString;
+            commonContext.componentString = jsonString;
             // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
-            context.createComponentMode = CreateComponentMode.ExtendedMode;
+            commonContext.componentMode = ComponentMode.ExtendedMode;
             return;
         }
 

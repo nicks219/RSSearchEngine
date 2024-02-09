@@ -37,13 +37,13 @@ export const CatalogView = (): JSX.Element|undefined => {
     // стейт учитывается на этапе рендеринга
     // 0 - каталог; 1 - автоклик по ссылке для загрузки дампа; 2 - хз - загрузка первой страницы каталога и переход к "0"
     const onCreateDump = (e: React.SyntheticEvent) => {
-        commonContext.createComponentMode = 1;
+        commonContext.componentMode = 1;
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl, recoveryContext);
     }
 
     const onRestoreDump = (e: React.SyntheticEvent) => {
-        commonContext.createComponentMode = 1;
+        commonContext.componentMode = 1;
         e.preventDefault();
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
     }
@@ -76,7 +76,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const notesArray = getCatalogPage(data);
 
     // работа с дампами:
-    if (data.res && commonContext.createComponentMode === 1) {
+    if (data.res && commonContext.componentMode === 1) {
         notes.push(
             <tr key={"song "} className="bg-warning">
                 <td></td>
@@ -89,12 +89,12 @@ export const CatalogView = (): JSX.Element|undefined => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        commonContext.createComponentMode = 2;
+        commonContext.componentMode = 2;
     }
-    else if (data.res && commonContext.createComponentMode === 2) {
+    else if (data.res && commonContext.componentMode === 2) {
         // после обработки дампа нажата кнопка "Каталог": а в данный момент это актуально?
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
-        commonContext.createComponentMode = 0;
+        commonContext.componentMode = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
     else if (notesArray) {

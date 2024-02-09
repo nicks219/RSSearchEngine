@@ -12,21 +12,21 @@ export class CommonStateStorage {
 
 
     /** CreateComponent: используется для режима "подтверждение/отмена" */
-    private _createComponentMode: number = CreateComponentMode.ClassicMode;
-    public get createComponentMode() {return this._createComponentMode};
-    public set createComponentMode(value: number) {this._createComponentMode = value;}
+    private _componentMode: number = ComponentMode.ClassicMode;
+    public get componentMode() {return this._componentMode};
+    public set componentMode(value: number) {this._componentMode = value;}
 
 
     /** CreateComponent: Используется для хранения JSON string с заметкой при режиме "подтверждение/отмена" */
-    private _createComponentString: string = "";
-    public get createComponentString() {return this._createComponentString};
-    public set createComponentString(value: string) {this._createComponentString = value};
+    private _componentString: string = "";
+    public get componentString() {return this._componentString};
+    public set componentString(value: string) {this._componentString = value};
 
 
     /** Восстановление начальных значений */
     public init = () => {
-        this._createComponentMode = CreateComponentMode.ClassicMode;
-        this._createComponentString = "";
+        this._componentMode = ComponentMode.ClassicMode;
+        this._componentString = "";
     }
 }
 
@@ -60,7 +60,7 @@ export class FunctionComponentStateWrapper<T> {
 /** Альяс возможных типов для обёртки стейта */
 export type StateTypesAlias = NoteResponseDto&CatalogResponseDto;
 
-export enum CreateComponentMode {
+export enum ComponentMode {
     ClassicMode = 0,
     ExtendedMode = 1
 }

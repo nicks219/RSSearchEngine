@@ -1,5 +1,6 @@
 ﻿import {connect} from "react-redux";
-import {CatalogContainer} from "../components/catalog.redux.tsx";
+import {CreateContainer} from "../components/create.component";
+import {ComponentMode} from "./state.wrappers.tsx";
 
 // Рефакторинг под react-redux: результаты:
 // I. стейт разделен на recovery и common: в Catalog и Read убраны стейт-машины:
@@ -10,35 +11,35 @@ import {CatalogContainer} from "../components/catalog.redux.tsx";
 // REACT-REDUX: пример демонстрационного кода для react-redux:
 
 // CONSTANTS:
-export const GET_COMMON_STATE: string = "get_common_state";
-export const SET_COMMON_STATE: string = "set_common_state";
+export const GET_COMPONENT_MODE:string = "get_component_mode";
+export const SET_COMPONENT_MODE:string = "set_component_mode";
 
 // ACTIONS:
-export const getCommonState = (): {type:string} => ({
-    type: GET_COMMON_STATE
+export const getComponentMode = (): {type:string} => ({
+    type: GET_COMPONENT_MODE
 });
-export const setCommonState = (value:number): {type:string,value:number} => ({
-    type: SET_COMMON_STATE,
+export const setComponentMOde = (value:ComponentMode): {type:string, value:ComponentMode} => ({
+    type: SET_COMPONENT_MODE,
     value: value
 });
 
 // REDUCER:
-export const reducer = (state: {commonState: number}, action: any): /*{commonState: number}*/any => {
+export const reducer = (state: {componentMode:ComponentMode}, action: any): /*{commonState: number}*/any => {
     if (!state) {
-        return {commonState: 0};
+        return {componentMode: ComponentMode.ClassicMode};
     }
 
     switch (action.type){
-        case GET_COMMON_STATE:
+        case GET_COMPONENT_MODE:
             return {
-                commonState: state.commonState// - 1
+                componentMode: state.componentMode
             };
-        case SET_COMMON_STATE:
+        case SET_COMPONENT_MODE:
             // как поменять значение в хранилище без ре-рендеринга?
-            // state.commonState = action.value;
+            // state.componentMode = action.value;
             // return state;
             return {
-               commonState: action.value
+                componentMode: action.value
             };
         default:
             return state;
@@ -48,25 +49,25 @@ export const reducer = (state: {commonState: number}, action: any): /*{commonSta
 // две функции формируют набор props для вызова компонента:
 // I. обновления хранилища передаётся компоненту в виде свойств
 // подписка и ре-рендер при новых данных: вопрос - как при необходимости не рендерить заново компонент?
-const mapStateToProps = (state: any) => ({
-    payload: state.commonState
+const mapStateToProps = (state:any) => ({
+    payload: state.componentMode
 });
 // II. доступ к действиям передаётся компоненту в виде свойств:
-const mapDispatchToProps = (dispatch: any) => ({
-    onSet(value: number): void {
+const mapDispatchToProps = (dispatch:any) => ({
+    onSet(value: ComponentMode):void {
         // const number = Number(value);
-        dispatch(setCommonState(value))
+        dispatch(setComponentMOde(value))
     },
     onGet(): void {
-        dispatch(getCommonState())
+        dispatch(getComponentMode())
     }
 });
 
 // PRESENTATIONAL COMPONENT: компонент, находящийся в контексте провайдера:
-export const PresentationalSimpleComponent = (props: {onGet:()=>void, onSet(v: string):void, payload:string}) => {
+export const PresentationalSimpleComponent = (props: {onGet:()=>void, onSet(v: string):void, payload:ComponentMode}) => {
     return (
         <div>
-            <button onClick={e => props.onSet(e.currentTarget.value)} value={10}>=</button>
+            <button onClick={e => props.onSet(e.currentTarget.value)} value={ComponentMode.ExtendedMode}>=</button>
             <button onClick={props.onGet}>-</button>
             <span>{props.payload}</span>
         </div>
@@ -74,8 +75,8 @@ export const PresentationalSimpleComponent = (props: {onGet:()=>void, onSet(v: s
 }
 
 // CONTAINER COMPONENT: подключаем презентационный компонент к хранилищу redux:
-export const CatalogContainerComponent = connect(
+export const CreateContainerConnector = connect(
     mapStateToProps,
     mapDispatchToProps
-)(CatalogContainer);
+)(CreateContainer);
 // /*props: {onGet:()=>void, onSet(v: number):void, payload:string}*/
