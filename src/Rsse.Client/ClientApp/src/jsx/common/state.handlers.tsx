@@ -11,7 +11,7 @@ export class CommonStateStorage {
     public set commonNumber(value: number) {this._commonNumber = value};
 
 
-    /** CreateComponent: используется для режима "подтверждение/отмена" */
+    /** CreateComponent: используется для режима "подтверждение/отмена" - строго говоря, это external state */
     private _componentMode: number = ComponentMode.ClassicMode;
     public get componentMode() {return this._componentMode};
     public set componentMode(value: number) {this._componentMode = value;}

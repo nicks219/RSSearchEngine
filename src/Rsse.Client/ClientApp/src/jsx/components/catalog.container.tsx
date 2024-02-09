@@ -1,10 +1,11 @@
 ﻿import * as React from 'react';
 import {useContext, useEffect, useState} from "react";
-import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers";
+import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {RecoveryContext} from "../common/context.provider";
+import {CatalogView} from "./catalog.view";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto | null>(null);
@@ -42,6 +43,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
 
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
+
         document.cookie = 'rsse_auth = false';
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
@@ -108,52 +110,4 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     return (<CatalogView catalogDto={data} onClick={onClick} onLogout={onLogout}
                          onCreateDump={onCreateDump} onRestoreDump={onRestoreDump}
                          elements={elements}/>);
-}
-
-export const CatalogView = (props: {catalogDto:CatalogResponseDto,
-                     onClick:(e:React.SyntheticEvent)=>void,
-                     onLogout:(e:React.SyntheticEvent)=>void,
-                     onCreateDump:(e:React.SyntheticEvent)=>void,
-                     onRestoreDump:(e:React.SyntheticEvent)=>void,
-                     elements:JSX.Element[]}) => {
-    return (
-        <div className="row" id="renderContainer">
-            <p style={{marginLeft: 12 + '%'}}>
-                Всего песен: {getNotesCount(props.catalogDto)} &nbsp;
-                Страница: {getPageNumber(props.catalogDto)} &nbsp;
-            </p>
-            <p></p>
-            <p></p>
-            <table className="table" id="catalogTable">
-                <thead className="thead-dark ">
-                <tr>
-                    <th></th>
-                    <th>
-                        <form>
-                            <button id="js-nav-1" className="btn btn-info" onClick={props.onClick}>
-                                &lt;Назад
-                            </button>
-                            &nbsp;
-                            <button id="js-nav-2" className="btn btn-info" onClick={props.onClick}>
-                                Вперёд&gt;
-                            </button>
-                            &nbsp;
-                            <button id="js-logout" className="btn btn-outline-light" onClick={props.onLogout}>
-                                &lt;LogOut&gt;
-                            </button>
-                            <button id="js-logout" className="btn btn-outline-light" onClick={props.onCreateDump}>
-                                &lt;Create&gt;
-                            </button>
-                            <button id="js-logout" className="btn btn-outline-light" onClick={props.onRestoreDump}>
-                                &lt;Restore&gt;
-                            </button>
-                        </form>
-                    </th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>{props.elements}</tbody>
-            </table>
-        </div>
-    );
 }

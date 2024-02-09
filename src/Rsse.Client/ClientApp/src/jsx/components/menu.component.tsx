@@ -1,11 +1,11 @@
-﻿import {ReadContainer} from "./read.component";
-import {UpdateContainer} from "./update.component";
-import {CreateContainer} from "./create.component";
-import {LoginComponent} from "./login.component";
-import {CatalogContainer} from "./catalog.redux";
+﻿import {ReadContainer} from "./read.container";
+import {UpdateContainer} from "./update.container";
+import {CreateContainer} from "./create.container";
+import {LoginContainer} from "./login.container";
+import {CatalogContainer} from "./catalog.container";
 
 import {HashRouter, NavLink, Routes, Route} from 'react-router-dom';
-import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "../common/state.wrappers";
+import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "../common/state.handlers";
 import {CommonContextProvider, RecoveryContextProvider} from "../common/context.provider";
 
 import {createStore} from "redux";
@@ -48,7 +48,7 @@ export const App = () => {
                                     <Route path="/create" element={<CreateContainer/>}/>
                                     <Route path="/catalog" element={<CatalogContainer/>}/>
                                 </Routes>
-                                <LoginComponent/>
+                                <LoginContainer/>
                             </CommonContextProvider>
                         </RecoveryContextProvider>
                     </Provider>

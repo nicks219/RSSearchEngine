@@ -1,5 +1,5 @@
 ﻿import {createContext} from "react";
-import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "./state.wrappers";
+import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "./state.handlers";
 
 /** Предоставление доступа к расшаренному между компонентами состоянию */
 export const CommonContext = createContext(new CommonStateStorage());

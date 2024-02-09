@@ -2,7 +2,7 @@
     FunctionComponentStateWrapper,
     RecoveryStateStorage,
     StateTypesAlias
-} from "./state.wrappers";
+} from "./state.handlers";
 
 /** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {

@@ -3,7 +3,7 @@ import {useContext, useEffect, useState} from "react";
 import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers";
+import {FunctionComponentStateWrapper} from "../common/state.handlers.tsx";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 
 export const CatalogView = (): JSX.Element|undefined => {

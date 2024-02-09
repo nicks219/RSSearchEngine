@@ -3,7 +3,7 @@ import {
     FunctionComponentStateWrapper,
     RecoveryStateStorage,
     StateTypesAlias
-} from "./state.wrappers";
+} from "./state.handlers";
 
 export class Loader {
     static createUrl: string = "/api/create";

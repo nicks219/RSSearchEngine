@@ -1,11 +1,11 @@
 ﻿import {connect} from "react-redux";
-import {CreateContainer} from "../components/create.component";
-import {ComponentMode} from "./state.wrappers.tsx";
+import {CreateContainer} from "../components/create.container";
+import {ComponentMode} from "./state.handlers";
 
 // Рефакторинг под react-redux: результаты:
 // I. стейт разделен на recovery и common: в Catalog и Read убраны стейт-машины:
-// II. [] попробуй убрать стейт у create: Checkbox - SubmitButton либо прикрутить redux к стейту classic/extended mode:
-// III. [] вынеси презентационные компоненты в отдельные файлы
+// II. [] попробуй убрать стейт в create: CreateCheckbox/CreateSubmitButton или прикрутить к нему redux: commonContext.componentMode
+// III. [+] вынеси презентационные компоненты в отдельные файлы
 // IV. [] так при чём тут был redux?)
 
 // REACT-REDUX: пример демонстрационного кода для react-redux:

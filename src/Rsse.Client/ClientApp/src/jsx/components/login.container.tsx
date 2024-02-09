@@ -3,8 +3,9 @@ import {useContext, useState} from "react";
 import {Loader} from "../common/loader";
 import {LoginBoxVisibility} from "../common/visibility.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
+import {LoginView} from "./login.view";
 
-export const LoginComponent = () => {
+export const LoginContainer = () => {
     const style = useState("submitStyle");
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
@@ -78,20 +79,5 @@ export const LoginComponent = () => {
         LoginBoxVisibility(false);
     }
 
-    return (
-        <div id="login">
-            <div id={style[0]}>
-                <input type="checkbox" id="loginButton" className="regular-checkbox" onClick={onSubmit}/>
-                <label htmlFor="loginButton">Войти</label>
-            </div>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <span>
-                <input type="text" id="email" name="email" autoComplete={"on"}/>
-            </span>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <span>
-                <input type="text" id="password" name="password" autoComplete={"on"}/>
-            </span>
-        </div>
-    );
+    return(<LoginView id={style[0]} onClick={onSubmit} />)
 }
