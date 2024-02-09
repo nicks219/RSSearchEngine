@@ -32,6 +32,8 @@ export const CatalogView = (): JSX.Element|undefined => {
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.catalogUrl);
     }
 
+    // стейт учитывается на этапе рендеринга
+    // 0 - каталог; 1 - автоклик по ссылке для загрузки дампа; 2 - хз - загрузка первой страницы каталога и переход к "0"
     const onCreateDump = (e: React.SyntheticEvent) => {
         context.commonState = 1;
         e.preventDefault();
@@ -69,7 +71,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     if (!data) return;
 
     const notes: JSX.Element[] = [];
-    const itemArray = getCatalogPage(data);
+    const notesArray = getCatalogPage(data);
 
     // работа с дампами:
     if (data.res && context.commonState === 1) {
@@ -88,23 +90,23 @@ export const CatalogView = (): JSX.Element|undefined => {
         context.commonState = 2;
     }
     else if (data.res && context.commonState === 2) {
-        // после обработки дампа нажата кнопка "Каталог":
+        // после обработки дампа нажата кнопка "Каталог": а в данный момент это актуально?
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
         context.commonState = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
-    else if (itemArray) {
-        for (let index = 0; index < itemArray.length; index++) {
+    else if (notesArray) {
+        for (let index = 0; index < notesArray.length; index++) {
             notes.push(
                 <tr key={"song " + index} className="bg-warning">
                     <td></td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[index].item2}
-                                onClick={onRedirect}>{itemArray[index].item1}
+                        <button className="btn btn-outline-light" id={notesArray[index].item2}
+                                onClick={onRedirect}>{notesArray[index].item1}
                         </button>
                     </td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[index].item2}
+                        <button className="btn btn-outline-light" id={notesArray[index].item2}
                                 onClick={onDelete}>
                             &#10060;
                         </button>

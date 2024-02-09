@@ -1,7 +1,7 @@
 ﻿import {ReadView} from "./read.component";
 import {UpdateView} from "./update.component";
 import {CreateView} from "./create.component";
-import {CatalogView} from "./catalog.component";
+// import {CatalogView} from "./catalog.component";
 import {LoginComponent} from "./login.component";
 
 import {
@@ -14,9 +14,10 @@ import {CommonStateStorage, StateTypesAlias} from "../common/state.wrappers";
 import {CommonContextProvider} from "../common/context.provider";
 
 // REDUX:
-import {ContainerComponent, getCommonState, reducer, setCommonState} from "../common/reducer.tsx";
+import {reducer} from "../common/reducer.tsx";
 import {Provider} from "react-redux";
 import {createStore} from "redux";
+import {CatalogContainer} from "./catalog.redux.tsx";
 
 export const App = () => {
     const commonStateStorage = new CommonStateStorage<StateTypesAlias>();
@@ -24,16 +25,14 @@ export const App = () => {
     // REDUX:
     const initialState = {commonState: 0};
     const reduxStore = createStore(reducer, initialState);
-    console.log(`Startup log: ${reduxStore.getState().commonState}`)
+    // console.log(`Startup log: ${reduxStore.getState().commonState}`)
     reduxStore.subscribe(() => {
         const value = reduxStore.getState();
-        console.log(`Subscribe log: ${
-            value.commonState
-        }`)
+        console.log(`Redux store log: common state: ${value.commonState}`)
     });
-    reduxStore.dispatch(setCommonState(24));
-    reduxStore.dispatch(getCommonState());
-    reduxStore.dispatch(getCommonState());
+    // reduxStore.dispatch(setCommonState(0));
+    // reduxStore.dispatch(getCommonState());
+    // reduxStore.dispatch(getCommonState());
 
     return (
         <HashRouter>
@@ -48,17 +47,16 @@ export const App = () => {
                 </div>
 
                 <div id="renderContainer1">
-                    <Provider store={reduxStore}>
+                    <Provider store={reduxStore}>{/* провайдер react-redux */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
                                 <Route path="/" element={<ReadView/>}/>
                                 <Route path="/read/:textId" element={<ReadView/>}/>
                                 <Route path="/update" element={<UpdateView/>}/>
                                 <Route path="/create" element={<CreateView/>}/>
-                                <Route path="/catalog" element={<CatalogView/>}/>
+                                <Route path="/catalog" element={<CatalogContainer/>}/>
                             </Routes>
                             <LoginComponent/>
-                            <ContainerComponent/>{/* redux */}
                         </CommonContextProvider>
                     </Provider>
                 </div>

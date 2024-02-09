@@ -1,5 +1,8 @@
 ﻿import {connect} from "react-redux";
-import React from "react";
+import {CatalogContainer} from "../components/catalog.redux.tsx";
+
+// Рефакторинг под react-redux: результаты:
+// I. Catalog: получилось избавиться от стейт-машины, redux не понадобился, остался recovery context: разделение на container - view
 
 // REACT-REDUX: демонстрационный код для react-redux:
 
@@ -25,11 +28,14 @@ export const reducer = (state: {commonState: number}, action: any): /*{commonSta
     switch (action.type){
         case GET_COMMON_STATE:
             return {
-                commonState: state.commonState - 1
+                commonState: state.commonState// - 1
             };
         case SET_COMMON_STATE:
+            // как поменять значение в хранилище без ре-рендеринга?
+            // state.commonState = action.value;
+            // return state;
             return {
-                commonState: action.value
+               commonState: action.value
             };
         default:
             return state;
@@ -44,10 +50,9 @@ const mapStateToProps = (state: any) => ({
 });
 // II. доступ к действиям передаётся компоненту в виде свойств:
 const mapDispatchToProps = (dispatch: any) => ({
-    onSet(value: React.SyntheticEvent): void {
-        const attributes = value.currentTarget.attributes;
-        const number = Number(attributes[0].value);
-        dispatch(setCommonState(number))
+    onSet(value: number): void {
+        // const number = Number(value);
+        dispatch(setCommonState(value))
     },
     onGet(): void {
         dispatch(getCommonState())
@@ -55,10 +60,10 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 // PRESENTATIONAL COMPONENT: компонент, находящийся в контексте провайдера:
-export const PresentationalComponent = (props: any) => {
+export const PresentationalSimpleComponent = (props: {onGet:()=>void, onSet(v: string):void, payload:string}) => {
     return (
         <div>
-            <button onClick={props.onSet} value={10}>=</button>
+            <button onClick={e => props.onSet(e.currentTarget.value)} value={10}>=</button>
             <button onClick={props.onGet}>-</button>
             <span>{props.payload}</span>
         </div>
@@ -66,7 +71,8 @@ export const PresentationalComponent = (props: any) => {
 }
 
 // CONTAINER COMPONENT: подключаем презентационный компонент к хранилищу redux:
-export const ContainerComponent = connect(
+export const CatalogContainerComponent = connect(
     mapStateToProps,
     mapDispatchToProps
-)(PresentationalComponent);
+)(CatalogContainer);
+// /*props: {onGet:()=>void, onSet(v: number):void, payload:string}*/
