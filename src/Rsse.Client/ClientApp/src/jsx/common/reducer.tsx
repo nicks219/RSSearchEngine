@@ -3,6 +3,11 @@ import {CatalogContainer} from "../components/catalog.redux.tsx";
 
 // Рефакторинг под react-redux: результаты:
 // I. Catalog: получилось избавиться от стейт-машины, redux не понадобился, остался recovery context: разделение на container - view
+// II. Read: убрана стейт-машина, common context используется в Note для сохранения id последней отображенной заметки
+// III. Create:
+// IV. Login:
+// V. Update:
+// VI. Menu: 
 
 // REACT-REDUX: демонстрационный код для react-redux:
 

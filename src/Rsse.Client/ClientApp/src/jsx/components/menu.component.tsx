@@ -1,4 +1,4 @@
-﻿import {ReadView} from "./read.component";
+﻿import {ReadContainer} from "./read.component";
 import {UpdateView} from "./update.component";
 import {CreateView} from "./create.component";
 // import {CatalogView} from "./catalog.component";
@@ -50,8 +50,8 @@ export const App = () => {
                     <Provider store={reduxStore}>{/* провайдер react-redux */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
-                                <Route path="/" element={<ReadView/>}/>
-                                <Route path="/read/:textId" element={<ReadView/>}/>
+                                <Route path="/" element={<ReadContainer/>}/>
+                                <Route path="/read/:textId" element={<ReadContainer/>}/>
                                 <Route path="/update" element={<UpdateView/>}/>
                                 <Route path="/create" element={<CreateView/>}/>
                                 <Route path="/catalog" element={<CatalogContainer/>}/>

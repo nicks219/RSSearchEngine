@@ -10,54 +10,50 @@ import {toggleMenuVisibility} from "../common/visibility.handlers";
 import {FunctionComponentStateWrapper} from "../common/state.wrappers";
 import {CommonContext} from "../common/context.provider";
 
-export const ReadView = () => {
+export const ReadContainer = () => {
     const params = useParams();
-    return <ReadViewParametrized noteId={params.textId} />;
+    return <ReadContainerParametrized noteId={params.textId} />;
 }
 
-class SearchButtonContainer {
+class SearchButtonRoot {
     static searchButtonOneElement = document.querySelector("#searchButton1") ?? document.createElement('searchButton1');
     private static _root?: Root = createRoot(this.searchButtonOneElement);
     static getRoot: Root = (this._root)? this._root : createRoot(this.searchButtonOneElement);
 }
 
-const ReadViewParametrized = (props: {noteId?: string}) => {
+const ReadContainerParametrized = (props: {noteId?: string}) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
-    const context = useContext(CommonContext);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
 
-    const componentDidMount = () => {
+    const onMount = () => {
         formElement = refObject.current;
-        if (props.noteId || context.commonState == 1) {
+        if (props.noteId && !data) {
             // при редиректе из каталога или из Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
+            // TODO: вынести style=none в отдельную функцию
             if (formElement) formElement.style.display = "none";
             (document.getElementById("login") as HTMLElement).style.display = "none";
         } else {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         }
-
-        context.commonState = 0;
     }
 
-    const componentWillUnmount = () => {
+    const onUnmount = () => {
         mounted[0] = false;
-        // перед выходом восстанавливаем состояние обёртки:
-        context.init();
         // убираем отображение кнопки "Поиск":
-        SearchButtonContainer.getRoot.render(<div></div>);
+        SearchButtonRoot.getRoot.render(<div></div>);
     }
 
     useEffect(() => {
-        componentDidMount();
-        return componentWillUnmount;
+        onMount();
+        return onUnmount;
     }, []);
 
     const componentDidUpdate = () => {
-        SearchButtonContainer.getRoot.render(
+        SearchButtonRoot.getRoot.render(
             <div>
                 <SubmitButton stateWrapper={stateWrapper} formElement={formElement} />
             </div>
@@ -69,13 +65,13 @@ const ReadViewParametrized = (props: {noteId?: string}) => {
         componentDidUpdate();
     }, [data]);
 
-    if (props.noteId && context.commonState == 0) {
+    // если data не определена, значит fetch для id ещё не выполнялся:
+    if (props.noteId && !data) {
         // редирект из каталога:
         console.log(`Get text id from path params: ${props.noteId}`);
         const item = {"tagsCheckedRequest": []};
         const requestBody = JSON.stringify(item);
 
-        context.commonState = 1;
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.noteId);
     }
 
@@ -110,7 +106,7 @@ const Checkbox = (props: {id: string, noteDto: NoteResponseDto}) => {
 }
 
 const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
-    const context = useContext(CommonContext);
+    const commonContext = useContext(CommonContext);
     const hideMenu = () => {
         if (props.formElement) {
             props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
@@ -118,7 +114,7 @@ const Note = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) 
     }
 
     if (props.noteDto && Number(getCommonNoteId(props.noteDto)) !== 0) {
-        context.commonNumber = Number(getCommonNoteId(props.noteDto));
+        commonContext.commonNumber = Number(getCommonNoteId(props.noteDto));
     }
 
     return (
