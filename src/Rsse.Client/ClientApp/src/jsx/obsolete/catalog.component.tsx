@@ -3,21 +3,23 @@ import {useContext, useEffect, useState} from "react";
 import {getNotesCount, getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
-import {FunctionComponentStateWrapper} from "../common/state.wrappers";
-import {CommonContext} from "../common/context.provider";
+import {FunctionComponentStateWrapper} from "../common/state.handlers.tsx";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
-    const context = useContext(CommonContext);
+    // чтоб не было ошибок на билде:
+    const commonContext = useContext(CommonContext);
+    const recoveryContext = useContext(RecoveryContext);
 
     useEffect(() => {
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
         return function onUnmount() {
             mounted[0] = false;
             // перед выходом восстанавливаем состояние обёртки:
-            context.init();
+            commonContext.init();
         };
     }, []);
 
@@ -32,30 +34,32 @@ export const CatalogView = (): JSX.Element|undefined => {
         Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.catalogUrl);
     }
 
+    // стейт учитывается на этапе рендеринга
+    // 0 - каталог; 1 - автоклик по ссылке для загрузки дампа; 2 - хз - загрузка первой страницы каталога и переход к "0"
     const onCreateDump = (e: React.SyntheticEvent) => {
-        context.commonState = 1;
+        commonContext.componentMode = 1;
         e.preventDefault();
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl, context);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl, recoveryContext);
     }
 
     const onRestoreDump = (e: React.SyntheticEvent) => {
-        context.commonState = 1;
+        commonContext.componentMode = 1;
         e.preventDefault();
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, context);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
     }
 
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
         let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
-        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, context);
+        Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }
 
     const onRedirect = (e: React.SyntheticEvent) => {
         e.preventDefault();
         let noteId = Number(e.currentTarget.id);
         // по сути это переход на другой компонент, поэтому сбросим общий стейт:
-        context.init();
+        commonContext.init();
         Loader.redirectToMenu("/#/read/" + noteId);
     }
 
@@ -63,16 +67,16 @@ export const CatalogView = (): JSX.Element|undefined => {
         e.preventDefault();
         let id = Number(e.currentTarget.id);
         console.log('Try to delete song id: ' + id);
-        Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), context);
+        Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
     }
 
     if (!data) return;
 
     const notes: JSX.Element[] = [];
-    const itemArray = getCatalogPage(data);
+    const notesArray = getCatalogPage(data);
 
     // работа с дампами:
-    if (data.res && context.commonState === 1) {
+    if (data.res && commonContext.componentMode === 1) {
         notes.push(
             <tr key={"song "} className="bg-warning">
                 <td></td>
@@ -85,26 +89,26 @@ export const CatalogView = (): JSX.Element|undefined => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        context.commonState = 2;
+        commonContext.componentMode = 2;
     }
-    else if (data.res && context.commonState === 2) {
-        // после обработки дампа нажата кнопка "Каталог":
+    else if (data.res && commonContext.componentMode === 2) {
+        // после обработки дампа нажата кнопка "Каталог": а в данный момент это актуально?
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
-        context.commonState = 0;
+        commonContext.componentMode = 0;
     }
     // на отладке можно получить пустой стейт и исключение:
-    else if (itemArray) {
-        for (let index = 0; index < itemArray.length; index++) {
+    else if (notesArray) {
+        for (let index = 0; index < notesArray.length; index++) {
             notes.push(
                 <tr key={"song " + index} className="bg-warning">
                     <td></td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[index].item2}
-                                onClick={onRedirect}>{itemArray[index].item1}
+                        <button className="btn btn-outline-light" id={notesArray[index].item2}
+                                onClick={onRedirect}>{notesArray[index].item1}
                         </button>
                     </td>
                     <td>
-                        <button className="btn btn-outline-light" id={itemArray[index].item2}
+                        <button className="btn btn-outline-light" id={notesArray[index].item2}
                                 onClick={onDelete}>
                             &#10060;
                         </button>

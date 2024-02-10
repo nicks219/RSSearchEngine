@@ -1,21 +1,17 @@
-﻿import {ReadView} from "./read.component";
-import {UpdateView} from "./update.component";
-import {CreateView} from "./create.component";
-import {CatalogView} from "./catalog.component";
-import {LoginComponent} from "./login.component";
+﻿import {ReadContainer} from "./read.container";
+import {UpdateContainer} from "./update.container";
+import {CreateContainer} from "./create.container";
+import {LoginContainer} from "./login.container";
+import {CatalogContainer} from "./catalog.container";
 
-import {
-    HashRouter,
-    NavLink,
-    Routes,
-    Route
-} from 'react-router-dom';
-import {CommonStateStorage} from "../common/state.wrappers";
-import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto";
-import {CommonContextProvider} from "../common/context.provider";
+import {HashRouter, NavLink, Routes, Route} from 'react-router-dom';
+import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "../common/state.handlers";
+import {CommonContextProvider, RecoveryContextProvider} from "../common/context.provider";
 
 export const App = () => {
-    const commonStateStorage = new CommonStateStorage<NoteResponseDto|CatalogResponseDto>();
+    const commonStateStorage = new CommonStateStorage();
+    const recoveryStateStorage = new RecoveryStateStorage<StateTypesAlias>();
+
     return (
         <HashRouter>
             <div>
@@ -29,16 +25,18 @@ export const App = () => {
                 </div>
 
                 <div id="renderContainer1">
-                    <CommonContextProvider value={commonStateStorage}>
-                        <Routes>
-                            <Route path="/" element={<ReadView/>}/>
-                            <Route path="/read/:textId" element={<ReadView/>}/>
-                            <Route path="/update" element={<UpdateView/>}/>
-                            <Route path="/create" element={<CreateView/>}/>
-                            <Route path="/catalog" element={<CatalogView/>}/>
-                        </Routes>
-                        <LoginComponent />
-                    </CommonContextProvider>
+                    <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер recovery */}
+                        <CommonContextProvider value={commonStateStorage}>
+                            <Routes>
+                                <Route path="/" element={<ReadContainer/>}/>
+                                <Route path="/read/:textId" element={<ReadContainer/>}/>
+                                <Route path="/update" element={<UpdateContainer/>}/>
+                                <Route path="/create" element={<CreateContainer/>}/>
+                                <Route path="/catalog" element={<CatalogContainer/>}/>
+                            </Routes>
+                            <LoginContainer/>
+                        </CommonContextProvider>
+                    </RecoveryContextProvider>
                 </div>
             </div>
         </HashRouter>);

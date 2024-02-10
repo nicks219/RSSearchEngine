@@ -1,4 +1,8 @@
-﻿import {CommonStateStorage, FunctionComponentStateWrapper, StateTypesAlias} from "./state.wrappers";
+﻿import {
+    FunctionComponentStateWrapper,
+    RecoveryStateStorage,
+    StateTypesAlias
+} from "./state.handlers";
 
 /** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
@@ -19,7 +23,7 @@ export const LoginBoxVisibility = (
     visibility: boolean,
     stateWrapper?: FunctionComponentStateWrapper<StateTypesAlias>,
     url?: string,
-    context?: CommonStateStorage<StateTypesAlias>) => {
+    recoveryContext?: RecoveryStateStorage<StateTypesAlias>) => {
 
     const SetInvisible = () => {
         const loginMessage = document.getElementById("loginMessage") as HTMLElement;
@@ -29,9 +33,9 @@ export const LoginBoxVisibility = (
     }
 
     const SetVisible = () => {
-        if (context && url && stateWrapper) {
-            context.stateWrapper = stateWrapper as unknown as FunctionComponentStateWrapper<StateTypesAlias>;
-            context.commonString = url;
+        if (recoveryContext && url && stateWrapper) {
+            recoveryContext.recoveryStateWrapper = stateWrapper as unknown as FunctionComponentStateWrapper<StateTypesAlias>;
+            recoveryContext.recoveryString = url;
         }
 
         const loginMessageElement = document.getElementById("loginMessage") as HTMLElement;

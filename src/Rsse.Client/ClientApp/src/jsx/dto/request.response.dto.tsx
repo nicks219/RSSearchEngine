@@ -20,6 +20,7 @@ export class CatalogResponseDto {
     catalogPage? : NoteNameAndId[];
     notesCount? : number;
     pageNumber? : number;
+    /** поле для загрузки файла с дампом */
     res?: string;
 }
 
