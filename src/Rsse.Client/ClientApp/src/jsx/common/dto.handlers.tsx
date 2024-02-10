@@ -18,7 +18,7 @@ export const getTitleRequest = (dto: NoteRequestDto) => dto.titleRequest;
 export const getTextRequest = (dto: NoteRequestDto) => dto.textRequest;
 
 /** Note: func(tagsCheckedUncheckedResponse) представление списка тегов в виде строк "отмечено/не отмечено" в ответе */
-export const getTagsCheckedUncheckedResponse = (props: Readonly<{noteDto: NoteResponseDto, id: string}>) : string|undefined => {
+export const getTagCheckedUncheckedResponse = (props: Readonly<{noteDto: NoteResponseDto, id: string}>) : string|undefined => {
     if (props.noteDto?.tagsCheckedUncheckedResponse) return props.noteDto.tagsCheckedUncheckedResponse[Number(props.id)];
 };
 

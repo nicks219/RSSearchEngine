@@ -67,7 +67,7 @@ export const CreateContainer = () => {
     if (data && getStructuredTagsListResponse(data)) {
         for (let i = 0; i < getStructuredTagsListResponse(data).length; i++) {
             let time = String(Date.now());
-            // subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
+            // onClick={stateWrapper.setData} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton):
             checkboxes.push(<CreateCheckbox key={`checkbox ${i}${time}`} id={String(i)} noteDto={data} onClick={stateWrapper.setData}/>);
         }
     }
@@ -83,7 +83,7 @@ export const CreateContainer = () => {
             <form ref={castedRefObject}
                   id="textbox">
                 {checkboxes}
-                {/** subscription={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
+                {/** stateWrapper={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
                 {data && <CreateSubmitButton formElement={formElement} stateWrapper={stateWrapper} />}
             </form>
             {data && <CreateNote noteDto={data} />}

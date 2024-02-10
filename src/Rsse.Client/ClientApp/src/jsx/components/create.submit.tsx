@@ -16,7 +16,8 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         e.preventDefault();
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
-        commonContext.componentMode = ComponentMode.ClassicMode;
+        // always switch to classic mode:
+        commonContext.componentMode = ComponentMode.Classic;
 
         // отмена: восстанавливаем текст и название заметки, при необходимости из внешнего стейта:
         if (jsonString == "") jsonString = commonContext.componentString;
@@ -51,14 +52,16 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
         buttonElement.style.display = "none";
 
-        if (commonContext.componentMode === ComponentMode.ExtendedMode) {
-            // подтверждение: режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
-            commonContext.componentMode = ComponentMode.ClassicMode;
+        // extended mode:
+        if (commonContext.componentMode === ComponentMode.Extended) {
+            // подтверждение: extended режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
+            commonContext.componentMode = ComponentMode.Classic;
             if (jsonString == "") jsonString = commonContext.componentString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
 
+        // classic mode:
         const formData = new FormData(props.formElement);
         const checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
         const formMessage = formData.get('msg');
@@ -71,16 +74,16 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         jsonString = JSON.stringify(item);
         similarNoteNameStorage = [];
         await findSimilarNotes(formMessage, formTitle);
+        // switch from classic to extended mode:
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
             commonContext.componentString = jsonString;
-            // переключение в режим "подтверждение/отмена":
             buttonElement.style.display = "block";
-            commonContext.componentMode = ComponentMode.ExtendedMode;
+            commonContext.componentMode = ComponentMode.Extended;
             return;
         }
 
-        // совпадения не обнаружены, сохраняем заметку ("стандартный" режим):
+        // совпадения не обнаружены, сохраняем заметку (classic режим):
         Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
     }
 

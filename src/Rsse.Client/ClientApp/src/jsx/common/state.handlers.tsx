@@ -12,7 +12,7 @@ export class CommonStateStorage {
 
 
     /** CreateComponent: используется для режима "подтверждение/отмена" - строго говоря, это external state */
-    private _componentMode: number = ComponentMode.ClassicMode;
+    private _componentMode: number = ComponentMode.Classic;
     public get componentMode() {return this._componentMode};
     public set componentMode(value: number) {this._componentMode = value;}
 
@@ -25,7 +25,7 @@ export class CommonStateStorage {
 
     /** Восстановление начальных значений */
     public init = () => {
-        this._componentMode = ComponentMode.ClassicMode;
+        this._componentMode = ComponentMode.Classic;
         this._componentString = "";
     }
 }
@@ -60,7 +60,10 @@ export class FunctionComponentStateWrapper<T> {
 /** Альяс возможных типов для обёртки стейта */
 export type StateTypesAlias = NoteResponseDto&CatalogResponseDto;
 
+/** Псевдонимы для стейтов режима работы компонента */
 export enum ComponentMode {
-    ClassicMode = 0,
-    ExtendedMode = 1
+    /** Оригинальный режим */
+    Classic = 0,
+    /** Режим дополнительной функциональности */
+    Extended = 1
 }

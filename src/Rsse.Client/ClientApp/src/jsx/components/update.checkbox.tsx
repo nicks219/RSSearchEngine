@@ -1,8 +1,8 @@
 ﻿import {NoteResponseDto} from "../dto/request.response.dto";
-import {getStructuredTagsListResponse, getTagsCheckedUncheckedResponse} from "../common/dto.handlers";
+import {getStructuredTagsListResponse, getTagCheckedUncheckedResponse} from "../common/dto.handlers";
 
 export const UpdateCheckbox = (props: {noteDto: NoteResponseDto, id: string}) => {
-    const checked = getTagsCheckedUncheckedResponse(props) === "checked";
+    const checked = getTagCheckedUncheckedResponse(props) === "checked";
     const getTagName = (i: number) => {
         return getStructuredTagsListResponse(props.noteDto)[i];
     };
