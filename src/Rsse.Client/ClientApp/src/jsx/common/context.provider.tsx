@@ -1,6 +1,11 @@
 ﻿import {createContext} from "react";
-import {CommonStateStorage, StateTypesAlias} from "./state.wrappers";
+import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "./state.handlers";
 
-// TODO: попробуй разделить recovery context и common context:
-export const CommonContext = createContext(new CommonStateStorage<StateTypesAlias>());
+/** Предоставление доступа к расшаренному между компонентами состоянию */
+export const CommonContext = createContext(new CommonStateStorage());
 export const CommonContextProvider = CommonContext.Provider;
+
+
+/** Предоставление доступа к состоянию, используемому для восстановления после сбоя авторизации */
+export const RecoveryContext = createContext(new RecoveryStateStorage<StateTypesAlias>());
+export const RecoveryContextProvider = RecoveryContext.Provider;
