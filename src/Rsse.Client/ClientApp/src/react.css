@@ -1,6 +1,10 @@
+:root {
+    --width: 46rem;
+}
+
 #renderContainer1 {
 	position: relative;
-	width: 43rem;
+	width: var(--width);
 	padding-left: 1rem;
 	padding-top: 7rem;
 	margin-top: 6rem;
@@ -19,7 +23,7 @@ body {
 	top: 0;
 	left: 0;
 
-	width: 43rem;
+	width: var(--width);
 	padding-left: 1rem;
 	padding-right: 1rem;
 	margin-left: 0;
@@ -31,7 +35,7 @@ body {
 }
 
 #header, #login, #loginMessage {
-	width: 43rem;
+	width: var(--width);
 	padding: 1rem;
 	margin-left: 1rem;
 	margin-top: 0;
@@ -108,7 +112,7 @@ body {
 }
 
 #noteText {
-	width: 43rem;
+	width: var(--width);
 	margin-left: 0;
 	margin-top: 1rem;
 	padding-left: 10rem;
@@ -119,7 +123,7 @@ body {
 }
 
 #catalogTable{
-	width: 43rem;
+	width: var(--width);
 }
 
 button.act {

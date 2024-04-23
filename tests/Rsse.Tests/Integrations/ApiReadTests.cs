@@ -31,11 +31,12 @@ public class ApiReadTests
         var uri = new Uri("api/read/title?id=1", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var status = response.ReasonPhrase;
-        var content = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var contentTask = response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
 
         // assert:
-        response.Should().NotBeNull();
         status.Should().Be("OK");
+        response.Should().NotBeNull();
+        var content = await contentTask;
         content.Should().NotBeNull();
         content!.Values.First().Should().Be("Розенбаум - Вечерняя застольная");
     }
