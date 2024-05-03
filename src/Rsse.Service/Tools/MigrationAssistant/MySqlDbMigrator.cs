@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 namespace SearchEngine.Tools.MigrationAssistant;
 
 /// <summary>
-/// Функционал работы с миграциями бд
+/// Функционал работы с миграциями MySql
 /// </summary>
 internal class MySqlDbMigrator : IDbMigrator
 {
@@ -24,9 +24,9 @@ internal class MySqlDbMigrator : IDbMigrator
     /// <inheritdoc/>
     public string Create(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var connectionString = _configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
-        var filePath = string.IsNullOrEmpty(fileName)
+        var fileWithPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{_version}.txt")
             : Path.Combine(Directory, $"_{fileName}_{_perSongVersion}.txt");
 
@@ -45,11 +45,11 @@ internal class MySqlDbMigrator : IDbMigrator
 
         conn.Open();
 
-        mb.ExportToFile(filePath);
+        mb.ExportToFile(fileWithPath);
 
         conn.Close();
 
-        return filePath;
+        return fileWithPath;
 
         // ротация счетчика версий:
         void IncrementVersion(ref int version) => version = (version + 1) % _maxVersion;
@@ -58,7 +58,7 @@ internal class MySqlDbMigrator : IDbMigrator
     /// <inheritdoc/>
     public string Restore(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var connectionString = _configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var version = _version - 1;
 
@@ -67,7 +67,7 @@ internal class MySqlDbMigrator : IDbMigrator
             version = _maxVersion - 1;
         }
 
-        var file = string.IsNullOrEmpty(fileName)
+        var fileWithPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{version}.txt")
             : Path.Combine(Directory, $"_{fileName}_.txt");
 
@@ -81,11 +81,11 @@ internal class MySqlDbMigrator : IDbMigrator
 
         conn.Open();
 
-        mb.ImportFromFile(file);
+        mb.ImportFromFile(fileWithPath);
 
         conn.Close();
 
-        return file;
+        return fileWithPath;
     }
 }
 

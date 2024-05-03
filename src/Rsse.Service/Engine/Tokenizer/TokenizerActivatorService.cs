@@ -48,7 +48,7 @@ internal class TokenizerActivatorService : BackgroundService
         }
         finally
         {
-            _logger.LogInformation("[{Name}] graceful shutdown after '{Count}' cycles", nameof(TokenizerActivatorService), _count.ToString());
+            _logger.LogInformation("[{Name}] graceful shutdown, cycles counter: '{Count}'", nameof(TokenizerActivatorService), _count.ToString());
         }
     }
 }

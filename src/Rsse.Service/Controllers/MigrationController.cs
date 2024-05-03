@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
+using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
 using static SearchEngine.Common.ControllerMessages;
@@ -14,9 +16,30 @@ namespace SearchEngine.Controllers;
 /// Контроллер для работы с миграциями бд
 /// </summary>
 [Authorize, Route("migration"), ApiController]
-public class MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
+
+public class MigrationController(
+    ILogger<MigrationController> logger,
+    IDbMigrator migrator,
+    ITokenizerService tokenizer,
+    // todo: MySQL WORK. DELETE
+    IDataRepository repo)
     : ControllerBase
+    // todo: MySQL WORK. DELETE
+    [HttpGet("copy")]
+    public async Task<IActionResult> CopyDatabase()
 {
+        try
+        {
+            await repo.CopyDbFromMysqlToNpgsql();
+        }
+        catch (Exception exception)
+        {
+            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyDatabase)} error";
+            logger.LogError(exception, copyError);
+            return BadRequest(copyError);
+        }
+
+        return Ok("success");
     /// <summary>
     /// Создать дамп бд.
     /// </summary>

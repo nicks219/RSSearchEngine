@@ -8,7 +8,7 @@ namespace SearchEngine.Data.Context;
 /// <summary>
 /// Контекст базы данных
 /// </summary>
-public sealed class CatalogContext : DbContext
+public sealed class NpgsqlCatalogContext : DbContext
 {
     private readonly object _obj = new();
     private static volatile bool _init;
@@ -16,7 +16,7 @@ public sealed class CatalogContext : DbContext
     /// <summary>
     /// Создать контекст работы с базой данных
     /// </summary>
-    public CatalogContext(DbContextOptions<CatalogContext> option) : base(option)
+    public NpgsqlCatalogContext(DbContextOptions<NpgsqlCatalogContext> option) : base(option)
     {
         if (_init)
         {
@@ -27,6 +27,7 @@ public sealed class CatalogContext : DbContext
         {
             _init = true;
 
+            var deleted = Database.EnsureDeleted();
             var created = Database.EnsureCreated();
 
             switch (Database.ProviderName)
@@ -34,8 +35,8 @@ public sealed class CatalogContext : DbContext
                 case "Npgsql.EntityFrameworkCore.PostgreSQL":
                     if (created)
                     {
-                        var raws = Database.ExecuteSqlRaw(NpgsqlScript.CreateStubData);
-                        Console.WriteLine($"[ROWS AFFECTED] {raws}");
+                        // var raws = Database.ExecuteSqlRaw(NpgsqlScript.CreateStubData);
+                        // Console.WriteLine($"[ROWS AFFECTED] {raws}");
                     }
                     break;
 
@@ -50,12 +51,6 @@ public sealed class CatalogContext : DbContext
                 // SQLite используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // TODO можно инициализировать тестовую базу на каждый вызов контекста:
-                    if (!created)
-                    {
-                        Database.EnsureDeleted();
-                        created = Database.EnsureCreated();
-                    }
-
                     if (created)
                     {
                         var raws = Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);
@@ -84,9 +79,9 @@ public sealed class CatalogContext : DbContext
     /// </summary>
     public DbSet<NoteEntity>? Notes { get; set; }
 
-    // todo: MySQL WORK. DELETE
-    public DbSet<TextEntity>? Texts { get; set; }
-    public DbSet<TagsToNotesEntity>? TagsToNotesRelationForText { get; set; }
+    // <summary /> удалить. сущность для слияния двух баз
+    // public DbSet<TextEntity>? Texts { get; set; }
+    // public DbSet<TagsToNotesEntity>? TagsToNotesRelationForText { get; set; }
 
     /// <summary>
     /// Контекст для тегов заметок
@@ -104,8 +99,8 @@ public sealed class CatalogContext : DbContext
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // todo: MySQL WORK. DELETE
-        modelBuilder.Entity<TextEntity>().HasKey(textEntity => textEntity.NoteId);
+        // удалить. сущность для слияния двух баз
+        // modelBuilder.Entity<TextEntity>().HasKey(textEntity => textEntity.NoteId);
 
         modelBuilder.Entity<NoteEntity>()
             .HasKey(noteEntity => noteEntity.NoteId);
@@ -135,27 +130,3 @@ public sealed class CatalogContext : DbContext
             .HasForeignKey(relationEntity => relationEntity.NoteId);
     }
 }
-
-/* аналогичный код на SQL:
-CREATE TABLE [dbo].[Genre] (
-    [GenreID] INT           IDENTITY (1, 1) NOT NULL,
-    [Genre]   NVARCHAR (30) NOT NULL,
-    PRIMARY KEY CLUSTERED ([GenreID] ASC),
-    CONSTRAINT [GK-2] UNIQUE NONCLUSTERED ([Genre] ASC)
-);
-
-CREATE TABLE [dbo].[GenreText] (
-    [GenreID] INT NOT NULL,
-    [TextID]  INT NOT NULL,
-    CONSTRAINT [NK_1] UNIQUE NONCLUSTERED ([GenreID] ASC, [TextID] ASC),
-    CONSTRAINT [FK_1_Genre] FOREIGN KEY ([GenreID]) REFERENCES [dbo].[Genre] ([GenreID]),
-    CONSTRAINT [FK_2_Text] FOREIGN KEY ([TextID]) REFERENCES [dbo].[Text] ([TextID]) ON DELETE CASCADE
-);
-
-CREATE TABLE [dbo].[Text] (
-    [TextID] INT             IDENTITY (1, 1) NOT NULL,
-    [Title]  NVARCHAR (50)   NOT NULL,
-    [Song]   NVARCHAR (4000) NOT NULL,
-    PRIMARY KEY CLUSTERED ([TextID] ASC),
-    CONSTRAINT [NK_2] UNIQUE NONCLUSTERED ([Title] ASC)
-);*/

@@ -10,6 +10,9 @@ namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 internal class TestCatalogRepository : IDataRepository
 {
+    // todo: MySQL WORK. DELETE
+    public Task CopyDbFromMysqlToNpgsql() => Task.Run(() => { });
+
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";

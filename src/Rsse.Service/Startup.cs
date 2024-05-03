@@ -30,7 +30,10 @@ namespace SearchEngine;
 
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
-    private const string DefaultConnectionKey = "DefaultConnection";
+    internal const string DefaultConnectionKey = "DefaultConnection";
+    internal const string AdditionalConnectionKey = "AdditionalConnection";
+
+    private const string Postgres = "npgsql";
     private const string LogFileName = "service.log";
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
@@ -53,8 +56,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
 
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
-
         services.AddHttpContextAccessor();
 
         services.AddSwaggerGen(swaggerGenOptions =>
@@ -68,13 +69,21 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
 
+        // --- databases ---
+        // services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
+
         var connectionString = GetConnectionString();
         if (string.IsNullOrEmpty(connectionString))
         {
             throw new NullReferenceException("Invalid connection string");
         }
-
         services.AddDbContext<CatalogContext>(options => options.UseMySql(connectionString, _mySqlVersion));
+            // Postgres => options => options.UseNpgsql(connectionString),
+        // docker run --name npgsql -p 5432:5432 -e POSTGRES_PASSWORD=1 -e POSTGRES_USER=1 -e POSTGRES_DB=tagit -d postgres:16-alpine
+        var npgsqlConnectionString = _configuration.GetConnectionString(AdditionalConnectionKey);
+        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
+        // --- --------- ---
 
         services.AddScoped<IDataRepository, CatalogRepository>();
 
