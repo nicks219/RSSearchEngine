@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
+using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
 
@@ -15,7 +17,13 @@ namespace SearchEngine.Controllers;
 
 [Authorize, Route("migration"), ApiController]
 
-public class MigrationController : ControllerBase
+public class MigrationController(
+    ILogger<MigrationController> logger,
+    IDbMigrator migrator,
+    ITokenizerService tokenizer,
+    // todo: MySQL WORK. DELETE
+    IDataRepository repo)
+    : ControllerBase
 {
     private const string CreateError = $"[{nameof(MigrationController)}] {nameof(CreateDump)} error";
     private const string RestoreError = $"[{nameof(MigrationController)}] {nameof(RestoreFromDump)} error";
@@ -25,10 +33,22 @@ public class MigrationController : ControllerBase
     private readonly ITokenizerService _tokenizer;
 
     public MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
+    // todo: MySQL WORK. DELETE
+    [HttpGet("copy")]
+    public async Task<IActionResult> CopyDatabase()
     {
-        _logger = logger;
-        _migrator = migrator;
-        _tokenizer = tokenizer;
+        try
+        {
+            await repo.CopyDbFromMysqlToNpgsql();
+        }
+        catch (Exception exception)
+        {
+            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyDatabase)} error";
+            logger.LogError(exception, copyError);
+            return BadRequest(copyError);
+        }
+
+        return Ok("success");
     }
 
     /// <summary>
@@ -40,13 +60,13 @@ public class MigrationController : ControllerBase
     {
         try
         {
-            var result = _migrator.Create(fileName);
+            var result = migrator.Create(fileName);
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, CreateError);
+            logger.LogError(exception, CreateError);
             return BadRequest(CreateError);
         }
     }
@@ -61,14 +81,14 @@ public class MigrationController : ControllerBase
     {
         try
         {
-            var result = _migrator.Restore(fileName);
-            _tokenizer.Initialize();
+            var result = migrator.Restore(fileName);
+            tokenizer.Initialize();
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, RestoreError);
+            logger.LogError(exception, RestoreError);
             return BadRequest(RestoreError);
         }
     }

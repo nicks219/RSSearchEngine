@@ -1,20 +1,26 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Data.Entities;
 
-/// <summary>
-/// Представление строки таблицы бд с заметками
-/// </summary>
-[Table("Note")]
-public class NoteEntity : INote
+// todo: MySQL WORK. DELETE
+public interface INote
+{
+    public int NoteId { get; set; }
+    public string? Title { get; set; }
+    public string? Text { get; set; }
+}
+
+/// <summary/> Представление строки таблицы бд с заметками
+// todo: MySQL WORK. DELETE
+[Table("Text")]
+public class TextEntity : INote
 {
     /// <summary>
     /// Номер заметки
     /// </summary>
-    [Column("NoteId")]
+    [Column("TextId")]
     public int NoteId { get; set; }
 
     /// <summary>
@@ -27,12 +33,9 @@ public class NoteEntity : INote
     /// <summary>
     /// Текст заметки
     /// </summary>
-    [Column("Text")]
+    [Column("Song")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Text { get; set; }
 
-    /// <summary>
-    /// Служебное поле EF для создания связи
-    /// </summary>
-    public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
+    // public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
 }

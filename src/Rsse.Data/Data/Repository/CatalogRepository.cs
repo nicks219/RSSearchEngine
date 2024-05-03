@@ -18,6 +18,8 @@ namespace SearchEngine.Data.Repository;
 public class CatalogRepository : IDataRepository
 {
     private readonly CatalogContext _context;
+    // todo: MySQL WORK. DELETE
+    private readonly NpgsqlCatalogContext _npgsqlContext;
 
     /// <summary>
     /// Создать репозиторий
@@ -26,6 +28,40 @@ public class CatalogRepository : IDataRepository
     public CatalogRepository(IServiceProvider serviceProvider)
     {
         _context = serviceProvider.GetRequiredService<CatalogContext>();
+        // todo: MySQL WORK. DELETE
+        _npgsqlContext = serviceProvider.GetRequiredService<NpgsqlCatalogContext>();
+    }
+
+    /// <inheritdoc/>
+    // todo: MySQL WORK. DELETE
+    public async Task CopyDbFromMysqlToNpgsql()
+    {
+        // что выберем, то и добавится в методе AddRangeAsync вместе с "основной" таблицей:
+        var notes = _context.Notes!.Select(note => note).ToList();
+        _ = _context.TagsToNotesRelation!.Select(relation => relation).ToList();
+        _ = _context.Tags!.Select(tag => tag).ToList();
+
+        await using var transaction = await _npgsqlContext.Database.BeginTransactionAsync();
+        // notes, tags, relations:
+        try
+        {
+            await _npgsqlContext.Notes!.AddRangeAsync(notes);
+
+            await _npgsqlContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (DataExistsException)
+        {
+            await transaction.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            // Include Error Detail:
+            await transaction.RollbackAsync();
+            Console.WriteLine(ex.Message);
+            throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
+        }
     }
 
     /// <inheritdoc/>

@@ -12,6 +12,9 @@ namespace SearchEngine.Data.Repository.Contracts;
 /// </summary>
 public interface IDataRepository : IDisposable, IAsyncDisposable
 {
+    // todo: MySQL WORK. DELETE
+    Task CopyDbFromMysqlToNpgsql();
+
     // crud:
 
     /// <summary>
