@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
@@ -25,6 +26,8 @@ internal class SimpleStartup
         services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
+        // для резолва CatalogRepository также регистрируем контекст для postgres (использует Sqllite для инициализации)
+        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(connectionString));
     }
 
     public static void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
