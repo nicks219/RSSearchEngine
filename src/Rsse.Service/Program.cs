@@ -33,5 +33,5 @@ try
 }
 catch (InvalidOperationException ex)
 {
-    throw new Exception("[STARTUP ERROR] more likely db server is down", ex);
+    throw new Exception("[STARTUP ERROR] more likely one or all db server(s) is down", ex);
 }

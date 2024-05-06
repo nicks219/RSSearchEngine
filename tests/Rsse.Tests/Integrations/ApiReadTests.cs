@@ -34,8 +34,8 @@ public class ApiReadTests
         var contentTask = response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
 
         // assert:
+        response.EnsureSuccessStatusCode();
         status.Should().Be("OK");
-        response.Should().NotBeNull();
         var content = await contentTask;
         content.Should().NotBeNull();
         content!.Values.First().Should().Be("Розенбаум - Вечерняя застольная");
