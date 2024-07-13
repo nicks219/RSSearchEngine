@@ -4,6 +4,9 @@ import {toggleMenuVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
 
 export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+    const textAreaCols: number = 73;
+    const textAreaRows: number = 30;
+
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
@@ -42,7 +45,7 @@ export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteR
                             {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
-                            <textarea name="msg" cols={66} rows={30} form="textbox"
+                            <textarea name="msg" cols={textAreaCols} rows={textAreaRows} form="textbox"
                                       value={getTextResponse(props.noteDto)}
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>

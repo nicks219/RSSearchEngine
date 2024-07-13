@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -89,7 +90,9 @@ public class CreateController : ControllerBase
 
             tokenizer.Create(result.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
-            CreateDump();
+            var path = CreateDumpAndGetFilePath();
+
+            result.TextResponse = path ?? string.Empty;
 
             return result;
         }
@@ -101,14 +104,13 @@ public class CreateController : ControllerBase
     }
 
     /// <summary>
-    /// Зафиксировать дамп бд
+    /// Зафиксировать дамп бд и вернуть путь к созданному файлу
     /// </summary>
-    private void CreateDump()
+    private string? CreateDumpAndGetFilePath()
     {
-        if (_baseOptions.CreateBackupForNewSong)
-        {
-            // создание полного дампа достаточно ресурсозатратно:
-            _migrator.Create(BackupFileName);
-        }
+        return _baseOptions.CreateBackupForNewSong
+            // NB: создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные минрации:
+            ? _migrator.Create(BackupFileName)
+            : null;
     }
 }

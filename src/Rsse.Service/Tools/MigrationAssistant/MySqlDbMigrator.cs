@@ -13,6 +13,7 @@ internal class MySqlDbMigrator : IDbMigrator
     private readonly IConfiguration _configuration;
     private readonly int _maxVersion;
     private int _version;
+    private int _perSongVersion;
 
     public MySqlDbMigrator(IConfiguration configuration)
     {
@@ -27,12 +28,12 @@ internal class MySqlDbMigrator : IDbMigrator
 
         var filePath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{_version}.txt")
-            : Path.Combine(Directory, $"_{fileName}_.txt");
+            : Path.Combine(Directory, $"_{fileName}_{_perSongVersion}.txt");
 
-        if (string.IsNullOrEmpty(fileName))
-        {
-            _version = (_version + 1) % _maxVersion;
-        }
+        IncrementVersion(
+            ref string.IsNullOrEmpty(fileName)
+            ? ref _version
+            : ref _perSongVersion);
 
         using var conn = new MySqlConnection(connectionString);
 
@@ -49,6 +50,9 @@ internal class MySqlDbMigrator : IDbMigrator
         conn.Close();
 
         return filePath;
+
+        // ротация счетчика версий:
+        void IncrementVersion(ref int version) => version = (version + 1) % _maxVersion;
     }
 
     /// <inheritdoc/>

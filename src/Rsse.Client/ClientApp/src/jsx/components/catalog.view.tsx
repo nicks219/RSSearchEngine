@@ -2,7 +2,8 @@
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {getNotesCount, getPageNumber} from "../common/dto.handlers";
 
-export const CatalogView = (props: {catalogDto:CatalogResponseDto,
+export const CatalogView = (props: {
+    catalogDto:CatalogResponseDto,
     onClick:(e:React.SyntheticEvent)=>void,
     onLogout:(e:React.SyntheticEvent)=>void,
     onCreateDump:(e:React.SyntheticEvent)=>void,

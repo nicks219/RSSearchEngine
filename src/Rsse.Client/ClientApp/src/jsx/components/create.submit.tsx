@@ -7,6 +7,9 @@ import {getTextRequest, getTitleRequest} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 
 export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+    // максимальное количество названий похожих заметок:
+    const maxSimilarResultsTitleCount = 20;
+
     let jsonString: string = "";
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
@@ -123,8 +126,8 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         }
 
         for (let index = 0; index < result.length; index++) {
-            // лучше сделать reject:
-            if (similarNoteNameStorage.length >= 10) {
+            // прекращаем добавление похожих заметок к поисковой выдаче после превышения порога:
+            if (similarNoteNameStorage.length >= maxSimilarResultsTitleCount) {
                 continue;
             }
 

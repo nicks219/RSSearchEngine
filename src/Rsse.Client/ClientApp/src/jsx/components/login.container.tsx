@@ -29,7 +29,7 @@ export const LoginContainer = () => {
 
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
-        console.log("Login error");
+        console.log("Login error.");
     }
 
     const loginOk = () => {
