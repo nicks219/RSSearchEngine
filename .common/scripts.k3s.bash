@@ -48,3 +48,10 @@ kubectl apply -f $rsse_service
 # kubectl create secret tls secret-tls --key=/usr/share/ca-certificates/comodo/crt-private --cert=/usr/share/ca-certificates/comodo/nginx_bundle/nginx_bundle_a67352573a96.crt
 kubectl create secret tls secret-tls --key=~/"$ssl_private" --cert=~/"$ssl_cert"
 kubectl apply -f $ingress_traefik
+
+# exec to pod
+kubectl get pods
+kubectl exec -it rsse-app-deployment-c9ff5fbd4-fk88h /bin/sh
+
+# copy to host
+kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dump_.txt /root/_db_last_dump_.txt

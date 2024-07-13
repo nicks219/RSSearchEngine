@@ -1,17 +1,21 @@
 ﻿import * as React from 'react';
-import {useContext, useEffect, useState} from "react";
+import {ReactNode, useContext, useEffect, useState} from "react";
 import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";
+import {Dialog} from "../common/dialog.component.tsx";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
+    const actionTypeConfirmValue = "confirm";
     const [data, setData] = useState<CatalogResponseDto | null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
     const recoveryContext = useContext(RecoveryContext);
+
+    const [dialog, setDialog] = useState<ReactNode|null>(null);
 
     useEffect(() => {
         Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
@@ -36,9 +40,27 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl, recoveryContext);
     }
 
+    const askForConfirmation = (onConfirm: () => void, header: string) => {
+        const message: string = "Отменить это действие будет невозможно";
+        setDialog(
+            <Dialog onAction={(action: string) => {
+                setDialog(null);
+                if (action === actionTypeConfirmValue) {
+                    console.log(action);
+                    onConfirm();
+                }
+            }} header={header}>
+                {message}
+            </Dialog>
+        );
+    }
+
     const onRestoreDump = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
+        const onConfirm = () => {
+            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
+        }
+        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ ПРИМЕНЕНИЕ ДАМПА");
     }
 
     const onLogout = (e: React.SyntheticEvent) => {
@@ -57,9 +79,14 @@ export const CatalogContainer = (): JSX.Element|undefined => {
 
     const onDelete = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        let id = Number(e.currentTarget.id);
-        console.log('Try to delete song id: ' + id);
-        Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
+        const targetId = e.currentTarget.id;
+        const onConfirm = () => {
+            let id = Number(targetId);
+            console.log('Try to delete song id: ' + id);
+            Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
+        }
+
+        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ УДАЛЕНИЕ");
     }
 
     if (!data) return;
@@ -90,14 +117,14 @@ export const CatalogContainer = (): JSX.Element|undefined => {
                     <td></td>
                     <td>
                         <button className="btn btn-outline-light"
-                                // note id and name:
+                            // note id and name:
                                 id={page[index].item2}
                                 onClick={onRedirect}>{page[index].item1}
                         </button>
                     </td>
                     <td>
                         <button className="btn btn-outline-light"
-                                // note id:
+                            // note id:
                                 id={page[index].item2}
                                 onClick={onDelete}>
                             &#10060;
@@ -107,7 +134,12 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         }
     }
 
-    return (<CatalogView catalogDto={data} onClick={onClick} onLogout={onLogout}
+    return (
+        <div>
+            <CatalogView catalogDto={data} onClick={onClick} onLogout={onLogout}
                          onCreateDump={onCreateDump} onRestoreDump={onRestoreDump}
-                         elements={elements}/>);
+                         elements={elements}/>
+            {dialog}
+        </div>
+    );
 }

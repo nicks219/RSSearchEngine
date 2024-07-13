@@ -1,6 +1,9 @@
 :root {
     --text-width: 48rem;
     --text-padding-left: 4rem;
+
+    --modal-width: 24rem;
+    --modal-height: 100px;
 }
 
 #renderContainer1 {
@@ -17,6 +20,28 @@
 
 body {
 	background-color: slategrey;
+}
+body.dialog-open {
+    background-color: #721c24;
+    transition: all 0.5s 0.1s;;
+}
+
+.dialog {
+    height: var(--modal-height);
+    width: var(--modal-width);
+    left: calc(50% - var(--modal-width) / 2);
+    top: calc(50% - var(--modal-height) / 2);
+    text-align: center;
+
+    position: fixed;
+    background: #FFFFFF;
+    color: #000000;
+    box-sizing: border-box;
+    font-weight: bold;
+
+    border: 3px solid black;
+    border-radius: 10px;
+    user-select: none;
 }
 
 #renderContainer {
