@@ -17,6 +17,7 @@ namespace SearchEngine.Controllers;
 
 public class TestController : Controller
 {
+    private const string Version = "v5.2.5: .NET8/React18";
     private static int _counter;
     private readonly ILogger<TestController> _logger;
 
@@ -32,7 +33,7 @@ public class TestController : Controller
     [HttpGet("get/version")]
     public ActionResult GetVersion()
     {
-        return Ok("v5.2.4: .NET8/React18");
+        return Ok(Version);
     }
 
     // TODO последующие ручки переписать либо удалить:
