@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 
@@ -46,7 +47,11 @@ public class LoginModel
                 return null;
             }
 
-            var claims = new List<Claim> { new(ClaimsIdentity.DefaultNameClaimType, login.Email) };
+            var claims = new List<Claim>
+            {
+                new(ClaimsIdentity.DefaultNameClaimType, login.Email),
+                new(Constants.IdInternalClaimType, user.Id.ToString())
+            };
 
             var identity = new ClaimsIdentity(
                 claims,

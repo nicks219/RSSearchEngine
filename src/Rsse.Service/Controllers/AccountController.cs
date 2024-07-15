@@ -19,27 +19,20 @@ namespace SearchEngine.Controllers;
 
 [ApiController, Route("account")]
 
-public class LoginController : ControllerBase
+public class AccountController(
+    IServiceScopeFactory serviceScopeFactory,
+    IWebHostEnvironment env,
+    ILogger<AccountController> logger)
+    : ControllerBase
 {
-    private const string LoginError = $"[{nameof(LoginController)}] {nameof(Login)} system error";
-    private const string DataError = $"[{nameof(LoginController)}] credentials error";
-    private const string LogOutMessage = $"[{nameof(LoginController)}] {nameof(Logout)}";
-    private const string LoginOkMessage = $"[{nameof(LoginController)}] {nameof(Login)}";
-    private const string ModifyCookieMessage = $"[{nameof(LoginController)}] {nameof(ModifyCookie)}";
+    private const string LoginError = $"[{nameof(AccountController)}] {nameof(Login)} system error";
+    private const string DataError = $"[{nameof(AccountController)}] credentials error";
+    private const string LogOutMessage = $"[{nameof(AccountController)}] {nameof(Logout)}";
+    private const string LoginOkMessage = $"[{nameof(AccountController)}] {nameof(Login)}";
+    private const string ModifyCookieMessage = $"[{nameof(AccountController)}] {nameof(ModifyCookie)}";
 
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
-
-    private readonly ILogger<LoginController> _logger;
-    private readonly IServiceScopeFactory _scope;
-    private readonly IWebHostEnvironment _env;
-
-    public LoginController(IServiceScopeFactory serviceScopeFactory, IWebHostEnvironment env, ILogger<LoginController> logger)
-    {
-        _logger = logger;
-        _scope = serviceScopeFactory;
-        _env = env;
-    }
 
     /// <summary>
     /// Авторизоваться в системе
@@ -85,7 +78,7 @@ public class LoginController : ControllerBase
     /// <param name="loginDto">данные для авторизации</param>
     private async Task<string> Login(LoginDto loginDto)
     {
-        using var scope = _scope.CreateScope();
+        using var scope = serviceScopeFactory.CreateScope();
         try
         {
             var identity = await new LoginModel(scope).SignIn(loginDto);
@@ -103,7 +96,7 @@ public class LoginController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, LoginError);
+            logger.LogError(ex, LoginError);
             return LoginError;
         }
     }
@@ -113,12 +106,12 @@ public class LoginController : ControllerBase
     /// </summary>
     private void ModifyCookie()
     {
-        if (_env.IsProduction())
+        if (env.IsProduction())
         {
             return;
         }
 
-        _logger.LogInformation(ModifyCookieMessage);
+        logger.LogInformation(ModifyCookieMessage);
 
         var setCookie = HttpContext.Response.Headers.SetCookie;
         var asString = setCookie.ToString();
