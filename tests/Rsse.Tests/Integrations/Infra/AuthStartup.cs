@@ -1,13 +1,21 @@
+using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
+using SearchEngine.Common.Logger;
+using SearchEngine.Controllers;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -18,7 +26,7 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// <summary>
 /// Копия класса настроек сервиса с настроенной авторизацией.
 /// </summary>
-public class AuthStartup(IConfiguration configuration)
+public class AuthStartup(IConfiguration configuration, IWebHostEnvironment env)
 {
     private const string DefaultConnectionKey = "DefaultConnection";
     private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
@@ -87,7 +95,7 @@ public class AuthStartup(IConfiguration configuration)
         });
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseDefaultFiles();
 
@@ -109,5 +117,14 @@ public class AuthStartup(IConfiguration configuration)
             }).RequireAuthorization();
             endpoints.MapControllers();
         });
+
+        AddLogging(loggerFactory);
+    }
+
+    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+
+    private static void AddLogging(ILoggerFactory loggerFactory)
+    {
+        loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
 }
