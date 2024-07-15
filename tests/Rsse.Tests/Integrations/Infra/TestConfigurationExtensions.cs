@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Controllers;
@@ -33,5 +33,7 @@ public static class TestConfigurationExtensions
         var connectionString = $"Data Source={dbPath}";
 
         services.AddDbContext<CatalogContext>(options => options.UseSqlite(connectionString));
+        // для резолва CatalogRepository также регистрируем контекст для postgres (использует Sqllite для инициализации)
+        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(connectionString));
     }
 }

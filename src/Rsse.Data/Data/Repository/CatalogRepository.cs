@@ -40,6 +40,7 @@ public class CatalogRepository : IDataRepository
         var notes = _context.Notes!.Select(note => note).ToList();
         _ = _context.TagsToNotesRelation!.Select(relation => relation).ToList();
         _ = _context.Tags!.Select(tag => tag).ToList();
+        _ = _context.Users!.Select(user => user).ToList();
 
         await using var transaction = await _npgsqlContext.Database.BeginTransactionAsync();
         // notes, tags, relations:
