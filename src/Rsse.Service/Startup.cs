@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
+using SearchEngine.Common.Extensions;
 using SearchEngine.Common.Logger;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
@@ -29,7 +30,6 @@ namespace SearchEngine;
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     private const string DefaultConnectionKey = "DefaultConnection";
-    private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
     private const string LogFileName = "service.log";
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
@@ -109,13 +109,16 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddSingleton<IAuthorizationHandler, FullAccessRequirementsHandler>();
         services.AddCors(builder =>
         {
-            builder.AddPolicy(DevelopmentCorsPolicy, policyBuilder =>
+            builder.AddPolicy(Constants.DevelopmentCorsPolicy, policyBuilder =>
             {
                 policyBuilder.WithOrigins(_allowedOrigins).AllowCredentials();
                 policyBuilder.WithHeaders("Content-Type");
                 policyBuilder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
             });
         });
+
+        services.AddMetricsInternal();
+        services.AddRateLimiterInternal();
     }
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -145,12 +148,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         app.UseRouting();
 
-        app.UseCors(DevelopmentCorsPolicy);
+        app.UseCors(Constants.DevelopmentCorsPolicy);
 
         app.UseAuthentication();
 
         app.UseAuthorization();
 
+        app.UseRateLimiter();
         app.UseEndpoints(endpoints =>
         {
             endpoints.Map("/account/accessDenied", async next =>
@@ -160,6 +164,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
             }).RequireAuthorization();
             endpoints.MapControllers();
+            endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
         });
 
         AddLogging(loggerFactory);

@@ -19,7 +19,11 @@ public abstract class Constants
     // <summary>Именование заголовка Swagger.</summary>
     internal const string SwaggerTitle = "RSSearchEngine API";
     // <summary>Именование политики полного доступа.</summary>
-    public const string FullAccessPolicyName = nameof(FullAccessPolicyName);
+    internal const string FullAccessPolicyName = nameof(FullAccessPolicyName);
+    // <summary>Именование политики CORS для разработки.</summary>
+    internal const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
+    // <summary>Именование политики RL для технической ручки.</summary>
+    internal const string MetricsHandlerPolicy = nameof(MetricsHandlerPolicy);
     // <summary>Утверждение для проверки внутреннего идентификатора.</summary>
     internal const string IdInternalClaimType = nameof(IdInternalClaimType);
     // <summary>Идентификатор администратора.</summary>
