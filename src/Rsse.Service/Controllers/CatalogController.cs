@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
@@ -76,6 +77,7 @@ public class CatalogController : ControllerBase
     /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
     /// <returns>актуальная страница каталога</returns>
     [Authorize, HttpDelete]
+    [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogDto>> DeleteNote(int id, int pg)
     {
         try

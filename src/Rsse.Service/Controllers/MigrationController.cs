@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common.Auth;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
 
@@ -31,7 +32,7 @@ public class MigrationController : ControllerBase
     }
 
     /// <summary>
-    /// Создать дамп бд
+    /// Создать дамп бд.
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     [HttpGet("create")]
@@ -51,10 +52,11 @@ public class MigrationController : ControllerBase
     }
 
     /// <summary>
-    /// Накатить дамп
+    /// Накатить дамп.
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     [HttpGet("restore")]
+    [Authorize(Constants.FullAccessPolicyName)]
     public IActionResult RestoreFromDump(string? fileName)
     {
         try

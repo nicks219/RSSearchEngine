@@ -5,6 +5,7 @@ using System.Net;
 using System.Runtime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Common.Logger;
 using SearchEngine.Data.Context;
@@ -24,7 +26,7 @@ using SearchEngine.Tools.MigrationAssistant;
 
 namespace SearchEngine;
 
-public class Startup
+public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     private const string MsSql = "mssql";
     private const string MySql = "mysql";
@@ -34,8 +36,6 @@ public class Startup
     private const string LogFileName = "service.log";
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
-    private readonly IConfiguration _configuration;
-    private readonly IWebHostEnvironment _env;
 
     private readonly string[] _allowedOrigins = {
         // dev сервер для JS:
@@ -46,13 +46,6 @@ public class Startup
         // same-origin на проде:
         "http://188.120.235.243:5000"
     };
-
-    public Startup(IConfiguration configuration, IWebHostEnvironment env)
-    {
-        _configuration = configuration;
-
-        _env = env;
-    }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -68,14 +61,14 @@ public class Startup
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
-            swaggerGenOptions.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment, new Microsoft.OpenApi.Models.OpenApiInfo
             {
-                Title = "RSSearchEngine API",
-                Version = "v5.1"
+                Title = Constants.SwaggerTitle,
+                Version = Constants.ApiVersion
             });
         });
 
-        services.Configure<CommonBaseOptions>(_configuration.GetSection(nameof(CommonBaseOptions)));
+        services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
 
         var connectionString = GetConnectionString();
         if (string.IsNullOrEmpty(connectionString))
@@ -103,18 +96,28 @@ public class Startup
             {
                 options.LoginPath = new PathString("/account/login");
                 options.LogoutPath = new PathString("/account/logout");
+                options.AccessDeniedPath = new PathString("/account/accessDenied");
                 options.ReturnUrlParameter = "returnUrl";
+                // todo уточнить коды ответа челенджа
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnRedirectToLogin = context =>
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                         context.Response.Headers["Shift"] = "301 Cancelled";
                         return Task.CompletedTask;
                     }
                 };
             });
 
+        services
+            .AddAuthorizationBuilder()
+            .AddPolicy(Constants.FullAccessPolicyName, builder =>
+            {
+                builder.AddRequirements(new FullAccessRequirement());
+            });
+
+        services.AddSingleton<IAuthorizationHandler, FullAccessRequirementsHandler>();
         services.AddCors(builder =>
         {
             builder.AddPolicy(DevelopmentCorsPolicy, policyBuilder =>
@@ -126,10 +129,10 @@ public class Startup
         });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env1, ILoggerFactory loggerFactory)
     {
-        var isDevelopment = _env.IsDevelopment();
-        var isProduction = _env.IsProduction();
+        var isDevelopment = env.IsDevelopment();
+        var isProduction = env.IsProduction();
 
         if (isDevelopment)
         {
@@ -139,13 +142,12 @@ public class Startup
 
             app.UseSwaggerUI(uiOptions =>
             {
-                uiOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "rsse v5.1");
+                uiOptions.SwaggerEndpoint($"/swagger/{Constants.SwaggerDocNameSegment}/swagger.json", Constants.ApplicationFullName);
             });
         }
         else
         {
-            // ручка error нигде не определена:
-            app.UseExceptionHandler("/error");
+            // app.UseExceptionHandler("/error");
         }
 
         app.UseDefaultFiles();
@@ -162,17 +164,22 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.Map("/account/accessDenied", async next =>
+            {
+                next.Response.StatusCode = 403;
+                next.Response.ContentType = "text/plain";
+                await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
+            }).RequireAuthorization();
             endpoints.MapControllers();
         });
 
-        UseLogging(loggerFactory);
-
+        AddLogging(loggerFactory);
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 
-    private string? GetConnectionString() => _configuration.GetConnectionString(DefaultConnectionKey);
+    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
 
-    private static void UseLogging(ILoggerFactory loggerFactory)
+    private static void AddLogging(ILoggerFactory loggerFactory)
     {
         loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
