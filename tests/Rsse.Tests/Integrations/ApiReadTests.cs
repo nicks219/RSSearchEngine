@@ -14,12 +14,12 @@ namespace SearchEngine.Tests.Integrations;
 public class ApiReadTests
 {
     [TestMethod]
-    public async Task Integration_ReadNoteTitleById_ShouldPassCorrectly()
+    public async Task ReadNoteTitleById_ShouldPassCorrectly()
     {
         // NB: для тестов скриптом создаётся SQLite бд в файле, с одной песней
 
         // arrange:
-        var factory = new CustomWebAppFactory();
+        var factory = new CustomWebAppFactory<SimpleStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions
         {

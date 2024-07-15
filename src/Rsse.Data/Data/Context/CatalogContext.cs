@@ -42,6 +42,12 @@ public sealed class CatalogContext : DbContext
                 // SQLite используется при запуске интеграционных тестов:
                 case "Microsoft.EntityFrameworkCore.Sqlite":
                     // TODO можно инициализировать тестовую базу на каждый вызов контекста:
+                    if (!created)
+                    {
+                        Database.EnsureDeleted();
+                        created = Database.EnsureCreated();
+                    }
+
                     if (created)
                     {
                         var raws = Database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);

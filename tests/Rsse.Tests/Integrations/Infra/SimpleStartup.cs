@@ -17,35 +17,21 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// <summary>
 /// При конфинурации запуска используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html
 /// </summary>
-internal class IntegrationStartup
+internal class SimpleStartup
 {
     public static void ConfigureServices(IServiceCollection services)
     {
-        services
-            .AddControllers()
-            // разберись почему требуется этот метод:
-            // https://andrewlock.net/when-asp-net-core-cant-find-your-controller-debugging-application-parts/
-            .AddApplicationPart(typeof(ReadController).Assembly);
+        services.PartialConfigureForTesting();
 
         services.AddTransient<IDataRepository, CatalogRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
-        services.AddSingleton<ILogger, TestLogger<IntegrationStartup>>();
+        services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
-
-        // SQLite: https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
-        // функциональность проверена на Windows/Ubuntu:
-
-        const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var dbPath = System.IO.Path.Join(path, "testing-2.db");
-        var connectionString = $"Data Source={dbPath}";
-
-        services.AddDbContext<CatalogContext>(options => options.UseSqlite(connectionString));
     }
 
-    public static void Configure(IApplicationBuilder app)
+    public static void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
         app.UseEndpoints(ep => ep.MapControllers());

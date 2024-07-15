@@ -55,5 +55,8 @@ public static class SQLiteIntegrationTestScript
 
                                              INSERT INTO [Note] ([NoteId], [Title], [Text]) VALUES (1,'Розенбаум - Вечерняя застольная','Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\nИ скинем с головы иней,\r\nПоднимем, поднимем.\r\n\r\nЗа утро и за свежий из полей ветер,\r\nЗа друга, не дожившего до дней этих,\r\nЗа память, что живёт с нами,\r\nЗатянем, затянем.\r\n\r\nБог в помощь всем живущим на Земле людям,\r\nМир дому, где собак и лошадей любят.\r\nЗа силу, что несут волны,\r\nПо полной, по полной.\r\n\r\nРодные, нас живых ещё не так мало,\r\nПоднимем за удачу на тропе шалой,\r\nЧтоб ворон да не по нам каркал,\r\nПо чарке, по чарке…');
                                              INSERT INTO [TagsToNotes] ([TagId], [NoteId]) VALUES(1,1), (3,1);
+
+                                             INSERT INTO [Users] ([Id], [Email], [Password]) VALUES (1, 'admin', 'admin');
+                                             INSERT INTO [Users] ([Id], [Email], [Password]) VALUES (2, 'editor', 'editor');
                                              """;
 }
