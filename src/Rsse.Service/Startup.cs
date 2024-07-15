@@ -96,14 +96,14 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             {
                 options.LoginPath = new PathString("/account/login");
                 options.LogoutPath = new PathString("/account/logout");
-                options.AccessDeniedPath = new PathString("/error/403");
+                options.AccessDeniedPath = new PathString("/account/accessDenied");
                 options.ReturnUrlParameter = "returnUrl";
-                // todo проверить актуальность челенджа
+                // todo уточнить коды ответа челенджа
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnRedirectToLogin = context =>
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                         context.Response.Headers["Shift"] = "301 Cancelled";
                         return Task.CompletedTask;
                     }
@@ -147,8 +147,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         }
         else
         {
-            // ручка error не реализована:
-            app.UseExceptionHandler("/error");
+            // app.UseExceptionHandler("/error");
         }
 
         app.UseDefaultFiles();
@@ -162,15 +161,15 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseAuthentication();
 
         app.UseAuthorization();
-        // todo разбирайся с челенджем:
-        app.Map("/error/403", conf => conf.Run(ctx =>
-        {
-            ctx.Response.StatusCode = 403;
-            return Task.CompletedTask;
-        }));
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.Map("/account/accessDenied", async next =>
+            {
+                next.Response.StatusCode = 403;
+                next.Response.ContentType = "text/plain";
+                await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
+            }).RequireAuthorization();
             endpoints.MapControllers();
         });
 
