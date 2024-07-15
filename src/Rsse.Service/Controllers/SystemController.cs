@@ -18,7 +18,7 @@ public class SystemController(ILogger<SystemController> logger) : Controller
     /// Получить версию сервиса
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/version")]
+    [HttpGet("version")]
     public ActionResult GetVersion()
     {
         return Ok(Constants.ApplicationFullName);
