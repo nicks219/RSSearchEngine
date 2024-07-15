@@ -28,11 +28,6 @@ public class MigrationController(
     private const string CreateError = $"[{nameof(MigrationController)}] {nameof(CreateDump)} error";
     private const string RestoreError = $"[{nameof(MigrationController)}] {nameof(RestoreFromDump)} error";
 
-    private readonly ILogger<MigrationController> _logger;
-    private readonly IDbMigrator _migrator;
-    private readonly ITokenizerService _tokenizer;
-
-    public MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     // todo: MySQL WORK. DELETE
     [HttpGet("copy")]
     public async Task<IActionResult> CopyDatabase()

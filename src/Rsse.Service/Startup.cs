@@ -31,7 +31,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     internal const string DefaultConnectionKey = "DefaultConnection";
     internal const string AdditionalConnectionKey = "AdditionalConnection";
 
-    private const string Postgres = "npgsql";
     private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
     private const string LogFileName = "service.log";
 
@@ -78,9 +77,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             throw new NullReferenceException("Invalid connection string");
         }
         services.AddDbContext<CatalogContext>(options => options.UseMySql(connectionString, _mySqlVersion));
-            // Postgres => options => options.UseNpgsql(connectionString),
+        // Postgres => options => options.UseNpgsql(connectionString),
         // docker run --name npgsql -p 5432:5432 -e POSTGRES_PASSWORD=1 -e POSTGRES_USER=1 -e POSTGRES_DB=tagit -d postgres:16-alpine
-        var npgsqlConnectionString = _configuration.GetConnectionString(AdditionalConnectionKey);
+        var npgsqlConnectionString = configuration.GetConnectionString(AdditionalConnectionKey);
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
         // --- --------- ---
 
