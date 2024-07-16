@@ -61,7 +61,7 @@ export default defineConfig(({ command, mode }) => {
             },
             server: {
                 proxy: {
-                    '/version': {
+                    '/system': {
                         target: 'http://localhost:5000',
                         secure: false
                     }

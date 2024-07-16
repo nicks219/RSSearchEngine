@@ -18,7 +18,7 @@ internal class FileLoggerProvider : ILoggerProvider
     /// <inheritdoc/>
     public ILogger CreateLogger(string categoryName)
     {
-        return new FileLogger(_path, categoryName);
+        return new FileLoggerInternal(_path, categoryName);
     }
 
     /// <inheritdoc/>

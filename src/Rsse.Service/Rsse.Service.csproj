@@ -18,6 +18,9 @@
     <ItemGroup>
         <PackageReference Include="MySqlBackup.NET" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
+        <PackageReference Include="Serilog.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

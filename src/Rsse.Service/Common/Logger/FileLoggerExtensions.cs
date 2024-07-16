@@ -12,7 +12,7 @@ public static class FileLoggerExtensions
     /// </summary>
     /// <param name="factory">фабрика</param>
     /// <param name="filePath">путь к файлу</param>
-    public static void AddFile(this ILoggerFactory factory, string filePath)
+    public static void AddFileInternal(this ILoggerFactory factory, string filePath)
     {
         factory.AddProvider(new FileLoggerProvider(filePath));
     }
