@@ -12,20 +12,14 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadModel
+public class ReadModel(IServiceScope serviceScope)
 {
     public const string ElectNoteError = $"[{nameof(ReadModel)}: {nameof(GetNextOrSpecificNote)} error]";
     private const string ReadTitleByNoteIdError = $"[{nameof(ReadModel)}: {nameof(ReadTitleByNoteId)} error]";
     private const string ReadTagListError = $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]";
 
-    private readonly ILogger<ReadModel> _logger;
-    private readonly IDataRepository _repo;
-
-    public ReadModel(IServiceScope serviceScope)
-    {
-        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
-        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-    }
+    private readonly ILogger<ReadModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
 
     /// <summary>
     /// Прочитать название заметки по её идентификатору

@@ -13,18 +13,12 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал авторизации
 /// </summary>
-public class LoginModel
+public class LoginModel(IServiceScope scope)
 {
     private const string SignInError = $"[{nameof(LoginModel)}: {nameof(SignIn)} system error]";
 
-    private readonly IDataRepository _repo;
-    private readonly ILogger<LoginModel> _logger;
-
-    public LoginModel(IServiceScope scope)
-    {
-        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _logger = scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
-    }
+    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<LoginModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
 
     /// <summary>
     /// Войти в систему

@@ -14,22 +14,12 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для обновления заметки
 /// </summary>
-
 [Route("api/update"), ApiController]
-
-public class UpdateController : ControllerBase
+public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
+    : ControllerBase
 {
     private const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(GetInitialNote)} error";
     private const string UpdateNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateNote)} error";
-
-    private readonly ILogger<UpdateController> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger = logger;
-    }
 
     /// <summary>
     /// Получить обновляемую заметку
@@ -40,12 +30,12 @@ public class UpdateController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             return await new UpdateModel(scope).GetOriginalNote(id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, GetInitialNoteError);
+            logger.LogError(ex, GetInitialNoteError);
             return new NoteDto { CommonErrorMessageResponse = GetInitialNoteError };
         }
     }
@@ -59,7 +49,7 @@ public class UpdateController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             var response = await new UpdateModel(scope).UpdateNote(dto);
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
@@ -69,7 +59,7 @@ public class UpdateController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, UpdateNoteError);
+            logger.LogError(ex, UpdateNoteError);
             return new NoteDto { CommonErrorMessageResponse = UpdateNoteError };
         }
     }

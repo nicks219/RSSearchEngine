@@ -12,19 +12,13 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateModel
+public class UpdateModel(IServiceScope scope)
 {
     private const string GetOriginalNoteError = $"[{nameof(UpdateModel)}] {nameof(GetOriginalNote)} error";
     private const string UpdateNoteError = $"[{nameof(UpdateModel)}] {nameof(UpdateNote)} error";
 
-    private readonly IDataRepository _repo;
-    private readonly ILogger<UpdateModel> _logger;
-
-    public UpdateModel(IServiceScope scope)
-    {
-        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
-    }
+    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<UpdateModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
 
     /// <summary>
     /// Прочитать обновляемую заметку

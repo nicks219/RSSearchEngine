@@ -12,24 +12,15 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для получения заметок
 /// </summary>
-
 [ApiController, Route("api/read")]
-
-public class ReadController : ControllerBase
+public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<ReadController> logger)
+    : ControllerBase
 {
     public const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(GetNextOrSpecificNote)} error";
     private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadTitleByNoteId)} error";
     private const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadTagList)} error";
 
     private static bool _randomElection = true;
-    private readonly ILogger<ReadController> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<ReadController> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger = logger;
-    }
 
     /// <summary>
     /// Переключить режим выбора следующей заметки
@@ -50,13 +41,13 @@ public class ReadController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             var res = new ReadModel(scope).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadTitleByNoteIdError);
+            logger.LogError(ex, ReadTitleByNoteIdError);
             return BadRequest(ReadTitleByNoteIdError);
         }
     }
@@ -69,12 +60,12 @@ public class ReadController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             return await new ReadModel(scope).ReadTagList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadTagListError);
+            logger.LogError(ex, ReadTagListError);
             return new NoteDto { CommonErrorMessageResponse = ReadTagListError };
         }
     }
@@ -95,13 +86,13 @@ public class ReadController : ControllerBase
                 dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             var model = await new ReadModel(scope).GetNextOrSpecificNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ElectNoteError);
+            logger.LogError(ex, ElectNoteError);
             return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
         }
     }

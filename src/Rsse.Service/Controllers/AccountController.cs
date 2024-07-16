@@ -16,9 +16,7 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер авторизации
 /// </summary>
-
 [ApiController, Route("account")]
-
 public class AccountController(
     IServiceScopeFactory serviceScopeFactory,
     IWebHostEnvironment env,

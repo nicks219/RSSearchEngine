@@ -12,21 +12,15 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateModel
+public class CreateModel(IServiceScope serviceScope)
 {
     private const string ReadTagListError = $"[{nameof(CreateModel)}: {nameof(ReadStructuredTagList)} error]";
     private const string CreateNoteError = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error]";
     private const string CreateNoteUnsuccessfulError = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error: create unsuccessful]";
     private const string CreateNoteEmptyDataError = $"[{nameof(CreateModel)}: {nameof(CreateNote)} error: empty data]";
 
-    private readonly IDataRepository _repo;
-    private readonly ILogger<CreateModel> _logger;
-
-    public CreateModel(IServiceScope serviceScope)
-    {
-        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
-    }
+    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<CreateModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
 
     /// <summary>
     /// Получить структурированный список тегов

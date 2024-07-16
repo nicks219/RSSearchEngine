@@ -12,24 +12,12 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для работы с миграциями бд
 /// </summary>
-
 [Authorize, Route("migration"), ApiController]
-
-public class MigrationController : ControllerBase
+public class MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
+    : ControllerBase
 {
     private const string CreateError = $"[{nameof(MigrationController)}] {nameof(CreateDump)} error";
     private const string RestoreError = $"[{nameof(MigrationController)}] {nameof(RestoreFromDump)} error";
-
-    private readonly ILogger<MigrationController> _logger;
-    private readonly IDbMigrator _migrator;
-    private readonly ITokenizerService _tokenizer;
-
-    public MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
-    {
-        _logger = logger;
-        _migrator = migrator;
-        _tokenizer = tokenizer;
-    }
 
     /// <summary>
     /// Создать дамп бд.
@@ -40,13 +28,13 @@ public class MigrationController : ControllerBase
     {
         try
         {
-            var result = _migrator.Create(fileName);
+            var result = migrator.Create(fileName);
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, CreateError);
+            logger.LogError(exception, CreateError);
             return BadRequest(CreateError);
         }
     }
@@ -61,14 +49,14 @@ public class MigrationController : ControllerBase
     {
         try
         {
-            var result = _migrator.Restore(fileName);
-            _tokenizer.Initialize();
+            var result = migrator.Restore(fileName);
+            tokenizer.Initialize();
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, RestoreError);
+            logger.LogError(exception, RestoreError);
             return BadRequest(RestoreError);
         }
     }

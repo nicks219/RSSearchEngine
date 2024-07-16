@@ -7,13 +7,9 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер с системным функионалом для проверок
 /// </summary>
-
 [Route("system")]
-
-public class SystemController(ILogger<SystemController> logger) : Controller
+public class SystemController : Controller
 {
-    private readonly ILogger<SystemController> _logger = logger;
-
     /// <summary>
     /// Получить версию сервиса
     /// </summary>
