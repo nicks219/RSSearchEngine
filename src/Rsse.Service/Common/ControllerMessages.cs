@@ -1,4 +1,4 @@
-﻿using SearchEngine.Controllers;
+using SearchEngine.Controllers;
 
 namespace SearchEngine.Common;
 

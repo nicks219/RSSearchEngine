@@ -119,6 +119,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddMetricsInternal();
         services.AddRateLimiterInternal();
+#if TRACING_ENABLE
+        services.AddTracingInternal();
+#endif
     }
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

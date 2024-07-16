@@ -1,4 +1,4 @@
-﻿using SearchEngine.Models;
+using SearchEngine.Models;
 
 namespace SearchEngine.Common;
 
