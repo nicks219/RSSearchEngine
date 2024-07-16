@@ -8,6 +8,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -18,9 +19,6 @@ namespace SearchEngine.Controllers;
 public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
     : ControllerBase
 {
-    private const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(GetInitialNote)} error";
-    private const string UpdateNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateNote)} error";
-
     /// <summary>
     /// Получить обновляемую заметку
     /// </summary>

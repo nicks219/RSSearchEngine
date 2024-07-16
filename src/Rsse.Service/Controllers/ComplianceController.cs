@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -14,8 +15,6 @@ namespace SearchEngine.Controllers;
 public class ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
     : ControllerBase
 {
-    private const string FindError = $"[{nameof(ComplianceController)}] {nameof(GetComplianceIndices)} error: search indices may corrupted";
-
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
     /// </summary>

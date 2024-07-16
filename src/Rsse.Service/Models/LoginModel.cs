@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
+using static SearchEngine.Common.ModelMessages;
 
 namespace SearchEngine.Models;
 
@@ -15,8 +16,6 @@ namespace SearchEngine.Models;
 /// </summary>
 public class LoginModel(IServiceScope scope)
 {
-    private const string SignInError = $"[{nameof(LoginModel)}: {nameof(SignIn)} system error]";
-
     private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
     private readonly ILogger<LoginModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
 

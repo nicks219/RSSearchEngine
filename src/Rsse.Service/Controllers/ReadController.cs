@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -16,10 +17,6 @@ namespace SearchEngine.Controllers;
 public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<ReadController> logger)
     : ControllerBase
 {
-    public const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(GetNextOrSpecificNote)} error";
-    private const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadTitleByNoteId)} error";
-    private const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadTagList)} error";
-
     private static bool _randomElection = true;
 
     /// <summary>

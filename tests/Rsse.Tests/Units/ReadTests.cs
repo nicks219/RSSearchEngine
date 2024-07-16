@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using SearchEngine.Common;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
@@ -72,8 +73,8 @@ public class ReadTests
         await Task.Delay(100);
 
         // asserts:
-        Assert.AreEqual(ReadModel.ElectNoteError, _logger.ErrorMessage);
-        Assert.AreEqual(ReadModel.ElectNoteError, result.CommonErrorMessageResponse);
+        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.ErrorMessage);
+        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);
     }
 
     [TestMethod]
@@ -104,7 +105,7 @@ public class ReadTests
         // assert:
         logger
             .Received()
-            .LogError(Arg.Any<Exception>(), ReadController.ElectNoteError);
+            .LogError(Arg.Any<Exception>(), ControllerMessages.ElectNoteError);
     }
 
     [TestMethod]

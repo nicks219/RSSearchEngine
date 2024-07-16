@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -16,9 +17,6 @@ namespace SearchEngine.Controllers;
 public class MigrationController(ILogger<MigrationController> logger, IDbMigrator migrator, ITokenizerService tokenizer)
     : ControllerBase
 {
-    private const string CreateError = $"[{nameof(MigrationController)}] {nameof(CreateDump)} error";
-    private const string RestoreError = $"[{nameof(MigrationController)}] {nameof(RestoreFromDump)} error";
-
     /// <summary>
     /// Создать дамп бд.
     /// </summary>

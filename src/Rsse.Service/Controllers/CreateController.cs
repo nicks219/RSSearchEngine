@@ -11,6 +11,7 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
 using SearchEngine.Tools.MigrationAssistant;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -25,9 +26,6 @@ public class CreateController(
     IOptions<CommonBaseOptions> options)
     : ControllerBase
 {
-    private const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateNoteAndDumpAsync)} error";
-    private const string GetTagListError = $"[{nameof(CreateController)}] {nameof(GetStructuredTagListAsync)} error";
-
     private const string BackupFileName = "db_last_dump";
 
     private readonly CommonBaseOptions _baseOptions = options.Value;

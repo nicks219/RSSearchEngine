@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using SearchEngine.Common;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
@@ -76,7 +77,7 @@ public class CatalogTests
         _ = await _catalogModel!.NavigateCatalog(null!);
 
         // assert:
-        Assert.AreEqual(_logger?.ErrorMessage, CatalogModel.NavigateCatalogError);
+        Assert.AreEqual(_logger?.ErrorMessage, ModelMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -89,7 +90,7 @@ public class CatalogTests
         var result = await _catalogModel!.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(result.ErrorMessage, CatalogModel.NavigateCatalogError);
+        Assert.AreEqual(result.ErrorMessage, ModelMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -105,7 +106,7 @@ public class CatalogTests
         _ = await catalogController.NavigateCatalog(null!);
 
         // assert:
-        logger.Received().LogError(Arg.Any<Exception>(), CatalogController.NavigateCatalogError);
+        logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
     }
 
     [TestMethod]

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -23,12 +24,6 @@ public class AccountController(
     ILogger<AccountController> logger)
     : ControllerBase
 {
-    private const string LoginError = $"[{nameof(AccountController)}] {nameof(Login)} system error";
-    private const string DataError = $"[{nameof(AccountController)}] credentials error";
-    private const string LogOutMessage = $"[{nameof(AccountController)}] {nameof(Logout)}";
-    private const string LoginOkMessage = $"[{nameof(AccountController)}] {nameof(Login)}";
-    private const string ModifyCookieMessage = $"[{nameof(AccountController)}] {nameof(ModifyCookie)}";
-
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
 
@@ -102,7 +97,7 @@ public class AccountController(
     /// <summary>
     /// Модифицировать куки при разработке
     /// </summary>
-    private void ModifyCookie()
+    internal void ModifyCookie()
     {
         if (env.IsProduction())
         {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
+using static SearchEngine.Common.ModelMessages;
 
 namespace SearchEngine.Models;
 
@@ -14,9 +15,6 @@ namespace SearchEngine.Models;
 /// </summary>
 public class UpdateModel(IServiceScope scope)
 {
-    private const string GetOriginalNoteError = $"[{nameof(UpdateModel)}] {nameof(GetOriginalNote)} error";
-    private const string UpdateNoteError = $"[{nameof(UpdateModel)}] {nameof(UpdateNote)} error";
-
     private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
     private readonly ILogger<UpdateModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
 

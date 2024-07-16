@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Elector;
+using static SearchEngine.Common.ModelMessages;
 
 namespace SearchEngine.Models;
 
@@ -14,10 +15,6 @@ namespace SearchEngine.Models;
 /// </summary>
 public class ReadModel(IServiceScope serviceScope)
 {
-    public const string ElectNoteError = $"[{nameof(ReadModel)}: {nameof(GetNextOrSpecificNote)} error]";
-    private const string ReadTitleByNoteIdError = $"[{nameof(ReadModel)}: {nameof(ReadTitleByNoteId)} error]";
-    private const string ReadTagListError = $"[{nameof(ReadModel)}: {nameof(ReadTagList)} error]";
-
     private readonly ILogger<ReadModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
     private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
 
@@ -56,9 +53,9 @@ public class ReadModel(IServiceScope serviceScope)
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadTagListError);
+            _logger.LogError(ex, ReadModelReadTagListError);
 
-            return new NoteDto { CommonErrorMessageResponse = ReadTagListError };
+            return new NoteDto { CommonErrorMessageResponse = ReadModelReadTagListError };
         }
     }
 

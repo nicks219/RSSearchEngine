@@ -8,6 +8,7 @@ using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
@@ -18,10 +19,6 @@ namespace SearchEngine.Controllers;
 public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger<CatalogController> logger)
     : ControllerBase
 {
-    public const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(NavigateCatalog)} error";
-    private const string ReadCatalogPageError = $"[{nameof(CatalogController)}] {nameof(ReadCatalogPage)} error";
-    private const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(DeleteNote)} error";
-
     /// <summary>
     /// Прочитать страницу каталога
     /// </summary>
