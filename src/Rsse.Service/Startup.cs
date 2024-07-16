@@ -175,12 +175,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
     private static void AddLogging(ILoggerFactory loggerFactory)
     {
-        loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
+        loggerFactory.AddFileInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
 
     private void LogSystemInfo(ILoggerFactory loggerFactory, bool isDevelopment, bool isProduction)
     {
-        var logger = loggerFactory.CreateLogger(typeof(FileLogger));
+        var logger = loggerFactory.CreateLogger(typeof(FileLoggerInternal));
 
         logger.LogInformation("Application started at {Date}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
         logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());

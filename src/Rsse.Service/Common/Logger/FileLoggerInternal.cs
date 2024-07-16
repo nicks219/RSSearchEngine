@@ -8,7 +8,7 @@ namespace SearchEngine.Common.Logger;
 /// <summary>
 /// Файловый логгер
 /// </summary>
-internal class FileLogger : ILogger
+internal class FileLoggerInternal : ILogger
 {
     private readonly string _filePath;
 
@@ -16,7 +16,7 @@ internal class FileLogger : ILogger
 
     private static readonly object Lock = new();
 
-    internal FileLogger(string path, string? categoryName)
+    internal FileLoggerInternal(string path, string? categoryName)
     {
         _filePath = path;
         _categoryName = categoryName ?? "";

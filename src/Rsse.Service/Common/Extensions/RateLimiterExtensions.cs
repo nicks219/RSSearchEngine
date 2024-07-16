@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.RateLimiting;
