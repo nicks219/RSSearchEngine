@@ -20,7 +20,7 @@ internal static class RateLimiterExtensions
     {
         services.AddRateLimiter(rateLimiterOptions =>
         {
-            rateLimiterOptions.RejectionStatusCode = 503;
+            rateLimiterOptions.RejectionStatusCode = 429;
             rateLimiterOptions.AddFixedWindowLimiter(policyName: Constants.MetricsHandlerPolicy, options =>
             {
                 options.PermitLimit = 2;
