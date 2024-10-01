@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		README.md = README.md
-		drafts.md = drafts.md
 		CHANGELOG.md = CHANGELOG.md
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
@@ -93,6 +92,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
 		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
+	ProjectSection(SolutionItems) = preProject
+		drafts.md = drafts.md
+		.common\.drafts\ingress.traefik.one.yml = .common\.drafts\ingress.traefik.one.yml
+		.common\.drafts\ingress.traefik.two.yml = .common\.drafts\ingress.traefik.two.yml
 	EndProjectSection
 EndProject
 Global
