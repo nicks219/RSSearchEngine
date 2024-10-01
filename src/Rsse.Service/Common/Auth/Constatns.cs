@@ -9,7 +9,7 @@ namespace SearchEngine.Common.Auth;
 public abstract class Constants
 {
     // <summary>Версия приложения.</summary>
-    private const string ApplicationVersion = "5.2.6";
+    private const string ApplicationVersion = "5.2.7";
     // <summary>Версия API.</summary>
     internal const string ApiVersion = "5.2";
     // <summary>Полное название версии приложения.</summary>
