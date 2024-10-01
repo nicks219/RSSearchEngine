@@ -96,9 +96,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
 	ProjectSection(SolutionItems) = preProject
-		.drafts\ingress.traefik.one.yml = .drafts\ingress.traefik.one.yml
-		.drafts\ingress.traefik.two.yml = .drafts\ingress.traefik.two.yml
 		drafts.md = drafts.md
+		.common\.drafts\ingress.traefik.one.yml = .common\.drafts\ingress.traefik.one.yml
+		.common\.drafts\ingress.traefik.two.yml = .common\.drafts\ingress.traefik.two.yml
 	EndProjectSection
 EndProject
 Global
