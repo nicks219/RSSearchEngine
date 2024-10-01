@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rsse-app-ingress-https
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+    - host: maintainer.me
+      http:
+        paths:
+          - backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - maintainer.me
+      secretName: secret-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rsse-app-ingress-http
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+---
+
+Первый Ingress (rsse-app-ingress-https) обеспечивает доступ по HTTPS через DNS-имя maintainer.me
+Второй Ingress (rsse-app-ingress-http) предоставляет доступ по HTTP, используя IP-адрес, без секции tls

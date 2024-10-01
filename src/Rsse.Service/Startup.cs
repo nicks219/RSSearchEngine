@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +122,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddRateLimiterInternal();
 #if TRACING_ENABLE
         services.AddTracingInternal();
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "rsse-keys")))
+            .SetApplicationName("rsse-app");
 #endif
     }
 
