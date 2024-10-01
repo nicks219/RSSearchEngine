@@ -8,7 +8,7 @@ public static class CommonDataConstants
     /// <summary>
     /// Максимальная длина текста в символах, дефолт 4000
     /// </summary>
-    public const int MaxTextLength = 5000;
+    public const int MaxTextLength = 10000;
 
     /// <summary>
     /// Максимальная длина названия в символах, дефолт 50

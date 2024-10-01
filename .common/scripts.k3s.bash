@@ -55,3 +55,7 @@ kubectl exec -it rsse-app-deployment-c9ff5fbd4-fk88h /bin/sh
 
 # copy to host
 kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dump_.txt /root/_db_last_dump_.txt
+
+# install nano in alpine
+apk update && apk add nano
+вариант: sed -i 's/старый_текст/новый_текст/g' file_name.txt
