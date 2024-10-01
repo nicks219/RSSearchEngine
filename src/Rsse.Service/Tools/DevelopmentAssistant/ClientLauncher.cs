@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 #pragma warning disable CS0162 // Unreachable code detected
 
@@ -13,13 +14,15 @@ namespace SearchEngine.Tools.DevelopmentAssistant;
 /// </summary>
 internal static class ClientLauncher
 {
-    // пользовательские настройки
+    // запуск и остановка сервера разработки при старте
+    private const bool RunDevServerOnStart = true;
+    private const DevServerControl DevServerControl = DevelopmentAssistant.DevServerControl.Manual;
+    // настройки проекта для запуска сервера разработки
     private const string ShellCommand = "npm run dev";
-    private const bool ShellCommandRunEnabled = true;
     private const string ClientRoot = "../Rsse.Client/ClientApp";
     private const string DevServerUrl = "https://localhost:5173";
 
-    // управление браузером также возможно из launchSettings
+    // управление запуском браузера также возможно из launchSettings
     private const bool RunBrowserOnStart = false;
     private const bool KillBrowsersOnStop = true;
 
@@ -49,12 +52,12 @@ internal static class ClientLauncher
         switch (arg)
         {
             case "true":
-                Up();
-                Console.WriteLine($"info: [{nameof(ClientLauncher)}] starting Vite");
+                Task.Run(Up);
+                Console.WriteLine($"[{nameof(ClientLauncher)}] starting Vite");
                 return false;
             case "only":
-                Up();
-                Console.WriteLine($"info: [{nameof(ClientLauncher)}] running JS only mode: press any key to stop");
+                Task.Run(Up);
+                Console.WriteLine($"[{nameof(ClientLauncher)}] running JS only mode: press any key to stop");
                 Console.ReadLine();
                 return true;
         }
@@ -74,17 +77,27 @@ internal static class ClientLauncher
             return;
         }
 
-        var pathToShell = Path.Combine(Directory.GetCurrentDirectory(), ShellFolder);
-
-        if (ShellCommandRunEnabled)
+        // явный контроль необходим для гарантированного завершения всех дочерних процессов
+        if (RunDevServerOnStart)
         {
+            Console.WriteLine($"[{nameof(ClientLauncher)}] make sure you have previously installed Node.js and run `npm install`");
+
+            var pathToShell = Path.Combine(Directory.GetCurrentDirectory(), ShellFolder);
             var devServerInitializer = new Process();
             devServerInitializer.StartInfo.FileName = "cmd.exe";
-            devServerInitializer.StartInfo.Arguments =
-                $"/C cd {ClientRoot} && start {pathToShell}{ShellProcessName} @cmk /k {ShellCommand}";
+            devServerInitializer.StartInfo.Arguments = DevServerControl == DevServerControl.Manual ?
+                $"/C cd {ClientRoot} && start {pathToShell}{ShellProcessName} @cmk /k {ShellCommand}" :
+                $"/C cd {ClientRoot} && {ShellCommand}";
+
             devServerInitializer.Start();
-            devServerInitializer.WaitForExit();
-            devServerInitializer.Close();
+
+            // Rider в состоянии самостоятельно завершить дочерние процессы с dev-сервером, хотя этому можно помешать
+            // В любом случае, при управлении со стороны IDE явно ожидать завершение этого процесса бессмысленно
+            if (DevServerControl == DevServerControl.Manual)
+            {
+                devServerInitializer.WaitForExit();
+                devServerInitializer.Close();
+            }
         }
 
         if (RunBrowserOnStart)
@@ -97,20 +110,24 @@ internal static class ClientLauncher
             devClientInitializer.Close();
         }
 
-        // остановить при завершении Main
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => Down();
-        // остановить из IDE
-        Console.CancelKeyPress += (_, _) => Down();
+        // запустить делегат при завершении Main
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => TryHackDown();
+        // запустить делегат при остановке из IDE
+        Console.CancelKeyPress += (_, _) => TryHackDown();
 
         _initialized = true;
-        Console.WriteLine($"info: [{nameof(ClientLauncher)}] started");
+        Console.WriteLine($"[{nameof(ClientLauncher)}] started");
     }
 
     /// <summary>
-    /// Остановить dev server и браузер
+    /// Попытаться остановить dev server и браузер.
+    /// Костыль, тк при остановке процессов node может быть отказано в доступе.
+    /// При этом Rider в состоянии самостоятельно завершить процесс.
     /// </summary>
-    private static void Down()
+    private static void TryHackDown()
     {
+        Console.WriteLine($"[{nameof(ClientLauncher)}] graceful shutdown initiated");
+
         lock (Lock)
         {
             if (!_initialized)
@@ -120,13 +137,24 @@ internal static class ClientLauncher
 
             _initialized = false;
 
-            if (ShellCommandRunEnabled)
+            //
+            if (RunDevServerOnStart && DevServerControl == DevServerControl.Manual)
             {
-                // для оставновки dev-сервера Vite будут остановдены процессы node (в данной версии абсолютно все)
+                // для остановки dev-сервера Vite должны быть остановлены процессы node (в данной версии абсолютно все)
                 // тк необходимые дочерние процессы node запускаются не только от имени rsse.cmd (но и например от cmd)
                 var nodeProcesses = Process.GetProcessesByName(NodeProcessName).ToList();
                 var cmdShellNodeProcesses = Process.GetProcessesByName(ShellProcessName).ToList();
-                nodeProcesses.ForEach(ps => ps.Kill());
+                nodeProcesses.ForEach(ps =>
+                {
+                    try
+                    {
+                        ps.Kill();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                });
                 cmdShellNodeProcesses.ForEach(ps => ps.Kill());
             }
 
@@ -138,7 +166,7 @@ internal static class ClientLauncher
                 browserProcess?.Kill();
             }
 
-            Console.WriteLine($"info: [{nameof(ClientLauncher)}] stopped");
+            Console.WriteLine($"[{nameof(ClientLauncher)}] stopped");
         }
     }
 }

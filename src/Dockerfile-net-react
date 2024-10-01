@@ -10,6 +10,7 @@ RUN npm install
 RUN npm run build
 
 ##################################################
+# в образе alpine установить vim либо nano можно с помощью apk: apk update && apk add nano
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
 WORKDIR /app
 

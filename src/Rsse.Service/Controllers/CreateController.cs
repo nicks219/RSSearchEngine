@@ -11,38 +11,24 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
 using SearchEngine.Tools.MigrationAssistant;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
 /// <summary>
 /// Контроллер для создания заметок
 /// </summary>
-
 [Authorize, Route("api/create"), ApiController]
-
-public class CreateController : ControllerBase
+public class CreateController(
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<CreateController> logger,
+    IDbMigrator migrator,
+    IOptions<CommonBaseOptions> options)
+    : ControllerBase
 {
-    private const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateNoteAndDumpAsync)} error";
-    private const string GetTagListError = $"[{nameof(CreateController)}] {nameof(GetStructuredTagListAsync)} error";
-
     private const string BackupFileName = "db_last_dump";
 
-    private readonly ILogger<CreateController> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IDbMigrator _migrator;
-    private readonly CommonBaseOptions _baseOptions;
-
-    public CreateController(
-        IServiceScopeFactory serviceScopeFactory,
-        ILogger<CreateController> logger,
-        IDbMigrator migrator,
-        IOptions<CommonBaseOptions> options)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger = logger;
-        _migrator = migrator;
-        _baseOptions = options.Value;
-    }
+    private readonly CommonBaseOptions _baseOptions = options.Value;
 
     /// <summary>
     /// Получить список тегов
@@ -52,13 +38,13 @@ public class CreateController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
             return await model.ReadStructuredTagList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, GetTagListError);
+            logger.LogError(ex, GetTagListError);
             return new NoteDto { CommonErrorMessageResponse = GetTagListError };
         }
     }
@@ -73,7 +59,7 @@ public class CreateController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             var model = new CreateModel(scope);
 
             var result = await model.CreateNote(dto);
@@ -97,7 +83,7 @@ public class CreateController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, CreateNoteError);
+            logger.LogError(ex, CreateNoteError);
             return new NoteDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }
@@ -109,7 +95,7 @@ public class CreateController : ControllerBase
     {
         return _baseOptions.CreateBackupForNewSong
             // NB: создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные минрации:
-            ? _migrator.Create(BackupFileName)
+            ? migrator.Create(BackupFileName)
             : null;
     }
 }

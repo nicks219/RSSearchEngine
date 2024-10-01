@@ -11,22 +11,13 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал поиска заметок
 /// </summary>
-public class CompliantModel
+public class CompliantModel(IServiceScope scope)
 {
-    private readonly IDataRepository _repo;
-    private readonly ITokenizerProcessor _processor;
+    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ITokenizerProcessor _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
 
-    private readonly ConcurrentDictionary<int, List<int>> _reducedLines;
-    private readonly ConcurrentDictionary<int, List<int>> _extendedLines;
-
-    public CompliantModel(IServiceScope scope)
-    {
-        _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
-
-        _reducedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
-        _extendedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
-    }
+    private readonly ConcurrentDictionary<int, List<int>> _reducedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+    private readonly ConcurrentDictionary<int, List<int>> _extendedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
 
     /// <summary>
     /// Найти идентификатор заметки по её имени

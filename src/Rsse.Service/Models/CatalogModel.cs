@@ -6,34 +6,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
+using static SearchEngine.Common.ModelMessages;
 
 namespace SearchEngine.Models;
 
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogModel
+public class CatalogModel(IServiceScope serviceScope)
 {
-    #region Defaults
-
-    public const string NavigateCatalogError = $"[{nameof(CatalogModel)}: {nameof(NavigateCatalog)} error]";
-    private const string ReadCatalogPageError = $"[{nameof(CatalogModel)}: {nameof(ReadPage)} error]";
-    private const string DeleteNoteError = $"[{nameof(CatalogModel)}: {nameof(DeleteNote)} error]";
-
     private const int Backward = 1;
     private const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
-    private readonly IDataRepository _repo;
-    private readonly ILogger<CatalogModel> _logger;
-
-    #endregion
-
-    public CatalogModel(IServiceScope serviceScope)
-    {
-        _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-        _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
-    }
+    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<CatalogModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
 
     /// <summary>
     /// Получить страницу каталога

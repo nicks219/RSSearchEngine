@@ -4,28 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
-
 [Route("api/compliance")]
-
-public class ComplianceController : ControllerBase
+public class ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
+    : ControllerBase
 {
-    private const string FindError = $"[{nameof(ComplianceController)}] {nameof(GetComplianceIndices)} error: search indices may corrupted";
-
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<ComplianceController> _logger;
-
-    public ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
-    {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-    }
-
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
     /// </summary>
@@ -41,7 +30,7 @@ public class ComplianceController : ControllerBase
 
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            using var scope = scopeFactory.CreateScope();
             var model = new CompliantModel(scope);
             var searchIndexes = model.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
@@ -69,7 +58,7 @@ public class ComplianceController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, FindError);
+            logger.LogError(ex, FindError);
             return new BadRequestObjectResult(FindError);
         }
     }

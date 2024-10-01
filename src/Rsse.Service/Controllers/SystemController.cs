@@ -1,26 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 
 namespace SearchEngine.Controllers;
 
 /// <summary>
-/// Контроллер с системным функионалом для проверок
+/// Контроллер, поставляющий системную информацию.
 /// </summary>
-
 [Route("system")]
-
-public class SystemController(ILogger<SystemController> logger) : Controller
+public class SystemController : Controller
 {
-    private readonly ILogger<SystemController> _logger = logger;
-
     /// <summary>
-    /// Получить версию сервиса
+    /// Получить версию сервиса.
     /// </summary>
     /// <returns></returns>
     [HttpGet("version")]
     public ActionResult GetVersion()
     {
-        return Ok(Constants.ApplicationFullName);
+        var isDebug = false;
+#if DEBUG
+        isDebug = true;
+#endif
+        return Ok(new
+        {
+            Version = Constants.ApplicationFullName,
+            DebugBuild = isDebug
+        });
     }
 }

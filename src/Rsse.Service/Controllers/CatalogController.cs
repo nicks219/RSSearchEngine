@@ -8,30 +8,17 @@ using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 
 /// <summary>
 /// Контроллер для функционала каталога с возможностью удаления заметки
 /// </summary>
-
 [Route("api/catalog"), ApiController]
-
-public class CatalogController : ControllerBase
+public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger<CatalogController> logger)
+    : ControllerBase
 {
-    public const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(NavigateCatalog)} error";
-    private const string ReadCatalogPageError = $"[{nameof(CatalogController)}:] {nameof(ReadCatalogPage)} error";
-    private const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(DeleteNote)} error";
-
-    private readonly ILogger<CatalogController> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger<CatalogController> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger = logger;
-    }
-
     /// <summary>
     /// Прочитать страницу каталога
     /// </summary>
@@ -41,12 +28,12 @@ public class CatalogController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             return await new CatalogModel(scope).ReadPage(id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadCatalogPageError);
+            logger.LogError(ex, ReadCatalogPageError);
             return new CatalogDto { ErrorMessage = ReadCatalogPageError };
         }
     }
@@ -60,12 +47,12 @@ public class CatalogController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
             return await new CatalogModel(scope).NavigateCatalog(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, NavigateCatalogError);
+            logger.LogError(ex, NavigateCatalogError);
             return new CatalogDto { ErrorMessage = NavigateCatalogError };
         }
     }
@@ -82,7 +69,7 @@ public class CatalogController : ControllerBase
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = serviceScopeFactory.CreateScope();
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Delete(id);
@@ -91,7 +78,7 @@ public class CatalogController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, DeleteNoteError);
+            logger.LogError(ex, DeleteNoteError);
             return new CatalogDto { ErrorMessage = DeleteNoteError };
         }
     }
