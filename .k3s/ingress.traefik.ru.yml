@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rsse-app-ingress-https-ru
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+    - host: notefinder.ru
+      http:
+        paths:
+          - backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - notefinder.ru
+      secretName: secret-tls-ru
+---
+
