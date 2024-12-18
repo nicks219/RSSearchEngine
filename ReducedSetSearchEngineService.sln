@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
 		.common\rsse.api.v5.2.json = .common\rsse.api.v5.2.json
 		src\Rsse.Service\Properties\launchSettings.json = src\Rsse.Service\Properties\launchSettings.json
+		.common\ssl.update.md = .common\ssl.update.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
@@ -92,6 +93,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
 		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
+		.k3s\ingress.traefik.ip.yml = .k3s\ingress.traefik.ip.yml
+		.k3s\ingress.traefik.ru.yml = .k3s\ingress.traefik.ru.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
