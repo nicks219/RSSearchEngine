@@ -16,18 +16,17 @@ namespace SearchEngine.Controllers;
 /// Контроллер для работы с миграциями бд
 /// </summary>
 [Authorize, Route("migration"), ApiController]
-
 public class MigrationController(
     ILogger<MigrationController> logger,
     IDbMigrator migrator,
     ITokenizerService tokenizer,
     // todo: MySQL WORK. DELETE
-    IDataRepository repo)
-    : ControllerBase
+    IDataRepository repo) : ControllerBase
+{
     // todo: MySQL WORK. DELETE
     [HttpGet("copy")]
     public async Task<IActionResult> CopyDatabase()
-{
+    {
         try
         {
             await repo.CopyDbFromMysqlToNpgsql();
@@ -40,6 +39,8 @@ public class MigrationController(
         }
 
         return Ok("success");
+    }
+
     /// <summary>
     /// Создать дамп бд.
     /// </summary>

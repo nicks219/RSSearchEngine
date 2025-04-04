@@ -120,6 +120,6 @@ public class AuthStartup(IConfiguration configuration)
 
     private static void AddLogging(ILoggerFactory loggerFactory)
     {
-        loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
+        loggerFactory.AddFileInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
 }

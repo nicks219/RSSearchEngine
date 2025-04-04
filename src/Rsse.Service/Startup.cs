@@ -78,7 +78,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             throw new NullReferenceException("Invalid connection string");
         }
         services.AddDbContext<CatalogContext>(options => options.UseMySql(connectionString, _mySqlVersion));
-        // Postgres => options => options.UseNpgsql(connectionString),
+        // Postgres => options => options.UseNpgsql(connectionString), // NpgsqlCatalogContext
         // docker run --name npgsql -p 5432:5432 -e POSTGRES_PASSWORD=1 -e POSTGRES_USER=1 -e POSTGRES_DB=tagit -d postgres:16-alpine
         var npgsqlConnectionString = configuration.GetConnectionString(AdditionalConnectionKey);
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));

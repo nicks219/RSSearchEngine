@@ -9,6 +9,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="[6.5.0]" />
   </ItemGroup>
   <ItemGroup Label="Data">
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="[8.0.0-beta.2]" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="[8.0.0]" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="[8.0.0]" />
