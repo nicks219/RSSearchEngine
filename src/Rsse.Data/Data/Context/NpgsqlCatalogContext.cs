@@ -8,7 +8,7 @@ namespace SearchEngine.Data.Context;
 /// <summary>
 /// Контекст базы данных
 /// </summary>
-public sealed class NpgsqlCatalogContext : DbContext
+public sealed class NpgsqlCatalogContext : BaseCatalogContext
 {
     private readonly object _obj = new();
     private static volatile bool _init;
@@ -27,7 +27,7 @@ public sealed class NpgsqlCatalogContext : DbContext
         {
             _init = true;
 
-            var deleted = Database.EnsureDeleted();
+            // var deleted = Database.EnsureDeleted();
             var created = Database.EnsureCreated();
 
             switch (Database.ProviderName)
@@ -72,26 +72,22 @@ public sealed class NpgsqlCatalogContext : DbContext
     /// <summary>
     /// Контекст для пользователей приложения
     /// </summary>
-    public DbSet<UserEntity>? Users { get; set; }
+    public override DbSet<UserEntity>? Users { get; set; }
 
     /// <summary>
     /// Контекст для текстов заметок
     /// </summary>
-    public DbSet<NoteEntity>? Notes { get; set; }
-
-    // <summary /> удалить. сущность для слияния двух баз
-    // public DbSet<TextEntity>? Texts { get; set; }
-    // public DbSet<TagsToNotesEntity>? TagsToNotesRelationForText { get; set; }
+    public override DbSet<NoteEntity>? Notes { get; set; }
 
     /// <summary>
     /// Контекст для тегов заметок
     /// </summary>
-    public DbSet<TagEntity>? Tags { get; set; }
+    public override DbSet<TagEntity>? Tags { get; set; }
 
     /// <summary>
     /// Контекст для связыви заметок и тегов
     /// </summary>
-    public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
+    public override DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
 
     /// <summary>
     /// Создать связи для модели "многие-ко-многим"

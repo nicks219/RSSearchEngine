@@ -68,21 +68,20 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
 
-        // --- databases ---
-        // services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
-        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
-        var connectionString = GetConnectionString();
-        if (string.IsNullOrEmpty(connectionString))
+        var mysqlConnectionString = GetConnectionString();
+        var npgsqlConnectionString = configuration.GetConnectionString(AdditionalConnectionKey);
+        if (string.IsNullOrEmpty(mysqlConnectionString) || string.IsNullOrEmpty(npgsqlConnectionString))
         {
             throw new NullReferenceException("Invalid connection string");
         }
-        services.AddDbContext<CatalogContext>(options => options.UseMySql(connectionString, _mySqlVersion));
-        // Postgres => options => options.UseNpgsql(connectionString), // NpgsqlCatalogContext
+
         // docker run --name npgsql -p 5432:5432 -e POSTGRES_PASSWORD=1 -e POSTGRES_USER=1 -e POSTGRES_DB=tagit -d postgres:16-alpine
-        var npgsqlConnectionString = configuration.GetConnectionString(AdditionalConnectionKey);
+        services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
-        // --- --------- ---
+        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
+
 
         services.AddScoped<IDataRepository, CatalogRepository>();
 

@@ -7,24 +7,17 @@ namespace SearchEngine.Tools.MigrationAssistant;
 /// <summary>
 /// Функционал работы с миграциями MySql
 /// </summary>
-internal class MySqlDbMigrator : IDbMigrator
+internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
 {
     private const string Directory = "ClientApp/build";
-    private readonly IConfiguration _configuration;
-    private readonly int _maxVersion;
+    private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;
-
-    public MySqlDbMigrator(IConfiguration configuration)
-    {
-        _configuration = configuration;
-        _maxVersion = 10;
-    }
 
     /// <inheritdoc/>
     public string Create(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString(Startup.DefaultConnectionKey);
+        var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var fileWithPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{_version}.txt")
@@ -52,19 +45,19 @@ internal class MySqlDbMigrator : IDbMigrator
         return fileWithPath;
 
         // ротация счетчика версий:
-        void IncrementVersion(ref int version) => version = (version + 1) % _maxVersion;
+        void IncrementVersion(ref int version) => version = (version + 1) % MaxVersion;
     }
 
     /// <inheritdoc/>
     public string Restore(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString(Startup.DefaultConnectionKey);
+        var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var version = _version - 1;
 
         if (version < 0)
         {
-            version = _maxVersion - 1;
+            version = MaxVersion - 1;
         }
 
         var fileWithPath = string.IsNullOrEmpty(fileName)

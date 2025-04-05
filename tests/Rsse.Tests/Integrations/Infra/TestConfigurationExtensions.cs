@@ -32,8 +32,8 @@ public static class TestConfigurationExtensions
         var dbPath = System.IO.Path.Join(path, "testing-2.db");
         var connectionString = $"Data Source={dbPath}";
 
-        services.AddDbContext<CatalogContext>(options => options.UseSqlite(connectionString));
-        // для резолва CatalogRepository также регистрируем контекст для postgres (использует Sqllite для инициализации)
+        services.AddDbContext<MysqlCatalogContext>(options => options.UseSqlite(connectionString));
+        // для резолва CatalogRepository также регистрируем контекст postgres, но для инициализации используем Sqllite
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(connectionString));
     }
 }

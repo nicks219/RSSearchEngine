@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -18,7 +21,8 @@ namespace SearchEngine.Controllers;
 [Authorize, Route("migration"), ApiController]
 public class MigrationController(
     ILogger<MigrationController> logger,
-    IDbMigrator migrator,
+    // IDbMigrator migrator,
+    IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
     // todo: MySQL WORK. DELETE
     IDataRepository repo) : ControllerBase
@@ -45,9 +49,12 @@ public class MigrationController(
     /// Создать дамп бд.
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
+    /// <param name="databaseType">тип мигратора</param>
     [HttpGet("create")]
-    public IActionResult CreateDump(string? fileName)
+    public IActionResult CreateDump(string? fileName, DatabaseType databaseType)
     {
+        var migrator = GetMigrator(databaseType);
+
         try
         {
             var result = migrator.Create(fileName);
@@ -65,10 +72,13 @@ public class MigrationController(
     /// Накатить дамп.
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
+    /// <param name="databaseType">тип мигратора</param>
     [HttpGet("restore")]
     [Authorize(Constants.FullAccessPolicyName)]
-    public IActionResult RestoreFromDump(string? fileName)
+    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType)
     {
+        var migrator = GetMigrator(databaseType);
+
         try
         {
             var result = migrator.Restore(fileName);
@@ -82,4 +92,17 @@ public class MigrationController(
             return BadRequest(RestoreError);
         }
     }
+
+    private IDbMigrator GetMigrator(DatabaseType databaseType)
+    {
+        var migrator = databaseType switch
+        {
+            DatabaseType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
+            DatabaseType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
+            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, "unknown database type")
+        };
+
+        return migrator;
+    }
 }
+

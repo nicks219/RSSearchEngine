@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using SearchEngine.Data.Repository.Scripts;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
@@ -14,13 +16,14 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     // 4. варианты: либо склеить таблицы в файл, используя разделитель
 
     private const string NpgsqlDumpPrefix = "pg";
+    private const string NpgsqlDdlSuffix = "ddl";
     private const string NpgsqlNotesSuffix = "notes";
     private const string NpgsqlTagsSuffix = "tags";
     private const string NpgsqlRelationsSuffix = "rel";
-    private const string Directory = "ClientApp/build";
+    private const string ArchiveDirectory = "ClientApp/build";
     private const int MaxVersion = 10;
     // что будет в docker?
-    private const string ArchiveDirectory = "ClientApp/build/dump";
+    private const string ArchiveTempDirectory = "ClientApp/build/dump";
     private int _version;
 
     /// <inheritdoc/>
@@ -28,12 +31,14 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     {
         var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
 
-        var dumpFilesCoreName = string.IsNullOrEmpty(fileName)
-            ? Path.Combine(Directory, $"{NpgsqlDumpPrefix}_backup_{_version}.txt")
-            : Path.Combine(Directory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
-        var archiveFilesCoreName = string.IsNullOrEmpty(fileName)
+        // файлы с версиями являются "историей" дампов, создание дампа также может запросить CreateNoteAndDumpAsync
+        var backupFilesPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_backup_{_version}.txt")
             : Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
+        // архив самого последнего созданного дампа, нет смысла обогащать содержащиеся файлы версией
+        var archiveTempPath = string.IsNullOrEmpty(fileName)
+            ? Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_backup_.txt")
+            : Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
 
         if (IsCreateDumpMode(fileName))
         {
@@ -43,43 +48,57 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         using var connection = new NpgsqlConnection(connectionString);
 
         connection.Open();
+        using (var cmd = new NpgsqlCommand(NpgsqlScript.CreateDdl, connection))
+        {
+            var tablesDdl = new List<string>();
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                tablesDdl.Add(reader.GetString(0));
+            }
+
+            var allTablesDdl = string.Join("\n\n", tablesDdl);
+            File.WriteAllText($"{backupFilesPath}{NpgsqlDdlSuffix}", allTablesDdl);
+            File.WriteAllText($"{archiveTempPath}{NpgsqlDdlSuffix}", allTablesDdl);
+        }
+
         using (var tagToNotesReader = connection.BeginTextExport("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") TO STDOUT"))
         {
             var allTagToNotes = tagToNotesReader.ReadToEnd();
-            File.WriteAllText($"{dumpFilesCoreName}{NpgsqlRelationsSuffix}", allTagToNotes);
-            File.WriteAllText($"{archiveFilesCoreName}{NpgsqlRelationsSuffix}", allTagToNotes);
+            File.WriteAllText($"{backupFilesPath}{NpgsqlRelationsSuffix}", allTagToNotes);
+            File.WriteAllText($"{archiveTempPath}{NpgsqlRelationsSuffix}", allTagToNotes);
         }
 
         using (var notesReader = connection.BeginTextExport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") TO STDOUT"))
         {
             var allNotes = notesReader.ReadToEnd();
-            File.WriteAllText($"{dumpFilesCoreName}{NpgsqlNotesSuffix}", allNotes);
-            File.WriteAllText($"{archiveFilesCoreName}{NpgsqlNotesSuffix}", allNotes);
+            File.WriteAllText($"{backupFilesPath}{NpgsqlNotesSuffix}", allNotes);
+            File.WriteAllText($"{archiveTempPath}{NpgsqlNotesSuffix}", allNotes);
         }
 
-        using (var notesReader = connection.BeginTextExport("COPY public.\"Tag\"(\"TagId\", \"Tag\") TO STDOUT"))
+        using (var tagsReader = connection.BeginTextExport("COPY public.\"Tag\"(\"TagId\", \"Tag\") TO STDOUT"))
         {
-            var allTags = notesReader.ReadToEnd();
-            File.WriteAllText($"{dumpFilesCoreName}{NpgsqlTagsSuffix}", allTags);
-            File.WriteAllText($"{archiveFilesCoreName}{NpgsqlTagsSuffix}", allTags);
+            var allTags = tagsReader.ReadToEnd();
+            File.WriteAllText($"{backupFilesPath}{NpgsqlTagsSuffix}", allTags);
+            File.WriteAllText($"{archiveTempPath}{NpgsqlTagsSuffix}", allTags);
         }
 
         connection.Close();
 
         var destinationArchiveFileName = GetArchiveFileName();
-        // if presents, clean-up zipped archive at first:
+
         File.Delete(destinationArchiveFileName);
 
         try
         {
             if (IsCreateDumpMode(fileName))
             {
-                ZipFile.CreateFromDirectory(ArchiveDirectory, destinationArchiveFileName);
+                ZipFile.CreateFromDirectory(ArchiveTempDirectory, destinationArchiveFileName);
             }
         }
         finally
         {
-            CleanUpTempDirectory(archiveFilesCoreName);
+            CleanUpTempDirectory(archiveTempPath);
         }
 
         return destinationArchiveFileName;
@@ -87,12 +106,14 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         bool IsCreateDumpMode(string? name) => string.IsNullOrEmpty(name);
     }
 
-    private static string GetArchiveFileName() => Path.Combine(Directory, "dump.zip");
-    private static void CleanUpTempDirectory(string archiveFilesCoreName)
+    /// <summary/> Вернёт dump.zip в клиентской директории
+    private static string GetArchiveFileName() => Path.Combine(ArchiveDirectory, "dump.zip");
+    private static void CleanUpTempDirectory(string archiveTempPath)
     {
-        File.Delete($"{archiveFilesCoreName}{NpgsqlRelationsSuffix}");
-        File.Delete($"{archiveFilesCoreName}{NpgsqlNotesSuffix}");
-        File.Delete($"{archiveFilesCoreName}{NpgsqlTagsSuffix}");
+        File.Delete($"{archiveTempPath}{NpgsqlDdlSuffix}");
+        File.Delete($"{archiveTempPath}{NpgsqlRelationsSuffix}");
+        File.Delete($"{archiveTempPath}{NpgsqlNotesSuffix}");
+        File.Delete($"{archiveTempPath}{NpgsqlTagsSuffix}");
     }
 
     /// <inheritdoc/>
@@ -108,33 +129,32 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         }
 
         // при ресторе сразу после запуска я могу рассчитывать на "_maxVersion - 1" версию файлов:
-        var dumpFilesCoreName = string.IsNullOrEmpty(fileName)
-            ? Path.Combine(Directory, $"{NpgsqlDumpPrefix}_backup_{version}.txt")
-            : Path.Combine(Directory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
-        var archiveFilesCoreName = string.IsNullOrEmpty(fileName)
+        var backupFilesPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_backup_{version}.txt")
             : Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
+
+        // в архиве всегда снимок последнего дампа
+        var archiveTempPath = string.IsNullOrEmpty(fileName)
+            ? Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_backup_.txt")
+            : Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
 
         var sourceArchiveFileName = GetArchiveFileName();
         try
         {
-            ZipFile.ExtractToDirectory(sourceArchiveFileName, ArchiveDirectory);
+            ZipFile.ExtractToDirectory(sourceArchiveFileName, ArchiveTempDirectory);
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            var allTagToNotes = File.ReadAllText($"{archiveFilesCoreName}{NpgsqlRelationsSuffix}");
-            var allNotes = File.ReadAllText($"{dumpFilesCoreName}{NpgsqlNotesSuffix}");
-            var allTags = File.ReadAllText($"{dumpFilesCoreName}{NpgsqlTagsSuffix}");
+            var allTablesDdl = File.ReadAllText($"{archiveTempPath}{NpgsqlDdlSuffix}");
+            var allTagToNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlRelationsSuffix}");
+            var allNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlNotesSuffix}");
+            var allTags = File.ReadAllText($"{archiveTempPath}{NpgsqlTagsSuffix}");
 
             connection.Open();
 
             using var cmd = connection.CreateCommand();
             cmd.Connection = connection;
-            cmd.CommandText = """
-                              TRUNCATE public."TagsToNotes" CASCADE;
-                              TRUNCATE public."Tag" CASCADE;
-                              TRUNCATE public."Note" CASCADE;
-                              """;
+            cmd.CommandText = allTablesDdl;
             var rows = cmd.ExecuteNonQuery();
 
             using (var notesWriter =
@@ -158,10 +178,9 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         }
         finally
         {
-            CleanUpTempDirectory(archiveFilesCoreName);
+            CleanUpTempDirectory(archiveTempPath);
         }
 
         return sourceArchiveFileName;
     }
 }
-

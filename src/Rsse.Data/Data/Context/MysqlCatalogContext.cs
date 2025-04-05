@@ -8,7 +8,7 @@ namespace SearchEngine.Data.Context;
 /// <summary>
 /// Контекст базы данных
 /// </summary>
-public sealed class CatalogContext : DbContext
+public sealed class MysqlCatalogContext : BaseCatalogContext
 {
     private readonly object _obj = new();
     private static volatile bool _init;
@@ -16,7 +16,7 @@ public sealed class CatalogContext : DbContext
     /// <summary>
     /// Создать контекст работы с базой данных
     /// </summary>
-    public CatalogContext(DbContextOptions<CatalogContext> option) : base(option)
+    public MysqlCatalogContext(DbContextOptions<MysqlCatalogContext> option) : base(option)
     {
         if (_init)
         {
@@ -27,6 +27,7 @@ public sealed class CatalogContext : DbContext
         {
             _init = true;
 
+            // var deleted = Database.EnsureDeleted();
             var created = Database.EnsureCreated();
 
             switch (Database.ProviderName)
@@ -77,26 +78,22 @@ public sealed class CatalogContext : DbContext
     /// <summary>
     /// Контекст для пользователей приложения
     /// </summary>
-    public DbSet<UserEntity>? Users { get; set; }
+    public override DbSet<UserEntity>? Users { get; set; }
 
     /// <summary>
     /// Контекст для текстов заметок
     /// </summary>
-    public DbSet<NoteEntity>? Notes { get; set; }
-
-    // todo: MySQL WORK. DELETE
-    public DbSet<TextEntity>? Texts { get; set; }
-    public DbSet<TagsToNotesEntity>? TagsToNotesRelationForText { get; set; }
+    public override DbSet<NoteEntity>? Notes { get; set; }
 
     /// <summary>
     /// Контекст для тегов заметок
     /// </summary>
-    public DbSet<TagEntity>? Tags { get; set; }
+    public override DbSet<TagEntity>? Tags { get; set; }
 
     /// <summary>
     /// Контекст для связыви заметок и тегов
     /// </summary>
-    public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
+    public override DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
 
     /// <summary>
     /// Создать связи для модели "многие-ко-многим"
