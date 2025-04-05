@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -16,30 +14,15 @@ namespace SearchEngine.Data.Repository;
 /// <summary>
 /// Репозиторий доступа к бд
 /// </summary>
-public class CatalogRepository : IDataRepository
+public class CatalogRepository(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext) : IDataRepository
 {
     // todo: переходи на postgres
-    private readonly BaseCatalogContext _mainContext;
+    private readonly BaseCatalogContext _mainContext = mysqlCatalogContext;
     // todo: MySQL WORK. DELETE
-    private readonly BaseCatalogContext _additionalContext;
+    private readonly BaseCatalogContext _additionalContext = npgsqlCatalogContext;
 
-    /// <summary>
-    /// Создать репозиторий
-    /// </summary>
-    /// <param name="serviceProvider"></param>
-    /// <param name="type">выбор типа контекста</param>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public CatalogRepository(IServiceProvider serviceProvider, string type = "mysql")
-    {
-        _mainContext = type switch
-        {
-            "mysql" => serviceProvider.GetRequiredService<MysqlCatalogContext>(),
-            "postgres" => serviceProvider.GetRequiredService<NpgsqlCatalogContext>(),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, "unknown database type")
-        };
-        // todo: MySQL WORK. DELETE
-        _additionalContext = serviceProvider.GetRequiredService<NpgsqlCatalogContext>();
-    }
+    public BaseCatalogContext GetMainContext() => _mainContext;
+    public BaseCatalogContext GetAdditionalContext() => _additionalContext;
 
     /// <inheritdoc/>
     // todo: MySQL WORK. DELETE

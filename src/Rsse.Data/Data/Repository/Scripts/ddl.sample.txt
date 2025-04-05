@@ -1,0 +1,53 @@
+﻿------------------
+SQL базы из дампа:
+CREATE TABLE [dbo].[Genre] (
+    [GenreID] INT           IDENTITY (1, 1) NOT NULL,
+    [Genre]   NVARCHAR (30) NOT NULL,
+    PRIMARY KEY CLUSTERED ([GenreID] ASC),
+    CONSTRAINT [GK-2] UNIQUE NONCLUSTERED ([Genre] ASC)
+);
+
+CREATE TABLE [dbo].[GenreText] (
+    [GenreID] INT NOT NULL,
+    [TextID]  INT NOT NULL,
+    CONSTRAINT [NK_1] UNIQUE NONCLUSTERED ([GenreID] ASC, [TextID] ASC),
+    CONSTRAINT [FK_1_Genre] FOREIGN KEY ([GenreID]) REFERENCES [dbo].[Genre] ([GenreID]),
+    CONSTRAINT [FK_2_Text] FOREIGN KEY ([TextID]) REFERENCES [dbo].[Text] ([TextID]) ON DELETE CASCADE
+);
+
+CREATE TABLE [dbo].[Text] (
+    [TextID] INT             IDENTITY (1, 1) NOT NULL,
+    [Title]  NVARCHAR (50)   NOT NULL,
+    [Song]   NVARCHAR (4000) NOT NULL,
+    PRIMARY KEY CLUSTERED ([TextID] ASC),
+    CONSTRAINT [NK_2] UNIQUE NONCLUSTERED ([Title] ASC)
+);
+
+-------------
+      SQLite:
+      CREATE TABLE "Note" (
+          "NoteId" INTEGER NOT NULL CONSTRAINT "PK_Note" PRIMARY KEY AUTOINCREMENT,
+          "Title" TEXT NOT NULL,
+          "Text" TEXT NULL,
+          CONSTRAINT "AK_Note_Title" UNIQUE ("Title")
+      );
+
+      CREATE TABLE "Tag" (
+          "TagId" INTEGER NOT NULL CONSTRAINT "PK_Tag" PRIMARY KEY AUTOINCREMENT,
+          "Tag" TEXT NOT NULL,
+          CONSTRAINT "AK_Tag_Tag" UNIQUE ("Tag")
+      );
+
+      CREATE TABLE "Users" (
+          "Id" INTEGER NOT NULL CONSTRAINT "PK_Users" PRIMARY KEY AUTOINCREMENT,
+          "Email" TEXT NULL,
+          "Password" TEXT NULL
+      );
+
+      CREATE TABLE "TagsToNotes" (
+          "TagId" INTEGER NOT NULL,
+          "NoteId" INTEGER NOT NULL,
+          CONSTRAINT "PK_TagsToNotes" PRIMARY KEY ("TagId", "NoteId"),
+          CONSTRAINT "FK_TagsToNotes_Note_NoteId" FOREIGN KEY ("NoteId") REFERENCES "Note" ("NoteId") ON DELETE CASCADE,
+          CONSTRAINT "FK_TagsToNotes_Tag_TagId" FOREIGN KEY ("TagId") REFERENCES "Tag" ("TagId") ON DELETE CASCADE
+      );

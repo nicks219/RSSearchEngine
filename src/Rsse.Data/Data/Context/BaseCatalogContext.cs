@@ -12,20 +12,50 @@ public abstract class BaseCatalogContext(DbContextOptions options) : DbContext(o
     /// <summary>
     /// Контекст для пользователей приложения
     /// </summary>
-    public virtual DbSet<UserEntity>? Users { get; set; }
+    public DbSet<UserEntity>? Users { get; set; }
 
     /// <summary>
     /// Контекст для текстов заметок
     /// </summary>
-    public virtual DbSet<NoteEntity>? Notes { get; set; }
+    public DbSet<NoteEntity>? Notes { get; set; }
 
     /// <summary>
     /// Контекст для тегов заметок
     /// </summary>
-    public virtual DbSet<TagEntity>? Tags { get; set; }
+    public DbSet<TagEntity>? Tags { get; set; }
 
     /// <summary>
     /// Контекст для связыви заметок и тегов
     /// </summary>
-    public virtual DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
+    public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<NoteEntity>()
+            .HasKey(noteEntity => noteEntity.NoteId);
+
+        // CONSTRAINT UNIQUE NONCLUSTERED
+        modelBuilder.Entity<NoteEntity>()
+            .HasAlternateKey(noteEntity => noteEntity.Title);
+
+        modelBuilder.Entity<TagEntity>()
+            .HasKey(tagsEntity => tagsEntity.TagId);
+
+        // CONSTRAINT UNIQUE NONCLUSTERED
+        modelBuilder.Entity<TagEntity>()
+            .HasAlternateKey(tagsEntity => tagsEntity.Tag);
+
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasKey(relationEntity => new { GenreID = relationEntity.TagId, TextID = relationEntity.NoteId });
+
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasOne(relationEntity => relationEntity.TagsInRelationEntity)
+            .WithMany(tagsEntity => tagsEntity.RelationEntityReference)
+            .HasForeignKey(relationEntity => relationEntity.TagId);
+
+        modelBuilder.Entity<TagsToNotesEntity>()
+            .HasOne(relationEntity => relationEntity.NoteInRelationEntity)
+            .WithMany(noteEntity => noteEntity.RelationEntityReference)
+            .HasForeignKey(relationEntity => relationEntity.NoteId);
+    }
 }

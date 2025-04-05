@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common;
 using SearchEngine.Common.Auth;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
@@ -25,8 +26,12 @@ public class MigrationController(
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
     // todo: MySQL WORK. DELETE
-    IDataRepository repo) : ControllerBase
+    IDataRepository repo, MysqlCatalogContext mySqlContext, NpgsqlCatalogContext npgSqlContext) : ControllerBase
 {
+    /// <summary>
+    /// Копировать данные (включая Users) из MySql в Postgres.
+    /// </summary>
+    /// <returns></returns>
     // todo: MySQL WORK. DELETE
     [HttpGet("copy")]
     public async Task<IActionResult> CopyDatabase()

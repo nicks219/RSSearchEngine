@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Common.Configuration;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -41,6 +42,7 @@ public class TokenizerService : ITokenizerService
         _lockSlim = new ReaderWriterLockSlim();
         _isEnabled = options.Value.TokenizerIsEnable;
 
+        DatabaseInitializer.CreateAndSeed(_factory, _logger);
         Initialize();
     }
 

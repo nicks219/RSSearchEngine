@@ -38,6 +38,6 @@ public class ApiReadTests
         status.Should().Be("OK");
         var content = await contentTask;
         content.Should().NotBeNull();
-        content!.Values.First().Should().Be("Розенбаум - Вечерняя застольная");
+        content!.Values.First().Should().Be("Розенбаум -- Вечерняя застольная");
     }
 }

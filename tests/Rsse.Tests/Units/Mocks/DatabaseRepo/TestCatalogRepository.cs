@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
@@ -12,6 +13,8 @@ internal class TestCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.Run(() => { });
+    public BaseCatalogContext? GetMainContext() => null;
+    public BaseCatalogContext? GetAdditionalContext() => null;
 
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";

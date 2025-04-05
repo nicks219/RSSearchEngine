@@ -25,6 +25,7 @@ internal class SimpleStartup
         services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
+        services.AddHostedService<TokenizerActivatorService>();
     }
 
     public static void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
