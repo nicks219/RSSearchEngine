@@ -1,0 +1,77 @@
+/* отцентрованная вёрстка, черновик. надо всю вёрстку переделывать */
+/* 801px .. max, приоритетнее текст расположенный ниже по коду CSS */
+@media screen and (min-width: 801px) {
+    body {
+        background-color: rgb(50, 70, 96);
+    }
+
+    #renderContainer1 {
+        /*margin-left: auto;
+        margin-right: auto;*/
+        margin: auto;
+    }
+
+    #header {
+        position: relative;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #login {
+        /*position: relative;
+        margin-left: auto;
+        margin-right: auto;*/
+        /*margin-bottom: -20%;*/
+        /*margin-left: -3rem;
+        margin-top: 3rem;
+        width: calc(var(--text-width) - 7rem);*/
+
+        position: fixed;
+        bottom: 1rem;
+        margin: 0;
+        width: 100%;
+        display: flex;
+        justify-content: left;/* ??? перескакивает влево в пунктах меню, разберись */
+
+        background-color: rgb(64, 80, 96);
+    }
+
+    #submitButton[type="checkbox"] + label {
+        margin-top: 0.4rem;
+        position: fixed;
+        right: 2rem;
+        top: 1rem;
+        /*bottom: 0.5rem;*/
+        z-index: 10;
+    }
+
+    #loginMessage {
+        /*position: relative;
+        margin-left: auto;
+        margin-right: auto;*/
+
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        width: 17rem;
+        padding: 0.5rem 0 0;
+        /*margin: 0;
+        width: 30%;
+        display: flex;
+        justify-content: right;*/
+        z-index: 11;
+        background-color: #6c757d;
+    }
+
+    #email, #password {
+        margin-top: 0.8rem;
+    }
+
+    #loginButton[type="checkbox"] + label {
+        margin-top: 0.4rem;
+    }
+
+    .dialog {
+
+    }
+}

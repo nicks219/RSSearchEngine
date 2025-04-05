@@ -6,6 +6,24 @@
     --modal-height: 100px;
 }
 
+/* 801px .. max */
+/*@media screen and (min-width: 801px) {
+    body {
+        background-color: black;
+    }
+}*/
+
+/* 0px .. 800px */
+/*@media screen and (max-width: 800px) {
+    body {
+        background-color: slategrey;
+    }
+}*/
+
+body {
+    background-color: slategrey;
+}
+
 #renderContainer1 {
 	position: relative;
 	width: var(--text-width);
@@ -16,10 +34,6 @@
 	background-color: #ffe;
 	overflow-wrap: break-word;
     user-select: none;
-}
-
-body {
-	background-color: slategrey;
 }
 
 .dialog-overlay {
@@ -300,4 +314,3 @@ border: solid 0;
     padding-left: 1rem;
     padding-right: 1rem;
 }
-

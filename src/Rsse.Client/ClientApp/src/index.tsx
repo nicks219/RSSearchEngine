@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import './bootstrap.css';
 import './rsse.css';
+import './rsse-desktop.css';
 import { App } from "./jsx/components/menu.component";
 
 console.log('start');
