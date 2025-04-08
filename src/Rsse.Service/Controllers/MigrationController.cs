@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Context;
+using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
@@ -19,14 +20,14 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для работы с миграциями бд
 /// </summary>
-[Authorize, Route("migration"), ApiController]
+//[Authorize, Route("migration"), ApiController]
 public class MigrationController(
     ILogger<MigrationController> logger,
     // IDbMigrator migrator,
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
     // todo: MySQL WORK. DELETE
-    IDataRepository repo, MysqlCatalogContext mySqlContext, NpgsqlCatalogContext npgSqlContext) : ControllerBase
+    IDataRepository repo) : ControllerBase
 {
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
@@ -56,7 +57,7 @@ public class MigrationController(
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet("create")]
-    public IActionResult CreateDump(string? fileName, DatabaseType databaseType)
+    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
     {
         var migrator = GetMigrator(databaseType);
 
@@ -79,8 +80,8 @@ public class MigrationController(
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet("restore")]
-    [Authorize(Constants.FullAccessPolicyName)]
-    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType)
+    //[Authorize(Constants.FullAccessPolicyName)]
+    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
     {
         var migrator = GetMigrator(databaseType);
 

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Common.Extensions;
@@ -66,7 +68,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
+        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
+        });
+
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
+        services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
 
         var mysqlConnectionString = GetConnectionString();

@@ -1,4 +1,4 @@
-namespace SearchEngine.Common;
+namespace SearchEngine.Data.Repository;
 
 /// <summary>
 /// Тип мигратора.

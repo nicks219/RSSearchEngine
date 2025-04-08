@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -11,15 +12,40 @@ using SearchEngine.Data.Repository.Exceptions;
 
 namespace SearchEngine.Data.Repository;
 
-/// <summary>
-/// Репозиторий доступа к бд
-/// </summary>
-public class CatalogRepository(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext) : IDataRepository
+public class DatabaseOptions
 {
-    // todo: переходи на postgres
-    private readonly BaseCatalogContext _mainContext = mysqlCatalogContext;
+
+    /// <summary>
+    /// Основной контекст для работы с данными
+    /// </summary>
+    public DatabaseType MainContext { get; set; }
+}
+
+/// <summary>
+/// Репозиторий слоя данных
+/// </summary>
+public class CatalogRepository(
+    IOptionsSnapshot<DatabaseOptions> options,
+    MysqlCatalogContext mysqlCatalogContext,
+    NpgsqlCatalogContext npgsqlCatalogContext)
+    : IDataRepository
+{
+    // todo:
+    // I. переключить R контекст, CUD и дампы для новых текстов должны выполняться на обоих контекстах
+    // II. работа с дампами из контроллера выполняется по выбранному контексту, копирование всегда mysql > npgsql
+    // III. R контекст после накатки дампа установить npgsql, при проблемах переключить на mysql
+    // IV. через N недель при нормальной работе удаляем mysql, при проблемах восстанавливаемся из mysql
+    // V. в коде ищи MYSQL WORK и удаляй
+    // локально бд в контейнерах, в k3s на отдельных подах (написать yaml для postgres) - следи за потреблением диска
+    private BaseCatalogContext _mainContext = options.Value.MainContext switch
+    {
+        DatabaseType.MySql => mysqlCatalogContext,
+        DatabaseType.Postgres => npgsqlCatalogContext,
+        _ => mysqlCatalogContext
+    };
+
     // todo: MySQL WORK. DELETE
-    private readonly BaseCatalogContext _additionalContext = npgsqlCatalogContext;
+    private BaseCatalogContext _additionalContext = npgsqlCatalogContext;
 
     public BaseCatalogContext GetMainContext() => _mainContext;
     public BaseCatalogContext GetAdditionalContext() => _additionalContext;
@@ -28,6 +54,10 @@ public class CatalogRepository(MysqlCatalogContext mysqlCatalogContext, NpgsqlCa
     // todo: MySQL WORK. DELETE
     public async Task CopyDbFromMysqlToNpgsql()
     {
+        // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
+        _mainContext = mysqlCatalogContext;
+        _additionalContext = npgsqlCatalogContext;
+
         // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения:
         var notes = _mainContext.Notes!.Select(note => note).ToList();
         _ = _mainContext.TagsToNotesRelation!.Select(relation => relation).ToList();

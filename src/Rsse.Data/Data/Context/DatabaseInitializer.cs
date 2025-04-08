@@ -22,17 +22,25 @@ public abstract class DatabaseInitializer
 
         using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
-        var mainContext = repo.GetMainContext();
-        var additionalContext = repo.GetAdditionalContext();
+        try
+        {
+            var mainContext = repo.GetMainContext();
+            var additionalContext = repo.GetAdditionalContext();
 
-        if (mainContext == null || additionalContext == null) return;
-        var mainCreated = mainContext.Database.EnsureCreated();
-        var additionalCreated = additionalContext.Database.EnsureCreated();
+            if (mainContext == null || additionalContext == null) return;
+            var mainCreated = mainContext.Database.EnsureCreated();
+            var additionalCreated = additionalContext.Database.EnsureCreated();
 
-        SeedDatabase(mainContext, mainCreated);
-        SeedDatabase(additionalContext, additionalCreated);
+            SeedDatabase(mainContext, mainCreated);
+            SeedDatabase(additionalContext, additionalCreated);
 
-        logger.LogInformation("[{name}] finished with results: {firstResult} - {secondResult}", nameof(CreateAndSeed), mainCreated, additionalCreated);
+            logger.LogInformation("[{name}] finished with results: {firstResult} - {secondResult}",
+                nameof(CreateAndSeed), mainCreated, additionalCreated);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Reporter: {reporter} | Source: {source} | Ensure created error", nameof(CreateAndSeed), ex.Source);
+        }
     }
 
     /// <summary>
@@ -63,7 +71,8 @@ public abstract class DatabaseInitializer
 
             // SQLite используется при запуске интеграционных тестов:
             case "Microsoft.EntityFrameworkCore.Sqlite":
-                // NB: пересоздаём тестовую базу на каждый вызов контекста:
+                // NB: пересоздаём тестовую базу из каждого зарегистрированного контекста сервиса:
+                // NB: N баз - N вызовов (учитывай для тестов)
                 if (!created)
                 {
                     database.EnsureDeleted();
