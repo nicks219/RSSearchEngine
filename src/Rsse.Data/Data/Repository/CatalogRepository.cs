@@ -12,110 +12,45 @@ using SearchEngine.Data.Repository.Exceptions;
 
 namespace SearchEngine.Data.Repository;
 
-public class DatabaseOptions
-{
-
-    /// <summary>
-    /// Основной контекст для работы с данными
-    /// </summary>
-    public DatabaseType MainContext { get; set; }
-}
-
 /// <summary>
 /// Репозиторий слоя данных
 /// </summary>
-public class CatalogRepository(
-    IOptionsSnapshot<DatabaseOptions> options,
-    MysqlCatalogContext mysqlCatalogContext,
-    NpgsqlCatalogContext npgsqlCatalogContext)
-    : IDataRepository
+public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
-    // todo:
-    // I. переключить R контекст, CUD и дампы для новых текстов должны выполняться на обоих контекстах
-    // II. работа с дампами из контроллера выполняется по выбранному контексту, копирование всегда mysql > npgsql
-    // III. R контекст после накатки дампа установить npgsql, при проблемах переключить на mysql
-    // IV. через N недель при нормальной работе удаляем mysql, при проблемах восстанавливаемся из mysql
-    // V. в коде ищи MYSQL WORK и удаляй
-    // локально бд в контейнерах, в k3s на отдельных подах (написать yaml для postgres) - следи за потреблением диска
-    private BaseCatalogContext _mainContext = options.Value.MainContext switch
-    {
-        DatabaseType.MySql => mysqlCatalogContext,
-        DatabaseType.Postgres => npgsqlCatalogContext,
-        _ => mysqlCatalogContext
-    };
-
     // todo: MySQL WORK. DELETE
-    private BaseCatalogContext _additionalContext = npgsqlCatalogContext;
-
-    public BaseCatalogContext GetMainContext() => _mainContext;
-    public BaseCatalogContext GetAdditionalContext() => _additionalContext;
+    public BaseCatalogContext GetMainContext() => context;
+    public BaseCatalogContext GetAdditionalContext() => throw new NotImplementedException();
 
     /// <inheritdoc/>
     // todo: MySQL WORK. DELETE
-    public async Task CopyDbFromMysqlToNpgsql()
-    {
-        // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
-        _mainContext = mysqlCatalogContext;
-        _additionalContext = npgsqlCatalogContext;
-
-        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения:
-        var notes = _mainContext.Notes!.Select(note => note).ToList();
-        _ = _mainContext.TagsToNotesRelation!.Select(relation => relation).ToList();
-        _ = _mainContext.Tags!.Select(tag => tag).ToList();
-        var users = _mainContext.Users!.Select(user => user).ToList();
-
-        await using var transaction = await _additionalContext.Database.BeginTransactionAsync();
-
-        try
-        {
-            // notes, tags, relations:
-            await _additionalContext.Notes!.AddRangeAsync(notes);
-
-            await _additionalContext.Users!.AddRangeAsync(users);
-
-            await _additionalContext.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-        }
-        catch (DataExistsException)
-        {
-            await transaction.RollbackAsync();
-        }
-        catch (Exception ex)
-        {
-            // Include Error Detail:
-            await transaction.RollbackAsync();
-            Console.WriteLine(ex.Message);
-            throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
-        }
-    }
+    public Task CopyDbFromMysqlToNpgsql() => throw new NotImplementedException();
 
     /// <inheritdoc/>
     public async Task CreateTagIfNotExists(string tag)
     {
         tag = tag.ToUpper();
 
-        var exists = await _mainContext.Tags!.AnyAsync(tagEntity => tagEntity.Tag == tag);
+        var exists = await context.Tags!.AnyAsync(tagEntity => tagEntity.Tag == tag);
 
         if (exists)
         {
             return;
         }
 
-        var maxId = await _mainContext.Tags!.Select(tagEntity => tagEntity.TagId).MaxAsync();
+        var maxId = await context.Tags!.Select(tagEntity => tagEntity.TagId).MaxAsync();
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
-        await _mainContext.Tags!.AddAsync(newTag);
+        await context.Tags!.AddAsync(newTag);
 
-        await _mainContext.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     /// <inheritdoc/>
     public IQueryable<NoteEntity> ReadAllNotes()
     {
         var notes =
-            _mainContext.Notes!
+            context.Notes!
             .Select(note => note)
             .AsNoTracking();
 
@@ -126,7 +61,7 @@ public class CatalogRepository(
     public string ReadNoteTitle(int noteId)
     {
         var note =
-            _mainContext.Notes!
+            context.Notes!
             .First(noteEntity => noteEntity.NoteId == noteId);
 
         return note.Title!;
@@ -136,7 +71,7 @@ public class CatalogRepository(
     public int ReadNoteId(string noteTitle)
     {
         var note =
-            _mainContext.Notes!
+            context.Notes!
             .First(noteEntity => noteEntity.Title == noteTitle);
 
         return note.NoteId;
@@ -150,7 +85,7 @@ public class CatalogRepository(
         //    .Where(s => chosenOnes.Contains(s.GenreInGenreText.GenreID))
         //    .Select(s => s.TextInGenreText.TextID);
 
-        var notesForElection = _mainContext.Notes!
+        var notesForElection = context.Notes!
             .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
             .Select(note => note.NoteId);
 
@@ -160,7 +95,7 @@ public class CatalogRepository(
     /// <inheritdoc/>
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
     {
-        var titleAndIdList = _mainContext.Notes!
+        var titleAndIdList = context.Notes!
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -173,7 +108,7 @@ public class CatalogRepository(
     /// <inheritdoc/>
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        var titleAndText = _mainContext.Notes!
+        var titleAndText = context.Notes!
             .Where(note => note.NoteId == noteId)
             .Select(note => new Tuple<string, string>(note.Text!, note.Title!))
             .AsNoTracking();
@@ -184,7 +119,7 @@ public class CatalogRepository(
     /// <inheritdoc/>
     public IQueryable<int> ReadNoteTags(int noteId)
     {
-        var songGenres = _mainContext.TagsToNotesRelation!
+        var songGenres = context.TagsToNotesRelation!
             .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
             .Select(relation => relation.TagId);
 
@@ -194,20 +129,20 @@ public class CatalogRepository(
     /// <inheritdoc/>
     public async Task<UserEntity?> GetUser(LoginDto login)
     {
-        return await _mainContext.Users!
+        return await context.Users!
             .FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
     }
 
     /// <inheritdoc/>
     public async Task<int> ReadNotesCount()
     {
-        return await _mainContext.Notes!.CountAsync();
+        return await context.Notes!.CountAsync();
     }
 
     /// <inheritdoc/>
     public async Task<List<string>> ReadStructuredTagList()
     {
-        var tagList = await _mainContext.Tags!
+        var tagList = await context.Tags!
             // TODO заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
             .Select(tag => new Tuple<string, int>(tag.Tag!, tag.RelationEntityReference!.Count))
@@ -236,11 +171,11 @@ public class CatalogRepository(
         if (await VerifyTagNotExists(note.CommonNoteId, forAddition))
         {
             // ID тегов и номера кнопок с фронта совпадают
-            await using var transaction = await _mainContext.Database.BeginTransactionAsync();
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
-                var processedNote = await _mainContext.Notes!.FindAsync(note.CommonNoteId);
+                var processedNote = await context.Notes!.FindAsync(note.CommonNoteId);
 
                 if (processedNote == null)
                 {
@@ -251,14 +186,14 @@ public class CatalogRepository(
 
                 processedNote.Text = note.TextRequest;
 
-                _mainContext.Notes.Update(processedNote);
+                context.Notes.Update(processedNote);
 
-                _mainContext.TagsToNotesRelation!
-                    .RemoveRange(_mainContext.TagsToNotesRelation
+                context.TagsToNotesRelation!
+                    .RemoveRange(context.TagsToNotesRelation
                         .Where(relation =>
                             relation.NoteId == note.CommonNoteId && forDelete.Contains(relation.TagId)));
 
-                await _mainContext.TagsToNotesRelation
+                await context.TagsToNotesRelation
                     .AddRangeAsync(forAddition
                         .Select(id =>
                             new TagsToNotesEntity
@@ -267,7 +202,7 @@ public class CatalogRepository(
                                 TagId = id
                             }));
 
-                await _mainContext.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
@@ -292,17 +227,17 @@ public class CatalogRepository(
             return note.CommonNoteId;
         }
 
-        await using var transaction = await _mainContext.Database.BeginTransactionAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var forAddition = new NoteEntity { Title = note.TitleRequest, Text = note.TextRequest };
 
-            await _mainContext.Notes!.AddAsync(forAddition);
+            await context.Notes!.AddAsync(forAddition);
 
-            await _mainContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
-            await _mainContext.TagsToNotesRelation!
+            await context.TagsToNotesRelation!
                 .AddRangeAsync(note.TagsCheckedRequest!
                     .Select(id =>
                         new TagsToNotesEntity
@@ -311,7 +246,7 @@ public class CatalogRepository(
                             TagId = id
                         }));
 
-            await _mainContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
@@ -338,22 +273,22 @@ public class CatalogRepository(
     /// <inheritdoc/>
     public async Task<int> DeleteNote(int noteId)
     {
-        await using var transaction = await _mainContext.Database.BeginTransactionAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var deletedEntries = 0;
 
-            var processedNote = await _mainContext.Notes!.FindAsync(noteId);
+            var processedNote = await context.Notes!.FindAsync(noteId);
 
             if (processedNote == null)
             {
                 return deletedEntries;
             }
 
-            _mainContext.Notes.Remove(processedNote);
+            context.Notes.Remove(processedNote);
 
-            deletedEntries = await _mainContext.SaveChangesAsync();
+            deletedEntries = await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
@@ -369,7 +304,7 @@ public class CatalogRepository(
 
     private async Task<bool> VerifyTitleNotExists(string title)
     {
-        return !await _mainContext.Notes!.AnyAsync(entity => entity.Title == title);
+        return !await context.Notes!.AnyAsync(entity => entity.Title == title);
     }
 
     private async Task<bool> VerifyTagNotExists(int noteId, IReadOnlyCollection<int> forAddition)
@@ -379,7 +314,7 @@ public class CatalogRepository(
             return true;
         }
 
-        if (await _mainContext.TagsToNotesRelation!.AnyAsync(relation =>
+        if (await context.TagsToNotesRelation!.AnyAsync(relation =>
                 relation.NoteId == noteId && relation.TagId == forAddition.First()))
         {
             throw new DataExistsException("[PANIC] tags exists error");
@@ -390,7 +325,7 @@ public class CatalogRepository(
 
     public async ValueTask DisposeAsync()
     {
-        await _mainContext.DisposeAsync().ConfigureAwait(false);
+        await context.DisposeAsync().ConfigureAwait(false);
 
         GC.SuppressFinalize(this);
     }
@@ -398,7 +333,7 @@ public class CatalogRepository(
     // WARN на старте отрабатывает четыре раза
     void IDisposable.Dispose()
     {
-        _mainContext.Dispose();
+        context.Dispose();
 
         GC.SuppressFinalize(this);
     }

@@ -24,6 +24,7 @@ using SearchEngine.Common.Logger;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Data.Repository.Scripts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tools.MigrationAssistant;
@@ -90,8 +91,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
         services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
-
-        services.AddScoped<IDataRepository, CatalogRepository>();
+        services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+        services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddControllers();
 
