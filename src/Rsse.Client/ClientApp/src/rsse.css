@@ -37,7 +37,7 @@ body {
 }
 
 .dialog-overlay {
-    z-index: 5;
+    z-index: 10;
     height: 100%;
     width: 100%;
     left: 0;
@@ -87,7 +87,7 @@ body {
 
 #header, #login, #loginMessage {
     width: var(--text-width);
-    padding: 1rem;
+    padding: 1.5rem 1rem 0.5rem;
     margin-left: 1rem;
     margin-top: 0;
 

@@ -31,7 +31,7 @@ export const UpdateSubmitButton = (props: {formElement?: HTMLFormElement, noteDt
     return (
         <div id="submitStyle">
             <input type="checkbox" id="submitButton" className="regular-checkbox" onClick={submit}/>
-            <label htmlFor="submitButton">Сохранить</label>
+            <label htmlFor="submitButton">Замена</label>
         </div>
     );
 }

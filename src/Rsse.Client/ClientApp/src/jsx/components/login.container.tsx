@@ -6,7 +6,7 @@ import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {LoginView} from "./login.view";
 
 export const LoginContainer = () => {
-    const style = useState("submitStyle");
+    const style = useState("submitStyle");// loginButton
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
 
@@ -70,6 +70,8 @@ export const LoginContainer = () => {
                     break;
                 case Loader.createUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
+                    break;
+                case Loader.logoutUrl:
                     break;
                 default:
                     throw new Error(`Unknown recovery url saved: ${recoveryContext.recoveryString}`);

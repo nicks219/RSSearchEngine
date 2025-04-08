@@ -34,10 +34,10 @@ export const CatalogView = (props: {
                             <button id="js-logout" className="btn btn-outline-light" onClick={props.onLogout}>
                                 &lt;LogOut&gt;
                             </button>
-                            <button id="js-logout" className="btn btn-outline-light" onClick={props.onCreateDump}>
+                            <button id="js-logout 1" className="btn btn-outline-light" onClick={props.onCreateDump}>
                                 &lt;Create&gt;
                             </button>
-                            <button id="js-logout" className="btn btn-outline-light" onClick={props.onRestoreDump}>
+                            <button id="js-logout 2" className="btn btn-outline-light" onClick={props.onRestoreDump}>
                                 &lt;Restore&gt;
                             </button>
                         </form>

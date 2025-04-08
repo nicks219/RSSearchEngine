@@ -1,77 +1,149 @@
 /* отцентрованная вёрстка, черновик. надо всю вёрстку переделывать */
 /* 801px .. max, приоритетнее текст расположенный ниже по коду CSS */
-@media screen and (min-width: 801px) {
+
+@media screen and (min-width: 815px) {
     body {
         background-color: rgb(50, 70, 96);
-    }
-
-    #renderContainer1 {
-        /*margin-left: auto;
-        margin-right: auto;*/
-        margin: auto;
-    }
-
-    #header {
-        position: relative;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    #login {
-        /*position: relative;
-        margin-left: auto;
-        margin-right: auto;*/
-        /*margin-bottom: -20%;*/
-        /*margin-left: -3rem;
-        margin-top: 3rem;
-        width: calc(var(--text-width) - 7rem);*/
-
-        position: fixed;
-        bottom: 1rem;
         margin: 0;
-        width: 100%;
-        display: flex;
-        justify-content: left;/* ??? перескакивает влево в пунктах меню, разберись */
-
-        background-color: rgb(64, 80, 96);
     }
 
-    #submitButton[type="checkbox"] + label {
-        margin-top: 0.4rem;
+    /* Центровка основного контейнера: заголовок + текст + теги */
+    #renderContainer1 {
+        max-width: 1200px;
+        margin: 6rem auto;
+    }
+
+    /* Хедер: зафиксирован сверху, не перематывается и отцентрован */
+    #header {
         position: fixed;
-        right: 2rem;
+        display: flex;
+
         top: 1rem;
-        /*bottom: 0.5rem;*/
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0 auto;
+        padding-top: 1.5rem;
+
+        max-height: 5rem;
+        align-items: flex-start;
         z-index: 10;
     }
 
-    #loginMessage {
-        /*position: relative;
-        margin-left: auto;
-        margin-right: auto;*/
-
+    /* Нижняя панель логина */
+    #login {
         position: fixed;
         bottom: 1rem;
-        right: 1rem;
-        width: 17rem;
-        padding: 0.5rem 0 0;
-        /*margin: 0;
-        width: 30%;
+        left: 0;
+        right: 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0.5rem 1rem;
+        background-color: rgb(64, 80, 96);
         display: flex;
-        justify-content: right;*/
-        z-index: 11;
-        background-color: #6c757d;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
     }
 
-    #email, #password {
-        margin-top: 0.8rem;
+    /* Сообщение о логине */
+    #loginMessage {
+        position: fixed;
+        left: 1rem;
+        top: 6rem;
+        bottom: 45rem;
+        right: 1rem;
+        max-width: var(--text-width);
+        margin: 0 auto;
+        height: 3rem;
+
+        z-index: 11;
+        text-align: center;
+    }
+
+    #loginMessage h1 {
+        position: relative;
+        font-weight: bold;
+        font-size: 2rem;
+        bottom: 1rem;
+    }
+
+    #searchButton1 {
+        /*position: fixed;
+        left: 37rem;
+        top: 10rem;
+        z-index: 10;*/
+        position: fixed;
+        max-width: var(--text-width);
+        margin: 0 auto;
+
+        left: 0;
+        right: 0;
+        top: 0;
+    }
+
+    /* поиск */
+    #submitStyle {
+        position: absolute;
+        left: 38rem;
+        right: 1rem;
+        top: 1rem;
+    }
+    /* поменять / создать */
+    #renderContainer #submitButton[type="checkbox"] + label {
+        position: fixed;
+        top: 1rem;
+        margin-left: -1rem;
+    }
+
+    #login {
+        display: block;
     }
 
     #loginButton[type="checkbox"] + label {
+        /*margin-top: 0.4rem;*/
+        font-size: 1.5rem;
+        /*left: -10rem;
+        right: -10rem;*/
+    }
+    #submitStyleGreen {
+        font-size: 1.5rem;
+
+        position: relative;
+        left: 0;
+        /*display: none;*/
+
+        /*display: none;
+        padding: 13px;
+        margin: 1px;
+        display: inline;
+        background-color: #4cff00;
+        border-radius: 2em;
+        transition: all 1s 0.1s;
+        font-weight: bold;
+        border: solid 0;*/
+    }
+    /* Поле логина/пароля */
+    #email, #password {
+        /*margin-right: 1rem;*/
+        margin: 1rem auto;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+        position: relative;
+        z-index: 10;
+    }
+
+    #submitButton[type="checkbox"] + label {
+        position: relative;
+        display: inline-block;
         margin-top: 0.4rem;
+        z-index: 10;
     }
 
     .dialog {
-
+        left: 0;
+        right: 0;
+        margin: 0 auto;
     }
 }
