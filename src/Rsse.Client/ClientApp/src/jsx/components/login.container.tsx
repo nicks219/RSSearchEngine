@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+import * as React from 'react';
 import {useContext, useState} from "react";
 import {Loader} from "../common/loader";
 import {LoginBoxVisibility} from "../common/visibility.handlers";
