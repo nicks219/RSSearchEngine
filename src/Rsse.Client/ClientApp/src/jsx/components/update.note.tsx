@@ -2,7 +2,7 @@
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {toggleMenuVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
-import {Doms, SystemConstants} from "../dto/doms.tsx";
+import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
 export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const textAreaCols: number = 73;
@@ -51,7 +51,7 @@ export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteR
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>
                     </div>
-                    : "выберите заметку")
+                    : Messages.selectNote)
                 : "loading.."}
         </div>
     );

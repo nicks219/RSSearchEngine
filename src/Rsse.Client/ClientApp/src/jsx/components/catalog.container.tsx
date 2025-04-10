@@ -7,7 +7,7 @@ import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";
 import {Dialog} from "../common/dialog.component.tsx";
-import {Doms} from "../dto/doms.tsx";
+import {Doms, Messages} from "../dto/doms.tsx";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
     const actionTypeConfirmValue = "confirm";
@@ -61,14 +61,14 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         const onConfirm = () => {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
         }
-        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ ПРИМЕНЕНИЕ ДАМПА");
+        askForConfirmation(onConfirm, Messages.confirmDumpRestore);
     }
 
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
 
         document.cookie = 'rsse_auth = false';
-        let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
+        let callback = (response: Response) => response.ok ? console.log(Messages.logoutOk) : console.log(Messages.logoutErr);
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }
 
@@ -87,7 +87,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
             Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
         }
 
-        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ УДАЛЕНИЕ");
+        askForConfirmation(onConfirm, Messages.confirmDelete);
     }
 
     if (!data) return;

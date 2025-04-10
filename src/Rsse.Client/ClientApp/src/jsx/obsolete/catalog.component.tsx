@@ -5,7 +5,7 @@ import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.handlers.tsx";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
-import {Doms} from "../dto/doms.tsx";
+import {Doms, Messages} from "../dto/doms.tsx";
 
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
@@ -52,7 +52,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
-        let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
+        let callback = (response: Response) => response.ok ? console.log(Messages.logoutOk) : console.log(Messages.logoutErr);
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }
 

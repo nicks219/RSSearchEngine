@@ -28,10 +28,10 @@ export class Doms {
     static ttl = "ttl";//
     static songWithSpace: string = "song ";// table key
     static email: string = "email";//
-    static password: string = "password";// <---
+    static password: string = "password";//
 
     // id из html-верстки
-    static rootStr: string = "root";// index.html
+    static rootStr: string = "root";// index.html only
     static renderMenuStr: string = "renderMenu";// index.html only
     static searchButton1Str: string = "searchButton1";// index.html
     static searchButton1Hash: string = "#" + this.searchButton1Str;// index.html
@@ -39,14 +39,14 @@ export class Doms {
 
     // выглядит как классы для bootstrap
     static theadDarkWithSpace: string = "thead-dark ";// вот это поищи, с пробелом выглядит как потенциальная ошибка
-    static bgWarning: string = "bg-warning";
+    static bgWarning: string = "bg-warning";//
     static userName: string = "user-name";
-    static userText: string = "user-text";
+    static userText: string = "user-text";//
     static btnBtnInfo: string = "btn btn-info";// cl
     static row: string = "row";
     static table: string = "table";
     static text: string = "text";
-    static regularCheckbox = "regular-checkbox";
+    static regularCheckbox = "regular-checkbox";// <---
 }
 // "tagsCheckedRequest"
 
@@ -59,7 +59,7 @@ export class Messages {
     static confirmDumpRestore: string = "ПОДТВЕРДИТЕ ПРИМЕНЕНИЕ ДАМПА";
     static confirmDelete: string = "ПОДТВЕРДИТЕ УДАЛЕНИЕ";
     static selectTag: string = "select tag please";
-    static selectNotes: string = "выберите заметку";
+    static selectNote: string = "выберите заметку";
 }
 
 // системные константы
