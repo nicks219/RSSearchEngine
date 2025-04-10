@@ -1,6 +1,7 @@
 ﻿import {useReducer} from "react";
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {getTextResponse, getTitleResponse, setTextResponse, setTitleResponse} from "../common/dto.handlers";
+import {Doms} from "../dto/doms.tsx";
 
 export const CreateNote = (props: {noteDto: NoteResponseDto}) => {
     const textAreaCols: number = 73;
@@ -27,12 +28,12 @@ export const CreateNote = (props: {noteDto: NoteResponseDto}) => {
             {props.noteDto ?
                 <div>
                     <h5>
-                        <textarea name="ttl" cols={textAreaCols} rows={textAreaRow} form="textbox"
+                        <textarea name={Doms.ttl} cols={textAreaCols} rows={textAreaRow} form={Doms.textbox}
                                   value={getTitleResponse(props.noteDto)}
                                   onChange={e => titleHandler(e.target.value)}/>
                     </h5>
                     <h5>
-                        <textarea name="msg" cols={textAreaCols} rows={textAreaRows} form="textbox"
+                        <textarea name={Doms.msg} cols={textAreaCols} rows={textAreaRows} form={Doms.textbox}
                                   value={getTextResponse(props.noteDto)}
                                   onChange={e => textHandler(e.target.value)}/>
                     </h5>

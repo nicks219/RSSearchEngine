@@ -7,6 +7,7 @@ import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";
 import {Dialog} from "../common/dialog.component.tsx";
+import {Doms} from "../dto/doms.tsx";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
     const actionTypeConfirmValue = "confirm";
@@ -96,7 +97,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     // данные для вьюхи: имя файла дампа:
     if (data.res) {
         elements.push(
-            <tr key={"song "} className="bg-warning">
+            <tr key={Doms.songWithSpace} className={Doms.bgWarning}>
                 <td></td>
                 <td>{data.res}</td>
             </tr>);
@@ -113,7 +114,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     if (page) {
         for (let index = 0; index < page.length; index++) {
             elements.push(
-                <tr key={"song " + index} className="bg-warning">
+                <tr key={Doms.songWithSpace + index} className={Doms.bgWarning}>
                     <td></td>
                     <td>
                         <button className="btn btn-outline-light"

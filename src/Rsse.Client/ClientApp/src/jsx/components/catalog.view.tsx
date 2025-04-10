@@ -1,6 +1,7 @@
 ﻿import * as React from "react";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {getNotesCount, getPageNumber} from "../common/dto.handlers";
+import {Doms} from "../dto/doms.tsx";
 
 export const CatalogView = (props: {
     catalogDto:CatalogResponseDto,
@@ -10,24 +11,24 @@ export const CatalogView = (props: {
     onRestoreDump:(e:React.SyntheticEvent)=>void,
     elements:JSX.Element[]}) => {
     return (
-        <div className="row" id="renderContainer">
+        <div className={Doms.row} id={Doms.renderContainer}>
             <p style={{marginLeft: 12 + '%'}}>
                 Всего песен: {getNotesCount(props.catalogDto)} &nbsp;
                 Страница: {getPageNumber(props.catalogDto)} &nbsp;
             </p>
             <p></p>
             <p></p>
-            <table className="table" id="catalogTable">
-                <thead className="thead-dark ">
+            <table className={Doms.table} id={Doms.catalogTable}>
+                <thead className={Doms.theadDarkWithSpace}>
                 <tr>
                     <th></th>
                     <th>
                         <form>
-                            <button id="js-nav-1" className="btn btn-info" onClick={props.onClick}>
+                            <button id="js-nav-1" className={Doms.btnBtnInfo} onClick={props.onClick}>
                                 &lt;Назад
                             </button>
                             &nbsp;
-                            <button id="js-nav-2" className="btn btn-info" onClick={props.onClick}>
+                            <button id="js-nav-2" className={Doms.btnBtnInfo} onClick={props.onClick}>
                                 Вперёд&gt;
                             </button>
                             &nbsp;

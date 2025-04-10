@@ -10,6 +10,7 @@ import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {ReadNote} from "./read.note";
 import {ReadCheckbox} from "./read.checkbox";
 import {ReadSubmitButton} from "./read.submit";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 export const ReadContainer = () => {
     const params = useParams();
@@ -17,7 +18,7 @@ export const ReadContainer = () => {
 }
 
 class SearchButtonRoot {
-    static searchButtonOneElement = document.querySelector("#searchButton1") ?? document.createElement('searchButton1');
+    static searchButtonOneElement = document.querySelector(Doms.searchButton1Hash) ?? document.createElement(Doms.searchButton1Str);
     private static _root?: Root = createRoot(this.searchButtonOneElement);
     static getRoot: Root = (this._root)? this._root : createRoot(this.searchButtonOneElement);
 }
@@ -35,8 +36,8 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
         if (props.noteId && !data) {
             // при редиректе из каталога или из Create (read/id) не обновляем содержимое компонента и убираем чекбоксы с логином:
             // TODO: вынести style=none в отдельную функцию
-            if (formElement) formElement.style.display = "none";
-            (document.getElementById("login") as HTMLElement).style.display = "none";
+            if (formElement) formElement.style.display = SystemConstants.none;
+            (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
         } else {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
         }
@@ -59,7 +60,7 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
                 <ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} />
             </div>
         );
-        (document.getElementById("header") as HTMLElement).style.backgroundColor = "#405060";//"#e9ecee"
+        (document.getElementById(Doms.header) as HTMLElement).style.backgroundColor = SystemConstants.color_405060;//"#e9ecee"
     }
 
     useEffect(() => {
@@ -86,8 +87,8 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
         <div>
-            <form ref={castedRefObject} id="textbox">{checkboxes}</form>
-            <div id="messageBox">
+            <form ref={castedRefObject} id={Doms.textbox}>{checkboxes}</form>
+            <div id={Doms.messageBox}>
                 {data && getTextResponse(data) && <ReadNote formElement={formElement} noteDto={data} />}
             </div>
         </div>

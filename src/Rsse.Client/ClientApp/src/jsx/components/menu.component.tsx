@@ -7,6 +7,7 @@ import {CatalogContainer} from "./catalog.container";
 import {HashRouter, NavLink, Routes, Route} from 'react-router-dom';
 import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "../common/state.handlers";
 import {CommonContextProvider, RecoveryContextProvider} from "../common/context.provider";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 export const App = () => {
     const commonStateStorage = new CommonStateStorage();
@@ -15,24 +16,24 @@ export const App = () => {
     return (
         <HashRouter>
             <div>
-                <div id="header">
+                <div id={Doms.header}>
                     <ul>
-                        <li><NavLink to="/">Посмотреть</NavLink></li>
-                        <li><NavLink to="/update">Поменять</NavLink></li>
-                        <li><NavLink to="/create">Создать</NavLink></li>
-                        <li><NavLink to="/catalog">Каталог</NavLink></li>
+                        <li><NavLink to={SystemConstants.emptySegment}>Посмотреть</NavLink></li>
+                        <li><NavLink to={SystemConstants.updatePath}>Поменять</NavLink></li>
+                        <li><NavLink to={SystemConstants.createPath}>Создать</NavLink></li>
+                        <li><NavLink to={SystemConstants.catalogPath}>Каталог</NavLink></li>
                     </ul>
                 </div>
 
-                <div id="renderContainer1">
+                <div id={Doms.renderContainer1}>
                     <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер recovery */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
-                                <Route path="/" element={<ReadContainer/>}/>
+                                <Route path={SystemConstants.emptySegment} element={<ReadContainer/>}/>
                                 <Route path="/read/:textId" element={<ReadContainer/>}/>
-                                <Route path="/update" element={<UpdateContainer/>}/>
-                                <Route path="/create" element={<CreateContainer/>}/>
-                                <Route path="/catalog" element={<CatalogContainer/>}/>
+                                <Route path={SystemConstants.updatePath} element={<UpdateContainer/>}/>
+                                <Route path={SystemConstants.createPath} element={<CreateContainer/>}/>
+                                <Route path={SystemConstants.catalogPath} element={<CatalogContainer/>}/>
                             </Routes>
                             <LoginContainer/>
                         </CommonContextProvider>

@@ -2,6 +2,7 @@
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {toggleMenuVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const textAreaCols: number = 73;
@@ -28,7 +29,7 @@ export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteR
 
     const hideMenu = () => {
         if (props.formElement) props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
-        (document.getElementById("login") as HTMLElement).style.display = "block";
+        (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.block;
     }
 
     const inputText = (e: string) => {
@@ -45,7 +46,7 @@ export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteR
                             {getTitleResponse(props.noteDto)}
                         </h1>
                         <h5>
-                            <textarea name="msg" cols={textAreaCols} rows={textAreaRows} form="textbox"
+                            <textarea name={Doms.msg} cols={textAreaCols} rows={textAreaRows} form={Doms.textbox}
                                       value={getTextResponse(props.noteDto)}
                                       onChange={e => inputText(e.target.value)}/>
                         </h5>

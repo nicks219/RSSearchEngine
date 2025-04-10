@@ -3,6 +3,7 @@ import {NoteResponseDto} from "../dto/request.response.dto";
 import {CommonContext} from "../common/context.provider";
 import {toggleMenuVisibility} from "../common/visibility.handlers";
 import {getCommonNoteId, getTextResponse, getTitleResponse} from "../common/dto.handlers";
+import {Doms} from "../dto/doms.tsx";
 
 export const ReadNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const commonContext = useContext(CommonContext);
@@ -20,10 +21,10 @@ export const ReadNote = (props: {formElement?: HTMLFormElement, noteDto: NoteRes
         <span>
             {props.noteDto ? (getTextResponse(props.noteDto) ?
                     <span>
-                    <div id="noteTitle" onClick={hideMenu}>
+                    <div id={Doms.noteTitle} onClick={hideMenu}>
                         {getTitleResponse(props.noteDto)}
                     </div>
-                    <div id="noteText">
+                    <div id={Doms.noteText}>
                         <TextSupportsLinks text={getTextResponse(props.noteDto) ?? ""}/>
                     </div>
                 </span>

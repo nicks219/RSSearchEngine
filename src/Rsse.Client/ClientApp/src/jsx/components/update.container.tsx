@@ -8,6 +8,7 @@ import {CommonContext} from "../common/context.provider";
 import {UpdateSubmitButton} from "./update.submit";
 import {UpdateCheckbox} from "./update.checkbox";
 import {UpdateNote} from "./update.note";
+import {Doms} from "../dto/doms.tsx";
 
 export const UpdateContainer = () => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
@@ -45,8 +46,8 @@ export const UpdateContainer = () => {
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
-        <div id="renderContainer">
-            <form ref={castedRefObject} id="textbox">
+        <div id={Doms.renderContainer}>
+            <form ref={castedRefObject} id={Doms.textbox}>
                 {checkboxes}
                 {data && <UpdateSubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
             </form>

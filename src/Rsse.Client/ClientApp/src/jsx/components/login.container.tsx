@@ -4,14 +4,15 @@ import {Loader} from "../common/loader";
 import {LoginBoxVisibility} from "../common/visibility.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {LoginView} from "./login.view";
+import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
 export const LoginContainer = () => {
-    const style = useState("submitStyle");// loginButton
+    const style = useState(Doms.submitStyle);// loginButton
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
 
-    const loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
-    loginElement.style.display = "block";
+    const loginElement = document.getElementById(Doms.loginName) as HTMLElement ?? document.createElement(Doms.loginName);
+    loginElement.style.display = SystemConstants.block;
 
     const onSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -29,17 +30,17 @@ export const LoginContainer = () => {
 
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
-        console.log("Login error.");
+        console.log(Messages.loginError);
     }
 
     const loginOk = () => {
         document.cookie = 'rsse_auth = true';
-        console.log("Login ok.");
-        style[1]("submitStyleGreen");
+        console.log(Messages.loginOk);
+        style[1](Doms.submitStyleGreen);
         continueLoading();
         setTimeout(() => {
-            const loginElement = document.getElementById("login") as HTMLElement;
-            loginElement.style.display = "none";
+            const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
+            loginElement.style.display = SystemConstants.none;
         }, 1500);
     }
 

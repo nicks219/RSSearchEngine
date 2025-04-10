@@ -3,16 +3,17 @@
     RecoveryStateStorage,
     StateTypesAlias
 } from "./state.handlers";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 /** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
 export const toggleMenuVisibility = (cssProperty: string): string => {
-    if (cssProperty !== "none") {
-        cssProperty = "none";
-        (document.getElementById("login") as HTMLElement).style.display = "none";
+    if (cssProperty !== SystemConstants.none) {
+        cssProperty = SystemConstants.none;
+        (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
         return cssProperty;
     }
 
-    cssProperty = "block";
+    cssProperty = SystemConstants.block;
     return cssProperty;
 }
 
@@ -26,9 +27,9 @@ export const LoginBoxVisibility = (
     recoveryContext?: RecoveryStateStorage<StateTypesAlias>) => {
 
     const SetInvisible = () => {
-        const loginMessage = document.getElementById("loginMessage") as HTMLElement;
+        const loginMessage = document.getElementById(Doms.loginMessageStr) as HTMLElement;
         if (loginMessage) {
-            loginMessage.style.display = "none";
+            loginMessage.style.display = SystemConstants.none;
         }
     }
 
@@ -38,13 +39,13 @@ export const LoginBoxVisibility = (
             recoveryContext.recoveryString = url;
         }
 
-        const loginMessageElement = document.getElementById("loginMessage") as HTMLElement;
-        const loginElement = document.getElementById("login") as HTMLElement;
-        loginMessageElement.style.display = "block";
-        loginElement.style.display = "block";
+        const loginMessageElement = document.getElementById(Doms.loginMessageStr) as HTMLElement;
+        const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
+        loginMessageElement.style.display = SystemConstants.block;
+        loginElement.style.display = SystemConstants.block;
         // изменение css только в dom браузера, при этом стейт компонента останется submitStyleGreen:
         const submitElement = loginElement.children[0];
-        submitElement.id = "submitStyle";
+        submitElement.id = Doms.submitStyle;
     }
 
     if (visibility) {
