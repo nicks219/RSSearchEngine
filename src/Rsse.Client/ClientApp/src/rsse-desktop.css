@@ -13,6 +13,13 @@
         margin: 6rem auto;
     }
 
+    /* контент основного контейнера | кнопка поменять/создать */
+    #main-content #submitButton[type="checkbox"] + label {
+        position: fixed;
+        top: 1rem;
+        margin-left: -1rem;
+    }
+
     /* Хедер: зафиксирован сверху, не перематывается и отцентрован */
     #header {
         position: fixed;
@@ -88,12 +95,6 @@
         left: 38rem;
         right: 1rem;
         top: 1rem;
-    }
-    /* поменять / создать */
-    #renderContainer #submitButton[type="checkbox"] + label {
-        position: fixed;
-        top: 1rem;
-        margin-left: -1rem;
     }
 
     #login {

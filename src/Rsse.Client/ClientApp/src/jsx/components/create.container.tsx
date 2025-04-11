@@ -80,7 +80,7 @@ export const CreateContainer = () => {
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
-        <div id={Doms.renderContainer}>
+        <div id={Doms.mainContent}>
             <form ref={castedRefObject}
                   id={Doms.textbox}>
                 {checkboxes}

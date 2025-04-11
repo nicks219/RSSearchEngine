@@ -46,7 +46,7 @@ export const UpdateContainer = () => {
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
-        <div id={Doms.renderContainer}>
+        <div id={Doms.mainContent}>
             <form ref={castedRefObject} id={Doms.textbox}>
                 {checkboxes}
                 {data && <UpdateSubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}

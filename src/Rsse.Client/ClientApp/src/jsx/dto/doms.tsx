@@ -31,7 +31,8 @@ export class Doms {
     // id из html-верстки
     static rootStr: string = "root";// index.html only
     static main: string = "main";//
-    static renderContainer: string = "renderContainer";//
+    // выглядит как лишний идентификатор для внешних тегов компонентов
+    static mainContent: string = "main-content";//
     static footer: string = "footer";
 
     // anchors:
@@ -39,11 +40,9 @@ export class Doms {
     static searchButton1Hash: string = "#" + this.searchButton1Str;// index.html
     static loginMessageStr: string = "loginMessage";// [css] index.html ID
 
-
     // выглядит как классы для bootstrap
     static theadDarkWithSpace: string = "thead-dark ";// вот это поищи, с пробелом выглядит как потенциальная ошибка
     static bgWarning: string = "bg-warning";//
-    static userName: string = "user-name";
     static userText: string = "user-text";//
     static btnBtnInfo: string = "btn btn-info";// cl
     static row: string = "row";

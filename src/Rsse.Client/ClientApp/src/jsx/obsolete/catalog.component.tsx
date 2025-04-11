@@ -119,7 +119,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
 
     return (
-        <div className={Doms.row} id={Doms.renderContainer}>
+        <div className={Doms.row} id={Doms.mainContent}>
             <p style={{marginLeft: 12 + '%'}}>
                 Всего песен: {getNotesCount(data)} &nbsp;
                 Страница: {getPageNumber(data)} &nbsp;

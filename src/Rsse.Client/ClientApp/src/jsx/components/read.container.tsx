@@ -86,7 +86,7 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
-        <div>
+        <div id={Doms.mainContent}>
             <form ref={castedRefObject} id={Doms.textbox}>{checkboxes}</form>
             <div id={Doms.messageBox}>
                 {data && getTextResponse(data) && <ReadNote formElement={formElement} noteDto={data} />}

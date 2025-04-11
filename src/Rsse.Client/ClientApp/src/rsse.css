@@ -58,7 +58,7 @@ body {
     user-select: none;
 }
 
-#renderContainer {
+#main-content {
     position: absolute;
     top: 0;
     left: 0;

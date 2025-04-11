@@ -11,7 +11,7 @@ export const CatalogView = (props: {
     onRestoreDump:(e:React.SyntheticEvent)=>void,
     elements:JSX.Element[]}) => {
     return (
-        <div className={Doms.row} id={Doms.renderContainer}>
+        <div className={Doms.row} id={Doms.mainContent}>
             <p style={{marginLeft: 12 + '%'}}>
                 Всего песен: {getNotesCount(props.catalogDto)} &nbsp;
                 Страница: {getPageNumber(props.catalogDto)} &nbsp;
