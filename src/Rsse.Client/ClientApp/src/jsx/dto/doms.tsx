@@ -21,8 +21,6 @@ export class Doms {
     // разберись где id а где class
     static loginName: string = "login";// id ok
     static header: string = "header";// id ok
-    static renderContainer: string = "renderContainer";//
-    static renderContainer1: string = "renderContainer1";//
     static chkButton: string = "chkButton";// getall
     static msg: string = "msg";// name
     static ttl = "ttl";//
@@ -32,11 +30,15 @@ export class Doms {
 
     // id из html-верстки
     static rootStr: string = "root";// index.html only
-    // static renderMenuStr: string = "renderMenu";// index.html only
+    static main: string = "main";//
+    static renderContainer: string = "renderContainer";//
+    static footer: string = "footer";
+
+    // anchors:
     static searchButton1Str: string = "searchButton1";// index.html
     static searchButton1Hash: string = "#" + this.searchButton1Str;// index.html
     static loginMessageStr: string = "loginMessage";// [css] index.html ID
-    static footer: string = "footer";
+
 
     // выглядит как классы для bootstrap
     static theadDarkWithSpace: string = "thead-dark ";// вот это поищи, с пробелом выглядит как потенциальная ошибка

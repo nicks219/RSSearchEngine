@@ -25,7 +25,7 @@ export const App = () => {
                     </ul>
                 </div>
 
-                <div id={Doms.renderContainer1}>
+                <div id={Doms.main}>
                     <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер recovery */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
@@ -38,7 +38,7 @@ export const App = () => {
                         </CommonContextProvider>
                     </RecoveryContextProvider>
                 </div>
-                
+
                 <div id={Doms.footer}>
                     <LoginContainer/>
                 </div>

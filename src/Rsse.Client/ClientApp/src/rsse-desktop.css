@@ -8,7 +8,7 @@
     }
 
     /* Центровка основного контейнера: заголовок + текст + теги */
-    #renderContainer1 {
+    #main {
         max-width: 1200px;
         margin: 6rem auto;
     }

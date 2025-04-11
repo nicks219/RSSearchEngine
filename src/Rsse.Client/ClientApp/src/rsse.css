@@ -24,7 +24,7 @@ body {
     background-color: slategrey;
 }
 
-#renderContainer1 {
+#main {
 	position: relative;
 	width: var(--text-width);
 	padding-left: 3rem;
