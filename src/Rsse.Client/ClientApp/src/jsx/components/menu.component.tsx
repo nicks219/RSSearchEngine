@@ -35,9 +35,12 @@ export const App = () => {
                                 <Route path={SystemConstants.createPath} element={<CreateContainer/>}/>
                                 <Route path={SystemConstants.catalogPath} element={<CatalogContainer/>}/>
                             </Routes>
-                            <LoginContainer/>
                         </CommonContextProvider>
                     </RecoveryContextProvider>
+                </div>
+                
+                <div id={Doms.footer}>
+                    <LoginContainer/>
                 </div>
             </div>
         </HashRouter>);
