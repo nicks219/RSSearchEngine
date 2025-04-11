@@ -121,3 +121,6 @@ describe('Login Button tests', () => {
         expect(message).toBe(expected);
     })
 })
+
+// пиши тест на recovery либо на провайдеры контекста: "прерванная загрузка должна продолжаться после авторизации"
+// то есть: login.container должен получать в useContext сохраненный в любом компоненте контекст и после loginOk использовать его в continueLoading

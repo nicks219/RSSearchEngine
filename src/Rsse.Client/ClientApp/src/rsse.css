@@ -20,10 +20,32 @@
     }
 }*/
 
+/* основная структура */
 body {
     background-color: slategrey;
 }
 
+#root {
+}
+
+/* верх */
+#header, #login, #loginMessage {
+    width: var(--text-width);
+    padding: 1.5rem 1rem 0.5rem;
+    margin-left: 1rem;
+    margin-top: 0;
+
+    background-color: #e9ecee;
+}
+
+#header {
+    position: fixed;
+    top: 1rem;
+    left: 0;
+    z-index: 5;
+}
+
+/* середина */
 #main {
 	position: relative;
 	width: var(--text-width);
@@ -34,6 +56,59 @@ body {
 	background-color: #ffe;
 	overflow-wrap: break-word;
     user-select: none;
+}
+
+#renderContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: var(--text-width);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: 0;
+    padding-top: 0;
+    margin-top: 1rem;
+
+    background-color: #ffe;
+    overflow-wrap: break-word;
+}
+
+/* низ */
+#footer {
+}
+#login {
+    position: fixed;
+    bottom: 1rem;
+    left: 0;
+    padding: 0.2rem;
+    z-index: 5;
+}
+
+/* ... */
+#header li {
+    display: inline;
+    user-select: none;
+}
+
+#header li a {
+    color: #ffffff;
+    background-color: #111;
+    font-weight: bold;
+    font-size: 1.3rem;
+    padding: 1rem;
+    transition: all 0.5s 0.1s;
+    border-radius: 10px;
+}
+
+#header li a:hover {
+    text-decoration: none;
+    background-color: #1b1e40;
+    transition: all 0.5s 0.1s;
+}
+
+#header li a.active {
+    background-color: #0099FF;
 }
 
 .dialog-overlay {
@@ -69,73 +144,8 @@ body {
     z-index: 10;
 }
 
-#renderContainer {
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    width: var(--text-width);
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin-left: 0;
-    padding-top: 0;
-    margin-top: 1rem;
-
-    background-color: #ffe;
-    overflow-wrap: break-word;
-}
-
-#header, #login, #loginMessage {
-    width: var(--text-width);
-    padding: 1.5rem 1rem 0.5rem;
-    margin-left: 1rem;
-    margin-top: 0;
-
-    background-color: #e9ecee;
-}
-
-#header li {
-    display: inline;
-    user-select: none;
-}
-
-#header li a {
-    color: #ffffff;
-    background-color: #111;
-    font-weight: bold;
-    font-size: 1.3rem;
-    padding: 1rem;
-    transition: all 0.5s 0.1s;
-    border-radius: 10px;
-}
-
-#header li a:hover {
-    text-decoration: none;
-    background-color: #1b1e40;
-    transition: all 0.5s 0.1s;
-}
-
-#header li a.active {
-    background-color: #0099FF;
-}
-
 #loginMessage {
     margin-left: 1rem;
-}
-
-#login {
-    padding: 0.2rem;
-    position: fixed;
-    bottom: 1rem;
-    left: 0;
-    z-index: 5;
-}
-
-#header {
-    position: fixed;
-    top: 1rem;
-    left: 0;
-    z-index: 5;
 }
 
 #searchButton1 {

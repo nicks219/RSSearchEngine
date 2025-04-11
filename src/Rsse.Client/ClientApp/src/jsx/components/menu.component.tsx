@@ -26,7 +26,7 @@ export const App = () => {
                 </div>
 
                 <div id={Doms.main}>
-                    <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер recovery */}
+                    <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер контекста восстановления */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
                                 <Route path={SystemConstants.emptySegment} element={<ReadContainer/>}/>
@@ -39,8 +39,13 @@ export const App = () => {
                     </RecoveryContextProvider>
                 </div>
 
+                {/* контейнер LoginContainer должен находиться в скоупе контекста, иначе не сработает восстановление на логине */}
                 <div id={Doms.footer}>
-                    <LoginContainer/>
+                    <RecoveryContextProvider value={recoveryStateStorage}>
+                        <CommonContextProvider value={commonStateStorage}>
+                            <LoginContainer/>
+                        </CommonContextProvider>
+                    </RecoveryContextProvider>
                 </div>
             </div>
         </HashRouter>);
