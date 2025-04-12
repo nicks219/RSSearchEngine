@@ -1,7 +1,6 @@
 ﻿import * as React from 'react';
 import {useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
-import {createRoot, Root} from "react-dom/client";
 
 import {Loader} from "../common/loader";
 import {getStructuredTagsListResponse, getTextResponse} from "../common/dto.handlers";
@@ -11,6 +10,7 @@ import {ReadNote} from "./read.note";
 import {ReadCheckbox} from "./read.checkbox";
 import {ReadSubmitButton} from "./read.submit";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
+import {createPortal} from "react-dom";
 
 interface ReadContainerProps {
     buttonRef: React.RefObject<HTMLDivElement>;
@@ -25,8 +25,6 @@ export const ReadContainer = ({buttonRef}: ReadContainerProps) => {
 }
 
 const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
-    const rootRef = useRef<Root|null>();
-
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
@@ -39,9 +37,8 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
         return onUnmount;
     }, []);
 
-    useEffect(() => {
-        componentDidUpdate();
-    }, [data]);
+    // component did update: на изменении data отрендерится портал с кнопкой
+    useEffect(() => {}, [data]);
 
     const onMount = () => {
         formElement = refObject.current;
@@ -57,24 +54,6 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
 
     const onUnmount = () => {
         mounted[0] = false;
-        // убираем отображение кнопки "Поиск":
-        // SearchButtonRoot.getRoot.render(<div></div>);
-        rootRef.current?.render(<div></div>);
-        setTimeout(() => {
-            rootRef.current?.unmount();
-            rootRef.current = null;
-        }, 0);
-    }
-
-    const componentDidUpdate = () => {
-        if (!props.buttonRef.current) return;
-        if (!rootRef.current) {rootRef.current = createRoot(props.buttonRef.current);}
-        rootRef.current.render(
-            <div>
-                <ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} />
-            </div>
-        );
-        (document.getElementById(Doms.header) as HTMLElement).style.backgroundColor = SystemConstants.color_405060;//"#e9ecee"
     }
 
     // если data не определена, значит fetch для id ещё не выполнялся:
@@ -101,6 +80,11 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
             <div id={Doms.messageBox}>
                 {data && getTextResponse(data) && <ReadNote formElement={formElement} noteDto={data} />}
             </div>
+            {props.buttonRef.current
+                && createPortal(
+                    <div><ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} /></div>,
+                    props.buttonRef.current
+                )}
         </div>
     );
 };
