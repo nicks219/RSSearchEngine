@@ -54,7 +54,7 @@
     }
 
     /* Сообщение о логине */
-    #loginMessage {
+    #system-message {
         position: fixed;
         left: 1rem;
         top: 6rem;
@@ -68,14 +68,14 @@
         text-align: center;
     }
 
-    #loginMessage h1 {
+    #system-message h1 {
         position: relative;
         font-weight: bold;
         font-size: 2rem;
         bottom: 1rem;
     }
 
-    #searchButton1 {
+    #confirm-button {
         /*position: fixed;
         left: 37rem;
         top: 10rem;

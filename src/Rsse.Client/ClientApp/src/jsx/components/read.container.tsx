@@ -18,7 +18,7 @@ export const ReadContainer = () => {
 }
 
 class SearchButtonRoot {
-    static searchButtonOneElement = document.querySelector(Doms.searchButton1Hash) ?? document.createElement(Doms.searchButton1Str);
+    static searchButtonOneElement = document.querySelector(Doms.confirmButtonHash) ?? document.createElement(Doms.confirmButtonId);
     private static _root?: Root = createRoot(this.searchButtonOneElement);
     static getRoot: Root = (this._root)? this._root : createRoot(this.searchButtonOneElement);
 }

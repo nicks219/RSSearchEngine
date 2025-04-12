@@ -27,7 +27,7 @@ export const LoginBoxVisibility = (
     recoveryContext?: RecoveryStateStorage<StateTypesAlias>) => {
 
     const SetInvisible = () => {
-        const loginMessage = document.getElementById(Doms.loginMessageStr) as HTMLElement;
+        const loginMessage = document.getElementById(Doms.systemMessageId) as HTMLElement;
         if (loginMessage) {
             loginMessage.style.display = SystemConstants.none;
         }
@@ -39,7 +39,7 @@ export const LoginBoxVisibility = (
             recoveryContext.recoveryString = url;
         }
 
-        const loginMessageElement = document.getElementById(Doms.loginMessageStr) as HTMLElement;
+        const loginMessageElement = document.getElementById(Doms.systemMessageId) as HTMLElement;
         const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
         loginMessageElement.style.display = SystemConstants.block;
         loginElement.style.display = SystemConstants.block;

@@ -36,9 +36,9 @@ export class Doms {
     static footer: string = "footer";
 
     // anchors:
-    static searchButton1Str: string = "searchButton1";// index.html
-    static searchButton1Hash: string = "#" + this.searchButton1Str;// index.html
-    static loginMessageStr: string = "loginMessage";// [css] index.html ID
+    static confirmButtonId: string = "confirm-button";// index.html
+    static confirmButtonHash: string = "#" + this.confirmButtonId;// index.html
+    static systemMessageId: string = "system-message";// [css] index.html ID
 
     // выглядит как классы для bootstrap
     static theadDarkWithSpace: string = "thead-dark ";// вот это поищи, с пробелом выглядит как потенциальная ошибка

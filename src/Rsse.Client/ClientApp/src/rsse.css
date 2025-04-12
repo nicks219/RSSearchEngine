@@ -29,7 +29,7 @@ body {
 }
 
 /* верх */
-#header, #login, #loginMessage {
+#header, #login, #system-message {
     width: var(--text-width);
     padding: 1.5rem 1rem 0.5rem;
     margin-left: 1rem;
@@ -144,11 +144,11 @@ body {
     z-index: 10;
 }
 
-#loginMessage {
+#system-message {
     margin-left: 1rem;
 }
 
-#searchButton1 {
+#confirm-button {
     position: fixed;
     left: 37rem;
     top: 1rem;
