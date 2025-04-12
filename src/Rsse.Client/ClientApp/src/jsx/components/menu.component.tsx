@@ -4,6 +4,7 @@ import {CreateContainer} from "./create.container";
 import {LoginContainer} from "./login.container";
 import {CatalogContainer} from "./catalog.container";
 
+import {useRef} from 'react';
 import {HashRouter, NavLink, Routes, Route} from 'react-router-dom';
 import {CommonStateStorage, RecoveryStateStorage, StateTypesAlias} from "../common/state.handlers";
 import {CommonContextProvider, RecoveryContextProvider} from "../common/context.provider";
@@ -12,6 +13,7 @@ import {Doms, SystemConstants} from "../dto/doms.tsx";
 export const App = () => {
     const commonStateStorage = new CommonStateStorage();
     const recoveryStateStorage = new RecoveryStateStorage<StateTypesAlias>();
+    const buttonRef = useRef<HTMLDivElement>(null);
 
     return (
         <HashRouter>
@@ -29,8 +31,8 @@ export const App = () => {
                     <RecoveryContextProvider value={recoveryStateStorage}>{/* провайдер контекста восстановления */}
                         <CommonContextProvider value={commonStateStorage}>
                             <Routes>
-                                <Route path={SystemConstants.emptySegment} element={<ReadContainer/>}/>
-                                <Route path="/read/:textId" element={<ReadContainer/>}/>
+                                <Route path={SystemConstants.emptySegment} element={<ReadContainer buttonRef={buttonRef}/>}/>
+                                <Route path="/read/:textId" element={<ReadContainer buttonRef={buttonRef}/>}/>
                                 <Route path={SystemConstants.updatePath} element={<UpdateContainer/>}/>
                                 <Route path={SystemConstants.createPath} element={<CreateContainer/>}/>
                                 <Route path={SystemConstants.catalogPath} element={<CatalogContainer/>}/>
@@ -47,6 +49,12 @@ export const App = () => {
                         </CommonContextProvider>
                     </RecoveryContextProvider>
                 </div>
+
+                <div id="anchors">
+                    <div ref={buttonRef} id="confirm-button"></div>
+                    <div id="system-message" style={{display:"none"}}><h1>Login please</h1></div>
+                </div>
+
             </div>
         </HashRouter>);
 }

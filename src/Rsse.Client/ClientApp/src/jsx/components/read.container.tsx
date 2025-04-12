@@ -12,24 +12,36 @@ import {ReadCheckbox} from "./read.checkbox";
 import {ReadSubmitButton} from "./read.submit";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 
-export const ReadContainer = () => {
-    const params = useParams();
-    return <ReadContainerParametrized noteId={params.textId} />;
+interface ReadContainerProps {
+    buttonRef: React.RefObject<HTMLDivElement>;
+}
+interface ReadContainerParametrizedProps extends ReadContainerProps {
+    noteId?: string;
 }
 
-class SearchButtonRoot {
-    static searchButtonOneElement = document.querySelector(Doms.confirmButtonHash) ?? document.createElement(Doms.confirmButtonId);
-    private static _root?: Root = createRoot(this.searchButtonOneElement);
-    static getRoot: Root = (this._root)? this._root : createRoot(this.searchButtonOneElement);
+export const ReadContainer = ({buttonRef}: ReadContainerProps) => {
+    const params = useParams<{ textId?: string }>();
+    return <ReadContainerParametrized noteId={params.textId} buttonRef={buttonRef} />;
 }
 
-const ReadContainerParametrized = (props: {noteId?: string}) => {
+const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
+    const rootRef = useRef<Root|null>();
+
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
 
     const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
     let formElement: HTMLFormElement|undefined = refObject.current;
+
+    useEffect(() => {
+        onMount();
+        return onUnmount;
+    }, []);
+
+    useEffect(() => {
+        componentDidUpdate();
+    }, [data]);
 
     const onMount = () => {
         formElement = refObject.current;
@@ -46,26 +58,24 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
     const onUnmount = () => {
         mounted[0] = false;
         // убираем отображение кнопки "Поиск":
-        SearchButtonRoot.getRoot.render(<div></div>);
+        // SearchButtonRoot.getRoot.render(<div></div>);
+        rootRef.current?.render(<div></div>);
+        setTimeout(() => {
+            rootRef.current?.unmount();
+            rootRef.current = null;
+        }, 0);
     }
 
-    useEffect(() => {
-        onMount();
-        return onUnmount;
-    }, []);
-
     const componentDidUpdate = () => {
-        SearchButtonRoot.getRoot.render(
+        if (!props.buttonRef.current) return;
+        if (!rootRef.current) {rootRef.current = createRoot(props.buttonRef.current);}
+        rootRef.current.render(
             <div>
                 <ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} />
             </div>
         );
         (document.getElementById(Doms.header) as HTMLElement).style.backgroundColor = SystemConstants.color_405060;//"#e9ecee"
     }
-
-    useEffect(() => {
-        componentDidUpdate();
-    }, [data]);
 
     // если data не определена, значит fetch для id ещё не выполнялся:
     if (props.noteId && !data) {
@@ -93,4 +103,4 @@ const ReadContainerParametrized = (props: {noteId?: string}) => {
             </div>
         </div>
     );
-}
+};
