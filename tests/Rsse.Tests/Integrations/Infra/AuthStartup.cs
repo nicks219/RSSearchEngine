@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Common.Logger;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -41,7 +42,7 @@ public class AuthStartup(IConfiguration configuration)
     {
         services.PartialConfigureForTesting();
 
-        services.AddScoped<IDataRepository, CatalogRepository>();
+        services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Configuration;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -19,7 +20,7 @@ internal class SimpleStartup
     {
         services.PartialConfigureForTesting();
 
-        services.AddTransient<IDataRepository, CatalogRepository>();
+        services.AddTransient<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
         services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();

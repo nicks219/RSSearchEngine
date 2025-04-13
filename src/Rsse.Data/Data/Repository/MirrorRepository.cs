@@ -44,12 +44,14 @@ public class MirrorRepository(
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        _reader.Dispose();
+        _writerPrimary.Dispose();
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        throw new NotImplementedException();
+        await _reader.DisposeAsync().ConfigureAwait(false);
+        await _writerPrimary.DisposeAsync().ConfigureAwait(false);
     }
 
     // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
@@ -93,83 +95,53 @@ public class MirrorRepository(
         }
     }
 
-    public BaseCatalogContext? GetMainContext()
+    public BaseCatalogContext? GetMainContext() => _reader.GetMainContext();
+
+    public BaseCatalogContext? GetAdditionalContext() => _writerPrimary.GetMainContext();
+
+    public async Task<int> CreateNote(NoteDto note)
     {
-        throw new NotImplementedException();
+        var primary = await _writerPrimary.CreateNote(note);
+        var secondary = await _writerSecondary.CreateNote(note);
+        return primary + secondary;
     }
 
-    public BaseCatalogContext? GetAdditionalContext()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> CreateNote(NoteDto note)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IQueryable<Tuple<string, string>> ReadNote(int noteId)
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<Tuple<string, string>> ReadNote(int noteId) => _reader.ReadNote(noteId);
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
     {
-        throw new NotImplementedException();
+        // todo: можно сразу принимать IList
+        var enumerable = initialTags.ToList();
+        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, note), _writerSecondary.UpdateNote(enumerable, note));
     }
 
-    public Task<int> DeleteNote(int noteId)
+    public async Task<int> DeleteNote(int noteId)
     {
-        throw new NotImplementedException();
+        var primary = await _writerPrimary.DeleteNote(noteId);
+        var secondary = await _writerSecondary.DeleteNote(noteId);
+        return primary + secondary;
     }
 
-    public Task<List<string>> ReadStructuredTagList()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<List<string>> ReadStructuredTagList() => _reader.ReadStructuredTagList();
 
-    public Task<int> ReadNotesCount()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<int> ReadNotesCount() => _reader.ReadNotesCount();
 
-    public IQueryable<NoteEntity> ReadAllNotes()
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<NoteEntity> ReadAllNotes() => _reader.ReadAllNotes();
 
-    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags) => _reader.ReadTaggedNotes(checkedTags);
 
-    public string ReadNoteTitle(int noteId)
-    {
-        throw new NotImplementedException();
-    }
+    public string ReadNoteTitle(int noteId) => _reader.ReadNoteTitle(noteId);
 
-    public int ReadNoteId(string noteTitle)
-    {
-        throw new NotImplementedException();
-    }
+    public int ReadNoteId(string noteTitle) => _reader.ReadNoteId(noteTitle);
 
-    public IQueryable<int> ReadNoteTags(int noteId)
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<int> ReadNoteTags(int noteId) => _reader.ReadNoteTags(noteId);
 
-    public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
-    public Task<UserEntity?> GetUser(LoginDto login)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<UserEntity?> GetUser(LoginDto login) => _reader.GetUser(login);
 
     public Task CreateTagIfNotExists(string tag)
     {
-        throw new NotImplementedException();
+        return Task.WhenAll(_writerPrimary.CreateTagIfNotExists(tag), _writerSecondary.CreateTagIfNotExists(tag));
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Context;
+using SearchEngine.Data.Repository;
 
 namespace SearchEngine.Tests.Integrations.Infra;
 
@@ -35,5 +36,8 @@ public static class TestConfigurationExtensions
         services.AddDbContext<MysqlCatalogContext>(options => options.UseSqlite(connectionString));
         // для резолва CatalogRepository также регистрируем контекст postgres, но для инициализации используем Sqllite
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(connectionString));
+
+        services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
     }
 }

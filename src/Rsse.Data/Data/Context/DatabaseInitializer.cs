@@ -27,7 +27,11 @@ public abstract class DatabaseInitializer
             var mainContext = repo.GetMainContext();
             var additionalContext = repo.GetAdditionalContext();
 
-            if (mainContext == null || additionalContext == null) return;
+            if (mainContext == null || additionalContext == null)
+            {
+                logger.LogWarning("Reporter: {reporter} | Context is null", nameof(DatabaseInitializer));
+                return;
+            }
             var mainCreated = mainContext.Database.EnsureCreated();
             var additionalCreated = additionalContext.Database.EnsureCreated();
 
