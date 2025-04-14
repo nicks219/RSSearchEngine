@@ -54,12 +54,16 @@ public class MirrorRepository(
         await _writerPrimary.DisposeAsync().ConfigureAwait(false);
     }
 
+    public BaseCatalogContext? GetReaderContext() => _reader.GetReaderContext();
+
+    public BaseCatalogContext? GetPrimaryWriterContext() => _writerPrimary.GetPrimaryWriterContext();
+
     // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
     public async Task CopyDbFromMysqlToNpgsql()
     {
         // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
-        var mysqlCatalogContext = (writerPrimary as CatalogRepository<MysqlCatalogContext>).GetMainContext();
-        var npgsqlCatalogContext = (writerSecondary as CatalogRepository<NpgsqlCatalogContext>).GetMainContext();
+        var mysqlCatalogContext = (writerPrimary as CatalogRepository<MysqlCatalogContext>).GetReaderContext();
+        var npgsqlCatalogContext = (writerSecondary as CatalogRepository<NpgsqlCatalogContext>).GetReaderContext();
         if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
             throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
 
@@ -94,10 +98,6 @@ public class MirrorRepository(
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
     }
-
-    public BaseCatalogContext? GetMainContext() => _reader.GetMainContext();
-
-    public BaseCatalogContext? GetAdditionalContext() => _writerPrimary.GetMainContext();
 
     public async Task<int> CreateNote(NoteDto note)
     {

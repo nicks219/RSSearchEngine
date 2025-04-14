@@ -9,6 +9,8 @@ namespace SearchEngine.Tests.Integrations.Infra;
 
 internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {
+    internal IHost? HostInternal { get; private set; }
+
     protected override IHostBuilder CreateHostBuilder()
     {
         var builder = Host.CreateDefaultBuilder()
@@ -25,6 +27,7 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
     {
         builder.UseContentRoot(Directory.GetCurrentDirectory());
         var host = base.CreateHost(builder);
+        HostInternal = host;
         return host;
     }
 }

@@ -15,8 +15,8 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
 {
     // todo: MySQL WORK. DELETE
     Task CopyDbFromMysqlToNpgsql();
-    BaseCatalogContext? GetMainContext();
-    BaseCatalogContext? GetAdditionalContext();
+    BaseCatalogContext? GetReaderContext();
+    BaseCatalogContext? GetPrimaryWriterContext();
 
     // crud:
 

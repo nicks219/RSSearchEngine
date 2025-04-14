@@ -14,10 +14,10 @@ namespace SearchEngine.Tests.Integrations;
 /// Тесты аутентификации и авторизации.
 /// </summary>
 [TestClass]
-public class AuthTests
+public class ApiAccessControlTests
 {
     [TestMethod]
-    public async Task UnauthenticatedDeleteCall_ShouldRejected()
+    public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()
     {
         // arrange:
         var factory = new CustomWebAppFactory<AuthStartup>();
@@ -31,18 +31,20 @@ public class AuthTests
         var client = factory.CreateClient(options);
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         var response = await client.DeleteAsync(uri);
-        var status = response.ReasonPhrase;
+        var reason = response.ReasonPhrase;
         var headers = response.Headers;
+        var statusCode = (int)response.StatusCode;
 
         // assert:
-        status.Should().Be("Unauthorized");
+        statusCode.Should().Be(401);
+        reason.Should().Be("Unauthorized");
         response.Should().NotBeNull();
         var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
         shift.Value.First().Should().Be(Constants.ShiftHeaderValue);
     }
 
     [TestMethod]
-    public async Task UnauthorizedDeleteCall_ShouldBeForbidden()
+    public async Task Api_DeleteNote_ByUnauthorizedUser_Returns403()
     {
         // arrange:
         var factory = new CustomWebAppFactory<AuthStartup>();
@@ -53,7 +55,7 @@ public class AuthTests
             HandleCookies = true
         };
 
-        // act: login:
+        // act: invalid login:
         var client = factory.CreateClient(options);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
         var response = await client.GetAsync(uri);
@@ -64,17 +66,19 @@ public class AuthTests
         uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
-        var status = response.ReasonPhrase;
+        var reason = response.ReasonPhrase;
         var content = await response.Content.ReadAsStringAsync();
+        var statusCode = (int)response.StatusCode;
 
         // assert:
-        status.Should().Be("Forbidden");
+        statusCode.Should().Be(403);
+        reason.Should().Be("Forbidden");
         content.Should().NotBeNull();
         content.Should().Be("GET: access denied.");
     }
 
     [TestMethod]
-    public async Task AuthorizedDeleteCall_ShouldPass()
+    public async Task Api_DeleteNote_ByAuthorizedUser_ShouldSucceed()
     {
         // arrange:
         var factory = new CustomWebAppFactory<AuthStartup>();
@@ -85,7 +89,7 @@ public class AuthTests
             HandleCookies = true
         };
 
-        // act: login:
+        // act: valid login:
         var client = factory.CreateClient(options);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         var response = await client.GetAsync(uri);
@@ -96,9 +100,11 @@ public class AuthTests
         uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
-        var status = response.ReasonPhrase;
+        var reason = response.ReasonPhrase;
+        var statusCode = (int)response.StatusCode;
 
         // assert:
-        status.Should().Be("OK"); ;
+        statusCode.Should().Be(200);
+        reason.Should().Be("OK"); ;
     }
 }

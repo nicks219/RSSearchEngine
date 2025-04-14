@@ -11,10 +11,10 @@ using SearchEngine.Tests.Integrations.Infra;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ApiReadTests
+public class ApiSimpleTests
 {
     [TestMethod]
-    public async Task ReadNoteTitleById_ShouldPassCorrectly()
+    public async Task Api_ReadTitleByNoteId_ReturnsTitle()
     {
         // NB: для тестов скриптом создаётся SQLite бд в файле, с одной песней
 

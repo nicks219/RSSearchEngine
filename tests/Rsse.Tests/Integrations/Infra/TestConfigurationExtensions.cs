@@ -13,10 +13,10 @@ namespace SearchEngine.Tests.Integrations.Infra;
 public static class TestConfigurationExtensions
 {
     /// <summary>
-    /// Зарегистрировать контроллеры и провайдер для тестовой бд.
+    /// Зарегистрировать контроллеры и провайдеры для тестовых бд.
     /// </summary>
     /// <param name="services">коллекция служб</param>
-    internal static void PartialConfigureForTesting(this IServiceCollection services)
+    internal static void AddTestEnvironment(this IServiceCollection services)
     {
         // todo разберись почему требуется AddApplicationPart:
         // https://andrewlock.net/when-asp-net-core-cant-find-your-controller-debugging-application-parts/
@@ -30,12 +30,14 @@ public static class TestConfigurationExtensions
 
         const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
         var path = Environment.GetFolderPath(folder);
-        var dbPath = System.IO.Path.Join(path, "testing-2.db");
-        var connectionString = $"Data Source={dbPath}";
+        var dbPath = System.IO.Path.Join(path, "mysql.db");
+        var mysqlConnectionString = $"Data Source={dbPath}";
+        dbPath = System.IO.Path.Join(path, "postgres.db");
+        var npgConnectionString = $"Data Source={dbPath}";
 
-        services.AddDbContext<MysqlCatalogContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContext<MysqlCatalogContext>(options => options.UseSqlite(mysqlConnectionString));
         // для резолва CatalogRepository также регистрируем контекст postgres, но для инициализации используем Sqllite
-        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(npgConnectionString));
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();

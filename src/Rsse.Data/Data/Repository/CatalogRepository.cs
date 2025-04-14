@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -18,8 +17,8 @@ namespace SearchEngine.Data.Repository;
 public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
     // todo: MySQL WORK. DELETE
-    public BaseCatalogContext GetMainContext() => context;
-    public BaseCatalogContext GetAdditionalContext() => throw new NotImplementedException();
+    public BaseCatalogContext GetReaderContext() => context;
+    public BaseCatalogContext GetPrimaryWriterContext() => context;
 
     /// <inheritdoc/>
     // todo: MySQL WORK. DELETE

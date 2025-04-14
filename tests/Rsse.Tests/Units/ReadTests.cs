@@ -51,7 +51,7 @@ public class ReadTests
     public async Task ModelElectionTest_OnValidRequest_ShouldReturnNote()
     {
         // arrange:
-        var request = new NoteDto { TagsCheckedRequest = new List<int> { 2 } };
+        var request = new NoteDto { TagsCheckedRequest = [2] };
 
         // act:
         var response = await _readModel.GetNextOrSpecificNote(request, null, false);
@@ -65,16 +65,16 @@ public class ReadTests
     public async Task ModelElectionTest_OnInvalidRequest_ShouldReturnErrorMessageResponse()
     {
         // arrange:
-        var request = new NoteDto { TagsCheckedRequest = new List<int> { 2500 } };
+        var request = new NoteDto { TagsCheckedRequest = [2500] };
 
         // act:
         var result = await _readModel.GetNextOrSpecificNote(request);
         // ждём тестовый логер:
-        await Task.Delay(100);
+        while (!_logger.Reported) await Task.Delay(100);
 
         // asserts:
-        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.ErrorMessage);
         Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);
+        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.ErrorMessage);
     }
 
     [TestMethod]

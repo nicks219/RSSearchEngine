@@ -6,6 +6,7 @@ namespace SearchEngine.Tests.Units.Mocks;
 internal class TestLogger<TModel> : ILogger<TModel>
 {
     internal string? ErrorMessage { get; private set; } = string.Empty;
+    internal bool Reported { get; private set; }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull => throw new NotImplementedException();
 
@@ -14,5 +15,6 @@ internal class TestLogger<TModel> : ILogger<TModel>
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
     {
         ErrorMessage = state?.ToString();
+        Reported = true;
     }
 }

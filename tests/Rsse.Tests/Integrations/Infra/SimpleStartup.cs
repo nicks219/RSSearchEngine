@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Configuration;
-using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -16,12 +16,17 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// </summary>
 internal class SimpleStartup
 {
+    private static IConfiguration? _configuration;
+
+    public SimpleStartup(IConfiguration configuration) => _configuration = configuration;
+
     public static void ConfigureServices(IServiceCollection services)
     {
-        services.PartialConfigureForTesting();
+        services.AddTestEnvironment();
 
         services.AddTransient<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
+        if (_configuration != null) services.Configure<DatabaseOptions>(_configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();

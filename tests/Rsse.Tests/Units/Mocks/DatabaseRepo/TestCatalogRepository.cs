@@ -13,8 +13,8 @@ internal class TestCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.Run(() => { });
-    public BaseCatalogContext? GetMainContext() => null;
-    public BaseCatalogContext? GetAdditionalContext() => null;
+    public BaseCatalogContext? GetReaderContext() => null;
+    public BaseCatalogContext? GetPrimaryWriterContext() => null;
 
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
