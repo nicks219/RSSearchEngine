@@ -7,6 +7,7 @@ import {FunctionComponentStateWrapper} from "../common/state.handlers.tsx";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {Doms, Messages} from "../dto/doms.tsx";
 
+/** @deprecated Заменен на `CatalogContainer` */
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
     const mounted = useState(true);

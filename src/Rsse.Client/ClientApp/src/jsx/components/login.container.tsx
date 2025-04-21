@@ -6,9 +6,6 @@ import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {LoginView} from "./login.view";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
-// костыль, перенеси в контекст если нужен. из сторонних компонентов значение не поменять
-export let authorizedHack: boolean = false;
-
 export const LoginContainer = () => {
     const [style, setStyle] = useState(Doms.submitStyle);// loginButton
     const commonContext = useContext(CommonContext);
@@ -34,7 +31,6 @@ export const LoginContainer = () => {
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
         console.log(Messages.loginError);
-        authorizedHack = false;
     }
 
     const loginOk = () => {
@@ -44,13 +40,13 @@ export const LoginContainer = () => {
         // todo: SetVisible - после log out без обновления страницы стейт и dom расходятся
         // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
 
-        setStyle(Doms.submitStyleGreen);
         continueLoading();
+        setStyle(Doms.submitStyleGreen);
+
         setTimeout(() => {
             const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
             loginElement.style.display = SystemConstants.none;
         }, 1500);
-        authorizedHack = true;
     }
 
     // загружаем в компонент данные, не полученные из-за ошибки авторизации:

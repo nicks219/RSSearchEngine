@@ -89,7 +89,8 @@ export class Loader {
     // GET request: /api/controller?id=
     static async getDataById(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                              requestId: number|undefined,
-                             url: string): Promise<void> {
+                             url: string,
+                             recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getDataById exception`;
         Loader.setupDevEnvironment();
         setLoginBoxVisibility(false);
@@ -99,7 +100,7 @@ export class Loader {
                 credentials: this.corsCredentialsPolicy
                 });
 
-            await this.processResponse(response, stateWrapper, url, error);
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
         } catch {
             console.log(error);
         }

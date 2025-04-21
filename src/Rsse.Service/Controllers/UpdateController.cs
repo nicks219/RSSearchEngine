@@ -15,7 +15,7 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для обновления заметки
 /// </summary>
-[Route("api/update"), ApiController]
+[Authorize, Route("api/update"), ApiController]
 public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
     : ControllerBase
 {

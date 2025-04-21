@@ -44,7 +44,7 @@ export const setLoginBoxVisibility = (
         loginMessageElement.style.display = SystemConstants.block;
         loginElement.style.display = SystemConstants.block;
 
-        // todo: мы меняем сcs и id в dom браузера, но стейт LoginContainer компонента останется submitStyleGreen, исправь
+        // todo: мы меняем id/css в dom браузера, в обход компонента LoginContainer, его стейт останется submitStyleGreen, исправь
         // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
 
         const submitElement = loginElement.children[0];
