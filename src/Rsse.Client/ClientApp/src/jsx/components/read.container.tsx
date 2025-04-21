@@ -12,14 +12,14 @@ import {ReadSubmitButton} from "./read.submit";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 import {createPortal} from "react-dom";
 
-interface ReadContainerProps {
+export interface ButtonAnchorProps {
     buttonRef: React.RefObject<HTMLDivElement>;
 }
-interface ReadContainerParametrizedProps extends ReadContainerProps {
+interface ReadContainerParametrizedProps extends ButtonAnchorProps {
     noteId?: string;
 }
 
-export const ReadContainer = ({buttonRef}: ReadContainerProps) => {
+export const ReadContainer = ({buttonRef}: ButtonAnchorProps) => {
     const params = useParams<{ textId?: string }>();
     return <ReadContainerParametrized noteId={params.textId} buttonRef={buttonRef} />;
 }
@@ -82,8 +82,7 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
             </div>
             {props.buttonRef.current
                 && createPortal(
-                    <div><ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} /></div>,
-                    props.buttonRef.current
+                    <ReadSubmitButton stateWrapper={stateWrapper} formElement={formElement} />, props.buttonRef.current
                 )}
         </div>
     );

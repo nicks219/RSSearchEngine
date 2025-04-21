@@ -6,7 +6,7 @@
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 /** Изменить видимость контейнера с меню на противоположную, см. LoginBoxSetVisibility и hideMenu */
-export const toggleMenuVisibility = (cssProperty: string): string => {
+export const toggleContainerVisibility = (cssProperty: string): string => {
     if (cssProperty !== SystemConstants.none) {
         cssProperty = SystemConstants.none;
         (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
@@ -20,7 +20,7 @@ export const toggleMenuVisibility = (cssProperty: string): string => {
 
 /** Функционал изменения видимости контейнера с логином.
 * При проявлении компонента необходимо сохранить контест восстановления. */
-export const LoginBoxVisibility = (
+export const setLoginBoxVisibility = (
     visibility: boolean,
     stateWrapper?: FunctionComponentStateWrapper<StateTypesAlias>,
     url?: string,
@@ -43,7 +43,10 @@ export const LoginBoxVisibility = (
         const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
         loginMessageElement.style.display = SystemConstants.block;
         loginElement.style.display = SystemConstants.block;
-        // изменение css только в dom браузера, при этом стейт компонента останется submitStyleGreen:
+
+        // todo: мы меняем сcs и id в dom браузера, но стейт LoginContainer компонента останется submitStyleGreen, исправь
+        // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
+
         const submitElement = loginElement.children[0];
         submitElement.id = Doms.submitStyle;
     }

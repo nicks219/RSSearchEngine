@@ -1,4 +1,4 @@
-﻿import {LoginBoxVisibility} from "./visibility.handlers";
+﻿import {setLoginBoxVisibility} from "./visibility.handlers";
 import {
     FunctionComponentStateWrapper,
     RecoveryStateStorage,
@@ -35,7 +35,7 @@ export class Loader {
     static redirectToMenu = (url: string) => {
         const error = `${Loader.name}: redirectToMenu exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
@@ -54,7 +54,7 @@ export class Loader {
         try {
             const mounted = stateWrapper.mounted[0];
             const setComponentState = (data: StateTypesAlias) => stateWrapper.setData(data);
-            const data: StateTypesAlias = await response.json().catch(() => LoginBoxVisibility(true, stateWrapper, url, recoveryContext));
+            const data: StateTypesAlias = await response.json().catch(() => setLoginBoxVisibility(true, stateWrapper, url, recoveryContext));
 
             if (mounted) {
                 setComponentState(data);
@@ -72,7 +72,7 @@ export class Loader {
                          recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}`, {
@@ -92,7 +92,7 @@ export class Loader {
                              url: string): Promise<void> {
         const error: string = `${Loader.name}: getDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(requestId)}`, {
@@ -113,7 +113,7 @@ export class Loader {
                           recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: postData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
@@ -137,7 +137,7 @@ export class Loader {
                                 recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(
@@ -167,7 +167,7 @@ export class Loader {
             }).then(callback);
 
             if (stateWrapper !== null) {
-                LoginBoxVisibility(true, stateWrapper, url, recoveryContext);
+                setLoginBoxVisibility(true, stateWrapper, url, recoveryContext);
             }
         } catch(exception) {
             console.log(error);

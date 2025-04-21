@@ -21,6 +21,7 @@ export class Doms {
     // разберись где id а где class
     static loginName: string = "login";// id ok
     static header: string = "header";// id ok
+    static layout: string = "layout";
     static chkButton: string = "chkButton";// getall
     static msg: string = "msg";// name
     static ttl = "ttl";//

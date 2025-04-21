@@ -1,6 +1,6 @@
 ﻿import {useEffect, useReducer} from "react";
 import {NoteResponseDto} from "../dto/request.response.dto";
-import {toggleMenuVisibility} from "../common/visibility.handlers";
+import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
@@ -28,7 +28,7 @@ export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteR
     }
 
     const hideMenu = () => {
-        if (props.formElement) props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
+        if (props.formElement) props.formElement.style.display = toggleContainerVisibility(props.formElement.style.display);
         (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.block;
     }
 

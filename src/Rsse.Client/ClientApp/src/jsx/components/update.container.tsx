@@ -9,8 +9,11 @@ import {UpdateSubmitButton} from "./update.submit";
 import {UpdateCheckbox} from "./update.checkbox";
 import {UpdateNote} from "./update.note";
 import {Doms} from "../dto/doms.tsx";
+import {ButtonAnchorProps} from "./read.container";
+import {createPortal} from "react-dom";
+import {authorizedHack} from "./login.container";
 
-export const UpdateContainer = () => {
+export const UpdateContainer = ({buttonRef}: ButtonAnchorProps) => {
     const [data, setData] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setData);
@@ -49,7 +52,9 @@ export const UpdateContainer = () => {
         <div id={Doms.mainContent}>
             <form ref={castedRefObject} id={Doms.textbox}>
                 {checkboxes}
-                {data && <UpdateSubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />}
+                {data && authorizedHack && buttonRef.current && createPortal(
+                    <UpdateSubmitButton stateWrapper={stateWrapper} formElement={formElement} noteDto={data} />, buttonRef.current
+                )}
             </form>
             {data && getTextResponse(data) && <UpdateNote formElement={formElement} noteDto={data} />}
         </div>

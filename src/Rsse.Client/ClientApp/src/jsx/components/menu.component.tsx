@@ -17,7 +17,7 @@ export const App = () => {
 
     return (
         <HashRouter>
-            <div>
+            <div className={Doms.layout} >
                 <div id={Doms.header}>
                     <ul>
                         <li><NavLink to={SystemConstants.emptySegment}>Посмотреть</NavLink></li>
@@ -33,8 +33,8 @@ export const App = () => {
                             <Routes>
                                 <Route path={SystemConstants.emptySegment} element={<ReadContainer buttonRef={buttonRef}/>}/>
                                 <Route path="/read/:textId" element={<ReadContainer buttonRef={buttonRef}/>}/>
-                                <Route path={SystemConstants.updatePath} element={<UpdateContainer/>}/>
-                                <Route path={SystemConstants.createPath} element={<CreateContainer/>}/>
+                                <Route path={SystemConstants.updatePath} element={<UpdateContainer buttonRef={buttonRef}/>}/>
+                                <Route path={SystemConstants.createPath} element={<CreateContainer buttonRef={buttonRef}/>}/>
                                 <Route path={SystemConstants.catalogPath} element={<CatalogContainer/>}/>
                             </Routes>
                         </CommonContextProvider>

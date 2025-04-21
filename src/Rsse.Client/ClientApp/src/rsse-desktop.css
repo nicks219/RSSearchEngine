@@ -2,28 +2,33 @@
 /* 801px .. max, приоритетнее текст расположенный ниже по коду CSS */
 
 @media screen and (min-width: 815px) {
-    body {
+    :root {
+        --header-height: 60px;
+        --footer-height: 60px;
+    }
+    body, html {
         background-color: rgb(50, 70, 96);
         margin: 0;
+        height: 100%;
+    }
+    #root {
+        height: 100%;
+    }
+    .layout {
+        display: grid;
+        grid-template-rows: var(--header-height) 1fr var(--footer-height);
+        grid-template-columns: 1fr;
+        height: 100%;
+        overflow: hidden
     }
 
-    /* Центровка основного контейнера: заголовок + текст + теги */
-    #main {
-        max-width: 1200px;
-        margin: 6rem auto;
-    }
-
-    /* контент основного контейнера | кнопка поменять/создать */
-    #main-content #submitButton[type="checkbox"] + label {
-        position: fixed;
-        top: 1rem;
-        margin-left: -1rem;
-    }
-
-    /* Хедер: зафиксирован сверху, не перематывается и отцентрован */
+    /* хедер зафиксирован сверху, не перематывается, отцентрован */
     #header {
-        position: fixed;
-        display: flex;
+        grid-row: 1;
+        display: grid;
+
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
 
         top: 1rem;
         left: 0;
@@ -33,13 +38,47 @@
         padding-top: 1.5rem;
 
         max-height: 5rem;
-        align-items: flex-start;
         z-index: 10;
     }
 
-    /* Нижняя панель логина */
+    /* центровка основного контейнера: заголовок + текст + теги */
+    #main {
+        grid-row: 2;
+        display: block;
+        position: relative;
+        padding: 0;
+
+        max-width: 1200px;
+        margin: 3rem auto 3.5rem;
+        overflow-y: auto;
+        overflow-x: hidden
+    }
+    #main-content {
+        /*display: flex;*/
+        position: relative;
+    }
+
+    /* контент основного контейнера | кнопка поменять/создать */
+    #main-content #submitButton[type="checkbox"] + label {
+        top: 1rem;
+        margin-left: -1rem;
+    }
+
+    #footer {
+        grid-row: 3;
+    }
+    #anchors {
+        /* не участвует в раскладке grid */
+        grid-row: auto;
+    }
+
+    /* текст удаляет куски теней в чекбоксах - убери тени вообще | снизу хедера тонкая линия */
+    #noteTitle {
+        background-color: slategrey;
+    }
+
+    /* нижняя панель логина */
     #login {
-        position: fixed;
         bottom: 1rem;
         left: 0;
         right: 0;
@@ -53,11 +92,11 @@
         z-index: 10;
     }
 
-    /* Сообщение о логине */
+    /* сообщение о логине */
     #system-message {
         position: fixed;
         left: 1rem;
-        top: 6rem;
+        top: 6.5rem;
         bottom: 45rem;
         right: 1rem;
         max-width: var(--text-width);
@@ -75,11 +114,8 @@
         bottom: 1rem;
     }
 
+    /* todo: после log out все равно видна кнопка "замена" */
     #confirm-button {
-        /*position: fixed;
-        left: 37rem;
-        top: 10rem;
-        z-index: 10;*/
         position: fixed;
         max-width: var(--text-width);
         margin: 0 auto;
@@ -102,31 +138,21 @@
     }
 
     #loginButton[type="checkbox"] + label {
-        /*margin-top: 0.4rem;*/
         font-size: 1.5rem;
-        /*left: -10rem;
-        right: -10rem;*/
     }
+    /* todo: срабатывает только после обновления страницы */
     #submitStyleGreen {
-        font-size: 1.5rem;
+        /* копия из submitStyle */
+        position: absolute;
+        left: 38rem;
+        right: 1rem;
+        top: 1rem;
 
-        position: relative;
-        left: 0;
-        /*display: none;*/
-
-        /*display: none;
-        padding: 13px;
-        margin: 1px;
-        display: inline;
-        background-color: #4cff00;
-        border-radius: 2em;
-        transition: all 1s 0.1s;
-        font-weight: bold;
-        border: solid 0;*/
+        padding: 0;
+        margin: 0;
     }
-    /* Поле логина/пароля */
+    /* поля логина/пароля */
     #email, #password {
-        /*margin-right: 1rem;*/
         margin: 1rem auto;
         padding: 0.5rem;
         border: none;

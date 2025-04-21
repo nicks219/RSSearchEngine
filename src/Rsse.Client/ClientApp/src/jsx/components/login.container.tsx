@@ -1,13 +1,16 @@
 import * as React from 'react';
 import {useContext, useState} from "react";
 import {Loader} from "../common/loader";
-import {LoginBoxVisibility} from "../common/visibility.handlers";
+import {setLoginBoxVisibility} from "../common/visibility.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {LoginView} from "./login.view";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
+// костыль, перенеси в контекст если нужен. из сторонних компонентов значение не поменять
+export let authorizedHack: boolean = false;
+
 export const LoginContainer = () => {
-    const style = useState(Doms.submitStyle);// loginButton
+    const [style, setStyle] = useState(Doms.submitStyle);// loginButton
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
 
@@ -31,17 +34,23 @@ export const LoginContainer = () => {
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
         console.log(Messages.loginError);
+        authorizedHack = false;
     }
 
     const loginOk = () => {
         document.cookie = 'rsse_auth = true';
         console.log(Messages.loginOk);
-        style[1](Doms.submitStyleGreen);
+
+        // todo: SetVisible - после log out без обновления страницы стейт и dom расходятся
+        // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
+
+        setStyle(Doms.submitStyleGreen);
         continueLoading();
         setTimeout(() => {
             const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
             loginElement.style.display = SystemConstants.none;
         }, 1500);
+        authorizedHack = true;
     }
 
     // загружаем в компонент данные, не полученные из-за ошибки авторизации:
@@ -79,8 +88,8 @@ export const LoginContainer = () => {
             }
         }
 
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
     }
 
-    return(<LoginView id={style[0]} onClick={onSubmit} />)
+    return(<LoginView id={style} onClick={onSubmit} />)
 }

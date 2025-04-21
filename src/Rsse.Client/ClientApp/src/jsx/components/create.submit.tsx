@@ -165,7 +165,7 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
             <label htmlFor={Doms.submitButton} onClick={submit}>Создать</label>
             <div id={Doms.cancelButton}>
                 <input type={Doms.checkbox} id={Doms.submitButtonDuplicate} className={Doms.regularCheckbox}/>
-                <label htmlFor={Doms.submitButton} onClick={cancel}>Отменить</label>
+                <label htmlFor={Doms.submitButton} onClick={cancel}>Отмена</label>
             </div>
         </div>
     );
