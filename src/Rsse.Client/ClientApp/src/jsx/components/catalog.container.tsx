@@ -4,7 +4,7 @@ import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
-import {RecoveryContext} from "../common/context.provider";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";
 import {Dialog} from "../common/dialog.component.tsx";
 import {Doms, Messages} from "../dto/doms.tsx";
@@ -15,6 +15,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
     const recoveryContext = useContext(RecoveryContext);
+    const commonContext = useContext(CommonContext);
 
     const [dialog, setDialog] = useState<ReactNode|null>(null);
 
@@ -68,6 +69,9 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         e.preventDefault();
 
         document.cookie = 'rsse_auth = false';
+        localStorage.setItem('isAuth', 'false');
+        commonContext.stringState?.(Doms.submitStyle);
+
         let callback = (response: Response) => response.ok ? console.log(Messages.logoutOk) : console.log(Messages.logoutErr);
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }

@@ -114,7 +114,6 @@
         bottom: 1rem;
     }
 
-    /* todo: после log out все равно видна кнопка "замена" */
     #confirm-button {
         position: fixed;
         max-width: var(--text-width);
@@ -140,7 +139,7 @@
     #loginButton[type="checkbox"] + label {
         font-size: 1.5rem;
     }
-    /* todo: срабатывает только после обновления страницы */
+
     #submitStyleGreen {
         /* копия из submitStyle */
         position: absolute;

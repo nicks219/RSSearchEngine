@@ -13,6 +13,7 @@ export class Loader {
     static catalogUrl: string = "/api/catalog";
     static loginUrl: string = "/account/login";
     static logoutUrl: string = "/account/logout";
+    static checkAuth: string = "/account/check";
     static complianceIndicesUrl: string = "/api/compliance/indices";
 
     static migrationCreateUrl: string = "/migration/create";
@@ -159,7 +160,7 @@ export class Loader {
                                   callback: (v: Response) => Response|PromiseLike<Response>|void,
                                   stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>|null,
                                   recoveryContext?: RecoveryStateStorage<StateTypesAlias>): void {
-        const error: string = `${Loader.name}: FnF or login/logout exception`;
+        const error: string = `${Loader.name}: FnF or login/logout/check exception`;
         Loader.setupDevEnvironment();
 
         try {

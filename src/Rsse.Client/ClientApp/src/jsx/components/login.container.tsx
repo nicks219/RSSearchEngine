@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {Loader} from "../common/loader";
 import {setLoginBoxVisibility} from "../common/visibility.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
@@ -7,12 +7,25 @@ import {LoginView} from "./login.view";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
 export const LoginContainer = () => {
-    const [style, setStyle] = useState(Doms.submitStyle);// loginButton
+    const [style, setStyle] = useState(Doms.submitStyle);
+
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
 
+    commonContext.stringState = setStyle;
+
     const loginElement = document.getElementById(Doms.loginName) as HTMLElement ?? document.createElement(Doms.loginName);
     loginElement.style.display = SystemConstants.block;
+
+    useEffect(() => {
+        onMount();
+        return;
+    }, []);
+
+    const onMount = () => {
+        let callback = (response: Response) => response.ok ? loginOk() : loginErr();
+        Loader.fireAndForgetWithQuery(Loader.checkAuth, "", callback, null);
+    }
 
     const onSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -31,26 +44,28 @@ export const LoginContainer = () => {
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
         console.log(Messages.loginError);
+        localStorage.setItem('isAuth', 'false');
     }
 
     const loginOk = () => {
         document.cookie = 'rsse_auth = true';
         console.log(Messages.loginOk);
+        localStorage.setItem('isAuth', 'true');
 
         // todo: SetVisible - после log out без обновления страницы стейт и dom расходятся
         // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
 
-        continueLoading();
+        continueLoadingAfterLogin();
         setStyle(Doms.submitStyleGreen);
 
         setTimeout(() => {
             const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
-            loginElement.style.display = SystemConstants.none;
+            if (loginElement) loginElement.style.display = SystemConstants.none;
         }, 1500);
     }
 
     // загружаем в компонент данные, не полученные из-за ошибки авторизации:
-    const continueLoading = () => {
+    const continueLoadingAfterLogin = () => {
         const stateWrapper = recoveryContext.recoveryStateWrapper;
 
         // TODO: замени на свич
@@ -87,5 +102,6 @@ export const LoginContainer = () => {
         setLoginBoxVisibility(false);
     }
 
+    // return(localStorage.getItem('isAuth') === 'false' && <LoginView id={style} onClick={onSubmit} />)
     return(<LoginView id={style} onClick={onSubmit} />)
 }

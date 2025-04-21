@@ -39,16 +39,20 @@ export const setLoginBoxVisibility = (
             recoveryContext.recoveryString = url;
         }
 
+        if (localStorage.getItem('isAuth') === 'true') return;
+
         const loginMessageElement = document.getElementById(Doms.systemMessageId) as HTMLElement;
         const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
-        loginMessageElement.style.display = SystemConstants.block;
-        loginElement.style.display = SystemConstants.block;
+        if (loginMessageElement) loginMessageElement.style.display = SystemConstants.block;
+        if (loginElement) {
+            loginElement.style.display = SystemConstants.block;
 
-        // todo: мы меняем id/css в dom браузера, в обход компонента LoginContainer, его стейт останется submitStyleGreen, исправь
-        // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
+            // todo: мы меняем id/css в dom браузера, в обход компонента LoginContainer, его стейт останется submitStyleGreen, исправь
+            // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
 
-        const submitElement = loginElement.children[0];
-        submitElement.id = Doms.submitStyle;
+            const submitElement = loginElement.children[0];
+            if (submitElement) submitElement.id = Doms.submitStyle;
+        }
     }
 
     if (visibility) {
