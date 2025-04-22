@@ -1,0 +1,152 @@
+/* 815px .. max, приоритетнее текст расположенный ниже по коду CSS */
+
+@media screen and (min-width: 815px) {
+    body, html {
+        background-color: rgb(50, 70, 96);
+    }
+
+    .layout {
+        display: grid;
+        grid-template-rows: var(--header-height) 1fr var(--footer-height);
+        grid-template-columns: 1fr;
+        height: 100%;
+        overflow: hidden
+    }
+
+    #header {
+        grid-row: 1;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+
+        position: relative;
+        padding-top: 1.4rem;
+
+        top: 1rem;
+        left: 0;
+        margin: 0 auto;
+
+        background-color: slategrey;
+    }
+
+    #main {
+        grid-row: 2;
+        display: block;
+        position: relative;
+        padding: 0;
+
+        max-width: 1200px;
+        margin: 2.5rem auto 0;
+        overflow-y: auto;
+        overflow-x: hidden
+    }
+    #main-content {
+        position: relative;
+    }
+
+    #main-content #submitButton[type="checkbox"] + label {
+        /*top: 1rem;*/
+        /*margin-left: -1rem;*/
+    }
+
+    #footer {
+        grid-row: 3;
+    }
+    #anchors {
+        /* не участвует в раскладке grid */
+        grid-row: auto;
+    }
+
+    #noteTitle {
+        background-color: slategrey;
+    }
+
+    #login {
+        display: block;
+
+        bottom: 2.5rem;
+        left: 0;
+        right: 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0.5rem 1rem;
+        background-color: rgb(64, 80, 96);
+    }
+
+    #system-message {
+        position: fixed;
+        left: 1rem;
+        top: 6.5rem;
+        bottom: 45rem;
+        right: 1rem;
+        max-width: var(--text-width);
+        margin: 0 auto;
+        height: 3rem;
+
+        z-index: 5;
+        text-align: center;
+    }
+
+    #system-message h1 {
+        position: relative;
+        font-weight: bold;
+        font-size: 2rem;
+        bottom: 1rem;
+    }
+
+    #confirm-button {
+        position: fixed;
+        max-width: var(--text-width);
+        margin: 0 auto;
+
+        left: 0;
+        right: 0;
+        top: 0;
+    }
+
+    /* поиск */
+    #submitStyle {
+        position: absolute;
+        left: 38rem;
+        right: 1rem;
+        top: 0.85rem;
+    }
+
+    #loginButton[type="checkbox"] + label {
+        font-size: 1.5rem;
+    }
+
+    #submitStyleGreen {
+        /* копия из submitStyle */
+        position: absolute;
+        left: 38rem;
+        right: 1rem;
+        top: 1rem;
+
+        background-color: rgb(50, 70, 96);
+        padding: 0;
+        margin: 0;
+    }
+
+    #email, #password {
+        margin: 1rem auto;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+        position: relative;
+        z-index: 10;
+    }
+
+    #submitButton[type="checkbox"] + label {
+        position: relative;
+        display: inline-block;
+        margin-top: 0.4rem;
+        z-index: 10;
+    }
+
+    .dialog {
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+    }
+}

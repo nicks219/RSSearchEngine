@@ -5,7 +5,9 @@ import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.handlers.tsx";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
+import {Doms, Messages} from "../dto/doms.tsx";
 
+/** @deprecated Заменен на `CatalogContainer` */
 export const CatalogView = (): JSX.Element|undefined => {
     const [data, setData] = useState<CatalogResponseDto|null>(null);
     const mounted = useState(true);
@@ -51,7 +53,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
         document.cookie = 'rsse_auth = false';
-        let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
+        let callback = (response: Response) => response.ok ? console.log(Messages.logoutOk) : console.log(Messages.logoutErr);
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }
 
@@ -78,7 +80,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     // работа с дампами:
     if (data.res && commonContext.componentMode === 1) {
         notes.push(
-            <tr key={"song "} className="bg-warning">
+            <tr key={Doms.songWithSpace} className={Doms.bgWarning}>
                 <td></td>
                 <td>{data.res}</td>
             </tr>);
@@ -100,7 +102,7 @@ export const CatalogView = (): JSX.Element|undefined => {
     else if (notesArray) {
         for (let index = 0; index < notesArray.length; index++) {
             notes.push(
-                <tr key={"song " + index} className="bg-warning">
+                <tr key={Doms.songWithSpace + index} className={Doms.bgWarning}>
                     <td></td>
                     <td>
                         <button className="btn btn-outline-light" id={notesArray[index].item2}
@@ -118,24 +120,24 @@ export const CatalogView = (): JSX.Element|undefined => {
     }
 
     return (
-        <div className="row" id="renderContainer">
+        <div className={Doms.row} id={Doms.mainContent}>
             <p style={{marginLeft: 12 + '%'}}>
                 Всего песен: {getNotesCount(data)} &nbsp;
                 Страница: {getPageNumber(data)} &nbsp;
             </p>
             <p></p>
             <p></p>
-            <table className="table" id="catalogTable">
-                <thead className="thead-dark ">
+            <table className={Doms.table} id={Doms.catalogTable}>
+                <thead className={Doms.theadDarkWithSpace}>
                 <tr>
                     <th></th>
                     <th>
                         <form>
-                            <button id="js-nav-1" className="btn btn-info" onClick={onClick}>
+                            <button id="js-nav-1" className={Doms.btnBtnInfo} onClick={onClick}>
                                 &lt;Назад
                             </button>
                             &nbsp;
-                            <button id="js-nav-2" className="btn btn-info" onClick={onClick}>
+                            <button id="js-nav-2" className={Doms.btnBtnInfo} onClick={onClick}>
                                 Вперёд&gt;
                             </button>
                             &nbsp;

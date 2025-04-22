@@ -11,8 +11,11 @@ import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {CreateNote} from "./create.note";
 import {CreateSubmitButton} from "./create.submit";
 import {CreateCheckbox} from "./create.checkbox";
+import {Doms} from "../dto/doms.tsx";
+import {ButtonAnchorProps} from "./read.container";
+import {createPortal} from "react-dom";
 
-export const CreateContainer = () => {
+export const CreateContainer = ({buttonRef}: ButtonAnchorProps) => {
     const [data, setState] = useState<NoteResponseDto|null>(null);
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
@@ -79,12 +82,13 @@ export const CreateContainer = () => {
 
     const castedRefObject = refObject as React.LegacyRef<HTMLFormElement>|undefined;
     return (
-        <div id="renderContainer">
+        <div id={Doms.mainContent}>
             <form ref={castedRefObject}
-                  id="textbox">
+                  id={Doms.textbox}>
                 {checkboxes}
-                {/** stateWrapper={stateWrapper} дублируются для SubmitButton (изначально) и Checkbox (перенесены из SubmitButton): */}
-                {data && <CreateSubmitButton formElement={formElement} stateWrapper={stateWrapper} />}
+                {data && buttonRef.current && createPortal(
+                    <CreateSubmitButton formElement={formElement} stateWrapper={stateWrapper} />, buttonRef.current
+                )}
             </form>
             {data && <CreateNote noteDto={data} />}
         </div>

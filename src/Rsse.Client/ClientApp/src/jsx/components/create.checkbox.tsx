@@ -4,10 +4,11 @@ import {NoteResponseDto} from "../dto/request.response.dto";
 import {CommonContext} from "../common/context.provider";
 import {getStructuredTagsListResponse, getTagCheckedUncheckedResponse} from "../common/dto.handlers";
 import {ComponentMode} from "../common/state.handlers";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 export const CreateCheckbox = (props: {noteDto: NoteResponseDto, id: string, onClick: Dispatch<SetStateAction<NoteResponseDto|null>>}) => {
     const commonContext = useContext(CommonContext);
-    const isChecked = getTagCheckedUncheckedResponse(props) === "checked";
+    const isChecked = getTagCheckedUncheckedResponse(props) === SystemConstants.checked;
 
     const getTagName = (i: number) => {
         return getStructuredTagsListResponse(props.noteDto)[i];
@@ -40,9 +41,9 @@ export const CreateCheckbox = (props: {noteDto: NoteResponseDto, id: string, onC
     }
 
     return (
-        <div id="checkboxStyle">
-            <input name="chkButton" value={props.id} type="checkbox" id={props.id}
-                   className="regular-checkbox"
+        <div id={Doms.checkboxStyle}>
+            <input name={Doms.chkButton} value={props.id} type={Doms.checkbox} id={props.id}
+                   className={Doms.regularCheckbox}
                    defaultChecked={isChecked}/>
             <label htmlFor={props.id}
                    onClick={loadNoteOnClick}

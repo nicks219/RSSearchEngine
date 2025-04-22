@@ -4,6 +4,7 @@ import {App} from "../components/menu.component";
 import {act} from "@testing-library/react";
 import {createRoot} from "react-dom/client";
 import {waitFor} from "@testing-library/dom";
+import {Messages, SystemConstants} from "../dto/doms";
 
 let container = null;
 let root = null;
@@ -59,10 +60,10 @@ describe('Menu Router component tests', () => {
 describe('Menu Navigate tests', () => {
     // https://vitest.dev/api/#test-each
     it.each([
-        ["Каталог","#/catalog"],
-        ["Посмотреть","#/"],
-        ["Поменять","#/update"],
-        ["Создать","#/create"]
+        ["Каталог","#" + SystemConstants.catalogPath],
+        ["Посмотреть","#" + SystemConstants.emptySegment],
+        ["Поменять","#" + SystemConstants.updatePath],
+        ["Создать","#" + SystemConstants.createPath],
     ])
     ('click on menu item should causes href changes', (menuItemName, uriExpected) => {
         // arrange: real rendering
@@ -88,10 +89,10 @@ describe('Menu Navigate tests', () => {
 describe('Login Button tests', () => {
     // https://vitest.dev/api/#test-each
     it.each([
-        ["Войти", true, "Login ok."],
-        ["Войти", false, "Login error."]
+        [true, Messages.loginOk],
+        [false, Messages.loginError]
     ])
-    ('Login button click causes console message', async (itemName, response, expected) => {
+    ('Login button click causes console message', async (response, expected) => {
         // arrange:
         const fakeResponse = {ok: response};
         vi.spyOn(global, "fetch").mockImplementation(() => Promise.resolve(fakeResponse))
@@ -120,3 +121,6 @@ describe('Login Button tests', () => {
         expect(message).toBe(expected);
     })
 })
+
+// пиши тест на recovery либо на провайдеры контекста: "прерванная загрузка должна продолжаться после авторизации"
+// то есть: login.container должен получать в useContext сохраненный в любом компоненте контекст и после loginOk использовать его в continueLoading

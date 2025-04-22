@@ -5,6 +5,11 @@ import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto";
 /** Глобальный общий стейт с начальной инициализацией некоторых полей */
 export class CommonStateStorage {
 
+    /** Способ вызвать перерисовку компонента авторизации */
+    private _stringState: React.Dispatch<SetStateAction<string>>|null = null;
+    public get stringState(): React.Dispatch<SetStateAction<string>>|null {return this._stringState}
+    public set stringState(value: React.Dispatch<SetStateAction<string>>) {this._stringState = value;}
+
     /** Используется для передачи идентификатора заметки между компонентами */
     private _commonNumber: number = 0;
     public get commonNumber() {return this._commonNumber};
