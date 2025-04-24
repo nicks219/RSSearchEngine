@@ -40,6 +40,7 @@ public class MigrationController(
         try
         {
             await repo.CopyDbFromMysqlToNpgsql();
+            tokenizer.Initialize();
         }
         catch (Exception exception)
         {
