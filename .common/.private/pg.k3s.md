@@ -1,19 +1,19 @@
-Манифест для развертывания PostgreSQL в k3s, аналогичный моему MySQL-развертыванию:
+### манифест для развертывания postgres в k3s, аналогичный моему развертыванию mysql:
 
-1. Сначала создадим ConfigMap с базовой конфигурацией PostgreSQL:
+1. cоздадим ConfigMap с базовой конфигурацией postgres:
 
 ```bash
 kubectl create configmap postgres-config --from-file=main-config=postgresql.conf -n default
 ```
 
-Содержимое файла `postgresql.conf`:
+содержимое файла `postgresql.conf`:
 ```conf
 listen_addresses = '*'
 port = 5432
 max_connections = 100
 ```
 
-2. Манифест для развертывания PostgreSQL (`postgres-resource.yaml`):
+2. манифест для развертывания postgres (`postgres-resource.yaml`):
 
 ```yaml
 ---
@@ -67,7 +67,7 @@ spec:
         kubernetes.io/hostname: nick2192.fvds.ru
       containers:
         - name: postgres
-          image: postgres:15-alpine
+          image: postgres:17.4-alpine3.21
           imagePullPolicy: Always
           ports:
             - name: postgres
@@ -85,7 +85,7 @@ spec:
               value: "1"
             - name: POSTGRES_DB
               value: "tagit"
-            - name: PGDATA
+            - name: PGDATA # задаётся в докерфайле образа: https://github.com/docker-library/postgres/blob/cc254e85ed86e1f8c9052f9cbf0e3320324f0421/17/alpine3.21/Dockerfile#L197
               value: "/var/lib/postgresql/data/pgdata"
       volumes:
         - name: postgres-config-volume
@@ -99,21 +99,19 @@ spec:
             claimName: postgres-pvc
 ```
 
-3. Применяем манифест:
+3. применим манифест:
 ```bash
 kubectl apply -f postgres-resource.yaml
 ```
 
-Основные отличия от MySQL-развертывания:
-1. Используется образ `postgres:15-alpine` (можно заменить на другой тег)
-2. Порт изменен на 5432 (стандартный для PostgreSQL)
-3. Переменные окружения используют префикс POSTGRES_ вместо MYSQL_
-4. Добавлена переменная PGDATA для указания пути к данным
-5. Конфигурационный файл монтируется в другое место
+основные отличия от mysql-развертывания, разберись в актуальности:
+1. добавлена переменная PGDATA для указания пути к данным
+2конфигурационный файл монтируется в другое место
 
-После развертывания PostgreSQL будет доступен по адресу `postgres.default.svc.cluster.local` (или просто `postgres` внутри кластера) на порту 5432.
+соответственно, после развертывания postgres будет доступен по адресу `postgres.default.svc.cluster.local` - 
+или просто `postgres` внутри кластера - на порту 5432.
 
-Для подключения используем строку подключения:
+для подключения используем строку подключения:
 ```
 Host=postgres;Port=5432;Database=tagit;Username=1;Password=1
 ```

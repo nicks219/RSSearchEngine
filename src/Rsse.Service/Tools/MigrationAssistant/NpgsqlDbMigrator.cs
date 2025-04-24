@@ -4,6 +4,7 @@ using System.IO.Compression;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using SearchEngine.Data.Repository.Scripts;
+using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
@@ -29,6 +30,8 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     /// <inheritdoc/>
     public string Create(string? fileName)
     {
+        Log.Information("pg migrator on create");
+
         var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
 
         // файлы с версиями являются "историей" дампов, создание дампа также может запросить CreateNoteAndDumpAsync
@@ -119,6 +122,8 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     /// <inheritdoc/>
     public string Restore(string? fileName)
     {
+        Log.Information("pg migrator on restore");
+
         var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
 
         var version = _version - 1;
@@ -152,10 +157,17 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
 
             connection.Open();
 
-            using var cmd = connection.CreateCommand();
-            cmd.Connection = connection;
-            cmd.CommandText = allTablesDdl;
-            var rows = cmd.ExecuteNonQuery();
+            // завязываемся на настройках
+            var createTablesOnPgMigration = configuration.GetValue<bool>("DatabaseOptions:CreateTablesOnPgMigration");
+            var rows = 0;
+            if (createTablesOnPgMigration)
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.Connection = connection;
+                cmd.CommandText = allTablesDdl;
+                rows = cmd.ExecuteNonQuery();
+            }
+            Log.Debug("pg restore apply ddl : '{createTable}' | rows affected: '{rows}'", createTablesOnPgMigration, rows);
 
             using (var notesWriter =
                    connection.BeginTextImport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") FROM STDIN"))

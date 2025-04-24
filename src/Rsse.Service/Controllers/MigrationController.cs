@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common.Auth;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -16,10 +18,9 @@ namespace SearchEngine.Controllers;
 /// <summary>
 /// Контроллер для работы с миграциями бд
 /// </summary>
-//[Authorize, Route("migration"), ApiController]
+[Authorize, Route("migration"), ApiController]
 public class MigrationController(
     ILogger<MigrationController> logger,
-    // IDbMigrator migrator,
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
     // todo: MySQL WORK. DELETE
@@ -76,7 +77,7 @@ public class MigrationController(
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet("restore")]
-    //[Authorize(Constants.FullAccessPolicyName)]
+    [Authorize(Constants.FullAccessPolicyName)]
     public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
     {
         var migrator = GetMigrator(databaseType);

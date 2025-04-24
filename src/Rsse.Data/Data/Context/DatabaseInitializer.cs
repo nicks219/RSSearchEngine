@@ -24,22 +24,22 @@ public abstract class DatabaseInitializer
 
         try
         {
-            var mainContext = repo.GetReaderContext();
-            var additionalContext = repo.GetPrimaryWriterContext();
+            var readerContext = repo.GetReaderContext();
+            var primaryWriterContext = repo.GetPrimaryWriterContext();
 
-            if (mainContext == null || additionalContext == null)
+            if (readerContext == null || primaryWriterContext == null)
             {
                 logger.LogWarning("Reporter: {reporter} | No context(s) provided", nameof(DatabaseInitializer));
                 return;
             }
-            var mainCreated = mainContext.Database.EnsureCreated();
-            var additionalCreated = additionalContext.Database.EnsureCreated();
+            var readerCreated = readerContext.Database.EnsureCreated();
+            var writerCreated = primaryWriterContext.Database.EnsureCreated();
 
-            SeedDatabase(mainContext, mainCreated);
-            SeedDatabase(additionalContext, additionalCreated);
+            SeedDatabase(readerContext, readerCreated);
+            SeedDatabase(primaryWriterContext, writerCreated);
 
             logger.LogInformation("[{name}] finished with results: {firstResult} - {secondResult}",
-                nameof(CreateAndSeed), mainCreated, additionalCreated);
+                nameof(CreateAndSeed), readerCreated, writerCreated);
         }
         catch (Exception ex)
         {

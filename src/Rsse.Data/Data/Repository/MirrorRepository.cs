@@ -11,14 +11,6 @@ using SearchEngine.Data.Repository.Exceptions;
 
 namespace SearchEngine.Data.Repository;
 
-public class DatabaseOptions
-{
-    /// <summary>
-    /// Выбор бд для чтения.
-    /// </summary>
-    public DatabaseType MainContext { get; set; }
-}
-
 /// <summary>
 /// Репозиторий для доступа к двум базам данных на время миграции (читаем из одной, пишем в обе).
 /// </summary>
@@ -32,8 +24,8 @@ public class MirrorRepository(
     CatalogRepository<NpgsqlCatalogContext> writerSecondary)
     : IDataRepository
 {
-    // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
-    private readonly IDataRepository _reader = options.Value.MainContext switch
+    // выбор контеста для чтения, завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
+    private readonly IDataRepository _reader = options.Value.ReaderContext switch
     {
         DatabaseType.Postgres => reader as CatalogRepository<NpgsqlCatalogContext>,
         DatabaseType.MySql => writerPrimary as CatalogRepository<MysqlCatalogContext>,
@@ -80,6 +72,7 @@ public class MirrorRepository(
             // notes, tags, relations:
             await npgsqlCatalogContext.Notes!.AddRangeAsync(notes);
 
+            // users:
             await npgsqlCatalogContext.Users!.AddRangeAsync(users);
 
             await npgsqlCatalogContext.SaveChangesAsync();

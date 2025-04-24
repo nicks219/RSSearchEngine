@@ -76,14 +76,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
 
-        var mysqlConnectionString = GetConnectionString();
-        var npgsqlConnectionString = configuration.GetConnectionString(AdditionalConnectionKey);
+        var mysqlConnectionString = GetDefaultConnectionString();
+        var npgsqlConnectionString = GetAdditionalConnectionString();
         if (string.IsNullOrEmpty(mysqlConnectionString) || string.IsNullOrEmpty(npgsqlConnectionString))
         {
             throw new NullReferenceException("Invalid connection string");
         }
 
-        // docker run --name npgsql -p 5432:5432 -e POSTGRES_PASSWORD=1 -e POSTGRES_USER=1 -e POSTGRES_DB=tagit -d postgres:16-alpine
         services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
         services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
@@ -193,7 +192,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 
-    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+    private string? GetDefaultConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+    private string? GetAdditionalConnectionString() => configuration.GetConnectionString(AdditionalConnectionKey);
 
     private static void AddLogging(ILoggerFactory loggerFactory)
     {
@@ -208,7 +208,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());
         logger.LogInformation("Development: {IsDev}", isDevelopment);
         logger.LogInformation("Production: {IsProd}", isProduction);
-        logger.LogInformation("Connection string: {ConnectionString}", GetConnectionString());
+        logger.LogInformation("Default connection string: {ConnectionString}", GetDefaultConnectionString());
+        logger.LogInformation("Additional connection string: {ConnectionString}", GetAdditionalConnectionString());
         logger.LogInformation("Server GC: {IsServer}", GCSettings.IsServerGC);
         logger.LogInformation("CPU: {Cpus}", Environment.ProcessorCount);
     }

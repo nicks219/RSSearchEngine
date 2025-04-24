@@ -73,7 +73,7 @@ public class ReadTests
         while (!_logger.Reported) await Task.Delay(100);
 
         // asserts:
-        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);
+        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);// todo: result нестабилен на ci/cd, разберись
         Assert.AreEqual(ModelMessages.ElectNoteError, _logger.ErrorMessage);
     }
 

@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
@@ -17,6 +18,8 @@ internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
     /// <inheritdoc/>
     public string Create(string? fileName)
     {
+        Log.Information("mysql migrator on create");
+
         var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var fileWithPath = string.IsNullOrEmpty(fileName)
@@ -51,6 +54,8 @@ internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
     /// <inheritdoc/>
     public string Restore(string? fileName)
     {
+        Log.Information("mysql migrator on restore");
+
         var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var version = _version - 1;
