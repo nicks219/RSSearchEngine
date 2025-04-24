@@ -93,7 +93,7 @@ public class MirrorRepository(
         }
         catch (Exception ex)
         {
-            // Include Error Detail:
+            // include error detail:
             await transaction.RollbackAsync();
             Console.WriteLine(ex.Message);
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
@@ -111,9 +111,10 @@ public class MirrorRepository(
 
     public async Task<int> CreateNote(NoteDto note)
     {
-        var primary = await _writerPrimary.CreateNote(note);
+        _ = await _writerPrimary.CreateNote(note);
+        // secondary: CatalogRepository<NpgsqlCatalogContext>
         var secondary = await _writerSecondary.CreateNote(note);
-        return primary + secondary;
+        return secondary;
     }
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId) => _reader.ReadNote(noteId);
@@ -127,9 +128,10 @@ public class MirrorRepository(
 
     public async Task<int> DeleteNote(int noteId)
     {
-        var primary = await _writerPrimary.DeleteNote(noteId);
+        _ = await _writerPrimary.DeleteNote(noteId);
+        // secondary: CatalogRepository<NpgsqlCatalogContext>
         var secondary = await _writerSecondary.DeleteNote(noteId);
-        return primary + secondary;
+        return secondary;
     }
 
     public Task<List<string>> ReadStructuredTagList() => _reader.ReadStructuredTagList();
