@@ -21,6 +21,7 @@
     <ItemGroup>
         <PackageReference Include="MySqlBackup.NET" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
     </ItemGroup>
     <ItemGroup Label="Observability">
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />

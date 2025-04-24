@@ -60,6 +60,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
+            swaggerGenOptions.EnableAnnotations();
             swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment, new Microsoft.OpenApi.Models.OpenApiInfo
             {
                 Title = Constants.SwaggerTitle,

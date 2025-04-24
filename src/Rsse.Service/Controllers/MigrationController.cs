@@ -12,6 +12,7 @@ using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
 using static SearchEngine.Common.ControllerMessages;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SearchEngine.Controllers;
 
@@ -19,6 +20,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер для работы с миграциями бд
 /// </summary>
 [Authorize, Route("migration"), ApiController]
+[SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
     ILogger<MigrationController> logger,
     IEnumerable<IDbMigrator> migrators,
@@ -32,7 +34,8 @@ public class MigrationController(
     /// <returns></returns>
     // todo: MySQL WORK. DELETE
     [HttpGet("copy")]
-    public async Task<IActionResult> CopyDatabase()
+    [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
+    public async Task<IActionResult> CopyFromMySqlToPostgres()
     {
         try
         {
@@ -40,7 +43,7 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyDatabase)} error";
+            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyFromMySqlToPostgres)} error";
             logger.LogError(exception, copyError);
             return BadRequest(copyError);
         }
