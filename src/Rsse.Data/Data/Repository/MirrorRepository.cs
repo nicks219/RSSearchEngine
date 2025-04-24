@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
@@ -59,10 +60,11 @@ public class MirrorRepository(
         if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
             throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
 
-        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения:
+        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
         var notes = mysqlCatalogContext.Notes!.Select(note => note).ToList();
-        _ = mysqlCatalogContext.TagsToNotesRelation!.Select(relation => relation).ToList();
-        _ = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
+        var tags = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
+        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation!.Select(relation => relation).ToList();
+
         var users = mysqlCatalogContext.Users!.Select(user => user).ToList();
 
         await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync();
@@ -71,11 +73,17 @@ public class MirrorRepository(
         {
             // notes, tags, relations:
             await npgsqlCatalogContext.Notes!.AddRangeAsync(notes);
+            await npgsqlCatalogContext.Tags!.AddRangeAsync(tags);
+            await npgsqlCatalogContext.TagsToNotesRelation!.AddRangeAsync(tagsToNotes);
 
             // users:
+            await npgsqlCatalogContext.Users!.ExecuteDeleteAsync();
             await npgsqlCatalogContext.Users!.AddRangeAsync(users);
 
             await npgsqlCatalogContext.SaveChangesAsync();
+
+            // мы заполнили значение ключей "вручную" и EF не изменил identity
+            await SetVals(npgsqlCatalogContext);
 
             await transaction.CommitAsync();
         }
@@ -90,6 +98,15 @@ public class MirrorRepository(
             Console.WriteLine(ex.Message);
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
+    }
+
+    // <summary/> выставить актуальные значения ключей
+    private static async Task SetVals(BaseCatalogContext dbContext)
+    {
+        var noteRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""");
+        var tagRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""");
+        var userRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));""");
+        Console.WriteLine($"repo set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
     }
 
     public async Task<int> CreateNote(NoteDto note)

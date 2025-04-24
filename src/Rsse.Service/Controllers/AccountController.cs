@@ -49,7 +49,7 @@ public class AccountController(
         }
 
         var loginDto = new LoginDto(Email: email, Password: password);
-        var response = await Login(loginDto);
+        var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
 
@@ -80,12 +80,12 @@ public class AccountController(
     /// Вход в систему, аутентификация на основе кук
     /// </summary>
     /// <param name="loginDto">данные для авторизации</param>
-    private async Task<string> Login(LoginDto loginDto)
+    private async Task<string> TryLogin(LoginDto loginDto)
     {
         using var scope = serviceScopeFactory.CreateScope();
         try
         {
-            var identity = await new LoginModel(scope).SignIn(loginDto);
+            var identity = await new LoginModel(scope).TrySignInWith(loginDto);
 
             if (identity == null)
             {

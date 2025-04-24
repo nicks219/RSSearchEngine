@@ -43,6 +43,8 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
             ? Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_backup_.txt")
             : Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
 
+        Directory.CreateDirectory(ArchiveTempDirectory);
+
         if (IsCreateDumpMode(fileName))
         {
             _version = (_version + 1) % MaxVersion;
@@ -186,6 +188,9 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
                 tagToNotesWriter.Write(allTagToNotes);
             }
 
+            // todo: это точно необходимо?
+            SetVals(connection);
+
             connection.Close();
         }
         finally
@@ -194,5 +199,21 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         }
 
         return sourceArchiveFileName;
+    }
+
+    // <summary/> выставить актуальные значения ключей
+    private static void SetVals(NpgsqlConnection connection)
+    {
+        var commands = new List<string>
+        {
+            """SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""",
+            """SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""",
+            """SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));"""
+        };
+        foreach (var command in commands)
+        {
+            using var cmd = new NpgsqlCommand(command, connection);
+            cmd.ExecuteNonQuery();
+        }
     }
 }

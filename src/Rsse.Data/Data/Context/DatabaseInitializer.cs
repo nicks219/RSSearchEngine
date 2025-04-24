@@ -64,16 +64,16 @@ public abstract class DatabaseInitializer
             case "Npgsql.EntityFrameworkCore.PostgreSQL":
                 if (created)
                 {
-                    // var raws = database.ExecuteSqlRaw(NpgsqlScript.CreateStubData);
-                    // Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
+                    var raws = database.ExecuteSqlRaw(NpgsqlScript.CreateUserOnlyData);
+                    Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
                 }
                 break;
 
             case "Pomelo.EntityFrameworkCore.MySql":
                 if (created)
                 {
-                    // var raws = database.ExecuteSqlRaw(MySqlScript.CreateStubData);
-                    // Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
+                    var raws = database.ExecuteSqlRaw(MySqlScript.CreateStubData);
+                    Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
                 }
                 break;
 

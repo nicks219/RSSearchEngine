@@ -24,7 +24,7 @@ public class LoginModel(IServiceScope scope)
     /// </summary>
     /// <param name="login">данные для авторизации</param>
     /// <returns>объект содержащий подверждение идентичности</returns>
-    public async Task<ClaimsIdentity?> SignIn(LoginDto login)
+    public async Task<ClaimsIdentity?> TrySignInWith(LoginDto login)
     {
         try
         {

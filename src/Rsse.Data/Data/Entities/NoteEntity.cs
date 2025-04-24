@@ -14,6 +14,8 @@ public class NoteEntity : INote
     /// <summary>
     /// Номер заметки
     /// </summary>
+    //[Key]
+    //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("NoteId")]
     public int NoteId { get; set; }
 
