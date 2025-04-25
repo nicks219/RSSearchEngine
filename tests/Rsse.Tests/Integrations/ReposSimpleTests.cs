@@ -20,7 +20,7 @@ public class ReposSimpleTests
     public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
     {
         // arrange:
-        var factory = new CustomWebAppFactory<SimpleStartup>();
+        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions
         {
@@ -47,7 +47,7 @@ public class ReposSimpleTests
     public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
     {
         // arrange:
-        var factory = new CustomWebAppFactory<SimpleStartup>();
+        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions
         {
@@ -74,18 +74,18 @@ public class ReposSimpleTests
     public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
     {
         // arrange:
-        var factory = new CustomWebAppFactory<SimpleStartup>();
+        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri
         };
-
-        // act:
         const string tag = "new";
         _ = factory.CreateClient(options);
         var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
         if (repo == null) throw new TestCanceledException("missing repo(s)");
+
+        // act:
         await repo.CreateTagIfNotExists(tag);
         var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
         var writer = repo.GetPrimaryWriterContext()?.Tags?.Select(x => x.Tag).ToList();

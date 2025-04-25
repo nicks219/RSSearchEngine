@@ -12,13 +12,14 @@ using SearchEngine.Tests.Units.Mocks;
 namespace SearchEngine.Tests.Integrations.Infra;
 
 /// <summary>
-/// При конфинурации запуска используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html
+/// Используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html
+/// Конфигурация регистрирует <b>MirrorRepository</b>
 /// </summary>
-internal class SimpleStartup
+internal class SimpleMirrorStartup
 {
     private static IConfiguration? _configuration;
 
-    public SimpleStartup(IConfiguration configuration) => _configuration = configuration;
+    public SimpleMirrorStartup(IConfiguration configuration) => _configuration = configuration;
 
     public static void ConfigureServices(IServiceCollection services)
     {
@@ -28,7 +29,7 @@ internal class SimpleStartup
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
         if (_configuration != null) services.Configure<DatabaseOptions>(_configuration.GetSection(nameof(DatabaseOptions)));
 
-        services.AddSingleton<ILogger, TestLogger<SimpleStartup>>();
+        services.AddSingleton<ILogger, TestLogger<SimpleMirrorStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
         services.AddHostedService<TokenizerActivatorService>();

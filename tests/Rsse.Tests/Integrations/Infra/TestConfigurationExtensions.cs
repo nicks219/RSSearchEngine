@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Context;
@@ -35,9 +36,17 @@ public static class TestConfigurationExtensions
         dbPath = System.IO.Path.Join(path, "postgres.db");
         var npgConnectionString = $"Data Source={dbPath}";
 
-        services.AddDbContext<MysqlCatalogContext>(options => options.UseSqlite(mysqlConnectionString));
-        // для резолва CatalogRepository также регистрируем контекст postgres, но для инициализации используем Sqllite
-        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseSqlite(npgConnectionString));
+        services.AddDbContext<MysqlCatalogContext>(options =>
+        {
+            options.UseSqlite(mysqlConnectionString);
+            options.EnableSensitiveDataLogging();
+        });
+        // для резолва CatalogRepository также регистрируем контекст postgres с базой данных Sqllite
+        services.AddDbContext<NpgsqlCatalogContext>(options =>
+        {
+            options.UseSqlite(npgConnectionString);
+            options.EnableSensitiveDataLogging();
+        });
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();

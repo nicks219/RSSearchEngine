@@ -83,7 +83,7 @@ public class MirrorRepository(
             await npgsqlCatalogContext.SaveChangesAsync();
 
             // мы заполнили значение ключей "вручную" и EF не изменил identity
-            await SetVals(npgsqlCatalogContext);
+            await PgSetVals(npgsqlCatalogContext);
 
             await transaction.CommitAsync();
         }
@@ -100,9 +100,14 @@ public class MirrorRepository(
         }
     }
 
-    // <summary/> выставить актуальные значения ключей
-    private static async Task SetVals(BaseCatalogContext dbContext)
+    // <summary/> выставить актуальные значения ключей для postgres
+    private static async Task PgSetVals(BaseCatalogContext dbContext)
     {
+        if (dbContext.Database.ProviderName != "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            throw new NotSupportedException($"{nameof(PgSetVals)} | '{dbContext.Database.ProviderName}' provider is not supported.");
+        }
+
         var noteRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""");
         var tagRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""");
         var userRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));""");
@@ -134,6 +139,11 @@ public class MirrorRepository(
         return secondary;
     }
 
+    public Task CreateTagIfNotExists(string tag)
+    {
+        return Task.WhenAll(_writerPrimary.CreateTagIfNotExists(tag), _writerSecondary.CreateTagIfNotExists(tag));
+    }
+
     public Task<List<string>> ReadStructuredTagList() => _reader.ReadStructuredTagList();
 
     public Task<int> ReadNotesCount() => _reader.ReadNotesCount();
@@ -151,9 +161,4 @@ public class MirrorRepository(
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
     public Task<UserEntity?> GetUser(LoginDto login) => _reader.GetUser(login);
-
-    public Task CreateTagIfNotExists(string tag)
-    {
-        return Task.WhenAll(_writerPrimary.CreateTagIfNotExists(tag), _writerSecondary.CreateTagIfNotExists(tag));
-    }
 }
