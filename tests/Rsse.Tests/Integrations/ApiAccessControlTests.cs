@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Common.Auth;
@@ -28,9 +29,9 @@ public class ApiAccessControlTests
         };
 
         // act:
-        var client = factory.CreateClient(options);
+        using var client = factory.CreateClient(options);
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
-        var response = await client.DeleteAsync(uri);
+        using var response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
         var statusCode = (int)response.StatusCode;
@@ -56,7 +57,7 @@ public class ApiAccessControlTests
         };
 
         // act: invalid login:
-        var client = factory.CreateClient(options);
+        using var client = factory.CreateClient(options);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
@@ -75,6 +76,8 @@ public class ApiAccessControlTests
         reason.Should().Be("Forbidden");
         content.Should().NotBeNull();
         content.Should().Be("GET: access denied.");
+
+        response.Dispose();
     }
 
     [TestMethod]
@@ -90,7 +93,7 @@ public class ApiAccessControlTests
         };
 
         // act: valid login:
-        var client = factory.CreateClient(options);
+        using var client = factory.CreateClient(options);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
@@ -106,5 +109,7 @@ public class ApiAccessControlTests
         // assert:
         statusCode.Should().Be(200);
         reason.Should().Be("OK"); ;
+
+        response.Dispose();
     }
 }

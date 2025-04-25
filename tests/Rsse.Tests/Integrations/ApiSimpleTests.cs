@@ -27,9 +27,9 @@ public class ApiSimpleTests
         };
 
         // act:
-        var client = factory.CreateClient(options);
+        using var client = factory.CreateClient(options);
         var uri = new Uri("api/read/title?id=1", UriKind.Relative);
-        var response = await client.GetAsync(uri);
+        using var response = await client.GetAsync(uri);
         var status = response.ReasonPhrase;
         var contentTask = response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
 

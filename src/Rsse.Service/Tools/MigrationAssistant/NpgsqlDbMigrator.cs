@@ -169,7 +169,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
                 cmd.CommandText = allTablesDdl;
                 rows = cmd.ExecuteNonQuery();
             }
-            Log.Debug("pg restore apply ddl : '{createTable}' | rows affected: '{rows}'", createTablesOnPgMigration, rows);
+            Log.Debug("pg restore apply ddl : '{CreateTable}' | rows affected: '{Rows}'", createTablesOnPgMigration, rows);
 
             using (var notesWriter =
                    connection.BeginTextImport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") FROM STDIN"))
@@ -188,7 +188,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
                 tagToNotesWriter.Write(allTagToNotes);
             }
 
-            // todo: это точно необходимо?
             SetVals(connection);
 
             connection.Close();

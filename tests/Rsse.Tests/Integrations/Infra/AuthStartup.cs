@@ -39,7 +39,7 @@ public class AuthStartup(IConfiguration configuration)
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTestEnvironment();
+        services.AddSqliteTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
+using SearchEngine.Tools.MigrationAssistant;
 
 namespace SearchEngine.Tests.Integrations.Infra;
 
@@ -14,10 +15,9 @@ namespace SearchEngine.Tests.Integrations.Infra;
 public static class TestConfigurationExtensions
 {
     /// <summary>
-    /// Зарегистрировать контроллеры и провайдеры для тестовых бд.
+    /// Зарегистрировать контроллеры и провайдеры для тестовых бд, используется sqlite.
     /// </summary>
-    /// <param name="services">коллекция служб</param>
-    internal static void AddTestEnvironment(this IServiceCollection services)
+    internal static void AddSqliteTestEnvironment(this IServiceCollection services)
     {
         // todo разберись почему требуется AddApplicationPart:
         // https://andrewlock.net/when-asp-net-core-cant-find-your-controller-debugging-application-parts/
@@ -47,6 +47,36 @@ public static class TestConfigurationExtensions
             options.UseSqlite(npgConnectionString);
             options.EnableSensitiveDataLogging();
         });
+
+        services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+    }
+
+    /// <summary>
+    /// Зарегистрировать контроллеры и провайдеры для тестовых бд, используются провайдеры до mysql и postgres.
+    /// </summary>
+    internal static void AddDbsTestEnvironment(this IServiceCollection services)
+    {
+        services.AddControllers().AddApplicationPart(typeof(ReadController).Assembly);
+
+        var mysqlConnectionString = $"Server=127.0.0.1;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+        var npgConnectionString = $"Include Error Detail=true;Server=127.0.0.1;Database=tagit;Port={Docker.PostgresPort};" +
+                                  $"Userid=1;Password=1;Pooling=false;MinPoolSize=1;MaxPoolSize=20;Timeout=15;SslMode=Disable";
+
+        var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
+        services.AddDbContext<MysqlCatalogContext>(options =>
+        {
+            options.UseMySql(mysqlConnectionString, mySqlVersion);
+            options.EnableSensitiveDataLogging();
+        });
+        services.AddDbContext<NpgsqlCatalogContext>(options =>
+        {
+            options.UseNpgsql(npgConnectionString);
+            options.EnableSensitiveDataLogging();
+        });
+
+        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();

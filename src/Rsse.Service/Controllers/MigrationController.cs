@@ -60,7 +60,7 @@ public class MigrationController(
     [HttpGet("create")]
     public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
     {
-        var migrator = GetMigrator(databaseType);
+        var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
@@ -84,7 +84,7 @@ public class MigrationController(
     [Authorize(Constants.FullAccessPolicyName)]
     public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
     {
-        var migrator = GetMigrator(databaseType);
+        var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
@@ -100,7 +100,7 @@ public class MigrationController(
         }
     }
 
-    private IDbMigrator GetMigrator(DatabaseType databaseType)
+    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)
     {
         var migrator = databaseType switch
         {

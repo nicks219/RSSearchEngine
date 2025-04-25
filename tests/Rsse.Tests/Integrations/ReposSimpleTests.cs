@@ -29,9 +29,9 @@ public class ReposSimpleTests
 
         // act:
         const string tag = "new";
-        _ = factory.CreateClient(options);
-        var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
-        var npgsqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<NpgsqlCatalogContext>>();
+        using var _ = factory.CreateClient(options);
+        await using var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
+        await using var npgsqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<NpgsqlCatalogContext>>();
         if (mysqlRepo == null || npgsqlRepo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
@@ -56,9 +56,9 @@ public class ReposSimpleTests
 
         // act:
         const string tag = "new";
-        _ = factory.CreateClient(options);
-        var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
-        var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
+        using var _ = factory.CreateClient(options);
+        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
+        await using var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
         if (mysqlRepo == null || repo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
@@ -81,8 +81,8 @@ public class ReposSimpleTests
             BaseAddress = baseUri
         };
         const string tag = "new";
-        _ = factory.CreateClient(options);
-        var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
+        using var _ = factory.CreateClient(options);
+        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
         if (repo == null) throw new TestCanceledException("missing repo(s)");
 
         // act:
