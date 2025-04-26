@@ -16,22 +16,33 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ReposSimpleTests
 {
-    [TestMethod]
-    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
+    [ClassInitialize]
+    public static void ReposSimpleTestsSetup(TestContext _)
     {
         // arrange:
-        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
+        _factory = new CustomWebAppFactory<SimpleMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
+        _options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri
         };
+    }
 
+    [ClassCleanup]
+    public static void CleanUp() => _factory.Dispose();
+
+    private static CustomWebAppFactory<SimpleMirrorStartup> _factory;
+    private static WebApplicationFactoryClientOptions _options;
+
+    [TestMethod]
+    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
+    {
         // act:
-        const string tag = "new";
-        using var _ = factory.CreateClient(options);
-        await using var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
-        await using var npgsqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<NpgsqlCatalogContext>>();
+        const string tag = "new-1";
+        using var _ = _factory.CreateClient(_options);
+        using var serviceScope = _factory.Services.CreateScope();
+        await using var mysqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
+        await using var npgsqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<NpgsqlCatalogContext>>();
         if (mysqlRepo == null || npgsqlRepo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
@@ -46,19 +57,12 @@ public class ReposSimpleTests
     [TestMethod]
     public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
     {
-        // arrange:
-        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
-
         // act:
-        const string tag = "new";
-        using var _ = factory.CreateClient(options);
-        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
-        await using var mysqlRepo = factory.HostInternal?.Services.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
+        const string tag = "new-2";
+        using var _ = _factory.CreateClient(_options);
+        using var serviceScope = _factory.Services.CreateScope();
+        await using var repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
+        await using var mysqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
         if (mysqlRepo == null || repo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
@@ -73,16 +77,10 @@ public class ReposSimpleTests
     [TestMethod]
     public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
     {
-        // arrange:
-        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
-        const string tag = "new";
-        using var _ = factory.CreateClient(options);
-        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
+        const string tag = "new-3";
+        using var _ = _factory.CreateClient(_options);
+        using var serviceScope = _factory.Services.CreateScope();
+        await using var repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
         if (repo == null) throw new TestCanceledException("missing repo(s)");
 
         // act:

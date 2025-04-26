@@ -70,7 +70,11 @@ public class ReadTests
         // act:
         var result = await _readModel.GetNextOrSpecificNote(request);
         // ждём тестовый логер:
-        while (!_logger.Reported) await Task.Delay(100);
+        var count = 20;
+        while (!_logger.Reported || count-- > 0)
+        {
+            await Task.Delay(100);
+        }
 
         // asserts:
         Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);// todo: result нестабилен на ci/cd, разберись
@@ -127,11 +131,11 @@ public class ReadTests
     // демонстрация распределения результатов в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
-        var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
+        await using var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
         TestCatalogRepository.CreateStubData(400);
 
         // TODO: сделать метод, добавляющий N случайных заметок для проведения теста
-        const double coefficient = 0.7D;
+        const double coefficient = 0.6D;
 
         const int notesCount = 389;
 

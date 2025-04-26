@@ -17,19 +17,31 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiAccessControlTests
 {
+    [ClassInitialize]
+    public static void ApiAccessControlTestsSetup(TestContext context)
+    {
+        // arrange:
+        _factory = new CustomWebAppFactory<AuthStartup>();
+        var baseUri = new Uri("http://localhost:5000/");
+        _options = new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = baseUri,
+            HandleCookies = true
+        };
+        // тест Api_DeleteNote_ByAuthorizedUser_ShouldSucceed удаляет данные, необходимые для Api_ReadTitleByNoteId_ReturnsTitle
+    }
+
+    [ClassCleanup]
+    public static void CleanUp() => _factory.Dispose();
+
+    private static CustomWebAppFactory<AuthStartup> _factory;
+    private static WebApplicationFactoryClientOptions _options;
+
     [TestMethod]
     public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()
     {
-        // arrange:
-        var factory = new CustomWebAppFactory<AuthStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
-
         // act:
-        using var client = factory.CreateClient(options);
+        using var client = _factory.CreateClient(_options);
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         using var response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
@@ -47,17 +59,8 @@ public class ApiAccessControlTests
     [TestMethod]
     public async Task Api_DeleteNote_ByUnauthorizedUser_Returns403()
     {
-        // arrange:
-        var factory = new CustomWebAppFactory<AuthStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri,
-            HandleCookies = true
-        };
-
         // act: invalid login:
-        using var client = factory.CreateClient(options);
+        using var client = _factory.CreateClient(_options);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
@@ -83,24 +86,16 @@ public class ApiAccessControlTests
     [TestMethod]
     public async Task Api_DeleteNote_ByAuthorizedUser_ShouldSucceed()
     {
-        // arrange:
-        var factory = new CustomWebAppFactory<AuthStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri,
-            HandleCookies = true
-        };
-
         // act: valid login:
-        using var client = factory.CreateClient(options);
+        using var client = _factory.CreateClient(_options);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
 
         // act: request:
-        uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
+        // запрос на удаление несуществующей заметки - чтобы не аффектить тесты, завязанные на её чтение
+        uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;

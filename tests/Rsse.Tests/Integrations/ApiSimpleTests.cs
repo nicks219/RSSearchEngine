@@ -19,12 +19,9 @@ public class ApiSimpleTests
         // NB: для тестов скриптом создаётся SQLite бд в файле, с одной песней
 
         // arrange:
-        var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
-        var options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
+        var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
         // act:
         using var client = factory.CreateClient(options);

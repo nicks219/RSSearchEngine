@@ -17,7 +17,7 @@ using SearchEngine.Engine.Contracts;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tools.MigrationAssistant;
 
-// [assembly: Parallelize(Workers = 4, Scope = ExecutionScope.ClassLevel)]
+[assembly: Parallelize(Workers = 4, Scope = ExecutionScope.ClassLevel)]
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
@@ -42,7 +42,7 @@ public class ReposIntegrationTests
     [TestMethod]
     public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseCopy()
     {
-        var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -98,7 +98,7 @@ public class ReposIntegrationTests
     public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:
-        var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -129,6 +129,6 @@ public class ReposIntegrationTests
 
     public class ResponseModel
     {
-        public Dictionary<string, int> res { get; set; }
+        public Dictionary<string, double> res { get; set; }
     }
 }

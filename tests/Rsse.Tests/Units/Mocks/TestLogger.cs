@@ -6,7 +6,7 @@ namespace SearchEngine.Tests.Units.Mocks;
 internal class TestLogger<TModel> : ILogger<TModel>
 {
     internal string? ErrorMessage { get; private set; } = string.Empty;
-    internal bool Reported { get; private set; }
+    internal volatile bool Reported;
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull => throw new NotImplementedException();
 

@@ -47,6 +47,9 @@ public class AuthStartup(IConfiguration configuration)
 
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
 
+        // служба также заполняет бд
+        services.AddHostedService<TokenizerActivatorService>();
+
         services.AddHttpContextAccessor();
 
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));

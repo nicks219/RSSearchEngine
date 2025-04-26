@@ -31,21 +31,19 @@ public static class TestConfigurationExtensions
 
         const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
         var path = Environment.GetFolderPath(folder);
-        var dbPath = System.IO.Path.Join(path, "mysql.db");
-        var mysqlConnectionString = $"Data Source={dbPath}";
-        dbPath = System.IO.Path.Join(path, "postgres.db");
-        var npgConnectionString = $"Data Source={dbPath}";
+        var mysqlDbPath = System.IO.Path.Join(path, "mysql.db");
+        var mysqlConnectionString = $"Data Source={mysqlDbPath}";
+        var pgDbPath = System.IO.Path.Join(path, "postgres.db");
+        var npgConnectionString = $"Data Source={pgDbPath}";
 
         services.AddDbContext<MysqlCatalogContext>(options =>
         {
             options.UseSqlite(mysqlConnectionString);
-            options.EnableSensitiveDataLogging();
         });
         // для резолва CatalogRepository также регистрируем контекст postgres с базой данных Sqllite
         services.AddDbContext<NpgsqlCatalogContext>(options =>
         {
             options.UseSqlite(npgConnectionString);
-            options.EnableSensitiveDataLogging();
         });
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
