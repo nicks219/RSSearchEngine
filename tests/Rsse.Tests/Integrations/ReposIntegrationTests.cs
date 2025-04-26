@@ -26,15 +26,15 @@ public class ReposIntegrationTests
     [ClassInitialize]
     public static void ReposIntegrationTestsSetup(TestContext context)
     {
-        var containerized = Docker.ServiceRunningInContainer();
-        if (containerized)
+        var isGitHubAction = Docker.IsGitHubAction();
+        if (isGitHubAction)
         {
             context.WriteLine($"{nameof(ReposIntegrationTests)} | dbs running in container(s)");
         }
 
         // arrange:
         var sw = Stopwatch.StartNew();
-        if (!containerized) Docker.CleanUpDbContainers();
+        if (!isGitHubAction) Docker.CleanUpDbContainers();
         Docker.InitializeDbContainers();
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }

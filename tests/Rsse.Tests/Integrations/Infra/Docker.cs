@@ -15,7 +15,7 @@ public abstract class Docker
     private const string PostgresVolume = "pg_test";
     private const string MySqlVolume = "mysql_test";
 
-    public static bool ServiceRunningInContainer() => Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+    public static bool IsGitHubAction() => Environment.GetEnvironmentVariable("DOTNET_CI") == "true";
 
     /// <summary/> Остановить и удалить тестовые контейнеры
     public static void CleanUpDbContainers()
