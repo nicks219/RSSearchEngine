@@ -26,15 +26,15 @@ public class ReposIntegrationTests
     [ClassInitialize]
     public static void ReposIntegrationTestsSetup(TestContext context)
     {
-        if (Docker.ServiceRunningInContainer())
+        var containerized = Docker.ServiceRunningInContainer();
+        if (containerized)
         {
-            // throw new NotSupportedException("Only local tests are supported");
-            context.WriteLine($"{nameof(ReposIntegrationTests)} only local containerized tests run supported");
+            context.WriteLine($"{nameof(ReposIntegrationTests)} | dbs running in container(s)");
         }
 
         // arrange:
         var sw = Stopwatch.StartNew();
-        Docker.CleanUpDbContainers();
+        if (!containerized) Docker.CleanUpDbContainers();
         Docker.InitializeDbContainers();
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }

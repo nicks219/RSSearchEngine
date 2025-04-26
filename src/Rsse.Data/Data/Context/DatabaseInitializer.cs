@@ -67,6 +67,7 @@ public abstract class DatabaseInitializer
                     var raws = database.ExecuteSqlRaw(NpgsqlScript.CreateUserOnlyData);
                     Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
                 }
+
                 break;
 
             case "Pomelo.EntityFrameworkCore.MySql":
@@ -75,12 +76,12 @@ public abstract class DatabaseInitializer
                     var raws = database.ExecuteSqlRaw(MySqlScript.CreateStubData);
                     Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
                 }
+
                 break;
 
             // SQLite используется при запуске интеграционных тестов:
             case "Microsoft.EntityFrameworkCore.Sqlite":
-                // NB: пересоздаём тестовую базу из каждого зарегистрированного контекста сервиса:
-                // NB: N баз - N вызовов (учитывай для тестов)
+
                 if (!created)
                 {
                     database.EnsureDeleted();
@@ -89,9 +90,10 @@ public abstract class DatabaseInitializer
 
                 if (created)
                 {
-                    var raws = database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);
-                    Console.WriteLine($"[Sqlite] [ROWS AFFECTED] {raws}");
+                    var rows = database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);
+                    Console.WriteLine($"[Sqlite] [ROWS AFFECTED] {rows}");
                 }
+
                 break;
 
             case "Microsoft.EntityFrameworkCore.SqlServer":
@@ -100,6 +102,7 @@ public abstract class DatabaseInitializer
                     var raws = database.ExecuteSqlRaw(MsSqlScript.CreateStubData);
                     Console.WriteLine($"[SqlServer] [ROWS AFFECTED] {raws}");
                 }
+
                 break;
         }
     }

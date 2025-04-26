@@ -31,9 +31,9 @@ public static class TestConfigurationExtensions
 
         const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
         var path = Environment.GetFolderPath(folder);
-        var mysqlDbPath = System.IO.Path.Join(path, "mysql.db");
+        var mysqlDbPath = System.IO.Path.Join(path, $"mysql-{Guid.NewGuid()}.db");
         var mysqlConnectionString = $"Data Source={mysqlDbPath}";
-        var pgDbPath = System.IO.Path.Join(path, "postgres.db");
+        var pgDbPath = System.IO.Path.Join(path, $"postgres-{Guid.NewGuid()}.db");
         var npgConnectionString = $"Data Source={pgDbPath}";
 
         CustomWebAppFactory<SimpleMirrorStartup>.MySqlConnectionString = mysqlConnectionString;
