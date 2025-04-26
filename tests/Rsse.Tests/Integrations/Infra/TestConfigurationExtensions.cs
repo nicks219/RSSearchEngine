@@ -36,6 +36,9 @@ public static class TestConfigurationExtensions
         var pgDbPath = System.IO.Path.Join(path, "postgres.db");
         var npgConnectionString = $"Data Source={pgDbPath}";
 
+        CustomWebAppFactory<SimpleMirrorStartup>.MySqlConnectionString = mysqlConnectionString;
+        CustomWebAppFactory<SimpleMirrorStartup>.PostgresConnectionString = npgConnectionString;
+
         services.AddDbContext<MysqlCatalogContext>(options =>
         {
             options.UseSqlite(mysqlConnectionString);

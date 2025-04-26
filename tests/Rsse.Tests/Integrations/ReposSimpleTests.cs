@@ -10,6 +10,7 @@ using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Tests.Integrations.Infra;
+using Microsoft.Data.Sqlite;
 
 namespace SearchEngine.Tests.Integrations;
 
@@ -17,7 +18,7 @@ namespace SearchEngine.Tests.Integrations;
 public class ReposSimpleTests
 {
     [ClassInitialize]
-    public static void ReposSimpleTestsSetup(TestContext _)
+    public static async Task ReposSimpleTestsSetup(TestContext _)
     {
         // arrange:
         _factory = new CustomWebAppFactory<SimpleMirrorStartup>();
@@ -26,6 +27,26 @@ public class ReposSimpleTests
         {
             BaseAddress = baseUri
         };
+
+        // ждём коннекта до sqlite
+        await using var connection1 = new SqliteConnection(CustomWebAppFactory<SimpleMirrorStartup>.MySqlConnectionString);
+        await using var connection2 = new SqliteConnection(CustomWebAppFactory<SimpleMirrorStartup>.PostgresConnectionString);
+        var count = 20;
+        while (count-- > 0)
+        {
+            try
+            {
+                await connection1.OpenAsync();
+                await connection2.OpenAsync();
+                return;
+            }
+            catch (Exception)
+            {
+                Task.Delay(100).Wait();
+            }
+        }
+
+        throw new TestCanceledException($"{nameof(ReposSimpleTests)} | SQLite connection(s) missing");
     }
 
     [ClassCleanup]
@@ -35,7 +56,7 @@ public class ReposSimpleTests
     private static WebApplicationFactoryClientOptions _options;
 
     [TestMethod]
-    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
+    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()// f UNIQUE constraint failed: Tag.TagId Reporter: CreateAndSeed | Source: Microsoft.Data.Sqlite | Ensure created error
     {
         // act:
         const string tag = "new-1";
@@ -55,7 +76,7 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
+    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()// no such table: Tag
     {
         // act:
         const string tag = "new-2";
@@ -75,7 +96,7 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
+    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()// no such table: Tag
     {
         const string tag = "new-3";
         using var _ = _factory.CreateClient(_options);
