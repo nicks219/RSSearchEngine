@@ -23,7 +23,7 @@ rsync -azP -e "ssh -i ~/.ssh/test/test -p 22" ~/mysql.yml root@82.146.45.180:~/m
 
 rsync -azP -e "ssh -i .ssh/test/test -p 22" ~/my-custom.cnf root@82.146.45.180:~/my-custom.cnf
 
-# run cluster:
+# run cluster: при проблемах авторизации на kubectl эта команда переустановит бинарь сохранив все данные и восстановит работу
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san 82.146.45.180" sh -
 # проверь:
 echo [mysqld]\nbind-address = 0.0.0.0\nport = 3306 > my-custom.cnf
