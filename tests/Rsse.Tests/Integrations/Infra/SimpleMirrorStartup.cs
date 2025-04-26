@@ -29,7 +29,7 @@ internal class SimpleMirrorStartup
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
         if (_configuration != null) services.Configure<DatabaseOptions>(_configuration.GetSection(nameof(DatabaseOptions)));
 
-        services.AddSingleton<ILogger, TestLogger<SimpleMirrorStartup>>();
+        services.AddSingleton<ILogger, NoopLogger<SimpleMirrorStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
         services.AddHostedService<TokenizerActivatorService>();

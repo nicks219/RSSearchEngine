@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
+// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
 internal class TestQueryable<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
 {
     private readonly IAsyncQueryProvider _queryProvider;

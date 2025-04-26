@@ -16,7 +16,7 @@ public class CreateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new TestServiceCollection<CreateModel>();
+        var host = new CustomProviderWithLogger<CreateModel>();
         _createModel = new CreateModel(host.Scope);
     }
 
@@ -43,7 +43,7 @@ public class CreateTests
 
         // act:
         var response = await _createModel!.CreateNote(request);
-        var expected = await new UpdateModel(new TestServiceCollection<UpdateModel>().Scope)
+        var expected = await new UpdateModel(new CustomProviderWithLogger<UpdateModel>().Scope)
             .GetOriginalNote(response.CommonNoteId);
 
         // assert:

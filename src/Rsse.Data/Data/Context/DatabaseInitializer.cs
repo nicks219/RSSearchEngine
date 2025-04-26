@@ -29,7 +29,7 @@ public abstract class DatabaseInitializer
 
             if (readerContext == null || primaryWriterContext == null)
             {
-                logger.LogWarning("Reporter: {reporter} | No context(s) provided", nameof(DatabaseInitializer));
+                logger.LogWarning("Reporter: {Reporter} | No context(s) provided", nameof(DatabaseInitializer));
                 return;
             }
 
@@ -42,12 +42,12 @@ public abstract class DatabaseInitializer
             SeedDatabase(readerContext, readerCreated);
             SeedDatabase(primaryWriterContext, writerCreated);
 
-            logger.LogInformation("[{name}] finished with results: {firstResult} - {secondResult}",
+            logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
                 nameof(CreateAndSeed), readerCreated, writerCreated);
         }
         catch (Exception ex)
         {
-            logger.LogError("Reporter: {reporter} | Source: {source} | Ensure created error", nameof(CreateAndSeed), ex.Source);
+            logger.LogError("Reporter: {Reporter} | Source: {Source} | Ensure created error", nameof(CreateAndSeed), ex.Source);
         }
     }
 

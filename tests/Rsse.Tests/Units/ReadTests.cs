@@ -25,16 +25,16 @@ public class ReadTests
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private ReadModel _readModel;
-    private TestServiceCollection<ReadModel> _serviceCollection;
-    private TestLogger<ReadModel> _logger;
+    private CustomProviderWithLogger<ReadModel> _customProviderWithLogger;
+    private NoopLogger<ReadModel> _logger;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     [TestInitialize]
     public void Initialize()
     {
-        _serviceCollection = new TestServiceCollection<ReadModel>();
-        _readModel = new ReadModel(_serviceCollection.Scope);
-        _logger = (TestLogger<ReadModel>)_serviceCollection.Provider.GetRequiredService<ILogger<ReadModel>>();
+        _customProviderWithLogger = new CustomProviderWithLogger<ReadModel>();
+        _readModel = new ReadModel(_customProviderWithLogger.Scope);
+        _logger = (NoopLogger<ReadModel>)_customProviderWithLogger.Provider.GetRequiredService<ILogger<ReadModel>>();
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class ReadTests
         var response = await _readModel.GetNextOrSpecificNote(request, null, false);
 
         // assert:
-        Assert.AreEqual(_logger.ErrorMessage, string.Empty);
+        Assert.AreEqual(_logger.Message, string.Empty);
         Assert.AreEqual(TestCatalogRepository.FirstNoteText, response.TitleResponse);
     }
 
@@ -65,20 +65,21 @@ public class ReadTests
     public async Task ModelElectionTest_OnInvalidRequest_ShouldReturnErrorMessageResponse()
     {
         // arrange:
-        var request = new NoteDto { TagsCheckedRequest = [2500] };
+        var request = new NoteDto { TagsCheckedRequest = [25000] };
 
         // act:
-        var result = await _readModel.GetNextOrSpecificNote(request);
+        var result = await _readModel.GetNextOrSpecificNote(request).ConfigureAwait(false);
         // ждём тестовый логер:
         var count = 20;
-        while (!_logger.Reported || count-- > 0)
+        while (count-- > 0 && !_logger.Reported)
         {
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
         }
 
         // asserts:
-        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);// todo: result нестабилен на ci/cd, разберись
-        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.ErrorMessage);
+        // todo: разберись - result нестабилен
+        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);//
+        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.Message);
     }
 
     [TestMethod]
@@ -89,7 +90,7 @@ public class ReadTests
 
         // asserts:
         Assert.AreEqual(string.Empty, response.TitleResponse);
-        Assert.AreEqual(string.Empty, _logger.ErrorMessage);
+        Assert.AreEqual(string.Empty, _logger.Message);
     }
 
     [TestMethod]
@@ -117,7 +118,7 @@ public class ReadTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new TestServiceScopeFactory(_serviceCollection.Provider);
+        var factory = new CustomScopeFactory(_customProviderWithLogger.Provider);
         var readController = new ReadController(factory, logger);
 
         // act:
@@ -131,10 +132,10 @@ public class ReadTests
     // демонстрация распределения результатов в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
-        await using var __ = _serviceCollection.Provider.GetRequiredService<IDataRepository>();
-        TestCatalogRepository.CreateStubData(400);
+        await using var repo = (TestCatalogRepository)_customProviderWithLogger.Provider.GetRequiredService<IDataRepository>();
 
-        // TODO: сделать метод, добавляющий N случайных заметок для проведения теста
+        repo.CreateStubData(400);
+
         const double coefficient = 0.6D;
 
         const int notesCount = 389;
@@ -153,10 +154,6 @@ public class ReadTests
 
         while (count-- > 0)
         {
-            var host = new TestServiceCollection<ReadModel>();
-
-            _readModel = new ReadModel(host.Scope);
-
             var response = await _readModel.GetNextOrSpecificNote(request);
 
             var id = response.CommonNoteId;

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Entities;
+using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
@@ -42,12 +43,10 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        lock (ComplianceTests.Lock)
-        {
-            TestCatalogRepository.RemoveStubData(400);
-            var host = new TestServiceCollection<TokenizerService>();
-            _factory = new TestServiceScopeFactory(host.Provider);
-        }
+        var host = new CustomProviderWithLogger<TokenizerService>();
+        _factory = new CustomScopeFactory(host.Provider);
+        var repo = (TestCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        repo.RemoveStubData(400);
     }
 
     [TestMethod]
@@ -56,7 +55,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -85,13 +84,15 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
+        //var extended = tokenizer.GetExtendedLines();
+        //var reduced = tokenizer.GetReducedLines();
 
         // act:
         tokenizer.Update(1, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
+        var extended = tokenizer.GetExtendedLines();
+        var reduced = tokenizer.GetReducedLines();
 
         // assert:
         extended.First()
@@ -111,7 +112,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -140,7 +141,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -163,7 +164,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var tokenizer = new TokenizerService(_factory, options, new TestLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 

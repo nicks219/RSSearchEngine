@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Models;
 using SearchEngine.Tests.Units.Mocks;
@@ -23,13 +25,15 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var hostTokenizerTyped = new TestServiceCollection<TokenizerService>();
-        var hostModelTyped = new TestServiceCollection<UpdateModel>();
-        var findModel = new CompliantModel(hostTokenizerTyped.Scope);
+        var host = new CustomProviderWithLogger<TokenizerService>();
+        var provider = new CustomProviderWithLogger<UpdateModel>();
+        var findModel = new CompliantModel(host.Scope);
 
-        TestCatalogRepository.CreateStubData(10);
+        var repo = (TestCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        repo.CreateStubData(10);
+
         _testNoteId = findModel.FindNoteId(TestName);
-        _updateModel = new UpdateModel(hostModelTyped.Scope);
+        _updateModel = new UpdateModel(provider.Scope);
     }
 
     [TestMethod]
