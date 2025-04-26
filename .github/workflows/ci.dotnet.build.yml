@@ -26,4 +26,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c Release
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release
+      env:
+        POSTGRES_HOST: postgres
+        MYSQL_HOST: mysql
+      run: dotnet test --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release

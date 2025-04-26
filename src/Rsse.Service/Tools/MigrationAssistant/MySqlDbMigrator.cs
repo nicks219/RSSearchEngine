@@ -1,32 +1,28 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
 /// <summary>
-/// Функционал работы с миграциями бд
+/// Функционал работы с миграциями MySql
 /// </summary>
-internal class MySqlDbMigrator : IDbMigrator
+internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
 {
     private const string Directory = "ClientApp/build";
-    private readonly IConfiguration _configuration;
-    private readonly int _maxVersion;
+    private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;
-
-    public MySqlDbMigrator(IConfiguration configuration)
-    {
-        _configuration = configuration;
-        _maxVersion = 10;
-    }
 
     /// <inheritdoc/>
     public string Create(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        Log.Information("mysql migrator on create");
 
-        var filePath = string.IsNullOrEmpty(fileName)
+        var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
+
+        var fileWithPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{_version}.txt")
             : Path.Combine(Directory, $"_{fileName}_{_perSongVersion}.txt");
 
@@ -45,29 +41,31 @@ internal class MySqlDbMigrator : IDbMigrator
 
         conn.Open();
 
-        mb.ExportToFile(filePath);
+        mb.ExportToFile(fileWithPath);
 
         conn.Close();
 
-        return filePath;
+        return fileWithPath;
 
         // ротация счетчика версий:
-        void IncrementVersion(ref int version) => version = (version + 1) % _maxVersion;
+        void IncrementVersion(ref int version) => version = (version + 1) % MaxVersion;
     }
 
     /// <inheritdoc/>
     public string Restore(string? fileName)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        Log.Information("mysql migrator on restore");
+
+        var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var version = _version - 1;
 
         if (version < 0)
         {
-            version = _maxVersion - 1;
+            version = MaxVersion - 1;
         }
 
-        var file = string.IsNullOrEmpty(fileName)
+        var fileWithPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(Directory, $"backup_{version}.txt")
             : Path.Combine(Directory, $"_{fileName}_.txt");
 
@@ -81,11 +79,11 @@ internal class MySqlDbMigrator : IDbMigrator
 
         conn.Open();
 
-        mb.ImportFromFile(file);
+        mb.ImportFromFile(fileWithPath);
 
         conn.Close();
 
-        return file;
+        return fileWithPath;
     }
 }
 

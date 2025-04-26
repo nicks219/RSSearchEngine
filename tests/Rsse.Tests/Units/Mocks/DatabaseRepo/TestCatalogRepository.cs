@@ -1,54 +1,62 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
+// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
 internal class TestCatalogRepository : IDataRepository
 {
+    // todo: MySQL WORK. DELETE
+    public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
+    public BaseCatalogContext? GetReaderContext() => null;
+    public BaseCatalogContext? GetPrimaryWriterContext() => null;
+
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
     internal const string SecondNoteTitle = "Шаинский - Облака";
 
-    internal static readonly List<string> TagList = new() { "Rock", "Pop", "Jazz" };
+    internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
-    private static Dictionary<int, Tuple<string, string>>? _notesTableStub = new()
+    private readonly Dictionary<int, Tuple<string, string>> _notes = new();
+
+    public TestCatalogRepository()
     {
-        { 1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText)}
-    };
+        _notes.Add(1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
+    }
 
     private int _id;
 
-    public static void CreateStubData(int count)
+    public void CreateStubData(int count)
     {
         for (var i = 0; i < count; i++)
         {
-            if (_notesTableStub?.ContainsKey(i) == false)
+            if (i != 1 && !_notes.ContainsKey(i))
             {
-                _notesTableStub.Add(i, new Tuple<string, string>(i + ": key", i + ": value"));
+                _notes.Add(i, new Tuple<string, string>(i + ": key", i + ": value"));
             }
         }
     }
 
-    public static void RemoveStubData(int count)
+    public void RemoveStubData(int count)
     {
         for (var i = 0; i < count; i++)
         {
-            if (_notesTableStub?.ContainsKey(i) == true)
-            {
-                _notesTableStub.Remove(i);
-            }
+            if (i != 1) _notes.Remove(i);
         }
     }
 
     public IQueryable<NoteEntity> ReadAllNotes()
     {
-        var notes = _notesTableStub?
+        var notes = _notes
             .Select(keyValue => new NoteEntity
             {
                 Text = keyValue.Value.Item2,
@@ -57,14 +65,14 @@ internal class TestCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return new TestQueryable<NoteEntity>(notes!);
+        return notes.AsQueryable();
     }
 
     public string ReadNoteTitle(int noteId)
     {
-        if (_notesTableStub == null) throw new NullReferenceException("Data is null");
+        if (_notes == null) throw new NullReferenceException("Data is null");
 
-        foreach (var keyValue in _notesTableStub.Where(keyValue => keyValue.Key == noteId))
+        foreach (var keyValue in _notes.Where(keyValue => keyValue.Key == noteId))
         {
             return keyValue.Value.Item1;
         }
@@ -74,9 +82,9 @@ internal class TestCatalogRepository : IDataRepository
 
     public int ReadNoteId(string noteTitle)
     {
-        if (_notesTableStub == null) throw new NullReferenceException("Data is null");
+        if (_notes == null) throw new NullReferenceException("Data is null");
 
-        foreach (var keyValue in _notesTableStub.Where(keyValue => keyValue.Value.Item1 == noteTitle))
+        foreach (var keyValue in _notes.Where(keyValue => keyValue.Value.Item1 == noteTitle))
         {
             return keyValue.Key;
         }
@@ -86,19 +94,19 @@ internal class TestCatalogRepository : IDataRepository
 
     public Task<int> CreateNote(NoteDto? note)
     {
-        if (note?.TitleRequest == null || note.TextRequest == null || _notesTableStub == null)
+        if (note?.TitleRequest == null || note.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notesTableStub.Add(_id, new Tuple<string, string>(note.TitleRequest, note.TextRequest));
+        _notes.Add(_id, new Tuple<string, string>(note.TitleRequest, note.TextRequest));
         _id++;
         return Task.FromResult(_id - 1);
     }
 
     public Task<int> DeleteNote(int noteId)
     {
-        var res = _notesTableStub?.Remove(noteId);
+        var res = _notes.Remove(noteId);
         return Task.FromResult(Convert.ToInt32(res));
     }
 
@@ -114,15 +122,16 @@ internal class TestCatalogRepository : IDataRepository
 
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
     {
-        if (_notesTableStub == null) throw new NullReferenceException("Data is null");
+        if (_notes == null) throw new NullReferenceException("Data is null");
 
         var titlesList = pageNumber < 0
             ? throw new Exception("Page number error")
             : Enumerable
                 .Range(pageNumber * pageSize, pageSize)
-                .Select<int, Tuple<string, int>>(x => new Tuple<string, int>(_notesTableStub[x].Item1, x))
+                .Select<int, Tuple<string, int>>(x => new Tuple<string, int>(_notes[x].Item1, x))
                 .ToList();
 
+        // return titlesList.AsQueryable();
         return new TestQueryable<Tuple<string, int>>(titlesList);
     }
 
@@ -135,40 +144,40 @@ internal class TestCatalogRepository : IDataRepository
     public IQueryable<int> ReadNoteTags(int noteId)
     {
         var tagList = new List<int> { 1, 2 };
+        // return tagList.AsQueryable();
         return new TestQueryable<int>(tagList);
     }
 
     public Task<int> ReadNotesCount()
     {
-        if (_notesTableStub == null) throw new NullReferenceException("Data is null");
+        if (_notes == null) throw new NullReferenceException("Data is null");
 
-        return Task.FromResult(_notesTableStub.Count);
+        return Task.FromResult(_notes.Count);
     }
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        _notesTableStub ??= new Dictionary<int, Tuple<string, string>> { { 1, new Tuple<string, string>(FirstNoteText, FirstNoteTitle) } };
+        var note = new List<Tuple<string, string>> {_notes[noteId]};
+        // return note.AsQueryable();
 
-        return new TestQueryable<Tuple<string, string>>(
-            new List<Tuple<string, string>>
-            {
-                _notesTableStub[noteId]
-            });
+        return new TestQueryable<Tuple<string, string>>(note);
     }
 
     public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
-        return new TestQueryable<int>(checkedTags);
+        // return checkedTags.AsQueryable();
+        var result = new TestQueryable<int>(checkedTags);
+        return result;
     }
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteDto? note)
     {
-        if (note?.TitleRequest == null || note.TextRequest == null || _notesTableStub == null)
+        if (note?.TitleRequest == null || note.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notesTableStub[note.CommonNoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
+        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
 
         return Task.CompletedTask;
     }

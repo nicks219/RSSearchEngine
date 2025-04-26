@@ -4,9 +4,10 @@ import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
-import {RecoveryContext} from "../common/context.provider";
+import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";
 import {Dialog} from "../common/dialog.component.tsx";
+import {Doms, Messages} from "../dto/doms.tsx";
 
 export const CatalogContainer = (): JSX.Element|undefined => {
     const actionTypeConfirmValue = "confirm";
@@ -14,6 +15,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
     const recoveryContext = useContext(RecoveryContext);
+    const commonContext = useContext(CommonContext);
 
     const [dialog, setDialog] = useState<ReactNode|null>(null);
 
@@ -60,14 +62,17 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         const onConfirm = () => {
             Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationRestoreUrl, recoveryContext);
         }
-        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ ПРИМЕНЕНИЕ ДАМПА");
+        askForConfirmation(onConfirm, Messages.confirmDumpRestore);
     }
 
     const onLogout = (e: React.SyntheticEvent) => {
         e.preventDefault();
 
         document.cookie = 'rsse_auth = false';
-        let callback = (response: Response) => response.ok ? console.log("Logout Ok") : console.log("Logout Err");
+        localStorage.setItem('isAuth', 'false');
+        commonContext.stringState?.(Doms.submitStyle);
+
+        let callback = (response: Response) => response.ok ? console.log(Messages.logoutOk) : console.log(Messages.logoutErr);
         Loader.fireAndForgetWithQuery(Loader.logoutUrl, "", callback, stateWrapper, recoveryContext);
     }
 
@@ -86,7 +91,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
             Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
         }
 
-        askForConfirmation(onConfirm, "ПОДТВЕРДИТЕ УДАЛЕНИЕ");
+        askForConfirmation(onConfirm, Messages.confirmDelete);
     }
 
     if (!data) return;
@@ -96,7 +101,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     // данные для вьюхи: имя файла дампа:
     if (data.res) {
         elements.push(
-            <tr key={"song "} className="bg-warning">
+            <tr key={Doms.songWithSpace} className={Doms.bgWarning}>
                 <td></td>
                 <td>{data.res}</td>
             </tr>);
@@ -113,7 +118,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     if (page) {
         for (let index = 0; index < page.length; index++) {
             elements.push(
-                <tr key={"song " + index} className="bg-warning">
+                <tr key={Doms.songWithSpace + index} className={Doms.bgWarning}>
                     <td></td>
                     <td>
                         <button className="btn btn-outline-light"

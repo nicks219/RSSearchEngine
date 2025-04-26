@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 
@@ -12,6 +13,11 @@ namespace SearchEngine.Data.Repository.Contracts;
 /// </summary>
 public interface IDataRepository : IDisposable, IAsyncDisposable
 {
+    // todo: MySQL WORK. DELETE
+    Task CopyDbFromMysqlToNpgsql();
+    BaseCatalogContext? GetReaderContext();
+    BaseCatalogContext? GetPrimaryWriterContext();
+
     // crud:
 
     /// <summary>

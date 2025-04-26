@@ -1,14 +1,15 @@
 ﻿import {useContext} from "react";
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {CommonContext} from "../common/context.provider";
-import {toggleMenuVisibility} from "../common/visibility.handlers";
+import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getCommonNoteId, getTextResponse, getTitleResponse} from "../common/dto.handlers";
+import {Doms, Messages} from "../dto/doms.tsx";
 
 export const ReadNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
     const commonContext = useContext(CommonContext);
-    const hideMenu = () => {
+    const handleCheckboxesVisibility = () => {
         if (props.formElement) {
-            props.formElement.style.display = toggleMenuVisibility(props.formElement.style.display);
+            props.formElement.style.display = toggleContainerVisibility(props.formElement.style.display);
         }
     }
 
@@ -20,14 +21,14 @@ export const ReadNote = (props: {formElement?: HTMLFormElement, noteDto: NoteRes
         <span>
             {props.noteDto ? (getTextResponse(props.noteDto) ?
                     <span>
-                    <div id="noteTitle" onClick={hideMenu}>
+                    <div id={Doms.noteTitle} onClick={handleCheckboxesVisibility}>
                         {getTitleResponse(props.noteDto)}
                     </div>
-                    <div id="noteText">
+                    <div id={Doms.noteText} onClick={handleCheckboxesVisibility}>
                         <TextSupportsLinks text={getTextResponse(props.noteDto) ?? ""}/>
                     </div>
                 </span>
-                    : "select tag please")
+                    : Messages.selectTag)
                 : ""}
         </span>
     );
@@ -43,5 +44,5 @@ const TextSupportsLinks = (props: {text: string}): JSX.Element => {
             return "";
         })
 
-    return <div className="user-text">{result}</div>
+    return <div className={Doms.userText}>{result}</div>
 }

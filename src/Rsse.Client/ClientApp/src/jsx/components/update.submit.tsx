@@ -5,6 +5,7 @@ import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {getTitleResponse} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
+import {Doms} from "../dto/doms.tsx";
 
 export const UpdateSubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const recoveryContext = useContext(RecoveryContext);
@@ -14,9 +15,9 @@ export const UpdateSubmitButton = (props: {formElement?: HTMLFormElement, noteDt
         e.preventDefault();
         const formData = new FormData(props.formElement);
         const checkboxesArray =
-            (formData.getAll("chkButton"))
+            (formData.getAll(Doms.chkButton))
                 .map(item => Number(item) + 1);
-        const formMessage = formData.get("msg");
+        const formMessage = formData.get(Doms.msg);
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
@@ -29,9 +30,9 @@ export const UpdateSubmitButton = (props: {formElement?: HTMLFormElement, noteDt
     }
 
     return (
-        <div id="submitStyle">
-            <input type="checkbox" id="submitButton" className="regular-checkbox" onClick={submit}/>
-            <label htmlFor="submitButton">Сохранить</label>
+        <div id={Doms.submitStyle}>
+            <input type={Doms.checkbox} id={Doms.submitButton} className={Doms.regularCheckbox} onClick={submit}/>
+            <label htmlFor={Doms.submitButton}>Замена</label>
         </div>
     );
 }

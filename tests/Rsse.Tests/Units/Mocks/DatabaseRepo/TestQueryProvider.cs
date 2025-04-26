@@ -9,6 +9,8 @@ using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
+// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
+// см. Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
 internal class TestQueryProvider : IAsyncQueryProvider
 {
     public IQueryable CreateQuery(Expression expression)
@@ -74,10 +76,11 @@ internal class TestQueryProvider : IAsyncQueryProvider
                         // A. await allElectableNotes.CountAsync()..
                         var value = ((ConstantExpression)firstArgument).Value;
                         if (value == null) throw new NullReferenceException(nameof(value) + "is null");
-                        return ((EnumerableQuery<int>)value).Count() > 1
+                        var result = ((EnumerableQuery<int>)value).Count() > 1
                             // histogram test:
                             ? (TResult)(object)Task.FromResult(200)
                             : (TResult)(object)Task.FromResult(((EnumerableQuery<int>)value).ElementAt(0));
+                        return result;
                     }
                     else
                     {
@@ -95,33 +98,23 @@ internal class TestQueryProvider : IAsyncQueryProvider
             // II. public IQueryable<Tuple<string, string>> ReadNote(int noteId)..
             // TResult: EnumerableQuery<Tuple<string, string>>..
             case ExpressionType.Constant:
+            {
+                var value = (ConstantExpression) expression;
+                if (value.Value == null) break;
+
+                var valueType = value.Value.GetType();
+                // ...
+                // update: .ReadNoteTags(originalNoteId).ToListAsync()..
+                // catalog: await _repo.ReadCatalogPage..
+                if (valueType == typeof(EnumerableQuery<Tuple<string, string>>)
+                    || valueType == typeof(EnumerableQuery<int>)
+                    || valueType == typeof(EnumerableQuery<Tuple<string, int>>))
                 {
-                    var value = (ConstantExpression)expression;
-                    if (value.Value?.GetType() == typeof(EnumerableQuery<Tuple<string, string>>))
-                    {
-                        var values = (EnumerableQuery<Tuple<string, string>>)value.Value;
-                        var result = (TResult)(object)values;
-                        return result;
-                    }
-
-                    // update: .ReadNoteTags(originalNoteId).ToListAsync()..
-                    if (value.Value?.GetType() == typeof(EnumerableQuery<int>))
-                    {
-                        var values = (EnumerableQuery<int>)value.Value;
-                        var result = (TResult)(object)values;
-                        return result;
-                    }
-
-                    // catalog: await _repo.ReadCatalogPage..
-                    if (value.Value?.GetType() == typeof(EnumerableQuery<Tuple<string, int>>))
-                    {
-                        var values = (EnumerableQuery<Tuple<string, int>>)value.Value;
-                        var result = (TResult)(object)values;
-                        return result;
-                    }
-
-                    break;
+                    return (TResult) value.Value;
                 }
+
+                break;
+            }
 
             default: throw new NotImplementedException("Unknown node type");
         }

@@ -1,4 +1,4 @@
-﻿import {LoginBoxVisibility} from "./visibility.handlers";
+﻿import {setLoginBoxVisibility} from "./visibility.handlers";
 import {
     FunctionComponentStateWrapper,
     RecoveryStateStorage,
@@ -13,6 +13,7 @@ export class Loader {
     static catalogUrl: string = "/api/catalog";
     static loginUrl: string = "/account/login";
     static logoutUrl: string = "/account/logout";
+    static checkAuth: string = "/account/check";
     static complianceIndicesUrl: string = "/api/compliance/indices";
 
     static migrationCreateUrl: string = "/migration/create";
@@ -35,7 +36,7 @@ export class Loader {
     static redirectToMenu = (url: string) => {
         const error = `${Loader.name}: redirectToMenu exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             let redirectTo = this.redirectHostSchema + "://" + window.location.host + url;
@@ -54,7 +55,7 @@ export class Loader {
         try {
             const mounted = stateWrapper.mounted[0];
             const setComponentState = (data: StateTypesAlias) => stateWrapper.setData(data);
-            const data: StateTypesAlias = await response.json().catch(() => LoginBoxVisibility(true, stateWrapper, url, recoveryContext));
+            const data: StateTypesAlias = await response.json().catch(() => setLoginBoxVisibility(true, stateWrapper, url, recoveryContext));
 
             if (mounted) {
                 setComponentState(data);
@@ -72,7 +73,7 @@ export class Loader {
                          recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}`, {
@@ -89,17 +90,18 @@ export class Loader {
     // GET request: /api/controller?id=
     static async getDataById(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
                              requestId: number|undefined,
-                             url: string): Promise<void> {
+                             url: string,
+                             recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: getDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(requestId)}`, {
                 credentials: this.corsCredentialsPolicy
                 });
 
-            await this.processResponse(response, stateWrapper, url, error);
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
         } catch {
             console.log(error);
         }
@@ -113,7 +115,7 @@ export class Loader {
                           recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: postData exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
@@ -137,7 +139,7 @@ export class Loader {
                                 recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
         const error: string = `${Loader.name}: deleteDataById exception`;
         Loader.setupDevEnvironment();
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
 
         try {
             const response = await fetch(
@@ -158,7 +160,7 @@ export class Loader {
                                   callback: (v: Response) => Response|PromiseLike<Response>|void,
                                   stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>|null,
                                   recoveryContext?: RecoveryStateStorage<StateTypesAlias>): void {
-        const error: string = `${Loader.name}: FnF or login/logout exception`;
+        const error: string = `${Loader.name}: FnF or login/logout/check exception`;
         Loader.setupDevEnvironment();
 
         try {
@@ -167,7 +169,7 @@ export class Loader {
             }).then(callback);
 
             if (stateWrapper !== null) {
-                LoginBoxVisibility(true, stateWrapper, url, recoveryContext);
+                setLoginBoxVisibility(true, stateWrapper, url, recoveryContext);
             }
         } catch(exception) {
             console.log(error);

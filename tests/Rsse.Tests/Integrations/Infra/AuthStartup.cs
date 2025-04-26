@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,8 +7,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
+using SearchEngine.Common.Logger;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -36,13 +39,16 @@ public class AuthStartup(IConfiguration configuration)
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.PartialConfigureForTesting();
+        services.AddSqliteTestEnvironment();
 
-        services.AddScoped<IDataRepository, CatalogRepository>();
+        services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
+
+        // служба также заполняет бд
+        services.AddHostedService<TokenizerActivatorService>();
 
         services.AddHttpContextAccessor();
 
@@ -87,7 +93,7 @@ public class AuthStartup(IConfiguration configuration)
         });
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseDefaultFiles();
 
@@ -109,5 +115,14 @@ public class AuthStartup(IConfiguration configuration)
             }).RequireAuthorization();
             endpoints.MapControllers();
         });
+
+        AddLogging(loggerFactory);
+    }
+
+    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+
+    private static void AddLogging(ILoggerFactory loggerFactory)
+    {
+        loggerFactory.AddFileInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
 }

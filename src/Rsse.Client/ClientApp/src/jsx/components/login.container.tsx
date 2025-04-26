@@ -1,17 +1,31 @@
-﻿import * as React from 'react';
-import {useContext, useState} from "react";
+import * as React from 'react';
+import {useContext, useEffect, useState} from "react";
 import {Loader} from "../common/loader";
-import {LoginBoxVisibility} from "../common/visibility.handlers";
+import {setLoginBoxVisibility} from "../common/visibility.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {LoginView} from "./login.view";
+import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
 export const LoginContainer = () => {
-    const style = useState("submitStyle");
+    const [style, setStyle] = useState(Doms.submitStyle);
+
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
 
-    const loginElement = document.getElementById("login") as HTMLElement ?? document.createElement('login');
-    loginElement.style.display = "block";
+    commonContext.stringState = setStyle;
+
+    const loginElement = document.getElementById(Doms.loginName) as HTMLElement ?? document.createElement(Doms.loginName);
+    loginElement.style.display = SystemConstants.block;
+
+    useEffect(() => {
+        onMount();
+        return;
+    }, []);
+
+    const onMount = () => {
+        let callback = (response: Response) => response.ok ? loginOk() : loginErr();
+        Loader.fireAndForgetWithQuery(Loader.checkAuth, "", callback, null);
+    }
 
     const onSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -29,22 +43,29 @@ export const LoginContainer = () => {
 
     const loginErr = () => {
         document.cookie = 'rsse_auth = false';
-        console.log("Login error.");
+        console.log(Messages.loginError);
+        localStorage.setItem('isAuth', 'false');
     }
 
     const loginOk = () => {
         document.cookie = 'rsse_auth = true';
-        console.log("Login ok.");
-        style[1]("submitStyleGreen");
-        continueLoading();
+        console.log(Messages.loginOk);
+        localStorage.setItem('isAuth', 'true');
+
+        // todo: SetVisible - после log out без обновления страницы стейт и dom расходятся
+        // todo: следует сделать полноценный компонент авторизации и отвязать видимость от css
+
+        continueLoadingAfterLogin();
+        setStyle(Doms.submitStyleGreen);
+
         setTimeout(() => {
-            const loginElement = document.getElementById("login") as HTMLElement;
-            loginElement.style.display = "none";
+            const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
+            if (loginElement) loginElement.style.display = SystemConstants.none;
         }, 1500);
     }
 
     // загружаем в компонент данные, не полученные из-за ошибки авторизации:
-    const continueLoading = () => {
+    const continueLoadingAfterLogin = () => {
         const stateWrapper = recoveryContext.recoveryStateWrapper;
 
         // TODO: замени на свич
@@ -71,13 +92,16 @@ export const LoginContainer = () => {
                 case Loader.createUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl);
                     break;
+                case Loader.logoutUrl:
+                    break;
                 default:
                     throw new Error(`Unknown recovery url saved: ${recoveryContext.recoveryString}`);
             }
         }
 
-        LoginBoxVisibility(false);
+        setLoginBoxVisibility(false);
     }
 
-    return(<LoginView id={style[0]} onClick={onSubmit} />)
+    // return(localStorage.getItem('isAuth') === 'false' && <LoginView id={style} onClick={onSubmit} />)
+    return(<LoginView id={style} onClick={onSubmit} />)
 }

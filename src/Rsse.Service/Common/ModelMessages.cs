@@ -16,7 +16,7 @@ internal abstract class ModelMessages
     internal const string CreateNoteUnsuccessfulError = $"[{nameof(CreateModel)}] {nameof(CreateModel.CreateNote)} error: create unsuccessful";
     internal const string CreateNoteEmptyDataError = $"[{nameof(CreateModel)}] {nameof(CreateModel.CreateNote)} error: empty data";
 
-    internal const string SignInError = $"[{nameof(LoginModel)}] {nameof(LoginModel.SignIn)} system error";
+    internal const string SignInError = $"[{nameof(LoginModel)}] {nameof(LoginModel.TrySignInWith)} system error";
 
     internal const string ElectNoteError = $"[{nameof(ReadModel)}] {nameof(ReadModel.GetNextOrSpecificNote)} error";
     internal const string ReadTitleByNoteIdError = $"[{nameof(ReadModel)}] {nameof(ReadModel.ReadTitleByNoteId)} error";

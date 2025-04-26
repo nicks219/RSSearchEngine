@@ -5,20 +5,21 @@ import {ComplianceResponseDto, NoteResponseDto} from "../dto/request.response.dt
 import {CommonContext} from "../common/context.provider";
 import {getTextRequest, getTitleRequest} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
+import {Doms, SystemConstants} from "../dto/doms.tsx";
 
 export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     // максимальное количество названий похожих заметок:
     const maxSimilarResultsTitleCount = 20;
 
-    let jsonString: string = "";
+    let jsonString: string = SystemConstants.empty;
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
 
     const commonContext = useContext(CommonContext);
     const cancel = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
-        buttonElement.style.display = "none";
+        const buttonElement = (document.getElementById(Doms.cancelButton) as HTMLInputElement);
+        buttonElement.style.display = SystemConstants.none;
         // always switch to classic mode:
         commonContext.componentMode = ComponentMode.Classic;
 
@@ -36,8 +37,8 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
     }
 
     const componentDidMount = () => {
-        let buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
-        buttonElement.style.display = "none";
+        let buttonElement = (document.getElementById(Doms.cancelButton) as HTMLInputElement);
+        buttonElement.style.display = SystemConstants.none;
     }
     const componentWillUnmount = () => {
         // перед выходом восстанавливаем состояние обёртки:
@@ -52,23 +53,23 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
     const submit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
 
-        const buttonElement = (document.getElementById('cancelButton') as HTMLInputElement);
-        buttonElement.style.display = "none";
+        const buttonElement = (document.getElementById(Doms.cancelButton) as HTMLInputElement);
+        buttonElement.style.display = SystemConstants.none;
 
         // extended mode:
         if (commonContext.componentMode === ComponentMode.Extended) {
             // подтверждение: extended режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
             commonContext.componentMode = ComponentMode.Classic;
-            if (jsonString == "") jsonString = commonContext.componentString;
+            if (jsonString == SystemConstants.empty) jsonString = commonContext.componentString;
             Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
             return;
         }
 
         // classic mode:
         const formData = new FormData(props.formElement);
-        const checkboxesArray = (formData.getAll('chkButton')).map(a => Number(a) + 1);
-        const formMessage = formData.get('msg');
-        const formTitle = formData.get('ttl');
+        const checkboxesArray = (formData.getAll(Doms.chkButton)).map(a => Number(a) + 1);
+        const formMessage = formData.get(Doms.msg);
+        const formTitle = formData.get(Doms.ttl);
         const item = {
             "tagsCheckedRequest": checkboxesArray,
             "textRequest": formMessage,
@@ -81,7 +82,7 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         if (similarNoteNameStorage.length > 0) {
             // сохраним requestBody во внешний стейт:
             commonContext.componentString = jsonString;
-            buttonElement.style.display = "block";
+            buttonElement.style.display = SystemConstants.block;
             commonContext.componentMode = ComponentMode.Extended;
             return;
         }
@@ -159,12 +160,12 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
     }
 
     return (
-        <div id="submitStyle">
-            <input type="checkbox" id="submitButton" className="regular-checkbox"/>
-            <label htmlFor="submitButton" onClick={submit}>Создать</label>
-            <div id="cancelButton">
-                <input type="checkbox" id="submitButtonDuplicate" className="regular-checkbox"/>
-                <label htmlFor="submitButton" onClick={cancel}>Отменить</label>
+        <div id={Doms.submitStyle}>
+            <input type={Doms.checkbox} id={Doms.submitButton} className={Doms.regularCheckbox}/>
+            <label htmlFor={Doms.submitButton} onClick={submit}>Создать</label>
+            <div id={Doms.cancelButton}>
+                <input type={Doms.checkbox} id={Doms.submitButtonDuplicate} className={Doms.regularCheckbox}/>
+                <label htmlFor={Doms.submitButton} onClick={cancel}>Отмена</label>
             </div>
         </div>
     );

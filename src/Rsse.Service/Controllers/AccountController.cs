@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,7 +49,7 @@ public class AccountController(
         }
 
         var loginDto = new LoginDto(Email: email, Password: password);
-        var response = await Login(loginDto);
+        var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
 
@@ -65,16 +66,26 @@ public class AccountController(
         return LogOutMessage;
     }
 
+    /// <summary/> Проверить, авторизован ли запрос
+    [HttpGet("check"), Authorize]
+    public ActionResult CheckAuth()
+    {
+        return Ok(new
+        {
+            Username = User.Identity?.Name
+        });
+    }
+
     /// <summary>
     /// Вход в систему, аутентификация на основе кук
     /// </summary>
     /// <param name="loginDto">данные для авторизации</param>
-    private async Task<string> Login(LoginDto loginDto)
+    private async Task<string> TryLogin(LoginDto loginDto)
     {
         using var scope = serviceScopeFactory.CreateScope();
         try
         {
-            var identity = await new LoginModel(scope).SignIn(loginDto);
+            var identity = await new LoginModel(scope).TrySignInWith(loginDto);
 
             if (identity == null)
             {
