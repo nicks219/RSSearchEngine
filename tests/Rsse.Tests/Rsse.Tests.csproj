@@ -26,6 +26,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rsse.Service\Rsse.Service.csproj" />
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ClientApp\build\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ClientApp\build\backup_9.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

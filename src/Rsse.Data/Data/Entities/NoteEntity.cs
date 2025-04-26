@@ -9,11 +9,13 @@ namespace SearchEngine.Data.Entities;
 /// Представление строки таблицы бд с заметками
 /// </summary>
 [Table("Note")]
-public class NoteEntity
+public class NoteEntity : INote
 {
     /// <summary>
     /// Номер заметки
     /// </summary>
+    //[Key]
+    //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("NoteId")]
     public int NoteId { get; set; }
 

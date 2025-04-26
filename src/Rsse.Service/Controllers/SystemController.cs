@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SearchEngine.Common.Auth;
+using SearchEngine.Data.Repository;
 
 namespace SearchEngine.Controllers;
 
@@ -7,7 +9,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер, поставляющий системную информацию.
 /// </summary>
 [Route("system")]
-public class SystemController : Controller
+public class SystemController(IOptionsSnapshot<DatabaseOptions> options) : Controller
 {
     /// <summary>
     /// Получить версию сервиса.
@@ -23,7 +25,9 @@ public class SystemController : Controller
         return Ok(new
         {
             Version = Constants.ApplicationFullName,
-            DebugBuild = isDebug
+            DebugBuild = isDebug,
+            ReaderContext = options.Value.ReaderContext,
+            CreateTablesOnPgMigration = options.Value.CreateTablesOnPgMigration
         });
     }
 }

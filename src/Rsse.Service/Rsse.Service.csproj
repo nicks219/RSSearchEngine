@@ -21,6 +21,7 @@
     <ItemGroup>
         <PackageReference Include="MySqlBackup.NET" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
     </ItemGroup>
     <ItemGroup Label="Observability">
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
@@ -34,6 +35,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ClientApp\build\dump\" />
     </ItemGroup>
 
 </Project>

@@ -23,25 +23,26 @@ public class CatalogTests
     private const int NotesPerPage = 10;
     private CatalogModel? _catalogModel;
     private int _notesCount;
-    private TestServiceCollection<CatalogModel>? _host;
-    private TestLogger<CatalogModel>? _logger;
+    private CustomProviderWithLogger<CatalogModel>? _host;
+    private NoopLogger<CatalogModel>? _logger;
+    private TestCatalogRepository _repo;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new TestServiceCollection<CatalogModel>();
+        _host = new CustomProviderWithLogger<CatalogModel>();
         _catalogModel = new CatalogModel(_host.Scope);
-        var repo = _host.Provider.GetRequiredService<IDataRepository>();
-        TestCatalogRepository.CreateStubData(50);
-        _notesCount = repo.ReadAllNotes().Count();
-        _logger = (TestLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
+        _repo = (TestCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        _repo.CreateStubData(50);
+        _notesCount = _repo.ReadAllNotes().Count();
+        _logger = (NoopLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
     }
 
     [TestMethod]
     public async Task CatalogModel_ShouldRead_Page()
     {
         // arrange:
-        TestCatalogRepository.CreateStubData(50);
+        _repo.CreateStubData(50);
 
         // act:
         var response = await _catalogModel!.ReadPage(1);
@@ -58,7 +59,7 @@ public class CatalogTests
         const int forwardConst = 2;
 
         // arrange:
-        TestCatalogRepository.CreateStubData(50);
+        _repo.CreateStubData(50);
         var request = new CatalogDto { Direction = new List<int> { forwardConst }, PageNumber = page };
 
         // act:
@@ -77,7 +78,7 @@ public class CatalogTests
         _ = await _catalogModel!.NavigateCatalog(null!);
 
         // assert:
-        Assert.AreEqual(_logger?.ErrorMessage, ModelMessages.NavigateCatalogError);
+        Assert.AreEqual(_logger?.Message, ModelMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -124,7 +125,7 @@ public class CatalogTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var factory = new TestServiceScopeFactory(new TestServiceCollection<CatalogModel>().Provider);
+        var factory = new CustomScopeFactory(new CustomProviderWithLogger<CatalogModel>().Provider);
         var catalogController = new CatalogController(factory, logger);
 
         // act:

@@ -3,9 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace SearchEngine.Tests.Units.Mocks;
 
-internal class TestLogger<TModel> : ILogger<TModel>
+/// <summary/> Для тестов
+internal class NoopLogger<TModel> : ILogger<TModel>
 {
-    internal string? ErrorMessage { get; private set; } = string.Empty;
+    internal string? Message { get; private set; } = string.Empty;
+    internal volatile bool Reported;
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull => throw new NotImplementedException();
 
@@ -13,6 +15,7 @@ internal class TestLogger<TModel> : ILogger<TModel>
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
     {
-        ErrorMessage = state?.ToString();
+        Message = state?.ToString();
+        Reported = true;
     }
 }

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,9 @@ namespace SearchEngine;
 
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
-    private const string DefaultConnectionKey = "DefaultConnection";
+    internal const string DefaultConnectionKey = "DefaultConnection";
+    internal const string AdditionalConnectionKey = "AdditionalConnection";
+
     private const string LogFileName = "service.log";
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
@@ -53,12 +56,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
 
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
-
         services.AddHttpContextAccessor();
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
+            swaggerGenOptions.EnableAnnotations();
             swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment, new Microsoft.OpenApi.Models.OpenApiInfo
             {
                 Title = Constants.SwaggerTitle,
@@ -66,17 +68,30 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
-        services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
+        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
+        });
 
-        var connectionString = GetConnectionString();
-        if (string.IsNullOrEmpty(connectionString))
+        services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
+        services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
+
+
+        var mysqlConnectionString = GetDefaultConnectionString();
+        var npgsqlConnectionString = GetAdditionalConnectionString();
+        if (string.IsNullOrEmpty(mysqlConnectionString) || string.IsNullOrEmpty(npgsqlConnectionString))
         {
             throw new NullReferenceException("Invalid connection string");
         }
 
-        services.AddDbContext<CatalogContext>(options => options.UseMySql(connectionString, _mySqlVersion));
+        services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
+        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
+        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
-        services.AddScoped<IDataRepository, CatalogRepository>();
+        services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+        services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddControllers();
 
@@ -178,7 +193,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 
-    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+    private string? GetDefaultConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
+    private string? GetAdditionalConnectionString() => configuration.GetConnectionString(AdditionalConnectionKey);
 
     private static void AddLogging(ILoggerFactory loggerFactory)
     {
@@ -193,7 +209,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());
         logger.LogInformation("Development: {IsDev}", isDevelopment);
         logger.LogInformation("Production: {IsProd}", isProduction);
-        logger.LogInformation("Connection string: {ConnectionString}", GetConnectionString());
+        logger.LogInformation("Default connection string: {ConnectionString}", GetDefaultConnectionString());
+        logger.LogInformation("Additional connection string: {ConnectionString}", GetAdditionalConnectionString());
         logger.LogInformation("Server GC: {IsServer}", GCSettings.IsServerGC);
         logger.LogInformation("CPU: {Cpus}", Environment.ProcessorCount);
     }

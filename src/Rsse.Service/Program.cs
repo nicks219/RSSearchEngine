@@ -44,15 +44,18 @@ try
     var app = builder.Build();
     app.Run();
     return 0;
+    // "Postgres": SocketException
+    // "MySql": InvalidOperationException
 }
 catch (InvalidOperationException ex)
 {
-    Log.Fatal(ex, "{Message} \r\nstartup error, more likely db server is down", ex.Message);
+    Log.Fatal(ex, "[{Reporter}] Startup error, more likely db server is down, see exception:\r\n{Message}",
+        nameof(Program), ex.Message);
     return 1;
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "{Message} \r\nstartup error", ex.Message);
+    Log.Fatal(ex, "[{Reporter}] Startup error, see exception:\r\n{Message}", nameof(Program), ex.Message);
     return 1;
 }
 finally

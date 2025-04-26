@@ -57,7 +57,10 @@ num   pkts bytes target     prot opt in     out     source               destina
 4      107 27639 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
 ```
 
-## Локальные ресурсы
+## Локальные ресурсы (при отладке миграции на pg команды копировал отсюда)
 ```bash
 docker run --env=MYSQL_USER=1 --env=MYSQL_PASSWORD=1 --env=MYSQL_DATABASE=tagit --env=MYSQL_ROOT_PASSWORD=1 --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=GOSU_VERSION=1.14 --env=MYSQL_MAJOR=8.0 --env=MYSQL_VERSION=8.0.31 --volume=src_mysql-volume:/var/lib/mysql:rw --volume=/var/lib/mysql -p 3306:3306 --name mysql_8 --runtime=runc -d mysql:8.0.31-debian
+docker run --hostname=2aeeb8d8884d --env=POSTGRES_PASSWORD=1 --env=POSTGRES_USER=1 --env=POSTGRES_DB=tagit --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=LANG=en_US.utf8 --env=PG_MAJOR=16 --env=PG_VERSION=16.2 --env=PG_SHA256=446e88294dbc2c9085ab4b7061a646fa604b4bec03521d5ea671c2e5ad9b2952 --env=DOCKER_PG_LLVM_DEPS=llvm15-dev 		clang15 --env=PGDATA=/var/lib/postgresql/data --volume=/var/lib/postgresql/data -p 5432:5432 --restart=no --runtime=runc -d postgres:16-alpine
+# из команды выше удалён clang15 и hostname:
+docker run --name pg_16 --env=POSTGRES_PASSWORD=1 --env=POSTGRES_USER=1 --env=POSTGRES_DB=tagit --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=LANG=en_US.utf8 --env=PG_MAJOR=16 --env=PG_VERSION=16.2 --env=PG_SHA256=446e88294dbc2c9085ab4b7061a646fa604b4bec03521d5ea671c2e5ad9b2952 --env=DOCKER_PG_LLVM_DEPS=llvm15-dev --env=PGDATA=/var/lib/postgresql/data --volume=/var/lib/postgresql/data -p 5432:5432 --restart=no --runtime=runc -d postgres:16-alpine
 ```

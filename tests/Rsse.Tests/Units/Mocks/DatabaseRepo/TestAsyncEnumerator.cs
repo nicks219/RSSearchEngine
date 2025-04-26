@@ -4,19 +4,14 @@ using System.Threading.Tasks;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
+// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
+internal class TestAsyncEnumerator<T>(Task<IEnumerable<T>> enumerableTask) : IAsyncEnumerator<T>
 {
-    private readonly Task<IEnumerable<T>> _enumerableTask;
     private IEnumerator<T>? _enumerator;
-
-    public TestAsyncEnumerator(Task<IEnumerable<T>> enumerableTask)
-    {
-        _enumerableTask = enumerableTask;
-    }
 
     public ValueTask<bool> MoveNextAsync()
     {
-        _enumerator ??= _enumerableTask.Result.GetEnumerator();
+        _enumerator ??= enumerableTask.Result.GetEnumerator();
         return new ValueTask<bool>(_enumerator.MoveNext());
     }
 
