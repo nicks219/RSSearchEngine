@@ -19,6 +19,10 @@ beforeAll(() => {
     // https://vitest.dev/api/vi.html#vi-spyon
     // https://mswjs.io/docs/getting-started
     const fakeResponse = {response: "test"};
+    // глобального fetch может не быть
+    if (!global.fetch) {
+        global.fetch = () => Promise.reject('fetch not available');
+    }
     vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
             json: () => Promise.resolve(fakeResponse)
