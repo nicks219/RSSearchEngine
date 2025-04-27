@@ -135,7 +135,7 @@ public static class NpgsqlScript
                                       FROM information_schema.tables t
                                       WHERE t.table_schema = 'public'
                                         AND t.table_type = 'BASE TABLE'
-                                        AND t.table_name != 'Users'  -- Исключаем таблицу "Users"
+                                        -- AND t.table_name != 'Users'  -- Исключаем таблицу "Users"
                                     )
 
                                     SELECT

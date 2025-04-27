@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tools.MigrationAssistant;
+using Serilog;
 
 namespace SearchEngine;
 
@@ -162,12 +164,25 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         app.UseSwaggerUI(uiOptions =>
         {
-            uiOptions.SwaggerEndpoint($"/swagger/{Constants.SwaggerDocNameSegment}/swagger.json", Constants.ApplicationFullName);
+            uiOptions.SwaggerEndpoint($"/swagger/{Constants.SwaggerDocNameSegment}/swagger.json",
+                Constants.ApplicationFullName);
         });
 
         app.UseDefaultFiles();
 
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                // скрываем дампы от неавторизованного доступа
+                if ((ctx.File.Name.StartsWith("dump") || ctx.File.Name.StartsWith("backup"))
+                    && ctx.Context.User.Identity?.IsAuthenticated != true)
+                {
+                    ctx.Context.Abort();
+                    Log.Information("abort unauthorized download request");
+                }
+            }
+        });
 
         app.UseRouting();
 

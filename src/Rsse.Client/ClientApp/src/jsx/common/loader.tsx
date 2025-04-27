@@ -18,6 +18,7 @@ export class Loader {
 
     static migrationCreateUrl: string = "/migration/create";
     static migrationRestoreUrl: string = "/migration/restore";
+    static migrationDownloadUrl: string = "/migration/download";
 
     static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
     static corsServiceBaseUrl: string = "";
@@ -64,6 +65,20 @@ export class Loader {
         } catch (exception) {
             console.log(error);
             console.log(exception);
+        }
+    }
+
+    // GET file from web root: /migration/download
+    static async getFile(fileName: string): Promise<Response|undefined> {
+        const error: string = `${Loader.name}: getFile exception`;
+        Loader.setupDevEnvironment();
+
+        try {
+            return await fetch(`${this.corsServiceBaseUrl}${this.migrationDownloadUrl}?filename=${fileName}`, {
+                credentials: this.corsCredentialsPolicy
+            });
+        } catch {
+            console.log(error);
         }
     }
 

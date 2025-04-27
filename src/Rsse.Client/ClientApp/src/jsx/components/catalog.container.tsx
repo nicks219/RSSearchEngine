@@ -24,7 +24,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         return function onUnmount() {
             mounted[0] = false;
         };
-    }, []);
+    }, [data?.res]);
 
     const onClick = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -94,27 +94,43 @@ export const CatalogContainer = (): JSX.Element|undefined => {
         askForConfirmation(onConfirm, Messages.confirmDelete);
     }
 
-    if (!data) return;
-    const elements: JSX.Element[] = [];
-    const page = getCatalogPage(data);
+    async function downloadFile(fileName: string) {
+        const response = await Loader.getFile(fileName);
+        if (!response?.ok) {
+            const errorText = await response?.text();
+            console.error("error response:", errorText);
+            throw new Error('dump download error');
+        }
 
-    // данные для вьюхи: имя файла дампа:
-    if (data.res) {
-        elements.push(
-            <tr key={Doms.songWithSpace} className={Doms.bgWarning}>
-                <td></td>
-                <td>{data.res}</td>
-            </tr>);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
 
         const link = document.createElement('a');
-        link.href = data.res;
-        link.download = data.res;
+        link.href = url;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    if (!data) return;
+    const elements: JSX.Element[] = [];
+    if (data.res?.startsWith('dump') || data.res?.startsWith('backup')) {
+        const dumpFileName = data.res;
+        Loader.unusedPromise = downloadFile(dumpFileName);
+
+        // вьюху с именем дампа пока спрячем
+        // elements.push(
+        //     <tr key={Doms.songWithSpace} className={Doms.bgWarning}>
+        //         <td></td>
+        //         <td>{dumpFileName}</td>
+        //         <td></td>
+        //     </tr>);
     }
 
     // данные для вьюхи: страничка каталога:
+    const page = getCatalogPage(data);
     if (page) {
         for (let index = 0; index < page.length; index++) {
             elements.push(
@@ -122,14 +138,14 @@ export const CatalogContainer = (): JSX.Element|undefined => {
                     <td></td>
                     <td>
                         <button className="btn btn-outline-light"
-                            // note id and name:
+                                // note id and name:
                                 id={page[index].item2}
                                 onClick={onRedirect}>{page[index].item1}
                         </button>
                     </td>
                     <td>
                         <button className="btn btn-outline-light"
-                            // note id:
+                                // note id:
                                 id={page[index].item2}
                                 onClick={onDelete}>
                             &#10060;
