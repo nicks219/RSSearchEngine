@@ -20,7 +20,7 @@ public abstract class Constants
     /// <summary/> Минорная версия
     private const string MinorVersion = "2";
     /// <summary/> Патч
-    private const string PatchVersion = "7";
+    private const string PatchVersion = "9";
 
     // <summary>Версия приложения.</summary>
     private const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
