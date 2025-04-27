@@ -140,7 +140,7 @@ export const CatalogContainer = (): JSX.Element|undefined => {
     }
 
     return (
-        <div>
+        <div id={Doms.mainContent}>
             <CatalogView catalogDto={data} onClick={onClick} onLogout={onLogout}
                          onCreateDump={onCreateDump} onRestoreDump={onRestoreDump}
                          elements={elements}/>

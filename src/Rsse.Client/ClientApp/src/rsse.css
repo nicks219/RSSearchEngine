@@ -60,14 +60,14 @@ body, html  {
 #main {
     border-radius: 10px;
 
-    grid-row: 2;
+    grid-row: 2 / 3;
     display: block;
     position: relative;
     padding: 0;
 
     max-width: 1200px;
-    margin: 2.5rem auto 0;
-    overflow-y: auto;
+    margin: 1.2rem auto 0.2rem;
+    overflow-y: hidden;
     overflow-x: hidden;
 
 	width: var(--text-width);
@@ -75,11 +75,20 @@ body, html  {
 	overflow-wrap: break-word;
     user-select: none;
 }
+#main.footer-hidden {
+    grid-row: 2 / 4;
+}
 
 #main-content {
     position: relative;
     top: 0;
     left: 0;
+
+    border-radius: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    height: 100%;
 
     width: var(--text-width);
     padding-left: 1rem;
@@ -123,6 +132,23 @@ body, html  {
 }
 
 /* ... */
+table {
+    padding: 0;
+    margin: 1rem 1rem 0 0;
+    height: fit-content;
+}
+textarea {
+    margin: 1rem 1rem 1rem 1rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    width: 95%;
+    font-weight: bold;
+}
+h1 {
+    margin: 1rem 1rem 1rem 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
 #system-message {
     border-radius: 10px 10px 0 0;
 
@@ -130,12 +156,12 @@ body, html  {
     display: block;
 
     left: 0;
-    top: 6.5rem;
+    top: 8rem;
     bottom: 45rem;
     right: 0;
     max-width: var(--text-width);
     margin: 0 auto;
-    height: 3rem;
+    height: 5rem;
 
     z-index: 5;
     text-align: center;

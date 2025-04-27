@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Options;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
+using SearchEngine.Data.Repository;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Models;
 using SearchEngine.Tools.MigrationAssistant;
@@ -23,13 +25,14 @@ namespace SearchEngine.Controllers;
 public class CreateController(
     IServiceScopeFactory serviceScopeFactory,
     ILogger<CreateController> logger,
-    IDbMigrator migrator,
-    IOptions<CommonBaseOptions> options)
+    IEnumerable<IDbMigrator> migrators,
+    IOptions<CommonBaseOptions> options,
+    IOptionsSnapshot<DatabaseOptions> dbOptions)
     : ControllerBase
 {
     private const string BackupFileName = "db_last_dump";
-
     private readonly CommonBaseOptions _baseOptions = options.Value;
+    private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
 
     /// <summary>
     /// Получить список тегов
@@ -94,6 +97,11 @@ public class CreateController(
     /// </summary>
     private string? CreateDumpAndGetFilePath()
     {
+        // NB: создадим дамп для читающей базы
+        var dbType = _databaseOptions.ReaderContext;
+        var migrator = MigrationController.GetMigrator(migrators, dbType);
+
+        // NB: будут созданы незаархивированные файлы
         return _baseOptions.CreateBackupForNewSong
             // NB: создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные минрации:
             ? migrator.Create(BackupFileName)

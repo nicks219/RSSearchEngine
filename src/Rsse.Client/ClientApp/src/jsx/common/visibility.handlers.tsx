@@ -41,9 +41,13 @@ export const setLoginBoxVisibility = (
 
         if (localStorage.getItem('isAuth') === 'true') return;
 
+        document.querySelector('#main')?.classList.remove('footer-hidden');
+
         const loginMessageElement = document.getElementById(Doms.systemMessageId) as HTMLElement;
         const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
-        if (loginMessageElement) loginMessageElement.style.display = SystemConstants.block;
+        if (loginMessageElement) {
+            loginMessageElement.style.display = SystemConstants.block;
+        }
         if (loginElement) {
             loginElement.style.display = SystemConstants.block;
 
