@@ -13,7 +13,7 @@
   * контекст для чтения выставляется в appsettings: DatabaseOptions:ReaderContext MySql|Postgres 
   * ... 
 
-* выполнить: необходимо добавить и проверить k3s ресурсы: см [pg.k3s.md](../../.common/.private/pg.k3s.md)
+* выполнить: необходимо добавить и проверить k3s ресурсы, см [resource.postgres.yml](../../.k3s/resource.postgres.yml)
 
 ---
 * проблемы после копирования данных при добавлении новой записи, локально:

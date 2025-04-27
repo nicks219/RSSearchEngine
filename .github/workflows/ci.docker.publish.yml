@@ -9,7 +9,7 @@ name: Publish.Docker.ghcr
 
 on:
   schedule:
-    - cron: '40 8 * * *'
+    - cron: '40 8 1 * *'
   push:
     # branches: [ "master" ]
     # Publish semver tags as releases.
