@@ -7,7 +7,9 @@ namespace SearchEngine.Data.Dto;
 /// <summary>
 /// Шаблон передачи данных авторизации
 /// </summary>
-public readonly record struct LoginDto(
-    [property: JsonPropertyName("email"), Required] string Email,
-    [property: JsonPropertyName("password"), Required] string Password
-);
+public record LoginDto
+{
+    [JsonPropertyName("email"), Required] public string Email { get; set; }
+
+    [JsonPropertyName("password"), Required] public string Password { get; set; }
+}

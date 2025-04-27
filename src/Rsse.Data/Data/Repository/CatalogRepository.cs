@@ -218,6 +218,28 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         }
     }
 
+    public async Task UpdateCredos(UpdateCredosRequest credos)
+    {
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
+                userEntity.Email == credos.OldCredos.Email && userEntity.Password == credos.NewCredos.Password);
+            if (processed == null) throw new InvalidDataException($"credos '{credos.OldCredos.Email}:{credos.OldCredos.Password}' are invalid");
+            processed.Email = credos.NewCredos.Email;
+            processed.Password = credos.NewCredos.Password;
+            context.Users.Update(processed);
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            throw new Exception($"{nameof(UpdateCredosRequest)} | {ex.Message}");
+        }
+    }
+
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteDto note)
     {

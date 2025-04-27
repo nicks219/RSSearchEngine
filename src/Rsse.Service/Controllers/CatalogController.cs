@@ -16,6 +16,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер для функционала каталога с возможностью удаления заметки
 /// </summary>
 [Route("api/catalog"), ApiController]
+[ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger<CatalogController> logger) : ControllerBase
 {
     /// <summary>

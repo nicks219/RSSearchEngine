@@ -19,6 +19,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер для создания заметок
 /// </summary>
 [Authorize, Route("api/create"), ApiController]
+[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
 public class CreateController(
     IServiceScopeFactory serviceScopeFactory,
     ILogger<CreateController> logger,

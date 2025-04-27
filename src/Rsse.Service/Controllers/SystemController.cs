@@ -18,14 +18,10 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options) : Contr
     [HttpGet("version")]
     public ActionResult GetVersion()
     {
-        var isDebug = false;
-#if DEBUG
-        isDebug = true;
-#endif
         return Ok(new
         {
             Version = Constants.ApplicationFullName,
-            DebugBuild = isDebug,
+            DebugBuild = Constants.IsDebug,
             ReaderContext = options.Value.ReaderContext,
             CreateTablesOnPgMigration = options.Value.CreateTablesOnPgMigration
         });

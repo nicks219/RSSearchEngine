@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -10,7 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Models;
+using Swashbuckle.AspNetCore.Annotations;
+using ZstdSharp.Unsafe;
 using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
@@ -48,7 +52,7 @@ public class AccountController(
             return Unauthorized("Authorize please: empty credentials detected");
         }
 
-        var loginDto = new LoginDto(Email: email, Password: password);
+        var loginDto = new LoginDto{ Email = email, Password = password };
         var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
@@ -67,6 +71,7 @@ public class AccountController(
     }
 
     /// <summary/> Проверить, авторизован ли запрос
+    [ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
     [HttpGet("check"), Authorize]
     public ActionResult CheckAuth()
     {
@@ -74,6 +79,17 @@ public class AccountController(
         {
             Username = User.Identity?.Name
         });
+    }
+
+    /// <summary/> Обновить логин и пароль
+    [HttpGet("update"), Authorize]
+    public async Task<ActionResult> UpdateCredos([FromQuery]UpdateCredosRequest credos)
+    {
+        using var scope = serviceScopeFactory.CreateScope();
+        await using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        await repo.UpdateCredos(credos);
+        await Logout();
+        return Ok("updated");
     }
 
     /// <summary>

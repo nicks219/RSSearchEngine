@@ -104,6 +104,8 @@ internal class TestCatalogRepository : IDataRepository
         return Task.FromResult(_id - 1);
     }
 
+    public Task UpdateCredos(UpdateCredosRequest credos) => throw new NotImplementedException();
+
     public Task<int> DeleteNote(int noteId)
     {
         var res = _notes.Remove(noteId);
