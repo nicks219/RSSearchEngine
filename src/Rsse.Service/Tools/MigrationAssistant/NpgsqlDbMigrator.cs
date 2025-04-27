@@ -96,6 +96,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
 
         try
         {
+            // NB: при вызове на создании заметки будут созданы незаархивированные файлы
             if (IsCreateDumpMode(fileName))
             {
                 ZipFile.CreateFromDirectory(ArchiveTempDirectory, destinationArchiveFileName);

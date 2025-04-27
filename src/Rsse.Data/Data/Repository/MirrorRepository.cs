@@ -131,6 +131,11 @@ public class MirrorRepository(
         return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, note), _writerSecondary.UpdateNote(enumerable, note));
     }
 
+    public Task UpdateCredos(UpdateCredosRequest credos)
+    {
+        return Task.WhenAll(_writerPrimary.UpdateCredos(credos), _writerSecondary.UpdateCredos(credos));
+    }
+
     public async Task<int> DeleteNote(int noteId)
     {
         _ = await _writerPrimary.DeleteNote(noteId);

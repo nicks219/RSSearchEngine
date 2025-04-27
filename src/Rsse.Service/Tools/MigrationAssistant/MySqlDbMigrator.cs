@@ -10,7 +10,7 @@ namespace SearchEngine.Tools.MigrationAssistant;
 /// </summary>
 internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
 {
-    private const string Directory = "ClientApp/build";
+    internal const string Directory = "ClientApp/build";
     private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;

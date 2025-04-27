@@ -12,6 +12,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
 [Route("api/compliance")]
+[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
 public class ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
     : ControllerBase
 {

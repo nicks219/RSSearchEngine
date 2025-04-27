@@ -25,6 +25,7 @@ export const LoginContainer = () => {
     const onMount = () => {
         let callback = (response: Response) => response.ok ? loginOk() : loginErr();
         Loader.fireAndForgetWithQuery(Loader.checkAuth, "", callback, null);
+        document.querySelector('#main')?.classList.remove('footer-hidden');
     }
 
     const onSubmit = (e: React.SyntheticEvent) => {
@@ -60,7 +61,10 @@ export const LoginContainer = () => {
 
         setTimeout(() => {
             const loginElement = document.getElementById(Doms.loginName) as HTMLElement;
-            if (loginElement) loginElement.style.display = SystemConstants.none;
+            if (loginElement) {
+                loginElement.style.display = SystemConstants.none;
+                document.querySelector('#main')?.classList.add('footer-hidden');
+            }
         }, 1500);
     }
 

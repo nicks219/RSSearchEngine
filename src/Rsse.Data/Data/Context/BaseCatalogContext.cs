@@ -12,7 +12,7 @@ public abstract class BaseCatalogContext(DbContextOptions options) : DbContext(o
     /// <summary>
     /// Контекст для пользователей приложения
     /// </summary>
-    public DbSet<UserEntity>? Users { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
 
     /// <summary>
     /// Контекст для текстов заметок

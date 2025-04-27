@@ -8,14 +8,28 @@ namespace SearchEngine.Common.Auth;
 /// </summary>
 public abstract class Constants
 {
+    /// <summary/> Выставляется для отладочной сборки
+#if DEBUG
+    internal const bool IsDebug = true;
+#else
+    internal const bool IsDebug = false;
+#endif
+
+    /// <summary/> Мажорная версия
+    private const string MajorVersion = "5";
+    /// <summary/> Минорная версия
+    private const string MinorVersion = "2";
+    /// <summary/> Патч
+    private const string PatchVersion = "7";
+
     // <summary>Версия приложения.</summary>
-    private const string ApplicationVersion = "5.2.7";
+    private const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     // <summary>Версия API.</summary>
-    internal const string ApiVersion = "5.2";
+    internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
     internal const string ApplicationFullName = $"v{ApplicationVersion}: .NET8/React18";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
-    internal const string SwaggerDocNameSegment = "v5";
+    internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>
     internal const string SwaggerTitle = "RSSearchEngine API";
     // <summary>Именование политики полного доступа.</summary>

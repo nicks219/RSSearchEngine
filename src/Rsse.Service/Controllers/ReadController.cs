@@ -14,6 +14,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер для получения заметок
 /// </summary>
 [ApiController, Route("api/read")]
+[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
 public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<ReadController> logger)
     : ControllerBase
 {

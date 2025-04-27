@@ -150,19 +150,20 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         if (isDevelopment)
         {
+            // полный вывод деталей ошибки и всех хедеров также доступен в сваггере
             app.UseDeveloperExceptionPage();
-
-            app.UseSwagger();
-
-            app.UseSwaggerUI(uiOptions =>
-            {
-                uiOptions.SwaggerEndpoint($"/swagger/{Constants.SwaggerDocNameSegment}/swagger.json", Constants.ApplicationFullName);
-            });
         }
         else
         {
             // app.UseExceptionHandler("/error");
         }
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI(uiOptions =>
+        {
+            uiOptions.SwaggerEndpoint($"/swagger/{Constants.SwaggerDocNameSegment}/swagger.json", Constants.ApplicationFullName);
+        });
 
         app.UseDefaultFiles();
 

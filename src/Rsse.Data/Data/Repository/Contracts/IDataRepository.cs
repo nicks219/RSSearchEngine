@@ -42,6 +42,12 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     Task UpdateNote(IEnumerable<int> initialTags, NoteDto note);
 
     /// <summary>
+    /// Обновить логин и пароль
+    /// </summary>
+    /// <param name="credos">данные авторизации</param>
+    Task UpdateCredos(UpdateCredosRequest credos);
+
+    /// <summary>
     /// Удалить заметку
     /// </summary>
     /// <param name="noteId">шаблон заметки</param>

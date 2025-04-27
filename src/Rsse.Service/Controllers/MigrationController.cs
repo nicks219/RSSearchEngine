@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Auth;
@@ -98,6 +100,15 @@ public class MigrationController(
             logger.LogError(exception, RestoreError);
             return BadRequest(RestoreError);
         }
+    }
+
+    [HttpPost("upload")]
+    public IActionResult UploadFile(IFormFile file)
+    {
+        var path = Path.Combine(MySqlDbMigrator.Directory, file.FileName);
+        using var stream = new FileStream(path, FileMode.Create);
+        file.CopyTo(stream);
+        return Ok($"Файл сохранён: {path}");
     }
 
     internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)

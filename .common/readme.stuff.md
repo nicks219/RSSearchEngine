@@ -109,3 +109,12 @@ docker build -t nick219nick/tagit:v5 .
   GRANT ALL PRIVILEGES ON *.* TO '1'@'%';  
   SET PASSWORD FOR '1'@'%' = '1';  
   FLUSH PRIVILEGIES;  
+
+* root@nick2192:~# kubectl apply -f resource.postgres.yml
+persistentvolumeclaim/postgres-pvc created
+service/postgres created
+deployment.apps/postgres created
+# kubectl get svc postgres -o yaml
+
+* при проблемах с авторизацией kubectl переустановил бинарь, остальное не помогало:
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san 82.146.45.180" sh -

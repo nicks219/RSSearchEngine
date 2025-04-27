@@ -12,12 +12,13 @@ export const CatalogView = (props: {
     elements:JSX.Element[]}) => {
     return (
         <div className={Doms.row} id={Doms.mainContent}>
-            <p style={{marginLeft: 12 + '%'}}>
-                Всего песен: {getNotesCount(props.catalogDto)} &nbsp;
-                Страница: {getPageNumber(props.catalogDto)} &nbsp;
-            </p>
-            <p></p>
-            <p></p>
+            {/** <div id='catalog-info'>
+                <p>
+                    Всего песен: {getNotesCount(props.catalogDto)} &nbsp;
+                    Страница: {getPageNumber(props.catalogDto)} &nbsp;
+                </p>
+            </div> */}
+
             <table className={Doms.table} id={Doms.catalogTable}>
                 <thead className={Doms.theadDarkWithSpace}>
                 <tr>
@@ -46,7 +47,17 @@ export const CatalogView = (props: {
                     <th></th>
                 </tr>
                 </thead>
-                <tbody>{props.elements}</tbody>
+                <tbody>
+                {props.elements}
+                <tr style={{ background: '#343a40' }}>
+                    <td></td>
+                    <td>
+                        &nbsp;<div className={Doms.btnBtnInfo} style={{fontWeight: 'bold'}}>Страница: {getPageNumber(props.catalogDto)}</div>
+                        &nbsp;<div className={Doms.btnBtnInfo} style={{fontWeight: 'bold'}}>Всего заметок: {getNotesCount(props.catalogDto)}</div>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
             </table>
         </div>
     );

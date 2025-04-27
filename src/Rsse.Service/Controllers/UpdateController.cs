@@ -16,6 +16,7 @@ namespace SearchEngine.Controllers;
 /// Контроллер для обновления заметки
 /// </summary>
 [Authorize, Route("api/update"), ApiController]
+[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
 public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
     : ControllerBase
 {
