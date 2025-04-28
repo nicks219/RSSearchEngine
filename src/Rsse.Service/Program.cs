@@ -19,7 +19,7 @@ var builder = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>
     {
         webBuilder.UseStartup<Startup>();
-        webBuilder.UseWebRoot("ClientApp/build");
+        webBuilder.UseWebRoot(Constants.StaticDirectory);
         webBuilder.UseKestrel(options =>
         {
             var kestrelLimits = options.Limits;

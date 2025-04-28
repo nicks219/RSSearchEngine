@@ -20,14 +20,21 @@ public abstract class Constants
     /// <summary/> Минорная версия
     private const string MinorVersion = "2";
     /// <summary/> Патч
-    private const string PatchVersion = "7";
+    private const string PatchVersion = "9";
+
+    // <summary/> Рут для статики
+    internal const string StaticDirectory = "ClientApp/build";
+    // <summary/> Расширение для дампа mysql
+    internal const string MySqlDumpExt = ".dump";
+    // <summary/> Расширение для архива дампа postgres
+    internal const string PostgresDumpArchiveName = "dump.zip";
 
     // <summary>Версия приложения.</summary>
     private const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     // <summary>Версия API.</summary>
     internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: .NET8/React18";
+    internal const string ApplicationFullName = $"v{ApplicationVersion}: .NET8/React18/PostgreSQL";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
     internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>
