@@ -14,7 +14,7 @@ internal class MySqlDumpTooling
     private const string DumpName = "backup_9.txt";
     private const string SplitPattern = " ";
     private const string SkipPattern = "VALUES";
-    private const bool LogIsEnabled = false;
+    private const bool LogIsEnabled = true;
 
     private static readonly char DirectorySeparator = Path.DirectorySeparatorChar;
     private static readonly string DumpRelativePath = $"ClientApp{DirectorySeparator}build{DirectorySeparator}";
@@ -114,16 +114,14 @@ internal class MySqlDumpTooling
         // записать строки в файл
         File.WriteAllText(builtDump, builtLines.ToString());
 
-        if (!LogIsEnabled)
+        if (LogIsEnabled)
         {
-            return;
+            var dumpSize = new FileInfo(_originalDump).Length;
+            var newDumpSize = new FileInfo(builtDump).Length;
+            Console.WriteLine($"LINES: {originalLinesCount} > {lineCounter}");
+            Console.WriteLine($"SIZE: {dumpSize} > {newDumpSize}");
+            Console.WriteLine($"CHANGES: {changeCounter}");
         }
-
-        var dumpSize = new FileInfo(_originalDump).Length;
-        var newDumpSize = new FileInfo(builtDump).Length;
-        Console.WriteLine($"LINES: {originalLinesCount} > {lineCounter}");
-        Console.WriteLine($"SIZE: {dumpSize} > {newDumpSize}");
-        Console.WriteLine($"CHANGES: {changeCounter}");
 
         return;
 

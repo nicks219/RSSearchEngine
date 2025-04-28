@@ -10,6 +10,10 @@ public abstract class Docker
 {
     public const int MySqlPort = 3306 + 1;
     public const int PostgresPort = 5432 + 1;
+
+    public static readonly string? MySqlHost = Environment.GetEnvironmentVariable("MYSQL_HOST");
+    public static readonly string? PostgresHost = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+
     private const string PostgresContainer = "pg_test_17";
     private const string MySqlContainer = " mysql_test_8";
     private const string PostgresVolume = "pg_test";

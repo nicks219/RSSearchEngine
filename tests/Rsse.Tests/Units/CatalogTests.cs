@@ -25,7 +25,7 @@ public class CatalogTests
     private int _notesCount;
     private CustomProviderWithLogger<CatalogModel>? _host;
     private NoopLogger<CatalogModel>? _logger;
-    private TestCatalogRepository _repo;
+    private TestCatalogRepository? _repo;
 
     [TestInitialize]
     public void Initialize()
@@ -42,7 +42,7 @@ public class CatalogTests
     public async Task CatalogModel_ShouldRead_Page()
     {
         // arrange:
-        _repo.CreateStubData(50);
+        _repo!.CreateStubData(50);
 
         // act:
         var response = await _catalogModel!.ReadPage(1);
@@ -59,8 +59,8 @@ public class CatalogTests
         const int forwardConst = 2;
 
         // arrange:
-        _repo.CreateStubData(50);
-        var request = new CatalogDto { Direction = new List<int> { forwardConst }, PageNumber = page };
+        _repo!.CreateStubData(50);
+        var request = new CatalogDto { Direction = [forwardConst], PageNumber = page };
 
         // act:
         var response = await _catalogModel!.NavigateCatalog(request);
@@ -85,7 +85,7 @@ public class CatalogTests
     public async Task CatalogModel_OnInvalidRequest_ShouldLogError()
     {
         // arrange:
-        var request = new CatalogDto { Direction = new List<int> { 1000, 2000 } };
+        var request = new CatalogDto { Direction = [1000, 2000]};
 
         // act:
         var result = await _catalogModel!.NavigateCatalog(request);
@@ -100,7 +100,7 @@ public class CatalogTests
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
         var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        serviceScopeFactory.When(s => s.CreateScope()).Do(i => throw new Exception());
+        serviceScopeFactory.When(s => s.CreateScope()).Do(_ => throw new Exception());
         var catalogController = new CatalogController(serviceScopeFactory, logger);
 
         // act:

@@ -1,6 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Context;
@@ -29,15 +29,8 @@ public static class TestConfigurationExtensions
         // SQLite: https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
         // функциональность проверена на Windows/Ubuntu:
 
-        const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var mysqlDbPath = System.IO.Path.Join(path, $"mysql-{Guid.NewGuid()}.db");
-        var mysqlConnectionString = $"Data Source={mysqlDbPath}";
-        var pgDbPath = System.IO.Path.Join(path, $"postgres-{Guid.NewGuid()}.db");
-        var npgConnectionString = $"Data Source={pgDbPath}";
-
-        CustomWebAppFactory<SimpleMirrorStartup>.MySqlConnectionString = mysqlConnectionString;
-        CustomWebAppFactory<SimpleMirrorStartup>.PostgresConnectionString = npgConnectionString;
+        var mysqlConnectionString = services.GetConfiguration().GetConnectionString(Startup.DefaultConnectionKey);
+        var npgConnectionString = services.GetConfiguration().GetConnectionString(Startup.AdditionalConnectionKey);
 
         services.AddDbContext<MysqlCatalogContext>(options =>
         {
@@ -60,9 +53,8 @@ public static class TestConfigurationExtensions
     {
         services.AddControllers().AddApplicationPart(typeof(ReadController).Assembly);
 
-        var mysqlConnectionString = $"Server=127.0.0.1;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
-        var npgConnectionString = $"Include Error Detail=true;Server=127.0.0.1;Database=tagit;Port={Docker.PostgresPort};" +
-                                  $"Userid=1;Password=1;Pooling=false;MinPoolSize=1;MaxPoolSize=20;Timeout=15;SslMode=Disable";
+        var mysqlConnectionString = services.GetConfiguration().GetConnectionString(Startup.DefaultConnectionKey);
+        var npgConnectionString = services.GetConfiguration().GetConnectionString(Startup.AdditionalConnectionKey);
 
         var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
         services.AddDbContext<MysqlCatalogContext>(options =>

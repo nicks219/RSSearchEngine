@@ -34,8 +34,12 @@ public class ReposIntegrationTests
 
         // arrange:
         var sw = Stopwatch.StartNew();
-        if (!isGitHubAction) Docker.CleanUpDbContainers();
-        Docker.InitializeDbContainers();
+        if (!isGitHubAction)
+        {
+            Docker.CleanUpDbContainers();
+            Docker.InitializeDbContainers();
+        }
+
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }
 
@@ -57,8 +61,9 @@ public class ReposIntegrationTests
         var tokenizer = factory.HostInternal?.Services.GetRequiredService<ITokenizerService>();
         if (tokenizer == null) throw new TestCanceledException("missing tokenizer");
 
-        // требуется строка подключения из appsettings и файл миграции на пути ClientApp\build\backup_9.txt
-        mysqlMigrator.Restore(string.Empty);// редко: Attempted to read past the end of the stream
+        // NB: рестору требуется файл миграции на пути ClientApp\build\backup_9.dump
+        // todo: редко Attempted to read past the end of the stream, разберись
+        mysqlMigrator.Restore(string.Empty);
         tokenizer.Initialize();
         await repo.CopyDbFromMysqlToNpgsql();
 
@@ -129,6 +134,6 @@ public class ReposIntegrationTests
 
     public class ResponseModel
     {
-        public Dictionary<string, double> res { get; set; }
+        public required Dictionary<string, double> res { get; set; }
     }
 }

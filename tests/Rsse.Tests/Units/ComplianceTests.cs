@@ -54,7 +54,7 @@ public class ComplianceTests
 
     public class ResponseModel
     {
-        public Dictionary<string, double> Res { get; set; }
+        public required Dictionary<string, double> Res { get; set; }
     }
 }
 
