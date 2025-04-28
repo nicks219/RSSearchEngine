@@ -50,45 +50,65 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 
     private static string GetMysqlConnectionString()
     {
-        // runs on pipelined services
-        if (Docker.IsGitHubAction())
+        // runs locally on sqlite
+        if (!IsIntegration())
         {
-            Console.WriteLine($"{nameof(GetMysqlConnectionString)} | github action | host '{Docker.MySqlHost}'");
-            return $"Server={Docker.MySqlHost};Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+            Console.WriteLine($"{nameof(GetMysqlConnectionString)} | sqlite");
+
+            const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            var mysqlDbPath = Path.Join(path, $"mysql-{Guid.NewGuid()}.db");
+            var mysqlConnectionString = $"Data Source={mysqlDbPath}";
+
+            return mysqlConnectionString;
         }
 
-        // runs locally on docker
-        if (IsIntegration()) return $"Server=127.0.0.1;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+        // integrations: runs on pipelined services (localhost тк мапим порты)
+        if (Docker.IsGitHubAction())
+        {
+            Console.WriteLine($"{nameof(GetMysqlConnectionString)} | github action | host '{Docker.MySqlHost}:{Docker.MySqlPort}'");
+            return $"Server=localhost;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+        }
 
-        // runs locally on sqlite
-        const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var mysqlDbPath = Path.Join(path, $"mysql-{Guid.NewGuid()}.db");
-        var mysqlConnectionString = $"Data Source={mysqlDbPath}";
+        // integrations: runs locally on docker
+        if (IsIntegration())
+        {
+            Console.WriteLine($"{nameof(GetMysqlConnectionString)} | integrations on docker");
+            return $"Server=127.0.0.1;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+        }
 
-
-        return mysqlConnectionString;
+        throw new NotSupportedException($"test type not supported");
     }
 
     private static string GetPgConnectionString()
     {
-        // runs on pipelined services
+        // runs locally on sqlite
+        if (!IsIntegration())
+        {
+            Console.WriteLine($"{nameof(GetPgConnectionString)} | sqlite");
+
+            const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            var pgDbPath = Path.Join(path, $"postgres-{Guid.NewGuid()}.db");
+            var npgConnectionString = $"Data Source={pgDbPath}";
+
+            return npgConnectionString;
+        }
+
+        // integrations: runs on pipelined services (localhost тк мапим порты)
         if (Docker.IsGitHubAction()) {
-            Console.WriteLine($"{nameof(GetPgConnectionString)} | github action | host '{Docker.PostgresHost}'");
-            return $"Include Error Detail=true;Server={Docker.PostgresHost};Database=tagit;Port={Docker.PostgresPort};" +
+            Console.WriteLine($"{nameof(GetPgConnectionString)} | github action | host '{Docker.PostgresHost}:{Docker.PostgresPort}'");
+            return $"Include Error Detail=true;Server=localhost;Database=tagit;Port={Docker.PostgresPort};" +
                                             $"Userid=1;Password=1;Pooling=false;MinPoolSize=1;MaxPoolSize=20;Timeout=15;SslMode=Disable";}
 
-        // runs locally on docker
-        if (IsIntegration()) return $"Include Error Detail=true;Server=127.0.0.1;Database=tagit;Port={Docker.PostgresPort};" +
+        // integrations: runs locally on docker
+        if (IsIntegration()) {
+            Console.WriteLine($"{nameof(GetPgConnectionString)} | integrations on docker");
+            return $"Include Error Detail=true;Server=127.0.0.1;Database=tagit;Port={Docker.PostgresPort};" +
                                     $"Userid=1;Password=1;Pooling=false;MinPoolSize=1;MaxPoolSize=20;Timeout=15;SslMode=Disable";
+        }
 
-        // runs locally on sqlite
-        const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var pgDbPath = Path.Join(path, $"postgres-{Guid.NewGuid()}.db");
-        var npgConnectionString = $"Data Source={pgDbPath}";
-
-        return npgConnectionString;
+        throw new NotSupportedException($"test type not supported");
     }
 
     private static bool IsIntegration() => typeof(T) == typeof(IntegrationMirrorStartup);
