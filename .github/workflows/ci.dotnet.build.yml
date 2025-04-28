@@ -39,7 +39,6 @@ jobs:
           MYSQL_ROOT_PASSWORD: 1
         ports:
           - 3307:3306
-        # options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -58,6 +57,7 @@ jobs:
       run: dotnet build --no-restore -c Release
     - name: Test
       env:
-        POSTGRES_HOST: postgres_test
-        MYSQL_HOST: mysql_test
+        # идём на локалхост тк мапим порты
+        POSTGRES_HOST: localhost
+        MYSQL_HOST: localhost
       run: dotnet test --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release

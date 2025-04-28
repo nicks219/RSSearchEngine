@@ -63,11 +63,11 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             return mysqlConnectionString;
         }
 
-        // integrations: runs on pipelined services (localhost тк мапим порты)
+        // integrations: runs on pipelined services
         if (Docker.IsGitHubAction())
         {
             Console.WriteLine($"{nameof(GetMysqlConnectionString)} | github action | host '{Docker.MySqlHost}:{Docker.MySqlPort}'");
-            return $"Server=localhost;Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
+            return $"Server={Docker.MySqlHost};Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort}";
         }
 
         // integrations: runs locally on docker
@@ -95,10 +95,10 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             return npgConnectionString;
         }
 
-        // integrations: runs on pipelined services (localhost тк мапим порты)
+        // integrations: runs on pipelined services
         if (Docker.IsGitHubAction()) {
             Console.WriteLine($"{nameof(GetPgConnectionString)} | github action | host '{Docker.PostgresHost}:{Docker.PostgresPort}'");
-            return $"Include Error Detail=true;Server=localhost;Database=tagit;Port={Docker.PostgresPort};" +
+            return $"Include Error Detail=true;Server={Docker.PostgresHost};Database=tagit;Port={Docker.PostgresPort};" +
                                             $"Userid=1;Password=1;Pooling=false;MinPoolSize=1;MaxPoolSize=20;Timeout=15;SslMode=Disable";}
 
         // integrations: runs locally on docker
