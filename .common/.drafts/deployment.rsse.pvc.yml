@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsse-app-deployment
+  labels:
+    app: rsse-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rsse-app
+  template:
+    metadata:
+      labels:
+        app: rsse-app
+    spec:
+      containers:
+        - name: rsse-app
+          image: nick219nick/rsse-app
+          volumeMounts:
+          - mountPath: /root/.aspnet/DataProtection-Keys
+            name: dataprotection-keys
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            periodSeconds: 5
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            periodSeconds: 10
+            initialDelaySeconds: 5
+      volumes:
+        - name: dataprotection-keys
+          persistentVolumeClaim:
+            claimName: dataprotection-keys-pvc
+---

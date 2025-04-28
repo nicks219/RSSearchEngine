@@ -10,7 +10,7 @@
   .NET 8 | MSTest | TS React | Router | Vite | Vitest
   ```    
 * ```text
-  MySQL | SQLite | EF
+  PostgreSQL | MySQL | SQLite | EF
   ```
 * ```text
   GitHub CI/CD | Docker | K3S ready | DV SSL ready

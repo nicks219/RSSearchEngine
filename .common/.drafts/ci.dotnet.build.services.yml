@@ -1,0 +1,48 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build.NET
+
+on:
+  push:
+    branches: [ "master", "feature/**", "develop" ]
+    # tags-ignore: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.4-alpine3.21
+        env:
+          POSTGRES_PASSWORD: 1
+          POSTGRES_USER: 1
+          POSTGRES_DB: tagit
+        ports:
+          5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release
+    - name: Test
+      env:
+        POSTGRES_HOST: postgres
+        MYSQL_HOST: mysql
+      run: dotnet test --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release
