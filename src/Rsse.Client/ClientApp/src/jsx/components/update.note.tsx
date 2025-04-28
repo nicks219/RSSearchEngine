@@ -4,7 +4,7 @@ import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";
 
-export const UpdateNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+export const UpdateNote = (props: {formElement: HTMLFormElement|null, noteDto: NoteResponseDto}) => {
     const textAreaCols: number = 73;
     const textAreaRows: number = 30;
 

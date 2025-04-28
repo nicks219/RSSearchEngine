@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import {ReactNode, useContext, useEffect, useState} from "react";
+import {FC, JSX, ReactNode, useContext, useEffect, useState} from "react";
 import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {CatalogResponseDto} from "../dto/request.response.dto";
@@ -9,7 +9,7 @@ import {CatalogView} from "./catalog.view";
 import {Dialog} from "../common/dialog.component.tsx";
 import {Doms, Messages} from "../dto/doms.tsx";
 
-export const CatalogContainer = (): JSX.Element|undefined => {
+export const CatalogContainer: FC = (): JSX.Element|undefined => {
     const actionTypeConfirmValue = "confirm";
     const [data, setData] = useState<CatalogResponseDto | null>(null);
     const mounted = useState(true);

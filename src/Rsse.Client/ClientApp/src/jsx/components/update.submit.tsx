@@ -7,13 +7,13 @@ import {getTitleResponse} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {Doms} from "../dto/doms.tsx";
 
-export const UpdateSubmitButton = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+export const UpdateSubmitButton = (props: {formElement: HTMLFormElement|null, noteDto: NoteResponseDto, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const recoveryContext = useContext(RecoveryContext);
     const commonContext = useContext(CommonContext);
 
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
-        const formData = new FormData(props.formElement);
+        const formData = new FormData(props.formElement!);
         const checkboxesArray =
             (formData.getAll(Doms.chkButton))
                 .map(item => Number(item) + 1);

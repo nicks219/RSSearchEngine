@@ -7,7 +7,7 @@ import {getTextRequest, getTitleRequest} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 
-export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     // максимальное количество названий похожих заметок:
     const maxSimilarResultsTitleCount = 20;
 
@@ -66,7 +66,7 @@ export const CreateSubmitButton = (props: {formElement?: HTMLFormElement, stateW
         }
 
         // classic mode:
-        const formData = new FormData(props.formElement);
+        const formData = new FormData(props.formElement!);
         const checkboxesArray = (formData.getAll(Doms.chkButton)).map(a => Number(a) + 1);
         const formMessage = formData.get(Doms.msg);
         const formTitle = formData.get(Doms.ttl);

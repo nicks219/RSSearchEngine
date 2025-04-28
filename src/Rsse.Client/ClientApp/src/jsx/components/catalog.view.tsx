@@ -2,6 +2,7 @@
 import {CatalogResponseDto} from "../dto/request.response.dto";
 import {getNotesCount, getPageNumber} from "../common/dto.handlers";
 import {Doms} from "../dto/doms.tsx";
+import {JSX} from "react";
 
 export const CatalogView = (props: {
     catalogDto:CatalogResponseDto,
