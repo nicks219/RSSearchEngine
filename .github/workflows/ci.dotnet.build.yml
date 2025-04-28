@@ -23,7 +23,7 @@ jobs:
           POSTGRES_USER: 1
           POSTGRES_DB: tagit
         ports:
-          5433:5432
+          - 5433:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -38,7 +38,7 @@ jobs:
           MYSQL_DATABASE: tagit
           MYSQL_ROOT_PASSWORD: 1
         ports:
-          3307:3306
+          - 3307:3306
         # options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
         options: >-
           --health-cmd="mysqladmin ping"
