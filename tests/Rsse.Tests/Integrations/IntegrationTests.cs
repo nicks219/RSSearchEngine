@@ -21,15 +21,15 @@ using SearchEngine.Tools.MigrationAssistant;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ReposIntegrationTests
+public class IntegrationTests
 {
     [ClassInitialize]
-    public static void ReposIntegrationTestsSetup(TestContext context)
+    public static void IntegrationTestsSetup(TestContext context)
     {
         var isGitHubAction = Docker.IsGitHubAction();
         if (isGitHubAction)
         {
-            context.WriteLine($"{nameof(ReposIntegrationTests)} | dbs running in container(s)");
+            context.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
         }
 
         // arrange:
@@ -43,10 +43,30 @@ public class ReposIntegrationTests
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }
 
-    [TestMethod]
-    public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseCopy()
+    /// <summary>
+    /// Очистить файлы от sqlite, для локального запуска под windows
+    /// </summary>
+    [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
+    public static void CleanUp()
     {
-        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        if (Docker.IsGitHubAction() || Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+
+        var args = string.Join(" ", PathStore.Store.Select(f => $"\"{f}\""));
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = $"/c timeout /t 2 & del {args}",
+            CreateNoWindow = false,
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Normal
+        });
+    }
+
+    [TestMethod]
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
+    {
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -100,10 +120,10 @@ public class ReposIntegrationTests
     }
 
     [TestMethod]
-    public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseRestore()
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 

@@ -16,21 +16,21 @@ using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ReposSimpleTests
+public class RepositoryTests
 {
+    private static CustomWebAppFactory<SqliteStartup>? _factory;
+    private static WebApplicationFactoryClientOptions? _options;
+
     [ClassInitialize]
-    public static async Task ReposSimpleTestsSetup(TestContext _)
+    public static async Task RepositoryTestsSetup(TestContext _)
     {
         // arrange:
-        _factory = new CustomWebAppFactory<SimpleMirrorStartup>();
+        _factory = new CustomWebAppFactory<SqliteStartup>();
         var baseUri = new Uri("http://localhost:5000/");
-        _options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
+        _options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
         // NB: в тестах используется метод из Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
-        // чтобы разрезолвить конфликт типов со сброкой Microsoft.Testing.Platform
+        // чтобы разрезолвить конфликт типов со сборкой Microsoft.Testing.Platform
         var configuration = (IConfiguration)_factory.Server.Services.GetRequiredService(typeof(IConfiguration));
 
         var defaultConnectionString = configuration[Startup.DefaultConnectionKey];
@@ -54,14 +54,11 @@ public class ReposSimpleTests
             }
         }
 
-        throw new TestCanceledException($"{nameof(ReposSimpleTests)} | SQLite connection(s) missing");
+        throw new TestCanceledException($"{nameof(RepositoryTests)} | SQLite connection(s) missing");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void CleanUp() => _factory!.Dispose();
-
-    private static CustomWebAppFactory<SimpleMirrorStartup>? _factory;
-    private static WebApplicationFactoryClientOptions? _options;
 
     [TestMethod]
     public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
@@ -84,7 +81,7 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()// no such table: Tag
+    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
     {
         // act:
         const string tag = "new-2";
@@ -104,7 +101,7 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()// no such table: Tag
+    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
     {
         const string tag = "new-3";
         using var _ = _factory!.CreateClient(_options!);

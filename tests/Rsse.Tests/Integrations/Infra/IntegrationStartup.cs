@@ -15,27 +15,23 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// Используются провайдеры до mysql и postgres.
 /// Конфигурация регистрирует <b>MirrorRepository</b>
 /// </summary>
-public class IntegrationMirrorStartup
+public class IntegrationStartup(IConfiguration configuration)
 {
-    private static IConfiguration? _configuration;
-
-    public IntegrationMirrorStartup(IConfiguration configuration) => _configuration = configuration;
-
-    public static void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         services.AddDbsTestEnvironment();
 
         services.AddTransient<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
-        if (_configuration != null) services.Configure<DatabaseOptions>(_configuration.GetSection(nameof(DatabaseOptions)));
+        services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
-        services.AddSingleton<ILogger, NoopLogger<IntegrationMirrorStartup>>();
+        services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
         services.AddHostedService<TokenizerActivatorService>();
     }
 
-    public static void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
         app.UseEndpoints(ep => ep.MapControllers());

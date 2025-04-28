@@ -186,10 +186,7 @@ internal class TestCatalogRepository : IDataRepository
 
     public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestCatalogRepository));
 
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-    }
+    public void Dispose() => GC.SuppressFinalize(this);
 
     public ValueTask DisposeAsync()
     {

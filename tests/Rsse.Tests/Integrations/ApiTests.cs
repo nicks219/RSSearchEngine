@@ -11,15 +11,13 @@ using SearchEngine.Tests.Integrations.Infra;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ApiSimpleTests
+public class ApiTests
 {
     [TestMethod]
     public async Task Api_ReadTitleByNoteId_ReturnsTitle()
     {
-        // NB: для тестов скриптом создаётся SQLite бд в файле, с одной песней
-
         // arrange:
-        await using var factory = new CustomWebAppFactory<SimpleMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -35,6 +33,6 @@ public class ApiSimpleTests
         status.Should().Be("OK");
         var content = await contentTask;
         content.Should().NotBeNull();
-        content!.Values.First().Should().Be("Розенбаум -- Вечерняя застольная");
+        content.Values.First().Should().Be("Розенбаум -- Вечерняя застольная");
     }
 }

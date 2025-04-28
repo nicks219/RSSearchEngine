@@ -16,25 +16,24 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiAccessControlTests
 {
+    private static CustomWebAppFactory<SqliteAccessControlStartup>? _factory;
+    private static WebApplicationFactoryClientOptions? _options;
+
     [ClassInitialize]
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
         // arrange:
-        _factory = new CustomWebAppFactory<AuthStartup>();
+        _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         _options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri,
             HandleCookies = true
         };
-        // тест Api_DeleteNote_ByAuthorizedUser_ShouldSucceed удаляет данные, необходимые для Api_ReadTitleByNoteId_ReturnsTitle
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void CleanUp() => _factory!.Dispose();
-
-    private static CustomWebAppFactory<AuthStartup>? _factory;
-    private static WebApplicationFactoryClientOptions? _options;
 
     [TestMethod]
     public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()

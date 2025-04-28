@@ -21,9 +21,8 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// <summary>
 /// Копия класса настроек сервиса с настроенной авторизацией.
 /// </summary>
-public class AuthStartup(IConfiguration configuration)
+public class SqliteAccessControlStartup(IConfiguration configuration)
 {
-    private const string DefaultConnectionKey = "DefaultConnection";
     private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
     private const string LogFileName = "service.log";
 
@@ -118,8 +117,6 @@ public class AuthStartup(IConfiguration configuration)
 
         AddLogging(loggerFactory);
     }
-
-    private string? GetConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
 
     private static void AddLogging(ILoggerFactory loggerFactory)
     {
