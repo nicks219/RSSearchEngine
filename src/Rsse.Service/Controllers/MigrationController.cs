@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -60,7 +61,7 @@ public class MigrationController(
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet("create")]
-    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
+    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
 
@@ -84,7 +85,7 @@ public class MigrationController(
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet("restore")]
     [Authorize(Constants.FullAccessPolicyName)]
-    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.MySql)
+    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
 
@@ -102,13 +103,33 @@ public class MigrationController(
         }
     }
 
+    /// <summary>
+    /// Загрузить файл на сервер
+    /// </summary>
     [HttpPost("upload")]
+    [RequestSizeLimit(10_000_000)]
     public IActionResult UploadFile(IFormFile file)
     {
-        var path = Path.Combine(MySqlDbMigrator.Directory, file.FileName);
+        var path = Path.Combine(Constants.StaticDirectory, file.FileName);
         using var stream = new FileStream(path, FileMode.Create);
         file.CopyTo(stream);
         return Ok($"Файл сохранён: {path}");
+    }
+
+    /// <summary>
+    /// Выгрузить файл с сервера
+    /// </summary>
+    [HttpGet("download")]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult DownloadFile([FromQuery] string filename)
+    {
+        // const string mimeType = "application/octet-stream";
+        const string mimeType = "application/zip";
+        var path = Path.Combine(Directory.GetCurrentDirectory(), Constants.StaticDirectory, filename);
+        if (!System.IO.File.Exists(path)) return NotFound("Файл не найден");
+
+        return PhysicalFile(path, mimeType, Path.GetFileName(path));
     }
 
     internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)

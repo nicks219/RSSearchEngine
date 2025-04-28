@@ -1,14 +1,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using SearchEngine.Common.Auth;
+using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository.Scripts;
 using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
-public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
+public class NpgsqlDbMigrator(IConfiguration configuration, IServiceScopeFactory scopeFactory) : IDbMigrator
 {
     // todo
     // 1. проверить в docker
@@ -21,6 +25,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     private const string NpgsqlNotesSuffix = "notes";
     private const string NpgsqlTagsSuffix = "tags";
     private const string NpgsqlRelationsSuffix = "rel";
+    private const string NpgsqlUsersSuffix = "usr";
     private const string ArchiveDirectory = "ClientApp/build";
     private const int MaxVersion = 10;
     // что будет в docker?
@@ -88,6 +93,13 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
             File.WriteAllText($"{archiveTempPath}{NpgsqlTagsSuffix}", allTags);
         }
 
+        using (var usersReader = connection.BeginTextExport("COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") TO STDOUT"))
+        {
+            var allUsers = usersReader.ReadToEnd();
+            File.WriteAllText($"{backupFilesPath}{NpgsqlUsersSuffix}", allUsers);
+            File.WriteAllText($"{archiveTempPath}{NpgsqlUsersSuffix}", allUsers);
+        }
+
         connection.Close();
 
         var destinationArchiveFileName = GetArchiveFileName();
@@ -113,13 +125,14 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
     }
 
     /// <summary/> Вернёт dump.zip в клиентской директории
-    private static string GetArchiveFileName() => Path.Combine(ArchiveDirectory, "dump.zip");
+    private static string GetArchiveFileName() => Path.Combine(ArchiveDirectory, Constants.PostgresDumpArchiveName);
     private static void CleanUpTempDirectory(string archiveTempPath)
     {
         File.Delete($"{archiveTempPath}{NpgsqlDdlSuffix}");
         File.Delete($"{archiveTempPath}{NpgsqlRelationsSuffix}");
         File.Delete($"{archiveTempPath}{NpgsqlNotesSuffix}");
         File.Delete($"{archiveTempPath}{NpgsqlTagsSuffix}");
+        File.Delete($"{archiveTempPath}{NpgsqlUsersSuffix}");
     }
 
     /// <inheritdoc/>
@@ -151,26 +164,37 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
         {
             ZipFile.ExtractToDirectory(sourceArchiveFileName, ArchiveTempDirectory);
 
+            // завязываемся на настройках
+            var createTablesOnPgMigration = configuration.GetValue<bool>("DatabaseOptions:CreateTablesOnPgMigration");
+            // пересоздадим базу до открытия соединения
+            if (!createTablesOnPgMigration)
+            {
+                var context = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+                context.Dispose();
+                Log.Information("pg on restore | recreate database");
+            }
+
             using var connection = new NpgsqlConnection(connectionString);
 
             var allTablesDdl = File.ReadAllText($"{archiveTempPath}{NpgsqlDdlSuffix}");
             var allTagToNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlRelationsSuffix}");
             var allNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlNotesSuffix}");
             var allTags = File.ReadAllText($"{archiveTempPath}{NpgsqlTagsSuffix}");
+            var allUsers = File.ReadAllText($"{archiveTempPath}{NpgsqlUsersSuffix}");
 
             connection.Open();
 
             // завязываемся на настройках
-            var createTablesOnPgMigration = configuration.GetValue<bool>("DatabaseOptions:CreateTablesOnPgMigration");
-            var rows = 0;
             if (createTablesOnPgMigration)
             {
                 using var cmd = connection.CreateCommand();
                 cmd.Connection = connection;
                 cmd.CommandText = allTablesDdl;
-                rows = cmd.ExecuteNonQuery();
+                var rows = cmd.ExecuteNonQuery();
+                Log.Debug("pg on restore | apply ddl : '{CreateTable}' | rows affected: '{Rows}'", createTablesOnPgMigration, rows);
             }
-            Log.Debug("pg restore apply ddl : '{CreateTable}' | rows affected: '{Rows}'", createTablesOnPgMigration, rows);
 
             using (var notesWriter =
                    connection.BeginTextImport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") FROM STDIN"))
@@ -187,6 +211,12 @@ public class NpgsqlDbMigrator(IConfiguration configuration) : IDbMigrator
                    connection.BeginTextImport("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") FROM STDIN"))
             {
                 tagToNotesWriter.Write(allTagToNotes);
+            }
+
+            using (var usersWriter =
+                   connection.BeginTextImport("COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") FROM STDIN"))
+            {
+                usersWriter.Write(allUsers);
             }
 
             SetVals(connection);

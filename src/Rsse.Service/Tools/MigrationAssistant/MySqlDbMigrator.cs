@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using SearchEngine.Common.Auth;
 using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
@@ -10,7 +11,7 @@ namespace SearchEngine.Tools.MigrationAssistant;
 /// </summary>
 internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
 {
-    internal const string Directory = "ClientApp/build";
+
     private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;
@@ -23,8 +24,8 @@ internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
         var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
         var fileWithPath = string.IsNullOrEmpty(fileName)
-            ? Path.Combine(Directory, $"backup_{_version}.txt")
-            : Path.Combine(Directory, $"_{fileName}_{_perSongVersion}.txt");
+            ? Path.Combine(Constants.StaticDirectory, $"backup_{_version}{Constants.MySqlDumpExt}")
+            : Path.Combine(Constants.StaticDirectory, $"_{fileName}_{_perSongVersion}{Constants.MySqlDumpExt}");
 
         IncrementVersion(
             ref string.IsNullOrEmpty(fileName)
@@ -66,8 +67,8 @@ internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
         }
 
         var fileWithPath = string.IsNullOrEmpty(fileName)
-            ? Path.Combine(Directory, $"backup_{version}.txt")
-            : Path.Combine(Directory, $"_{fileName}_.txt");
+            ? Path.Combine(Constants.StaticDirectory, $"backup_{version}{Constants.MySqlDumpExt}")
+            : Path.Combine(Constants.StaticDirectory, $"_{fileName}_{Constants.MySqlDumpExt}");
 
         using var conn = new MySqlConnection(connectionString);
 
