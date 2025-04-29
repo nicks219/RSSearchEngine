@@ -29,7 +29,7 @@ public class UpdateTests
         var provider = new CustomProviderWithLogger<UpdateModel>();
         var findModel = new CompliantModel(host.Scope);
 
-        var repo = (TestCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.CreateStubData(10);
 
         _testNoteId = findModel.FindNoteId(TestName);
@@ -43,7 +43,7 @@ public class UpdateTests
         var response = await _updateModel.GetOriginalNote(1);
 
         // assert:
-        Assert.AreEqual(TestCatalogRepository.TagList.Count, response.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, response.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]

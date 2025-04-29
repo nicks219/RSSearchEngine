@@ -21,7 +21,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ReadTests
 {
-    private readonly int _tagsCount = TestCatalogRepository.TagList.Count;
+    private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private ReadModel _readModel;
@@ -58,7 +58,7 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(_logger.Message, string.Empty);
-        Assert.AreEqual(TestCatalogRepository.FirstNoteText, response.TitleResponse);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, response.TitleResponse);
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class ReadTests
     // демонстрация распределения результатов в текущем алгоритме выбора:
     public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
     {
-        await using var repo = (TestCatalogRepository)_customProviderWithLogger.Provider.GetRequiredService<IDataRepository>();
+        await using var repo = (FakeCatalogRepository)_customProviderWithLogger.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(400);
 

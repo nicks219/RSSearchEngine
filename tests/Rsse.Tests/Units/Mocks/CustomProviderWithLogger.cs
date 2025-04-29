@@ -21,7 +21,7 @@ internal class CustomProviderWithLogger<TScope> where TScope : class
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<IDataRepository, TestCatalogRepository>();
+        services.AddSingleton<IDataRepository, FakeCatalogRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
         services.AddSingleton<ILogger<TScope>, NoopLogger<TScope>>();

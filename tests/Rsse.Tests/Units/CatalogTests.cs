@@ -25,14 +25,14 @@ public class CatalogTests
     private int _notesCount;
     private CustomProviderWithLogger<CatalogModel>? _host;
     private NoopLogger<CatalogModel>? _logger;
-    private TestCatalogRepository? _repo;
+    private FakeCatalogRepository? _repo;
 
     [TestInitialize]
     public void Initialize()
     {
         _host = new CustomProviderWithLogger<CatalogModel>();
         _catalogModel = new CatalogModel(_host.Scope);
-        _repo = (TestCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        _repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
         _repo.CreateStubData(50);
         _notesCount = _repo.ReadAllNotes().Count();
         _logger = (NoopLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();

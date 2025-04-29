@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using SearchEngine.Data.Context;
@@ -11,8 +9,8 @@ using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
-internal class TestCatalogRepository : IDataRepository
+// todo: избавиться от мока и связанного содержимого в неймспейсе, использовать стандартный вариант
+internal class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
@@ -28,7 +26,7 @@ internal class TestCatalogRepository : IDataRepository
 
     private readonly Dictionary<int, Tuple<string, string>> _notes = new();
 
-    public TestCatalogRepository()
+    public FakeCatalogRepository()
     {
         _notes.Add(1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
     }
@@ -133,8 +131,7 @@ internal class TestCatalogRepository : IDataRepository
                 .Select<int, Tuple<string, int>>(x => new Tuple<string, int>(_notes[x].Item1, x))
                 .ToList();
 
-        // return titlesList.AsQueryable();
-        return new TestQueryable<Tuple<string, int>>(titlesList);
+        return new FakeDbSet<Tuple<string, int>>(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()
@@ -146,8 +143,7 @@ internal class TestCatalogRepository : IDataRepository
     public IQueryable<int> ReadNoteTags(int noteId)
     {
         var tagList = new List<int> { 1, 2 };
-        // return tagList.AsQueryable();
-        return new TestQueryable<int>(tagList);
+        return new FakeDbSet<int>(tagList);
     }
 
     public Task<int> ReadNotesCount()
@@ -160,15 +156,13 @@ internal class TestCatalogRepository : IDataRepository
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
         var note = new List<Tuple<string, string>> {_notes[noteId]};
-        // return note.AsQueryable();
-
-        return new TestQueryable<Tuple<string, string>>(note);
+        return new FakeDbSet<Tuple<string, string>>(note);
     }
 
     public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
-        // return checkedTags.AsQueryable();
-        var result = new TestQueryable<int>(checkedTags);
+        // методу требуется IAsyncQueryProvider
+        var result =  new FakeDbSet<int>(checkedTags, new FakeAsyncQueryProvider());
         return result;
     }
 
@@ -184,7 +178,7 @@ internal class TestCatalogRepository : IDataRepository
         return Task.CompletedTask;
     }
 
-    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestCatalogRepository));
+    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 
     public void Dispose() => GC.SuppressFinalize(this);
 

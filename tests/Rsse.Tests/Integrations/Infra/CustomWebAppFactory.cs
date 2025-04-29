@@ -56,7 +56,7 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             var path = Environment.GetFolderPath(folder);
             var mysqlDbPath = Path.Join(path, $"mysql-{Guid.NewGuid()}.db");
             var mysqlConnectionString = $"Data Source={mysqlDbPath}";
-            PathStore.Store.Push(mysqlDbPath);
+            SqliteFileCleaner.Store.Push(mysqlDbPath);
             Console.WriteLine($"{nameof(GetPgConnectionString)} | sqlite | {Path.GetFileName(mysqlDbPath)}");
 
             return mysqlConnectionString;
@@ -78,7 +78,7 @@ internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             var path = Environment.GetFolderPath(folder);
             var pgDbPath = Path.Join(path, $"postgres-{Guid.NewGuid()}.db");
             var npgConnectionString = $"Data Source={pgDbPath}";
-            PathStore.Store.Push(pgDbPath);
+            SqliteFileCleaner.Store.Push(pgDbPath);
             Console.WriteLine($"{nameof(GetPgConnectionString)} | sqlite | {Path.GetFileName(pgDbPath)}");
 
             return npgConnectionString;

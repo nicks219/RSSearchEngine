@@ -27,7 +27,7 @@ public class CreateTests
         var result = await _createModel!.ReadStructuredTagList();
 
         // assert:
-        Assert.AreEqual(TestCatalogRepository.TagList.Count, result.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, result.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]

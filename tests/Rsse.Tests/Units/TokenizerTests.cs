@@ -45,7 +45,7 @@ public class TokenizerTests
     {
         var host = new CustomProviderWithLogger<TokenizerService>();
         _factory = new CustomScopeFactory(host.Provider);
-        var repo = (TestCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);
     }
 
@@ -90,7 +90,7 @@ public class TokenizerTests
         //var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Update(1, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
+        tokenizer.Update(1, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -119,8 +119,8 @@ public class TokenizerTests
         // act:
         tokenizer.Create(2, new NoteEntity
         {
-            Title = TestCatalogRepository.SecondNoteTitle,
-            Text = TestCatalogRepository.SecondNoteText
+            Title = FakeCatalogRepository.SecondNoteTitle,
+            Text = FakeCatalogRepository.SecondNoteText
         });
 
         // assert:
@@ -172,11 +172,11 @@ public class TokenizerTests
         VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
+        tokenizer.Create(2, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2, new NoteEntity { Title = TestCatalogRepository.SecondNoteTitle, Text = TestCatalogRepository.SecondNoteText });
+        tokenizer.Update(2, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
@@ -197,8 +197,8 @@ public class TokenizerTests
     private static void CreateTestNote(TokenizerService tokenizerService) =>
         tokenizerService.Create(1, new NoteEntity
         {
-            Title = TestCatalogRepository.FirstNoteTitle,
-            Text = TestCatalogRepository.FirstNoteText
+            Title = FakeCatalogRepository.FirstNoteTitle,
+            Text = FakeCatalogRepository.FirstNoteText
         });
 
     [TestCleanup]

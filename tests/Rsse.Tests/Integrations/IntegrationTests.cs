@@ -44,23 +44,12 @@ public class IntegrationTests
     }
 
     /// <summary>
-    /// Очистить файлы от sqlite, для локального запуска под windows
+    /// Запустить отложенную очистку файлов бд sqlite (на windows)
     /// </summary>
     [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
     public static void CleanUp()
     {
-        if (Docker.IsGitHubAction() || Environment.OSVersion.Platform != PlatformID.Win32NT) return;
-
-        var args = string.Join(" ", PathStore.Store.Select(f => $"\"{f}\""));
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "cmd.exe",
-            Arguments = $"/c timeout /t 2 & del {args}",
-            CreateNoWindow = false,
-            UseShellExecute = true,
-            WindowStyle = ProcessWindowStyle.Normal
-        });
+        SqliteFileCleaner.ScheduleFileDeletionWindowsOnly();
     }
 
     [TestMethod]

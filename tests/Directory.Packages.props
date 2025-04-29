@@ -6,7 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- TESTS -->
-    <PackageVersion Include="FluentAssertions" Version="[7.2.0]" /><!-- 8.2.0 license: https://xceed.com/products/unit-testing/fluent-assertions/ -->
+    <PackageVersion Include="FluentAssertions" Version="[7.2.0]" />
+    <!-- 8.2.0 license: https://xceed.com/products/unit-testing/fluent-assertions/ -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[17.13.0]" />
     <PackageVersion Include="MSTest.TestAdapter" Version="[3.8.3]" />
     <PackageVersion Include="MSTest.TestFramework" Version="[3.8.3]" />
@@ -15,5 +16,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[9.0.4]" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="[9.0.4]" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[9.0.4]" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 </Project>
