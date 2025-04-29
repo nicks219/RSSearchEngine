@@ -79,7 +79,7 @@ public class ReadManager(IServiceScope serviceScope)
                 if (IsSpecific() == false)
                 {
                     var checkedTags = request.TagsCheckedRequest;
-                    var electableNoteIds = _repo.ReadTaggedNoteIds(checkedTags);
+                    var electableNoteIds = _repo.ReadTaggedNotesIds(checkedTags);
                     noteId = await NoteElector.ElectNextNoteAsync(electableNoteIds, randomElectionEnabled);
                 }
 

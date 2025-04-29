@@ -159,6 +159,7 @@ public class TokenizerService : ITokenizerService
             // TODO избавиться от загрузки всех записей из таблицы:
             var texts = repo.ReadAllNotes();
 
+            // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
             foreach (var text in texts)
             {
                 var (extendedLine, reducedLine, id) = CreateTokensLine(processor, text);
@@ -178,7 +179,7 @@ public class TokenizerService : ITokenizerService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{nameof(TokenizerService)}] initialization system error");
+            _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'", nameof(TokenizerService), ex.Source, ex.Message);
         }
         finally
         {

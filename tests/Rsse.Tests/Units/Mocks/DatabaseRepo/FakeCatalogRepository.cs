@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EntityFrameworkCore.Testing.Moq;
-using Microsoft.EntityFrameworkCore.Query;
+using EntityFrameworkCore.Testing.Common;
+using Moq;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -164,28 +164,29 @@ public class FakeCatalogRepository : IDataRepository
         return new FakeDbSet<Tuple<string, string>>(note);
     }
 
-    public IQueryable<int> ReadTaggedNoteIds(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
-        var n = _notes;
-        var enumerable = checkedTags as int[] ?? checkedTags.ToArray();
-        if (enumerable.First() == ReadTests.ElectionTestCheckedTag)
+        var ids = checkedTags as int[] ?? checkedTags.ToArray();
+        if (ids.First() == ReadTests.ElectionTestCheckedTag)
         {
             // признак теста ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest
             // отдаём id тестовой заметки
-            enumerable = [TestNoteId];
+            ids = [TestNoteId];
         }
 
-        if (enumerable.Length == ReadTests.ElectionTestTagsCount)
+        if (ids.Length == ReadTests.ElectionTestTagsCount)
         {
             // признак теста ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests
             // отдаём ElectionTestNotesCount заметок - пусть выбирает
-            enumerable = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
+            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
         }
 
         // выглядит как архитектурная проблема: IAsyncQueryProvider используется вне слоя репозитория в ElectNextNoteAsync
         var queryable = new List<NoteEntity>().AsQueryable();
-        var provider = Create.MockedQueryProviderFor(queryable);
-        var result =  new FakeDbSet<int>(enumerable, (IAsyncQueryProvider)provider);
+        var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
+        var asyncQueryProvider = mock.Object;
+
+        var result =  new FakeDbSet<int>(ids, asyncQueryProvider);
 
         return result;
     }

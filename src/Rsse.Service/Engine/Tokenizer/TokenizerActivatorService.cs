@@ -29,7 +29,7 @@ internal class TokenizerActivatorService(ITokenizerService tokenizer, ILogger<To
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("[TokenizerActivatorService] is active, prepare to runs for '{Count}' time", _count);
+                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(TokenizerActivatorService), _count.ToString());
 
                 _count++;
 
@@ -40,7 +40,7 @@ internal class TokenizerActivatorService(ITokenizerService tokenizer, ILogger<To
         }
         finally
         {
-            logger.LogInformation("[{Name}] graceful shutdown, cycles counter: '{Count}'", nameof(TokenizerActivatorService), _count.ToString());
+            logger.LogInformation("[{Reporter}] graceful shutdown, cycles counter: '{Count}'", nameof(TokenizerActivatorService), _count.ToString());
         }
     }
 }

@@ -88,6 +88,8 @@
 * 6.0.0 `в разработке`
   * upd: NET9 | React19 | интеграционники с services: GitHub Actions | k3s PVC для сервиса 
   * upd: чистка sqlite файлов после локального запуска тестов
+  * upd: для юнит-тестов используется мок AsyncQueryProvider из EFCore.Testing
+  * k3s: билд self-contained под alpine:3.21 | глобализация отключена в csproj | используется для деплоя
 
 # Запланированные изменения:
 * **БД**: ✅ перейти с MySQL на Postgres, функционал дампа дополнить раздельными миграциями схемы и данных
@@ -110,10 +112,10 @@
 * **Планы обновлений**: 
   * ✅ поднять версии до NET9 | Pg 17.4 | React 19
     * ✅ поправить пайплайн [ci.dotnet.build.yml](.github/workflows/ci.dotnet.build.yml)
-    * поправить докерфайл для [Dockerfile-net-react](src/Dockerfile-net-react) и пайплайн деплоя [cd.deploy.k3s.yml](.github/workflows/cd.deploy.k3s.yml)
+    * ✅ поправить докерфайл для [Dockerfile-net-react](src/Dockerfile-net-react) и проверить пайплайн деплоя [cd.deploy.k3s.yml](.github/workflows/cd.deploy.k3s.yml)
   * ✅ подключи pvc для сервиса (ворнинг по поводу ключей)
   * ✅ используй на пайплайне services для интеграционных тестов
-  * почисти сборку, убери лишние локализации
+  * ✅ почисти сборку, убери лишние локализации
   * актуализировать версии до `6.0.0`: 
     * ✅ в package.json
     * ✅ зафиксировать в документации и [README.md](README.md)

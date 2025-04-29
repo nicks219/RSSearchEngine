@@ -79,7 +79,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="checkedTags">идентификаторы отмеченных тегов</param>
     /// <returns>идентификаторы заметок</returns>
-    IQueryable<int> ReadTaggedNoteIds(IEnumerable<int> checkedTags);
+    IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags);
 
     /// <summary>
     /// Получить название заметки

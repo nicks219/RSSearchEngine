@@ -155,7 +155,7 @@ public class MirrorRepository(
 
     public IQueryable<NoteEntity> ReadAllNotes() => _reader.ReadAllNotes();
 
-    public IQueryable<int> ReadTaggedNoteIds(IEnumerable<int> checkedTags) => _reader.ReadTaggedNoteIds(checkedTags);
+    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags) => _reader.ReadTaggedNotesIds(checkedTags);
 
     public string ReadNoteTitle(int noteId) => _reader.ReadNoteTitle(noteId);
 
