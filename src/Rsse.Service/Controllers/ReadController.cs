@@ -40,7 +40,7 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var res = new ReadModel(scope).ReadTitleByNoteId(int.Parse(id));
+            var res = new ReadManager(scope).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
@@ -59,7 +59,7 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            return await new ReadModel(scope).ReadTagList();
+            return await new ReadManager(scope).ReadTagList();
         }
         catch (Exception ex)
         {
@@ -85,7 +85,7 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
             }
 
             using var scope = serviceScopeFactory.CreateScope();
-            var model = await new ReadModel(scope).GetNextOrSpecificNote(dto, id, _randomElection);
+            var model = await new ReadManager(scope).GetNextOrSpecificNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)

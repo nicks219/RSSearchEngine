@@ -13,9 +13,9 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadModel(IServiceScope serviceScope)
+public class ReadManager(IServiceScope serviceScope)
 {
-    private readonly ILogger<ReadModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+    private readonly ILogger<ReadManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadManager>>();
     private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
 
     /// <summary>
@@ -64,9 +64,9 @@ public class ReadModel(IServiceScope serviceScope)
     /// </summary>
     /// <param name="request">данные с отмеченными тегами</param>
     /// <param name="id">строка с идентификатором, если требуется</param>
-    /// <param name="randomElection">алгоритм выбора следующей заметки</param>
+    /// <param name="randomElectionEnabled">алгоритм выбора следующей заметки</param>
     /// <returns>ответ с заметкой</returns>
-    public async Task<NoteDto> GetNextOrSpecificNote(NoteDto? request, string? id = null, bool randomElection = true)
+    public async Task<NoteDto> GetNextOrSpecificNote(NoteDto? request, string? id = null, bool randomElectionEnabled = true)
     {
         var text = string.Empty;
         var title = string.Empty;
@@ -78,7 +78,9 @@ public class ReadModel(IServiceScope serviceScope)
             {
                 if (IsSpecific() == false)
                 {
-                    noteId = await _repo.ElectNextNote(request.TagsCheckedRequest, randomElection);
+                    var checkedTags = request.TagsCheckedRequest;
+                    var electableNoteIds = _repo.ReadTaggedNotesIds(checkedTags);
+                    noteId = await NoteElector.ElectNextNoteAsync(electableNoteIds, randomElectionEnabled);
                 }
 
                 if (noteId != 0)

@@ -39,13 +39,14 @@ Log.Logger = new LoggerConfiguration()
     .Configuration(configuration)
     .CreateLogger();
 
+Log.Information("Starting web host");
+
 try
 {
     var app = builder.Build();
     app.Run();
     return 0;
-    // "Postgres": SocketException
-    // "MySql": InvalidOperationException
+    // Postgres: SocketException | MySql: InvalidOperationException
 }
 catch (InvalidOperationException ex)
 {

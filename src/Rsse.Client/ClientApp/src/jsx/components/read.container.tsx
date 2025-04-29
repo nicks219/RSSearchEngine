@@ -13,7 +13,7 @@ import {Doms, SystemConstants} from "../dto/doms.tsx";
 import {createPortal} from "react-dom";
 
 export interface ButtonAnchorProps {
-    buttonRef: React.RefObject<HTMLDivElement>;
+    buttonRef: React.RefObject<HTMLDivElement|null>;
 }
 interface ReadContainerParametrizedProps extends ButtonAnchorProps {
     noteId?: string;
@@ -29,8 +29,8 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
     const mounted = useState(true);
     const stateWrapper = new FunctionComponentStateWrapper(mounted, setData);
 
-    const refObject:  React.MutableRefObject<HTMLFormElement|undefined> = useRef();
-    let formElement: HTMLFormElement|undefined = refObject.current;
+    const refObject = useRef<HTMLFormElement>(null);
+    let formElement: HTMLFormElement|null = refObject.current;
 
     useEffect(() => {
         onMount();

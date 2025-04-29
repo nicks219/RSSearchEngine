@@ -29,7 +29,7 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            return await new CatalogModel(scope).ReadPage(id);
+            return await new CatalogManager(scope).ReadPage(id);
         }
         catch (Exception ex)
         {
@@ -48,7 +48,7 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            return await new CatalogModel(scope).NavigateCatalog(dto);
+            return await new CatalogManager(scope).NavigateCatalog(dto);
         }
         catch (Exception ex)
         {
@@ -74,7 +74,7 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Delete(id);
 
-            return await new CatalogModel(scope).DeleteNote(id, pg);
+            return await new CatalogManager(scope).DeleteNote(id, pg);
         }
         catch (Exception ex)
         {

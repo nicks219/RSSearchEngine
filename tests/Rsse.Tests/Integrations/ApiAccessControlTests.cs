@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Common.Auth;
@@ -17,31 +16,30 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiAccessControlTests
 {
+    private static CustomWebAppFactory<SqliteAccessControlStartup>? _factory;
+    private static WebApplicationFactoryClientOptions? _options;
+
     [ClassInitialize]
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
         // arrange:
-        _factory = new CustomWebAppFactory<AuthStartup>();
+        _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         _options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri,
             HandleCookies = true
         };
-        // тест Api_DeleteNote_ByAuthorizedUser_ShouldSucceed удаляет данные, необходимые для Api_ReadTitleByNoteId_ReturnsTitle
     }
 
-    [ClassCleanup]
-    public static void CleanUp() => _factory.Dispose();
-
-    private static CustomWebAppFactory<AuthStartup> _factory;
-    private static WebApplicationFactoryClientOptions _options;
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void CleanUp() => _factory!.Dispose();
 
     [TestMethod]
     public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()
     {
         // act:
-        using var client = _factory.CreateClient(_options);
+        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         using var response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
@@ -60,7 +58,7 @@ public class ApiAccessControlTests
     public async Task Api_DeleteNote_ByUnauthorizedUser_Returns403()
     {
         // act: invalid login:
-        using var client = _factory.CreateClient(_options);
+        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
@@ -87,7 +85,7 @@ public class ApiAccessControlTests
     public async Task Api_DeleteNote_ByAuthorizedUser_ShouldSucceed()
     {
         // act: valid login:
-        using var client = _factory.CreateClient(_options);
+        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
@@ -103,7 +101,7 @@ public class ApiAccessControlTests
 
         // assert:
         statusCode.Should().Be(200);
-        reason.Should().Be("OK"); ;
+        reason.Should().Be("OK");
 
         response.Dispose();
     }

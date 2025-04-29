@@ -4,11 +4,11 @@ import {NoteResponseDto} from "../dto/request.response.dto";
 import {Loader} from "../common/loader";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 
-export const ReadSubmitButton = (props: {formElement?: HTMLFormElement, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
+export const ReadSubmitButton = (props: {formElement: HTMLFormElement|null, stateWrapper: FunctionComponentStateWrapper<NoteResponseDto>}) => {
     const submit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
-        const formData = new FormData(props.formElement);
+        const formData = new FormData(props.formElement!);
         const checkboxesArray = (formData.getAll(Doms.chkButton)).map(a => Number(a) + 1);
         const item = {
             "tagsCheckedRequest": checkboxesArray

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace SearchEngine.Tests.Units.Mocks;
 
 /// <summary/> Для тестов
-internal class NoopLogger<TModel> : ILogger<TModel>
+public class NoopLogger<TModel> : ILogger<TModel>
 {
     internal string? Message { get; private set; } = string.Empty;
     internal volatile bool Reported;

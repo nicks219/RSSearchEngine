@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using EntityFrameworkCore.Testing.Common;
+using Moq;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -11,8 +11,10 @@ using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-// todo: избавиться от этого мока и всего связанного содержимого в неймспейсе
-internal class TestCatalogRepository : IDataRepository
+/// <summary>
+/// Тестовый репозиторий
+/// </summary>
+public class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
@@ -23,14 +25,15 @@ internal class TestCatalogRepository : IDataRepository
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
     internal const string SecondNoteTitle = "Шаинский - Облака";
+    private const int TestNoteId = 1;
 
     internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
     private readonly Dictionary<int, Tuple<string, string>> _notes = new();
 
-    public TestCatalogRepository()
+    public FakeCatalogRepository()
     {
-        _notes.Add(1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
+        _notes.Add(TestNoteId, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
     }
 
     private int _id;
@@ -133,8 +136,7 @@ internal class TestCatalogRepository : IDataRepository
                 .Select<int, Tuple<string, int>>(x => new Tuple<string, int>(_notes[x].Item1, x))
                 .ToList();
 
-        // return titlesList.AsQueryable();
-        return new TestQueryable<Tuple<string, int>>(titlesList);
+        return new FakeDbSet<Tuple<string, int>>(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()
@@ -146,8 +148,7 @@ internal class TestCatalogRepository : IDataRepository
     public IQueryable<int> ReadNoteTags(int noteId)
     {
         var tagList = new List<int> { 1, 2 };
-        // return tagList.AsQueryable();
-        return new TestQueryable<int>(tagList);
+        return new FakeDbSet<int>(tagList);
     }
 
     public Task<int> ReadNotesCount()
@@ -160,15 +161,33 @@ internal class TestCatalogRepository : IDataRepository
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
         var note = new List<Tuple<string, string>> {_notes[noteId]};
-        // return note.AsQueryable();
-
-        return new TestQueryable<Tuple<string, string>>(note);
+        return new FakeDbSet<Tuple<string, string>>(note);
     }
 
-    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
-        // return checkedTags.AsQueryable();
-        var result = new TestQueryable<int>(checkedTags);
+        var ids = checkedTags as int[] ?? checkedTags.ToArray();
+        if (ids.First() == ReadTests.ElectionTestCheckedTag)
+        {
+            // признак теста ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest
+            // отдаём id тестовой заметки
+            ids = [TestNoteId];
+        }
+
+        if (ids.Length == ReadTests.ElectionTestTagsCount)
+        {
+            // признак теста ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests
+            // отдаём ElectionTestNotesCount заметок - пусть выбирает
+            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
+        }
+
+        // выглядит как архитектурная проблема: IAsyncQueryProvider используется вне слоя репозитория в ElectNextNoteAsync
+        var queryable = new List<NoteEntity>().AsQueryable();
+        var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
+        var asyncQueryProvider = mock.Object;
+
+        var result =  new FakeDbSet<int>(ids, asyncQueryProvider);
+
         return result;
     }
 
@@ -179,17 +198,14 @@ internal class TestCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
+        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TextRequest, note.TitleRequest);
 
         return Task.CompletedTask;
     }
 
-    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(TestCatalogRepository));
+    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-    }
+    public void Dispose() => GC.SuppressFinalize(this);
 
     public ValueTask DisposeAsync()
     {

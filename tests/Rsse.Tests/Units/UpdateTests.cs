@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,60 +13,52 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class UpdateTests
 {
-    private const string TestName = "0: key";
-    private const string TestText = "test text text";
-    private int _testNoteId;
+    public required UpdateManager UpdateManager;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private UpdateModel _updateModel;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private const string Title = "0: key";
+    private const string Text = "test text text";
+    private int _testNoteId;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomProviderWithLogger<TokenizerService>();
-        var provider = new CustomProviderWithLogger<UpdateModel>();
+        var host = new CustomServiceProvider<TokenizerService>();
+        var provider = new CustomServiceProvider<UpdateManager>();
         var findModel = new CompliantModel(host.Scope);
 
-        var repo = (TestCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.CreateStubData(10);
 
-        _testNoteId = findModel.FindNoteId(TestName);
-        _updateModel = new UpdateModel(provider.Scope);
+        _testNoteId = findModel.FindNoteId(Title);
+        UpdateManager = new UpdateManager(provider.Scope);
     }
 
     [TestMethod]
-    public async Task ModelTagList_ShouldReports_ExpectedGenreCount()
+    public async Task UpdateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var response = await _updateModel.GetOriginalNote(1);
+        var responseDto = await UpdateManager.GetOriginalNote(1);
 
         // assert:
-        Assert.AreEqual(TestCatalogRepository.TagList.Count, response.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]
-    public async Task ModelUpdateTest_ShouldUpdateNoteToExpected()
+    public async Task UpdateManager_ShouldUpdateNoteToExpected()
     {
         // arrange:
-        var request = new NoteDto
+        var requestDto = new NoteDto
         {
-            TitleRequest = TestName,
-            TextRequest = TestText,
-            TagsCheckedRequest = new List<int> { 1, 2, 3, 11 },
+            TitleRequest = Title,
+            TextRequest = Text,
+            TagsCheckedRequest = [1, 2, 3, 11],
             CommonNoteId = _testNoteId
         };
 
         // act:
-        var response = await _updateModel.UpdateNote(request);
+        var responseDto = await UpdateManager.UpdateNote(requestDto);
 
         // assert:
-        // TODO: в стабе поменяны местами text и title, поправь:
-        Assert.AreEqual(TestText, response.TitleResponse);
-    }
-
-    [TestCleanup]
-    public void TestCleanup()
-    {
+        Assert.AreEqual(Text, responseDto.TextResponse);
     }
 }

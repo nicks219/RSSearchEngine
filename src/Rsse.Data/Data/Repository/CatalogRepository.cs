@@ -77,7 +77,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
         // TODO: определить какой метод лучше
         // IQueryable<int> songsCollection = database.GenreText//

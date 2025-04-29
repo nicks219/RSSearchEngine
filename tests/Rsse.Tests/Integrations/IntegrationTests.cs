@@ -21,28 +21,41 @@ using SearchEngine.Tools.MigrationAssistant;
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ReposIntegrationTests
+public class IntegrationTests
 {
     [ClassInitialize]
-    public static void ReposIntegrationTestsSetup(TestContext context)
+    public static void IntegrationTestsSetup(TestContext context)
     {
         var isGitHubAction = Docker.IsGitHubAction();
         if (isGitHubAction)
         {
-            context.WriteLine($"{nameof(ReposIntegrationTests)} | dbs running in container(s)");
+            context.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
         }
 
         // arrange:
         var sw = Stopwatch.StartNew();
-        if (!isGitHubAction) Docker.CleanUpDbContainers();
-        Docker.InitializeDbContainers();
+        if (!isGitHubAction)
+        {
+            Docker.CleanUpDbContainers();
+            Docker.InitializeDbContainers();
+        }
+
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }
 
-    [TestMethod]
-    public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseCopy()
+    /// <summary>
+    /// Запустить отложенную очистку файлов бд sqlite (на windows)
+    /// </summary>
+    [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
+    public static void CleanUp()
     {
-        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        SqliteFileCleaner.ScheduleFileDeletionWindowsOnly();
+    }
+
+    [TestMethod]
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
+    {
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -57,8 +70,9 @@ public class ReposIntegrationTests
         var tokenizer = factory.HostInternal?.Services.GetRequiredService<ITokenizerService>();
         if (tokenizer == null) throw new TestCanceledException("missing tokenizer");
 
-        // требуется строка подключения из appsettings и файл миграции на пути ClientApp\build\backup_9.txt
-        mysqlMigrator.Restore(string.Empty);// редко: Attempted to read past the end of the stream
+        // NB: рестору требуется файл миграции на пути ClientApp\build\backup_9.dump
+        // todo: редко Attempted to read past the end of the stream, разберись
+        mysqlMigrator.Restore(string.Empty);
         tokenizer.Initialize();
         await repo.CopyDbFromMysqlToNpgsql();
 
@@ -95,10 +109,10 @@ public class ReposIntegrationTests
     }
 
     [TestMethod]
-    public async Task IDataRepository_PKSequencesAreValid_AfterDatabaseRestore()
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationMirrorStartup>();
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
 
@@ -129,6 +143,6 @@ public class ReposIntegrationTests
 
     public class ResponseModel
     {
-        public Dictionary<string, double> res { get; set; }
+        public required Dictionary<string, double> res { get; set; }
     }
 }

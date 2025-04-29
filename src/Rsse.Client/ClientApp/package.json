@@ -1,29 +1,34 @@
 {
   "name": "rsse.client",
-  "version": "5.2.x",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0 ",
-    "react-router-dom": "6.21.3",
-    "web-vitals": "^2.1.4"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "7.5.2",
+    "web-vitals": "^4.2.4"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.3.0",
-    "@testing-library/dom": "^9.3.4",
-    "@testing-library/react": "^14.1.2",
-    "@types/node": "^20.11.10",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
-    "@vitejs/plugin-react": "^4.2.1",
-    "@vitest/coverage-v8": "^1.2.2",
-    "eslint": "^8.56.0",
-    "jsdom": "^24.0.0",
-    "typescript": "^5.3.3",
-    "vite": "^5.3.6",
-    "vitest": "^1.2.2",
-    "rollup": "^4.22.4"
+    "@eslint/js": "^9.25.1",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.15.3",
+    "@types/react-dom": "^19.1.2",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^3.1.2",
+    "eslint": "^9.25.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.0.0",
+    "jsdom": "^26.1.0",
+    "rollup": "^4.40.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0",
+    "vite": "^6.3.3",
+    "vitest": "^3.1.2"
   },
   "scripts": {
     "dev": "vite",
@@ -34,4 +39,3 @@
     "lint": "eslint . --ext .js,.jsc,.cjs,.ts,.tsx --fix-dry-run"
   }
 }
-

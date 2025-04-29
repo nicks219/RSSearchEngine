@@ -21,8 +21,8 @@ export const CreateContainer = ({buttonRef}: ButtonAnchorProps) => {
     const stateWrapper = new FunctionComponentStateWrapper<NoteResponseDto>(mounted, setState);
     const commonContext = useContext(CommonContext);
     const recoveryContext = useContext(RecoveryContext);
-    const refObject: React.MutableRefObject<HTMLFormElement|undefined> = useRef();
-    let formElement: HTMLFormElement|undefined = refObject.current;
+    const refObject = useRef<HTMLFormElement>(null);
+    let formElement: HTMLFormElement|null = refObject.current;
 
     const onMount = () => {
         formElement = refObject.current;

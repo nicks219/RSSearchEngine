@@ -15,29 +15,26 @@ namespace SearchEngine.Tests.Integrations.Infra;
 /// Используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html
 /// Конфигурация регистрирует <b>MirrorRepository</b>
 /// </summary>
-internal class SimpleMirrorStartup
+internal class SqliteStartup(IConfiguration configuration)
 {
-    private static IConfiguration? _configuration;
-
-    public SimpleMirrorStartup(IConfiguration configuration) => _configuration = configuration;
-
-    public static void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         services.AddSqliteTestEnvironment();
 
         services.AddTransient<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
-        if (_configuration != null) services.Configure<DatabaseOptions>(_configuration.GetSection(nameof(DatabaseOptions)));
+        services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
-        services.AddSingleton<ILogger, NoopLogger<SimpleMirrorStartup>>();
+        services.AddSingleton<ILogger, NoopLogger<SqliteStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
         services.AddHostedService<TokenizerActivatorService>();
     }
 
-    public static void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
         app.UseEndpoints(ep => ep.MapControllers());
     }
 }
+

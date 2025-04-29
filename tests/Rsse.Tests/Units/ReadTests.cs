@@ -21,80 +21,67 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ReadTests
 {
-    private readonly int _tagsCount = TestCatalogRepository.TagList.Count;
+    public const int ElectionTestNotesCount = 400;
+    public const int ElectionTestTagsCount = 44;
+    public const int ElectionTestCheckedTag = 2;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private ReadModel _readModel;
-    private CustomProviderWithLogger<ReadModel> _customProviderWithLogger;
-    private NoopLogger<ReadModel> _logger;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public required ReadManager ReadManager;
+    public required CustomServiceProvider<ReadManager> CustomServiceProvider;
+    public required NoopLogger<ReadManager> Logger;
+
+    private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
 
     [TestInitialize]
     public void Initialize()
     {
-        _customProviderWithLogger = new CustomProviderWithLogger<ReadModel>();
-        _readModel = new ReadModel(_customProviderWithLogger.Scope);
-        _logger = (NoopLogger<ReadModel>)_customProviderWithLogger.Provider.GetRequiredService<ILogger<ReadModel>>();
+        CustomServiceProvider = new CustomServiceProvider<ReadManager>();
+        ReadManager = new ReadManager(CustomServiceProvider.Scope);
+        Logger = (NoopLogger<ReadManager>)CustomServiceProvider.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
 
     [TestMethod]
-    public async Task ModelTagListTest_ShouldReports_ExpectedGenreCount()
+    public async Task ReadManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var response = await _readModel.ReadTagList();
+        var responseDto = await ReadManager.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_tagsCount, response.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(_tagsCount, responseDto.StructuredTagsListResponse?.Count);
     }
 
     [TestMethod]
-    public async Task ModelElectionTest_OnValidRequest_ShouldReturnNote()
+    public async Task ReadManager_ShouldReturnErrorMessage_OnInvalidElectionRequest()
     {
         // arrange:
-        var request = new NoteDto { TagsCheckedRequest = [2] };
+        var requestDto = new NoteDto { TagsCheckedRequest = [25000] };
 
         // act:
-        var response = await _readModel.GetNextOrSpecificNote(request, null, false);
-
-        // assert:
-        Assert.AreEqual(_logger.Message, string.Empty);
-        Assert.AreEqual(TestCatalogRepository.FirstNoteText, response.TitleResponse);
-    }
-
-    [TestMethod]
-    public async Task ModelElectionTest_OnInvalidRequest_ShouldReturnErrorMessageResponse()
-    {
-        // arrange:
-        var request = new NoteDto { TagsCheckedRequest = [25000] };
-
-        // act:
-        var result = await _readModel.GetNextOrSpecificNote(request).ConfigureAwait(false);
+        var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto).ConfigureAwait(false);
         // ждём тестовый логер:
         var count = 20;
-        while (count-- > 0 && !_logger.Reported)
+        while (count-- > 0 && !Logger.Reported)
         {
             await Task.Delay(100).ConfigureAwait(false);
         }
 
         // asserts:
-        // todo: разберись - result нестабилен
-        Assert.AreEqual(ModelMessages.ElectNoteError, result.CommonErrorMessageResponse);//
-        Assert.AreEqual(ModelMessages.ElectNoteError, _logger.Message);
+        Assert.AreEqual(ModelMessages.ElectNoteError, responseDto.CommonErrorMessageResponse);
+        Assert.AreEqual(ModelMessages.ElectNoteError, Logger.Message);
     }
 
     [TestMethod]
-    public async Task ModelElectionTest_OnNullRequest_ShouldReturnEmptyResponse_ShouldNotLogError()
+    public async Task ReadManager_ShouldProduceEmptyLogAndResponse_OnNullElectionRequest()
     {
         // arrange & act:
-        var response = await _readModel.GetNextOrSpecificNote(null);
+        var responseDto = await ReadManager.GetNextOrSpecificNote(null);
 
         // asserts:
-        Assert.AreEqual(string.Empty, response.TitleResponse);
-        Assert.AreEqual(string.Empty, _logger.Message);
+        Assert.AreEqual(string.Empty, responseDto.TitleResponse);
+        Assert.AreEqual(string.Empty, Logger.Message);
     }
 
     [TestMethod]
-    public async Task ControllerErrorLogTest_OnThrow_ShouldLogError()
+    public async Task ReadController_ShouldLogError_WhenThrow()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
@@ -114,53 +101,65 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ControllerElectionTest_OnNullRequest_ShouldReturnEmptyTitle()
+    public async Task ReadController_ShouldReturnEmptyTitle_OnNullElectionRequest()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new CustomScopeFactory(_customProviderWithLogger.Provider);
+        var factory = new CustomScopeFactory(CustomServiceProvider.Provider);
         var readController = new ReadController(factory, logger);
 
         // act:
-        var response = (await readController.GetNextOrSpecificNote(null, null)).Value;
+        var responseDto = (await readController.GetNextOrSpecificNote(null, null)).Value;
 
         // assert:
-        Assert.AreEqual(string.Empty, response?.TitleResponse);
+        Assert.AreEqual(string.Empty, responseDto?.TitleResponse);
     }
 
     [TestMethod]
-    // демонстрация распределения результатов в текущем алгоритме выбора:
-    public async Task DistributionTest_RandomHistogramViewer_ShouldHasGoodDistribution()
+    public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
     {
-        await using var repo = (TestCatalogRepository)_customProviderWithLogger.Provider.GetRequiredService<IDataRepository>();
+        // arrange:
+        var requestDto = new NoteDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
 
-        repo.CreateStubData(400);
+        // act:
+        var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
 
-        const double coefficient = 0.6D;
+        // assert:
+        Assert.AreEqual(Logger.Message, string.Empty);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TitleResponse);
+    }
 
-        const int notesCount = 389;
+    [TestMethod]
+    // NB: в тч демонстрация распределения результатов алгоритме выбора
+    public async Task ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
+    {
+        await using var repo = (FakeCatalogRepository)CustomServiceProvider.Provider.GetRequiredService<IDataRepository>();
 
-        var count = 100;
+        repo.CreateStubData(ElectionTestNotesCount);
 
-        var tempCount = count;
+        const double expectedCoefficient = 0.7D;
 
-        var expectedNotesCount = Math.Min(notesCount, count) * coefficient;
+        var requestCount = 100;
 
-        var request = new NoteDto { TagsCheckedRequest = new List<int>() };
+        var tempCount = requestCount;
 
-        request.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
+        var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var result = new Dictionary<int, int>();
+        var requestDto = new NoteDto { TagsCheckedRequest = new List<int>() };
 
-        while (count-- > 0)
+        requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
+
+        var idStorage = new Dictionary<int, int>();
+
+        while (requestCount-- > 0)
         {
-            var response = await _readModel.GetNextOrSpecificNote(request);
+            var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto);
 
-            var id = response.CommonNoteId;
+            var id = responseDto.CommonNoteId;
 
-            if (!result.TryAdd(id, 1))
+            if (!idStorage.TryAdd(id, 1))
             {
-                result[id] += 1;
+                idStorage[id] += 1;
             }
         }
 
@@ -168,21 +167,23 @@ public class ReadTests
 
         const int buckets = 10;
 
-        const int max = 10;
+        const int evaluatedBucket = 2;
 
         var bucket = new int[buckets];
 
-        result.Count
+        // assert:
+        idStorage.Count
             .Should()
             .BeGreaterThan((int)expectedNotesCount);
 
-        Console.WriteLine("[get: {0} from: {1} by: {2} calls with songs > {3} repeats:]", result.Count, notesCount, tempCount, max);
+        Console.WriteLine("[get different '{0}' ids from '{1}' notes | by '{2}' calls]", idStorage.Count, ElectionTestNotesCount, tempCount);
+        Console.Write("[with ids >= '{0}' repeats] ", evaluatedBucket);
 
-        foreach (var (key, value) in result)
+        foreach (var (key, value) in idStorage)
         {
-            if (value >= max)
+            if (value >= evaluatedBucket)
             {
-                Console.Write(key + ".");
+                Console.Write(key + " - ");
             }
 
             for (var i = 0; i < bucket.Length; i++)
@@ -194,16 +195,11 @@ public class ReadTests
             }
         }
 
-        Console.WriteLine("\n[histogram: 1 - {0}]", buckets);
+        Console.WriteLine("\n[repeat histogram: 1 - {0}]", buckets);
 
         foreach (var i in bucket)
         {
             Console.Write(i + " ");
         }
-    }
-
-    [TestCleanup]
-    public void TestCleanup()
-    {
     }
 }

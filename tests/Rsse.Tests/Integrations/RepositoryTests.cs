@@ -11,33 +11,41 @@ using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Tests.Integrations.Infra;
 using Microsoft.Data.Sqlite;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
-public class ReposSimpleTests
+public class RepositoryTests
 {
+    private static CustomWebAppFactory<SqliteStartup>? _factory;
+    private static WebApplicationFactoryClientOptions? _options;
+
     [ClassInitialize]
-    public static async Task ReposSimpleTestsSetup(TestContext _)
+    public static async Task RepositoryTestsSetup(TestContext _)
     {
         // arrange:
-        _factory = new CustomWebAppFactory<SimpleMirrorStartup>();
+        _factory = new CustomWebAppFactory<SqliteStartup>();
         var baseUri = new Uri("http://localhost:5000/");
-        _options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = baseUri
-        };
+        _options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
+
+        // NB: в тестах используется метод из Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+        // чтобы разрезолвить конфликт типов со сборкой Microsoft.Testing.Platform
+        var configuration = (IConfiguration)_factory.Server.Services.GetRequiredService(typeof(IConfiguration));
+
+        var defaultConnectionString = configuration[Startup.DefaultConnectionKey];
+        var additionalConnectionString = configuration[Startup.AdditionalConnectionKey];
 
         // ждём коннекта до sqlite
-        await using var connection1 = new SqliteConnection(CustomWebAppFactory<SimpleMirrorStartup>.MySqlConnectionString);
-        await using var connection2 = new SqliteConnection(CustomWebAppFactory<SimpleMirrorStartup>.PostgresConnectionString);
+        await using var defaultConnection = new SqliteConnection(defaultConnectionString);
+        await using var additionalConnection = new SqliteConnection(additionalConnectionString);
         var count = 20;
         while (count-- > 0)
         {
             try
             {
-                await connection1.OpenAsync();
-                await connection2.OpenAsync();
+                await defaultConnection.OpenAsync();
+                await additionalConnection.OpenAsync();
                 return;
             }
             catch (Exception)
@@ -46,24 +54,21 @@ public class ReposSimpleTests
             }
         }
 
-        throw new TestCanceledException($"{nameof(ReposSimpleTests)} | SQLite connection(s) missing");
+        throw new TestCanceledException($"{nameof(RepositoryTests)} | SQLite connection(s) missing");
     }
 
-    [ClassCleanup]
-    public static void CleanUp() => _factory.Dispose();
-
-    private static CustomWebAppFactory<SimpleMirrorStartup> _factory;
-    private static WebApplicationFactoryClientOptions _options;
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void CleanUp() => _factory!.Dispose();
 
     [TestMethod]
-    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()// f UNIQUE constraint failed: Tag.TagId Reporter: CreateAndSeed | Source: Microsoft.Data.Sqlite | Ensure created error
+    public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
     {
         // act:
         const string tag = "new-1";
-        using var _ = _factory.CreateClient(_options);
+        using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var mysqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
-        await using var npgsqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<NpgsqlCatalogContext>>();
+        await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
+        await using var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         if (mysqlRepo == null || npgsqlRepo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
@@ -76,14 +81,14 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()// no such table: Tag
+    public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
     {
         // act:
         const string tag = "new-2";
-        using var _ = _factory.CreateClient(_options);
+        using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-        await using var mysqlRepo = serviceScope.ServiceProvider.GetRequiredService<CatalogRepository<MysqlCatalogContext>>();
+        await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
+        await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
         if (mysqlRepo == null || repo == null) throw new TestCanceledException("missing repo(s)");
         await mysqlRepo.CreateTagIfNotExists(tag);
         var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
@@ -96,12 +101,12 @@ public class ReposSimpleTests
     }
 
     [TestMethod]
-    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()// no such table: Tag
+    public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
     {
         const string tag = "new-3";
-        using var _ = _factory.CreateClient(_options);
+        using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
+        await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
         if (repo == null) throw new TestCanceledException("missing repo(s)");
 
         // act:

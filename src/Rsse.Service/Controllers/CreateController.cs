@@ -43,7 +43,7 @@ public class CreateController(
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var model = new CreateModel(scope);
+            var model = new CreateManager(scope);
             return await model.ReadStructuredTagList();
         }
         catch (Exception ex)
@@ -64,7 +64,7 @@ public class CreateController(
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var model = new CreateModel(scope);
+            var model = new CreateManager(scope);
 
             var result = await model.CreateNote(dto);
 

@@ -13,10 +13,10 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateModel(IServiceScope serviceScope)
+public class CreateManager(IServiceScope serviceScope)
 {
     private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CreateModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateModel>>();
+    private readonly ILogger<CreateManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateManager>>();
 
     /// <summary>
     /// Получить структурированный список тегов

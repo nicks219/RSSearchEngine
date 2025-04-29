@@ -1,11 +1,11 @@
-﻿import {useContext} from "react";
+﻿import {JSX, useContext} from "react";
 import {NoteResponseDto} from "../dto/request.response.dto";
 import {CommonContext} from "../common/context.provider";
 import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getCommonNoteId, getTextResponse, getTitleResponse} from "../common/dto.handlers";
 import {Doms, Messages} from "../dto/doms.tsx";
 
-export const ReadNote = (props: {formElement?: HTMLFormElement, noteDto: NoteResponseDto}) => {
+export const ReadNote = (props: {formElement: HTMLFormElement|null, noteDto: NoteResponseDto}) => {
     const commonContext = useContext(CommonContext);
     const handleCheckboxesVisibility = () => {
         if (props.formElement) {

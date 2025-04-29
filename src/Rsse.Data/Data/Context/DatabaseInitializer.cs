@@ -33,9 +33,6 @@ public abstract class DatabaseInitializer
                 return;
             }
 
-            // readerContext.Database.EnsureDeleted();
-            // primaryWriterContext.Database.EnsureDeleted();
-
             var readerCreated = readerContext.Database.EnsureCreated();
             var writerCreated = primaryWriterContext.Database.EnsureCreated();
 
@@ -47,7 +44,7 @@ public abstract class DatabaseInitializer
         }
         catch (Exception ex)
         {
-            logger.LogError("Reporter: {Reporter} | Source: {Source} | Ensure created error: '{Exception}' |", nameof(CreateAndSeed), ex.Source, ex.ToString());
+            logger.LogError("Reporter: {Reporter} | Source: {Source} | Ensure created error: '{Message}'", nameof(CreateAndSeed), ex.Source, ex.Message);
         }
     }
 
