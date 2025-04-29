@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Engine.Elector;
 
@@ -16,18 +14,14 @@ internal static class NoteElector
     /// <summary>
     /// Выбрать заметку по заданным тегам, случайно или раунд-робином
     /// </summary>
-    /// <param name="repo">репозиторий с данными</param>
-    /// <param name="checkedTagsList">отмеченные теги</param>
-    /// <param name="runRandomElection">алгоритм выбора</param>
+    /// <param name="electableNoteIds">идентификаторы заметок, участвующих в выборе</param>
+    /// <param name="randomElectionEnabled">алгоритм выбора</param>
     /// <returns>идентификатор выбранной заметки</returns>
-    internal static async Task<int> ElectNextNote(this IDataRepository repo, List<int> checkedTagsList, bool runRandomElection = true)
+    internal static async Task<int> ElectNextNoteAsync(IQueryable<int> electableNoteIds, bool randomElectionEnabled = true)
     {
-        var checkedTags = checkedTagsList.ToArray();
+        var electableNoteCount = await electableNoteIds.CountAsync();
 
-        var allElectableNotes = repo.ReadTaggedNotes(checkedTags);
-        var howManyNotes = await allElectableNotes.CountAsync();
-
-        if (howManyNotes == 0)
+        if (electableNoteCount == 0)
         {
             return 0;
         }
@@ -35,13 +29,13 @@ internal static class NoteElector
         Interlocked.Increment(ref _id);
 
         // round-robin либо random:
-        var coin = runRandomElection ? GetRandomInRange(howManyNotes) : (int)(_id % howManyNotes);
+        var coin = randomElectionEnabled ? GetRandomInRange(electableNoteCount) : (int)(_id % electableNoteCount);
 
         // в данный момент дополнительная рандомизация не задействована:
-        var result = runRandomElection switch
+        var result = randomElectionEnabled switch
         {
             // случайный выбор:
-            true => await allElectableNotes
+            true => await electableNoteIds
                 // дополнительное перемешивание:
                 // .ToList().Shuffle(random)
                 // .OrderBy(s => GetNextInt32(random))
@@ -51,7 +45,7 @@ internal static class NoteElector
                 .FirstAsync(),
 
             // round-robin:
-            _ => await allElectableNotes
+            _ => await electableNoteIds
                 .OrderBy(s => s)
                 .Skip(coin)
                 .Take(1)

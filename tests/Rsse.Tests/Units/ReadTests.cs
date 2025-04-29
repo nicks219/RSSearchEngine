@@ -21,6 +21,10 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ReadTests
 {
+    public const int ElectionTestNotesCount = 400;
+    public const int ElectionTestTagsCount = 44;
+    public const int ElectionTestCheckedTag = 2;
+
     public required ReadManager ReadManager;
     public required CustomServiceProvider<ReadManager> CustomServiceProvider;
     public required NoopLogger<ReadManager> Logger;
@@ -43,20 +47,6 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(_tagsCount, responseDto.StructuredTagsListResponse?.Count);
-    }
-
-    [TestMethod]
-    public async Task ReadManager_ShouldReturnNextNote_OnValidElectionRequest()
-    {
-        // arrange:
-        var requestDto = new NoteDto { TagsCheckedRequest = [2] };
-
-        // act:
-        var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
-
-        // assert:
-        Assert.AreEqual(Logger.Message, string.Empty);
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TitleResponse);
     }
 
     [TestMethod]
@@ -126,38 +116,50 @@ public class ReadTests
     }
 
     [TestMethod]
+    public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
+    {
+        // arrange:
+        var requestDto = new NoteDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
+
+        // act:
+        var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
+
+        // assert:
+        Assert.AreEqual(Logger.Message, string.Empty);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TitleResponse);
+    }
+
+    [TestMethod]
     // NB: в тч демонстрация распределения результатов алгоритме выбора
-    public async Task NoteElector_ShouldHasExpectedDistribution_OnManyCalls()
+    public async Task ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
     {
         await using var repo = (FakeCatalogRepository)CustomServiceProvider.Provider.GetRequiredService<IDataRepository>();
 
-        repo.CreateStubData(400);
+        repo.CreateStubData(ElectionTestNotesCount);
 
-        const double expectedCoefficient = 0.6D;
+        const double expectedCoefficient = 0.7D;
 
-        const int notesCount = 389;
+        var requestCount = 100;
 
-        var count = 100;
+        var tempCount = requestCount;
 
-        var tempCount = count;
+        var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var expectedNotesCount = Math.Min(notesCount, count) * expectedCoefficient;
+        var requestDto = new NoteDto { TagsCheckedRequest = new List<int>() };
 
-        var request = new NoteDto { TagsCheckedRequest = new List<int>() };
+        requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
 
-        request.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
+        var idStorage = new Dictionary<int, int>();
 
-        var result = new Dictionary<int, int>();
-
-        while (count-- > 0)
+        while (requestCount-- > 0)
         {
-            var response = await ReadManager.GetNextOrSpecificNote(request);
+            var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto);
 
-            var id = response.CommonNoteId;
+            var id = responseDto.CommonNoteId;
 
-            if (!result.TryAdd(id, 1))
+            if (!idStorage.TryAdd(id, 1))
             {
-                result[id] += 1;
+                idStorage[id] += 1;
             }
         }
 
@@ -165,21 +167,23 @@ public class ReadTests
 
         const int buckets = 10;
 
-        const int max = 10;
+        const int evaluatedBucket = 2;
 
         var bucket = new int[buckets];
 
-        result.Count
+        // assert:
+        idStorage.Count
             .Should()
             .BeGreaterThan((int)expectedNotesCount);
 
-        Console.WriteLine("[get: {0} from: {1} by: {2} calls with songs > {3} repeats:]", result.Count, notesCount, tempCount, max);
+        Console.WriteLine("[get different '{0}' ids from '{1}' notes | by '{2}' calls]", idStorage.Count, ElectionTestNotesCount, tempCount);
+        Console.Write("[with ids >= '{0}' repeats] ", evaluatedBucket);
 
-        foreach (var (key, value) in result)
+        foreach (var (key, value) in idStorage)
         {
-            if (value >= max)
+            if (value >= evaluatedBucket)
             {
-                Console.Write(key + ".");
+                Console.Write(key + " - ");
             }
 
             for (var i = 0; i < bucket.Length; i++)
@@ -191,16 +195,11 @@ public class ReadTests
             }
         }
 
-        Console.WriteLine("\n[histogram: 1 - {0}]", buckets);
+        Console.WriteLine("\n[repeat histogram: 1 - {0}]", buckets);
 
         foreach (var i in bucket)
         {
             Console.Write(i + " ");
         }
-    }
-
-    [TestCleanup]
-    public void TestCleanup()
-    {
     }
 }

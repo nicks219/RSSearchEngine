@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- TESTS -->
+    <PackageVersion Include="EntityFrameworkCore.Testing.Moq" Version="9.0.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.2.0]" />
     <!-- 8.2.0 license: https://xceed.com/products/unit-testing/fluent-assertions/ -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[17.13.0]" />

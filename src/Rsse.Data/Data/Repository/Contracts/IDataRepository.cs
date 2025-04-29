@@ -75,11 +75,11 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     IQueryable<NoteEntity> ReadAllNotes();
 
     /// <summary>
-    /// Получить отмеченные заметки
+    /// Получить идентификаторы отмеченных заметок
     /// </summary>
     /// <param name="checkedTags">идентификаторы отмеченных тегов</param>
     /// <returns>идентификаторы заметок</returns>
-    IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags);
+    IQueryable<int> ReadTaggedNoteIds(IEnumerable<int> checkedTags);
 
     /// <summary>
     /// Получить название заметки

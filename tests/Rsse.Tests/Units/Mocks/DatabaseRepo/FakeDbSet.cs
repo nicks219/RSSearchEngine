@@ -9,10 +9,9 @@ using Microsoft.EntityFrameworkCore.Query;
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 /// <summary>
-/// Мок функционала EF для юнит тестов
+/// Мок функционала EF для юнит-тестов
 /// </summary>
 /// <typeparam name="T"></typeparam>
-// todo: избавиться от мока и связанного содержимого в неймспейсе, использовать стандартный вариант
 public class FakeDbSet<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
 {
     private readonly List<T> _data;
@@ -33,15 +32,6 @@ public class FakeDbSet<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
         ElementType = _data.AsQueryable().ElementType;
     }
 
-    public FakeDbSet(Expression expression, IAsyncQueryProvider provider)
-    {
-        Provider = provider;
-        Expression = expression;
-
-        // не требуется
-        _data = []; ElementType = _data.AsQueryable().ElementType;
-    }
-
     public IEnumerator<T> GetEnumerator() => _data.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -49,6 +39,5 @@ public class FakeDbSet<T> : IAsyncEnumerable<T>, IOrderedQueryable<T>
     public Expression Expression { get; }
     public Type ElementType { get; }
 
-    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken ct = default) =>
-        _data.ToAsyncEnumerable().GetAsyncEnumerator(ct);
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken ct = default) => _data.ToAsyncEnumerable().GetAsyncEnumerator(ct);
 }

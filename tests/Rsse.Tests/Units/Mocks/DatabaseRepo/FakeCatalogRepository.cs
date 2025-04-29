@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EntityFrameworkCore.Testing.Moq;
+using Microsoft.EntityFrameworkCore.Query;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -9,7 +11,9 @@ using SearchEngine.Data.Repository.Contracts;
 
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
-// todo: избавиться от мока и связанного содержимого в неймспейсе, использовать стандартный вариант
+/// <summary>
+/// Тестовый репозиторий
+/// </summary>
 public class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
@@ -21,6 +25,7 @@ public class FakeCatalogRepository : IDataRepository
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
     internal const string SecondNoteTitle = "Шаинский - Облака";
+    private const int TestNoteId = 1;
 
     internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
@@ -28,7 +33,7 @@ public class FakeCatalogRepository : IDataRepository
 
     public FakeCatalogRepository()
     {
-        _notes.Add(1, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
+        _notes.Add(TestNoteId, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
     }
 
     private int _id;
@@ -159,13 +164,29 @@ public class FakeCatalogRepository : IDataRepository
         return new FakeDbSet<Tuple<string, string>>(note);
     }
 
-    public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
+    public IQueryable<int> ReadTaggedNoteIds(IEnumerable<int> checkedTags)
     {
-        // выглядит как архитектурная проблема: типы EF не в своём слое, ReadModel.GetNextOrSpecificNote | NoteElector.ElectNextNote
-        // поэтому они не мокаются на уровне репо, тащи их (вызов) в репозиторий
+        var n = _notes;
+        var enumerable = checkedTags as int[] ?? checkedTags.ToArray();
+        if (enumerable.First() == ReadTests.ElectionTestCheckedTag)
+        {
+            // признак теста ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest
+            // отдаём id тестовой заметки
+            enumerable = [TestNoteId];
+        }
 
-        // методу требуется IAsyncQueryProvider: попробуй EntityFrameworkCore.Testing.Moq или Microsoft.EntityFrameworkCore.InMemory
-        var result =  new FakeDbSet<int>(checkedTags, new FakeAsyncQueryProvider());
+        if (enumerable.Length == ReadTests.ElectionTestTagsCount)
+        {
+            // признак теста ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests
+            // отдаём ElectionTestNotesCount заметок - пусть выбирает
+            enumerable = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
+        }
+
+        // выглядит как архитектурная проблема: IAsyncQueryProvider используется вне слоя репозитория в ElectNextNoteAsync
+        var queryable = new List<NoteEntity>().AsQueryable();
+        var provider = Create.MockedQueryProviderFor(queryable);
+        var result =  new FakeDbSet<int>(enumerable, (IAsyncQueryProvider)provider);
+
         return result;
     }
 

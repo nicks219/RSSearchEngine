@@ -17,7 +17,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
-    // векторы соответствуют заметкам из FakeCatalogRepository:
+    // векторы соответствуют заметкам из FakeCatalogRepository
 
     private readonly List<int> _extendedFirst =
     [
