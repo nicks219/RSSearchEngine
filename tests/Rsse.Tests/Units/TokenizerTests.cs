@@ -17,7 +17,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
-    // векторы соответствуют заметкам из TestDataRepository:
+    // векторы соответствуют заметкам из FakeCatalogRepository:
 
     private readonly List<int> _extendedFirst =
     [
@@ -43,14 +43,14 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomProviderWithLogger<TokenizerService>();
+        var host = new CustomServiceProvider<TokenizerService>();
         _factory = new CustomScopeFactory(host.Provider);
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldInitExtendedAndReducedLines_Correctly()
+    public void Tokenizer_ShouldInit_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
@@ -86,8 +86,6 @@ public class TokenizerTests
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
-        //var extended = tokenizer.GetExtendedLines();
-        //var reduced = tokenizer.GetReducedLines();
 
         // act:
         tokenizer.Update(1, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
@@ -159,7 +157,7 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_WhenDisabled_ShouldDoNothing()
+    public void Tokenizer_ShouldDoNothing_WhenDisabled()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
@@ -195,14 +193,9 @@ public class TokenizerTests
     }
 
     private static void CreateTestNote(TokenizerService tokenizerService) =>
-        tokenizerService.Create(1, new NoteEntity
+        tokenizerService.Create(id: 1, new NoteEntity
         {
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText
         });
-
-    [TestCleanup]
-    public void TestCleanup()
-    {
-    }
 }

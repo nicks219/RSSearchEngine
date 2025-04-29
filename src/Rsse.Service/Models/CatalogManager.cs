@@ -13,14 +13,14 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogModel(IServiceScope serviceScope)
+public class CatalogManager(IServiceScope serviceScope)
 {
     private const int Backward = 1;
     private const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
     private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CatalogModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogModel>>();
+    private readonly ILogger<CatalogManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
 
     /// <summary>
     /// Получить страницу каталога

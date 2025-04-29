@@ -13,9 +13,9 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadModel(IServiceScope serviceScope)
+public class ReadManager(IServiceScope serviceScope)
 {
-    private readonly ILogger<ReadModel> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadModel>>();
+    private readonly ILogger<ReadManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadManager>>();
     private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
 
     /// <summary>

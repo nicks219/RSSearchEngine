@@ -30,7 +30,7 @@ public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            return await new UpdateModel(scope).GetOriginalNote(id);
+            return await new UpdateManager(scope).GetOriginalNote(id);
         }
         catch (Exception ex)
         {
@@ -49,7 +49,7 @@ public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var response = await new UpdateModel(scope).UpdateNote(dto);
+            var response = await new UpdateManager(scope).UpdateNote(dto);
 
             var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Update(dto.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });

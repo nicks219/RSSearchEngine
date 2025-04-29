@@ -10,7 +10,7 @@ using SearchEngine.Data.Repository.Contracts;
 namespace SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
 // todo: избавиться от мока и связанного содержимого в неймспейсе, использовать стандартный вариант
-internal class FakeCatalogRepository : IDataRepository
+public class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
@@ -161,7 +161,10 @@ internal class FakeCatalogRepository : IDataRepository
 
     public IQueryable<int> ReadTaggedNotes(IEnumerable<int> checkedTags)
     {
-        // методу требуется IAsyncQueryProvider
+        // выглядит как архитектурная проблема: типы EF не в своём слое, ReadModel.GetNextOrSpecificNote | NoteElector.ElectNextNote
+        // поэтому они не мокаются на уровне репо, тащи их (вызов) в репозиторий
+
+        // методу требуется IAsyncQueryProvider: попробуй EntityFrameworkCore.Testing.Moq или Microsoft.EntityFrameworkCore.InMemory
         var result =  new FakeDbSet<int>(checkedTags, new FakeAsyncQueryProvider());
         return result;
     }
@@ -173,7 +176,7 @@ internal class FakeCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TitleRequest, note.TextRequest);
+        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TextRequest, note.TitleRequest);
 
         return Task.CompletedTask;
     }

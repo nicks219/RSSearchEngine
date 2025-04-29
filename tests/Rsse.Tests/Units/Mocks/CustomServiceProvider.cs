@@ -1,7 +1,5 @@
 using System;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Repository.Contracts;
@@ -12,12 +10,12 @@ using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 namespace SearchEngine.Tests.Units.Mocks;
 
 /// <summary/> Для тестов
-internal class CustomProviderWithLogger<TScope> where TScope : class
+public class CustomServiceProvider<TScope> where TScope : class
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public CustomProviderWithLogger()
+    public CustomServiceProvider()
     {
         var services = new ServiceCollection();
 

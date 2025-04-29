@@ -15,17 +15,15 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ComplianceTests
 {
-    // private const string Text = "аблака белагривыи лашатки";
-    // private const string Text = "я ты он она";
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    // todo: переименовать, развяжи по stub-бд c тестами токенайзера !
-    public void FindIncorrectTypedText_OnStubDatabase_ShouldReturn_ExpectedNoteWeights()
+    // todo:развяжи по stub-бд c тестами токенайзера
+    public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceController>>();
-        var collection = new CustomProviderWithLogger<TokenizerService>();
+        var collection = new CustomServiceProvider<TokenizerService>();
         var factory = new CustomScopeFactory(collection.Provider);
         var complianceController = new ComplianceController(factory, logger);
 
@@ -37,15 +35,15 @@ public class ComplianceTests
 
         // assert:
         deserialized.Should().NotBeNull();
-        deserialized?.Res.Should().NotBeNull();
+        deserialized.Res.Should().NotBeNull();
 
-        deserialized?.Res
+        deserialized.Res
             .Keys
             .ElementAt(0)
             .Should()
             .Be("1");
 
-        deserialized?.Res
+        deserialized.Res
             .Values
             .ElementAt(0)
             .Should()

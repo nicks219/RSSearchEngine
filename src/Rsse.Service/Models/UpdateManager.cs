@@ -13,10 +13,10 @@ namespace SearchEngine.Models;
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateModel(IServiceScope scope)
+public class UpdateManager(IServiceScope scope)
 {
     private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<UpdateModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateModel>>();
+    private readonly ILogger<UpdateManager> _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateManager>>();
 
     /// <summary>
     /// Прочитать обновляемую заметку

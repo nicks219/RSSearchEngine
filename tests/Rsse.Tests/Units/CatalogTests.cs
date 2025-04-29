@@ -20,82 +20,115 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class CatalogTests
 {
+    public required CatalogManager CatalogManager;
+    public required FakeCatalogRepository Repo;
+
     private const int NotesPerPage = 10;
-    private CatalogModel? _catalogModel;
     private int _notesCount;
-    private CustomProviderWithLogger<CatalogModel>? _host;
-    private NoopLogger<CatalogModel>? _logger;
-    private FakeCatalogRepository? _repo;
+    private CustomServiceProvider<CatalogManager>? _host;
+    private NoopLogger<CatalogManager>? _logger;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new CustomProviderWithLogger<CatalogModel>();
-        _catalogModel = new CatalogModel(_host.Scope);
-        _repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
-        _repo.CreateStubData(50);
-        _notesCount = _repo.ReadAllNotes().Count();
-        _logger = (NoopLogger<CatalogModel>)_host.Provider.GetRequiredService<ILogger<CatalogModel>>();
+        _host = new CustomServiceProvider<CatalogManager>();
+        CatalogManager = new CatalogManager(_host.Scope);
+        Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        Repo.CreateStubData(50);
+        _notesCount = Repo.ReadAllNotes().Count();
+        _logger = (NoopLogger<CatalogManager>)_host.Provider.GetRequiredService<ILogger<CatalogManager>>();
     }
 
     [TestMethod]
-    public async Task CatalogModel_ShouldRead_Page()
+    public async Task CatalogManager_ShouldRead_ExistingPage()
     {
         // arrange:
-        _repo!.CreateStubData(50);
+        const int existingPage = 1;
+        const int totalPages = 50;
+        Repo.CreateStubData(totalPages);
 
         // act:
-        var response = await _catalogModel!.ReadPage(1);
+        var responseDto = await CatalogManager.ReadPage(existingPage);
 
         // asserts:
-        Assert.AreEqual(NotesPerPage, response.CatalogPage?.Count);
-        Assert.AreEqual(_notesCount, response.NotesCount);
+        Assert.AreEqual(NotesPerPage, responseDto.CatalogPage?.Count);
+        Assert.AreEqual(_notesCount, responseDto.NotesCount);
     }
 
     [TestMethod]
-    public async Task CatalogModel_ShouldNavigate_Forward()
+    public async Task CatalogManager_ShouldNavigate_ForwardDirection()
     {
-        const int page = 1;
-        const int forwardConst = 2;
+        const int currentPage = 1;
+        const int forwardMagicNumber = 2;
 
         // arrange:
-        _repo!.CreateStubData(50);
-        var request = new CatalogDto { Direction = [forwardConst], PageNumber = page };
+        Repo.CreateStubData(50);
+        var request = new CatalogDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
-        var response = await _catalogModel!.NavigateCatalog(request);
+        var responseDto = await CatalogManager.NavigateCatalog(request);
 
         // assert:
-        response.PageNumber
+        responseDto.PageNumber
             .Should()
-            .Be(page + 1);
+            .Be(currentPage + 1);
     }
 
     [TestMethod]
-    public async Task CatalogModel_OnNullRequest_ShouldLogError()
+    public async Task CatalogManager_ShouldLogError_OnUndefinedRequest()
     {
         // arrange & act:
-        _ = await _catalogModel!.NavigateCatalog(null!);
+        _ = await CatalogManager.NavigateCatalog(null!);
 
         // assert:
         Assert.AreEqual(_logger?.Message, ModelMessages.NavigateCatalogError);
     }
 
     [TestMethod]
-    public async Task CatalogModel_OnInvalidRequest_ShouldLogError()
+    public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
     {
         // arrange:
-        var request = new CatalogDto { Direction = [1000, 2000]};
+        List<int> invalidData = [1000, 2000];
+        var request = new CatalogDto { Direction = invalidData};
 
         // act:
-        var result = await _catalogModel!.NavigateCatalog(request);
+        var responseDto = await CatalogManager.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(result.ErrorMessage, ModelMessages.NavigateCatalogError);
+        Assert.AreEqual(responseDto.ErrorMessage, ModelMessages.NavigateCatalogError);
     }
 
     [TestMethod]
-    public async Task CatalogController_OnThrow_ShouldLogError()
+    public async Task CatalogManager_ShouldReturnZeroSongCount_OnInvalidDeleteRequest()
+    {
+        // arrange & act:
+        const int invalidPageId = -300;
+        const int invalidPageNumber = -200;
+        var responseDto = await CatalogManager.DeleteNote(invalidPageId, invalidPageNumber);
+
+        // assert:
+        Assert.AreEqual(0, responseDto.NotesCount);
+    }
+
+    [TestMethod]
+    public async Task CatalogController_ShouldReturnNullPage_OnInvalidDeleteRequest()
+    {
+        // arrange:
+        const int invalidPageId = -300;
+        const int invalidPageNumber = -200;
+        var logger = Substitute.For<ILogger<CatalogController>>();
+        var factory = new CustomScopeFactory(new CustomServiceProvider<CatalogManager>().Provider);
+        var catalogController = new CatalogController(factory, logger);
+
+        // act:
+        var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
+
+        // assert:
+        Assert.AreEqual(null, responseDto?.CatalogPage);
+    }
+
+    [TestMethod]
+    public async Task CatalogController_ShouldLogError_WhenThrow()
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
@@ -108,35 +141,5 @@ public class CatalogTests
 
         // assert:
         logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
-    }
-
-    [TestMethod]
-    public async Task CatalogModel_DeleteTest_OnInvalidDeleteRequest_ShouldReturn_ZeroSongCount()
-    {
-        // arrange & act:
-        var response = await _catalogModel!.DeleteNote(-300, -200);
-
-        // assert:
-        Assert.AreEqual(0, response.NotesCount);
-    }
-
-    [TestMethod]
-    public async Task CatalogController_DeleteTest_OnInvalidDeleteRequest_ShouldReturnNullPage()
-    {
-        // arrange:
-        var logger = Substitute.For<ILogger<CatalogController>>();
-        var factory = new CustomScopeFactory(new CustomProviderWithLogger<CatalogModel>().Provider);
-        var catalogController = new CatalogController(factory, logger);
-
-        // act:
-        var response = (await catalogController.DeleteNote(-300, -200)).Value;
-
-        // assert:
-        Assert.AreEqual(null, response?.CatalogPage);
-    }
-
-    [TestCleanup]
-    public void TestCleanup()
-    {
     }
 }
