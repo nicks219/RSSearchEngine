@@ -1,19 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SearchEngine.Common;
-using SearchEngine.Common.Auth;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository.Scripts;
 using Serilog;
 
 namespace SearchEngine.Tools.MigrationAssistant;
 
-public class NpgsqlDbMigrator(IConfiguration configuration, IServiceScopeFactory scopeFactory) : IDbMigrator
+public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider serviceProvider) : IDbMigrator
 {
     // todo
     // 1. проверить в docker
@@ -143,18 +142,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceScopeFactory
 
         var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
 
-        var version = _version - 1;
-
-        if (version < 0)
-        {
-            version = MaxVersion - 1;
-        }
-
-        // при ресторе сразу после запуска я могу рассчитывать на "_maxVersion - 1" версию файлов:
-        var backupFilesPath = string.IsNullOrEmpty(fileName)
-            ? Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_backup_{version}.txt")
-            : Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
-
         // в архиве всегда снимок последнего дампа
         var archiveTempPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_backup_.txt")
@@ -170,7 +157,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceScopeFactory
             // пересоздадим базу до открытия соединения
             if (!createTablesOnPgMigration)
             {
-                var context = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
+                var context = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
                 context.Dispose();

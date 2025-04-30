@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Controllers;
+using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Units.Mocks;
@@ -20,14 +21,17 @@ public class ComplianceTests
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    // todo:развяжи по stub-бд c тестами токенайзера
     public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceController>>();
-        var host = new ServiceProviderStub<TokenizerService>();
+        var host = new ServicesStubStartup<TokenizerService>();
         var complianceController = new ComplianceController(logger);
         complianceController.AddHttpContext(host.Provider);
+
+        // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+        var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
+        tokenizer.Initialize();
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);

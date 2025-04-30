@@ -1,7 +1,9 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Data.Context;
 using SearchEngine.Engine.Contracts;
 
 namespace SearchEngine.Engine.Tokenizer;
@@ -9,7 +11,10 @@ namespace SearchEngine.Engine.Tokenizer;
 /// <summary>
 /// Сервис запуска по расписанию инициализации функционала токенизатора
 /// </summary>
-internal class TokenizerActivatorService(ITokenizerService tokenizer, ILogger<TokenizerActivatorService> logger) : BackgroundService
+internal class ActivatorService(
+    ITokenizerService tokenizer,
+    IServiceProvider provider,
+    ILogger<ActivatorService> logger) : BackgroundService
 {
     // одни сутки:
     private const int BaseMs = 1000;
@@ -21,26 +26,30 @@ internal class TokenizerActivatorService(ITokenizerService tokenizer, ILogger<To
     private int _count = 1;
 
     /// <summary>
-    /// Инициализация токенайзера по расписанию
+    /// Инициализация токенайзера по расписанию и баз данных на старте
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        DatabaseInitializer.CreateAndSeed(provider, logger);
+
         try
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(TokenizerActivatorService), _count.ToString());
+                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(ActivatorService), _count.ToString());
 
                 _count++;
 
                 tokenizer.Initialize();
+
+                logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 
                 await Task.Delay(WaitMs, stoppingToken);
             }
         }
         finally
         {
-            logger.LogInformation("[{Reporter}] graceful shutdown, cycles counter: '{Count}'", nameof(TokenizerActivatorService), _count.ToString());
+            logger.LogInformation("[{Reporter}] graceful shutdown, cycles counter: '{Count}'", nameof(ActivatorService), _count.ToString());
         }
     }
 }

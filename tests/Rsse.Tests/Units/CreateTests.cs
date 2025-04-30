@@ -15,7 +15,7 @@ public class CreateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<CreateManager>();
+        var host = new ServicesStubStartup<CreateManager>();
         CreateManager = new CreateManager(host.Scope.ServiceProvider);
     }
 
@@ -42,7 +42,7 @@ public class CreateTests
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
-        var host = new ServiceProviderStub<UpdateManager>();
+        var host = new ServicesStubStartup<UpdateManager>();
         var expectedDto = await new UpdateManager(host.Provider)
             .GetOriginalNote(responseDto.CommonNoteId);
 

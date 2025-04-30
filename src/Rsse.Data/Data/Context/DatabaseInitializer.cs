@@ -14,13 +14,12 @@ namespace SearchEngine.Data.Context;
 public abstract class DatabaseInitializer
 {
     /// <summary>
-    /// Инициализировать базы данных.
+    /// Инициализировать базы данных, вызывается однократно.
     /// </summary>
-    public static void CreateAndSeed(IServiceScopeFactory factory, ILogger logger)
+    public static void CreateAndSeed(IServiceProvider provider, ILogger logger)
     {
-        using var scope = factory.CreateScope();
-
-        using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        // чтобы не закрывать контекст в корневом scope провайдера
+        using var repo = provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
 
         try
         {
@@ -29,7 +28,7 @@ public abstract class DatabaseInitializer
 
             if (readerContext == null || primaryWriterContext == null)
             {
-                logger.LogWarning("Reporter: {Reporter} | No context(s) provided", nameof(DatabaseInitializer));
+                logger.LogWarning("[{Reporter}] | No context(s) provided", nameof(DatabaseInitializer));
                 return;
             }
 
@@ -40,11 +39,11 @@ public abstract class DatabaseInitializer
             SeedDatabase(primaryWriterContext, writerCreated);
 
             logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
-                nameof(CreateAndSeed), readerCreated, writerCreated);
+                nameof(DatabaseInitializer), readerCreated, writerCreated);
         }
         catch (Exception ex)
         {
-            logger.LogError("Reporter: {Reporter} | Source: {Source} | Ensure created error: '{Message}'", nameof(CreateAndSeed), ex.Source, ex.Message);
+            logger.LogError("[{Reporter}] error | source: {Source} | ensure created error: '{Message}'", nameof(DatabaseInitializer), ex.Source, ex.Message);
         }
     }
 

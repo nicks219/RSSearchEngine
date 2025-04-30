@@ -27,7 +27,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadManager ReadManager;
-    public required ServiceProviderStub<ReadManager> Host;
+    public required ServicesStubStartup<ReadManager> Host;
     public required NoopLogger<ReadManager> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -35,7 +35,7 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServiceProviderStub<ReadManager>();
+        Host = new ServicesStubStartup<ReadManager>();
         ReadManager = new ReadManager(Host.Provider);
         Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
@@ -104,7 +104,7 @@ public class ReadTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var host = new ServiceProviderStub<ReadManager>();
+        var host = new ServicesStubStartup<ReadManager>();
         var readController = new ReadController(logger);
         readController.AddHttpContext(host.Provider);
 

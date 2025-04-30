@@ -52,7 +52,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHostedService<TokenizerActivatorService>();
+        services.AddHostedService<ActivatorService>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 

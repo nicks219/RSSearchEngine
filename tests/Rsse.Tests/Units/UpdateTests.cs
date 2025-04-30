@@ -22,8 +22,8 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<TokenizerService>();
-        var secondHost = new ServiceProviderStub<UpdateManager>();
+        var host = new ServicesStubStartup<TokenizerService>();
+        var secondHost = new ServicesStubStartup<UpdateManager>();
         var findModel = new CompliantManager(host.Provider);
 
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();

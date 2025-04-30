@@ -43,15 +43,6 @@ public class IntegrationTests
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
     }
 
-    /// <summary>
-    /// Запустить отложенную очистку файлов бд sqlite (на windows)
-    /// </summary>
-    [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
-    public static void CleanUp()
-    {
-        SqliteFileCleaner.ScheduleFileDeletionWindowsOnly();
-    }
-
     [TestMethod]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
     {
@@ -71,9 +62,8 @@ public class IntegrationTests
         if (tokenizer == null) throw new TestCanceledException("missing tokenizer");
 
         // NB: рестору требуется файл миграции на пути ClientApp\build\backup_9.dump
-        // todo: редко Attempted to read past the end of the stream, разберись
+        // NB: редко Attempted to read past the end of the stream, разберись
         mysqlMigrator.Restore(string.Empty);
-        tokenizer.Initialize();
         await repo.CopyDbFromMysqlToNpgsql();
 
         using var scope = factory.Server.Services.CreateScope();
@@ -91,11 +81,13 @@ public class IntegrationTests
         var createdId = await scopedRepo.CreateNote(note);
         noteForUpdate.CommonNoteId = createdId;
         await scopedRepo.UpdateNote(tags, noteForUpdate);
+        // repo не апдейтит кэш
+        tokenizer.Initialize();
 
         using var response = await client.GetAsync($"api/compliance/indices?text={text}");
         var result = await response.Content.ReadAsStringAsync();
         var firstKey = JsonSerializer.Deserialize<ResponseModel>(result)?.res.Keys.ElementAt(0);
-        Int64.TryParse(firstKey, out var id);
+        Int64.TryParse(firstKey, out var complianceId);
 
         await scopedRepo.DeleteNote(createdId);
 
@@ -105,7 +97,7 @@ public class IntegrationTests
         writer.Should().Contain(tag.ToUpper());
         reader.Should().Contain(tag.ToUpper());
 
-        id.Should().Be(createdId);
+        complianceId.Should().Be(createdId);
     }
 
     [TestMethod]

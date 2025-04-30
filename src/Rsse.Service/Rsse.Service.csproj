@@ -13,7 +13,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
-        <DebugType>none</DebugType>
+        <DebugType>none</DebugType> <!-- завяжи на DOTNET_CI -->
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">

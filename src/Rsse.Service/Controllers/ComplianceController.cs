@@ -14,8 +14,7 @@ namespace SearchEngine.Controllers;
 /// </summary>
 [Route("api/compliance")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ComplianceController(ILogger<ComplianceController> logger)
-    : ControllerBase
+public class ComplianceController(ILogger<ComplianceController> logger) : ControllerBase
 {
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
@@ -25,9 +24,11 @@ public class ComplianceController(ILogger<ComplianceController> logger)
     [HttpGet("indices")]
     public ActionResult GetComplianceIndices(string text)
     {
+        var okEmptyResponse = Ok(new { });
+
         if (string.IsNullOrEmpty(text))
         {
-            return Ok(new { });
+            return okEmptyResponse;
         }
 
         try
@@ -40,7 +41,7 @@ public class ComplianceController(ILogger<ComplianceController> logger)
             switch (searchIndexes.Count)
             {
                 case 0:
-                    return Ok(new { });
+                    return okEmptyResponse;
 
                 // низкий вес не стоит учитывать если результатов много:
                 case > 10:

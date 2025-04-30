@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>SearchEngine</RootNamespace>
-        <DebugType>none</DebugType>
+        <DebugType>none</DebugType> <!-- завяжи на DOTNET_CI -->
     </PropertyGroup>
 
     <ItemGroup>

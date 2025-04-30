@@ -48,7 +48,7 @@ public class SqliteAccessControlStartup(IConfiguration configuration)
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
 
         // служба также заполняет бд
-        services.AddHostedService<TokenizerActivatorService>();
+        services.AddHostedService<ActivatorService>();
 
         services.AddHttpContextAccessor();
 

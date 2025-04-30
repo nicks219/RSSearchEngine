@@ -86,7 +86,7 @@ public class AccountController(
     public async Task<ActionResult> UpdateCredos([FromQuery]UpdateCredosRequest credos)
     {
         var scopedProvider = HttpContext.RequestServices;
-        await using var repo = scopedProvider.GetRequiredService<IDataRepository>();
+        var repo = scopedProvider.GetRequiredService<IDataRepository>();
         await repo.UpdateCredos(credos);
         await Logout();
         return Ok("updated");

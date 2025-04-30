@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Common.Configuration;
-using SearchEngine.Data.Context;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
@@ -18,33 +17,31 @@ namespace SearchEngine.Engine.Tokenizer;
 /// </summary>
 public class TokenizerService : ITokenizerService
 {
-    // TODO использовать либо ReaderWriterLockSlim, либо ConcurrentDictionary
-    // TODO дополнить логирование ошибок пересозданием линии кэша
+    // todo: можно перенести сюда ComputeComplianceIndices и использовать ReaderWriterLockSlim правильно
+    // сейчас блокировки отделяют delete от create/update
+    // todo: дополнить логирование ошибок пересозданием линии кэша
     private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
     private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
     private readonly ReaderWriterLockSlim _lockSlim;
-    
+
+    private readonly IServiceProvider _provider;
     private readonly ILogger<TokenizerService> _logger;
-    private readonly IServiceScopeFactory _factory;
     private readonly bool _isEnabled;
 
     /// <summary>
-    /// Создать и инициализировать сервис токенайзера
+    /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов
     /// </summary>
-    /// <param name="factory">DI-фабрика</param>
+    /// <param name="provider">DI-фабрика</param>
     /// <param name="options">настройки</param>
     /// <param name="logger">логер</param>
-    public TokenizerService(IServiceScopeFactory factory, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
+    public TokenizerService(IServiceProvider provider, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
-        _factory = factory;
+        _provider = provider;
         _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
         _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
         _logger = logger;
         _lockSlim = new ReaderWriterLockSlim();
         _isEnabled = options.Value.TokenizerIsEnable;
-
-        DatabaseInitializer.CreateAndSeed(_factory, _logger);
-        Initialize();
     }
 
     /// <inheritdoc/>
@@ -79,9 +76,7 @@ public class TokenizerService : ITokenizerService
 
         _lockSlim.EnterReadLock();
 
-        using var scope = _factory.CreateScope();
-
-        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
+        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
@@ -105,9 +100,7 @@ public class TokenizerService : ITokenizerService
 
         _lockSlim.EnterReadLock();
 
-        using var scope = _factory.CreateScope();
-
-        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
+        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
@@ -145,11 +138,10 @@ public class TokenizerService : ITokenizerService
 
         _lockSlim.EnterWriteLock();
 
-        using var scope = _factory.CreateScope();
+        // чтобы не закрывать контекст в корневом scope провайдера
+        using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
 
-        using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
-        var processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
+        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         try
         {
@@ -157,7 +149,7 @@ public class TokenizerService : ITokenizerService
 
             _extendedTokenLines.Clear();
 
-            // TODO избавиться от загрузки всех записей из таблицы:
+            // todo: избавиться от загрузки всех записей из таблицы:
             var texts = repo.ReadAllNotes();
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
@@ -186,6 +178,8 @@ public class TokenizerService : ITokenizerService
         {
             _lockSlim.ExitWriteLock();
         }
+
+        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'", nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
     }
 
     /// <summary>

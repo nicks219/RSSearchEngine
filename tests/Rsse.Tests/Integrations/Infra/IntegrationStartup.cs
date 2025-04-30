@@ -21,14 +21,14 @@ public class IntegrationStartup(IConfiguration configuration)
     {
         services.AddDbsTestEnvironment();
 
-        services.AddTransient<IDataRepository, MirrorRepository>();
+        services.AddScoped<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
-        services.AddTransient<ITokenizerService, TokenizerService>();
-        services.AddHostedService<TokenizerActivatorService>();
+        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddHostedService<ActivatorService>();
     }
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

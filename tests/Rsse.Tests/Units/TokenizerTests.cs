@@ -18,7 +18,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
-    public required IServiceScopeFactory Factory;
+    public required IServiceProvider Factory;
 
     // векторы соответствуют заметкам из FakeCatalogRepository
 
@@ -44,9 +44,9 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<TokenizerService>();
-        Factory = new CustomScopeFactory(host.Provider);
-        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        var host = new ServicesStubStartup<TokenizerService>();
+        Factory = host.Provider;
+        var repo = (FakeCatalogRepository) host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);
     }
 
@@ -55,7 +55,7 @@ public class TokenizerTests
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
-        options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
+        options.Value.Returns(new CommonBaseOptions {TokenizerIsEnable = true});
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
@@ -84,12 +84,14 @@ public class TokenizerTests
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
-        options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
+        options.Value.Returns(new CommonBaseOptions {TokenizerIsEnable = true});
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
 
         // act:
-        tokenizer.Update(1, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+        tokenizer.Update(1,
+            new NoteEntity
+                {Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText});
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -110,7 +112,7 @@ public class TokenizerTests
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
-        options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
+        options.Value.Returns(new CommonBaseOptions {TokenizerIsEnable = true});
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -139,7 +141,7 @@ public class TokenizerTests
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
-        options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
+        options.Value.Returns(new CommonBaseOptions {TokenizerIsEnable = true});
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
@@ -162,7 +164,7 @@ public class TokenizerTests
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
-        options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
+        options.Value.Returns(new CommonBaseOptions {TokenizerIsEnable = false});
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -171,11 +173,15 @@ public class TokenizerTests
         VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+        tokenizer.Create(2,
+            new NoteEntity
+                {Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText});
         VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2, new NoteEntity { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+        tokenizer.Update(2,
+            new NoteEntity
+                {Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText});
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
@@ -199,9 +205,4 @@ public class TokenizerTests
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText
         });
-
-    private class CustomScopeFactory(IServiceProvider serviceProvider) : IServiceScopeFactory
-    {
-        public IServiceScope CreateScope() => serviceProvider.CreateScope();
-    }
 }

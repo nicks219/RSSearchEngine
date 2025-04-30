@@ -13,6 +13,15 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiTests
 {
+    /// <summary>
+    /// Запустить отложенную очистку файлов бд sqlite (на windows) в финале тестовой сборки
+    /// </summary>
+    [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
+    public static void CleanUp()
+    {
+        SqliteFileCleaner.ScheduleFileDeletionWindowsOnly();
+    }
+
     [TestMethod]
     public async Task Api_ReadTitleByNoteId_ReturnsTitle()
     {

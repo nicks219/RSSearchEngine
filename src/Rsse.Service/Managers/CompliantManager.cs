@@ -33,10 +33,11 @@ public class CompliantManager(IServiceProvider scopedProvider)
     }
 
     /// <summary>
-    /// Вычислить индексы соответсвия хранимых заметок поисковому запросу
+    /// Вычислить индексы соответствия хранимых заметок поисковому запросу
     /// </summary>
     /// <param name="text">текст для поиска соответствий</param>
     /// <returns>идентификаторы заметок и их индексы соответствия</returns>
+    // NB: по сути read для TokenizerService
     public Dictionary<int, double> ComputeComplianceIndices(string text)
     {
         var result = new Dictionary<int, double>();
