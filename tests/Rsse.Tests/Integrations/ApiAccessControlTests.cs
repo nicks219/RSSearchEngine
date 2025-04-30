@@ -44,10 +44,10 @@ public class ApiAccessControlTests
     public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
         // arrange:
+        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         using var client = _factory!.CreateClient(_options!);
 
         // act:
-        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         using var response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -65,14 +65,14 @@ public class ApiAccessControlTests
     public async Task Api_Unauthenticated_Delete_ShouldReturns403()
     {
         // arrange:
-        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
+        using var client = _factory!.CreateClient(_options!);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+        uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
 
         // act:
-        uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
@@ -97,13 +97,13 @@ public class ApiAccessControlTests
     [DataRow("account/update?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
     [DataRow("api/create")]// GetStructuredTagListAsync
     [DataRow("api/update?id=1")]// GetInitialNote
-    public async Task Api_Unauthorized_Get_ShouldReturns401(string url)
+    public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
         using var client = _factory!.CreateClient(_options!);
+        var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        var uri = new Uri(url, UriKind.Relative);
         using var response = await client.GetAsync(uri);
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -121,16 +121,16 @@ public class ApiAccessControlTests
     [DataRow("migration/upload")]
     [DataRow("api/create")]
     [DataRow("api/update")]
-    public async Task Api_Unauthorized_Post_ShouldReturns401(string url)
+    public async Task Api_Unauthorized_Post_ShouldReturns401(string uriString)
     {
         // arrange:
         using var client = _factory!.CreateClient(_options!);
         var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
         var formData = new MultipartFormDataContent();
+        var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        var uri = new Uri(url, UriKind.Relative);
         using var response = await client.PostAsync(uri, formData);
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -148,16 +148,16 @@ public class ApiAccessControlTests
     public async Task Api_Authorized_Delete_ShouldReturns200()
     {
         // arrange:
-        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
+        using var client = _factory!.CreateClient(_options!);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-
-        // act:
         // запрос на удаление несуществующей заметки - чтобы не аффектить тесты, завязанные на её чтение
         uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+
+        // act:
         response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
         var statusCode = response.StatusCode;
@@ -179,20 +179,19 @@ public class ApiAccessControlTests
     [DataRow("account/update?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
     [DataRow("api/create")]
     [DataRow("api/update?id=1")]
-    public async Task Api_Authorized_Get_ShouldReturns200(string url)
+    public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
-        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
+        using var client = _factory!.CreateClient(_options!);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+        uri = new Uri(uriString, UriKind.Relative);
+        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
 
         // act:
-        uri = new Uri(url, UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.GetAsync(uri);
-
         var reason = response.ReasonPhrase;
         var statusCode = response.StatusCode;
 
@@ -207,27 +206,26 @@ public class ApiAccessControlTests
     [DataRow("migration/upload", true)]// IFormFile
     [DataRow("api/create", false)]// json
     [DataRow("api/update", false)]// json
-    public async Task Api_Authorized_Post_ShouldReturns200(string url, bool appendFile)
+    public async Task Api_Authorized_Post_ShouldReturns200(string uriString, bool appendFile)
     {
         // arrange:
-        using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
+        using var client = _factory!.CreateClient(_options!);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
 
         var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-
         var json = new NoteDto();
         var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
-
         dynamic content = appendFile ? new MultipartFormDataContent() : jsonContent;
         if (appendFile) content.Add(fileContent, "file", "file.txt");
 
-        // act:
-        uri = new Uri(url, UriKind.Relative);
+        uri = new Uri(uriString, UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+
+        // act:
         response = await client.PostAsync(uri, content);
         var reason = response.ReasonPhrase;
         var statusCode = response.StatusCode;

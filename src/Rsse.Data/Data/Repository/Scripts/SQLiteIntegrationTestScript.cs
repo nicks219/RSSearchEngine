@@ -5,7 +5,7 @@ namespace SearchEngine.Data.Repository.Scripts;
 /// Ссылка на информацию по SQLite: https://www.sqlite.org/lang.html
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public static class SQLiteIntegrationTestScript
+public static class SQLiteTestScript
 {
     public const string CreateTestData = """
                                              INSERT INTO [Tag] ([TagId], [Tag]) VALUES (1, 'Авторские');
