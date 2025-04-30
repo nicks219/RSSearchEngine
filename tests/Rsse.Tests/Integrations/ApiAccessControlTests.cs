@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Common;
-using SearchEngine.Common.Auth;
+using SearchEngine.Data.Dto;
 using SearchEngine.Tests.Integrations.Infra;
 
 namespace SearchEngine.Tests.Integrations;
@@ -23,7 +28,6 @@ public class ApiAccessControlTests
     [ClassInitialize]
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
-        // arrange:
         _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
         var baseUri = new Uri("http://localhost:5000/");
         _options = new WebApplicationFactoryClientOptions
@@ -37,45 +41,47 @@ public class ApiAccessControlTests
     public static void CleanUp() => _factory!.Dispose();
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()
+    public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
-        // act:
+        // arrange:
         using var client = _factory!.CreateClient(_options!);
+
+        // act:
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         using var response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
-        var statusCode = (int)response.StatusCode;
+        var statusCode = response.StatusCode;
 
         // assert:
-        statusCode.Should().Be(401);
-        reason.Should().Be("Unauthorized");
+        statusCode.Should().Be(HttpStatusCode.Unauthorized);
+        reason.Should().Be(HttpStatusCode.Unauthorized.ToString());
         response.Should().NotBeNull();
         var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
         shift.Value.First().Should().Be(Constants.ShiftHeaderValue);
     }
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByUnauthorizedUser_Returns403()
+    public async Task Api_Unauthenticated_Delete_ShouldReturns403()
     {
-        // act: invalid login:
+        // arrange:
         using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
 
-        // act: request:
+        // act:
         uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
         var content = await response.Content.ReadAsStringAsync();
-        var statusCode = (int)response.StatusCode;
+        var statusCode = response.StatusCode;
 
         // assert:
-        statusCode.Should().Be(403);
-        reason.Should().Be("Forbidden");
+        statusCode.Should().Be(HttpStatusCode.Forbidden);
+        reason.Should().Be(HttpStatusCode.Forbidden.ToString());
         content.Should().NotBeNull();
         content.Should().Be("GET: access denied.");
 
@@ -83,26 +89,152 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByAuthorizedUser_ShouldSucceed()
+    [DataRow("migration/copy")]
+    [DataRow("migration/create?fileName=123&databaseType=MySql")]
+    [DataRow("migration/restore?fileName=123&databaseType=MySql")]
+    [DataRow("migration/download?filename=123")]
+    [DataRow("account/check")]
+    [DataRow("account/update?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
+    [DataRow("api/create")]// GetStructuredTagListAsync
+    [DataRow("api/update?id=1")]// GetInitialNote
+    public async Task Api_Unauthorized_Get_ShouldReturns401(string url)
     {
-        // act: valid login:
+        // arrange:
+        using var client = _factory!.CreateClient(_options!);
+
+        // act:
+        var uri = new Uri(url, UriKind.Relative);
+        using var response = await client.GetAsync(uri);
+        var reason = response.ReasonPhrase;
+        var headers = response.Headers;
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.Unauthorized);
+        reason.Should().Be(HttpStatusCode.Unauthorized.ToString());
+        response.Should().NotBeNull();
+        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+        shift.Value.First().Should().Be(Constants.ShiftHeaderValue);
+    }
+
+    [TestMethod]
+    [DataRow("migration/upload")]
+    [DataRow("api/create")]
+    [DataRow("api/update")]
+    public async Task Api_Unauthorized_Post_ShouldReturns401(string url)
+    {
+        // arrange:
+        using var client = _factory!.CreateClient(_options!);
+        var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+        var formData = new MultipartFormDataContent();
+
+        // act:
+        var uri = new Uri(url, UriKind.Relative);
+        using var response = await client.PostAsync(uri, formData);
+        var reason = response.ReasonPhrase;
+        var headers = response.Headers;
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.Unauthorized);
+        reason.Should().Be(HttpStatusCode.Unauthorized.ToString());
+        response.Should().NotBeNull();
+        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+        shift.Value.First().Should().Be(Constants.ShiftHeaderValue);
+    }
+
+    [TestMethod]
+    public async Task Api_Authorized_Delete_ShouldReturns200()
+    {
+        // arrange:
         using var client = _factory!.CreateClient(_options!);
         var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         var response = await client.GetAsync(uri);
         var headers = response.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
 
-        // act: request:
+        // act:
         // запрос на удаление несуществующей заметки - чтобы не аффектить тесты, завязанные на её чтение
         uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         response = await client.DeleteAsync(uri);
         var reason = response.ReasonPhrase;
-        var statusCode = (int)response.StatusCode;
+        var statusCode = response.StatusCode;
 
         // assert:
-        statusCode.Should().Be(200);
-        reason.Should().Be("OK");
+        statusCode.Should().Be(HttpStatusCode.OK);
+        reason.Should().Be(HttpStatusCode.OK.ToString());
+
+        response.Dispose();
+    }
+
+    [TestMethod]
+    // следует запускать на mysql и postgres:
+    // [DataRow("migration/copy")]
+    // [DataRow("migration/create?fileName=123&databaseType=MySql")]
+    // [DataRow("migration/restore?fileName=123&databaseType=MySql")]
+    [DataRow("migration/download?filename=backup_9.dump")]
+    [DataRow("account/check")]
+    [DataRow("account/update?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
+    [DataRow("api/create")]
+    [DataRow("api/update?id=1")]
+    public async Task Api_Authorized_Get_ShouldReturns200(string url)
+    {
+        // arrange:
+        using var client = _factory!.CreateClient(_options!);
+        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
+        var response = await client.GetAsync(uri);
+        var headers = response.Headers;
+        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+
+        // act:
+        uri = new Uri(url, UriKind.Relative);
+        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+        response = await client.GetAsync(uri);
+
+        var reason = response.ReasonPhrase;
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.OK);
+        reason.Should().Be(HttpStatusCode.OK.ToString());
+
+        response.Dispose();
+    }
+
+    [TestMethod]
+    [DataRow("migration/upload", true)]// IFormFile
+    [DataRow("api/create", false)]// json
+    [DataRow("api/update", false)]// json
+    public async Task Api_Authorized_Post_ShouldReturns200(string url, bool appendFile)
+    {
+        // arrange:
+        using var client = _factory!.CreateClient(_options!);
+        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
+        var response = await client.GetAsync(uri);
+        var headers = response.Headers;
+        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+
+        var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+
+        var json = new NoteDto();
+        var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
+
+        dynamic content = appendFile ? new MultipartFormDataContent() : jsonContent;
+        if (appendFile) content.Add(fileContent, "file", "file.txt");
+
+        // act:
+        uri = new Uri(url, UriKind.Relative);
+        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+        response = await client.PostAsync(uri, content);
+        var reason = response.ReasonPhrase;
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.OK);
+        reason.Should().Be(HttpStatusCode.OK.ToString());
 
         response.Dispose();
     }

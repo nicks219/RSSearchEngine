@@ -128,8 +128,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public async Task<UserEntity?> GetUser(LoginDto login)
     {
-        return await context.Users!
-            .FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
+        return await context.Users.FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
     }
 
     /// <inheritdoc/>
@@ -236,7 +235,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw new Exception($"{nameof(UpdateCredosRequest)} | {ex.Message}");
+            throw new Exception($"{nameof(UpdateCredos)} | {ex.Message}");
         }
     }
 

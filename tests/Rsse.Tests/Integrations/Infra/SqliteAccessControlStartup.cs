@@ -53,6 +53,8 @@ public class SqliteAccessControlStartup(IConfiguration configuration)
         services.AddHttpContextAccessor();
 
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
+        // в настройках выбор возможности операций на двух контекстах
+        services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
