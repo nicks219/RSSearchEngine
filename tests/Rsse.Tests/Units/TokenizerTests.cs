@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -17,6 +18,8 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
+    public required IServiceScopeFactory Factory;
+
     // векторы соответствуют заметкам из FakeCatalogRepository
 
     private readonly List<int> _extendedFirst =
@@ -38,13 +41,11 @@ public class TokenizerTests
     private readonly List<int> _reducedSecond =
         [33307888, 1720827301, 1032391667, 33307888, 1081435, 33418, 33294, 1039272458, 1032768782, 33307888];
 
-    private IServiceScopeFactory _factory = Substitute.For<IServiceScopeFactory>();
-
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomServiceProvider<TokenizerService>();
-        _factory = new CustomScopeFactory(host.Provider);
+        var host = new ServiceProviderStub<TokenizerService>();
+        Factory = new CustomScopeFactory(host.Provider);
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);
     }
@@ -55,7 +56,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -84,7 +85,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
 
         // act:
@@ -110,7 +111,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -139,7 +140,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
@@ -162,7 +163,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var tokenizer = new TokenizerService(_factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -198,4 +199,9 @@ public class TokenizerTests
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText
         });
+
+    private class CustomScopeFactory(IServiceProvider serviceProvider) : IServiceScopeFactory
+    {
+        public IServiceScope CreateScope() => serviceProvider.CreateScope();
+    }
 }

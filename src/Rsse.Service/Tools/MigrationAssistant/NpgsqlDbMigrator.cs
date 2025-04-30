@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository.Scripts;

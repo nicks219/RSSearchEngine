@@ -20,11 +20,12 @@ public class TokenizerService : ITokenizerService
 {
     // TODO использовать либо ReaderWriterLockSlim, либо ConcurrentDictionary
     // TODO дополнить логирование ошибок пересозданием линии кэша
-    private readonly IServiceScopeFactory _factory;
     private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
     private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
     private readonly ReaderWriterLockSlim _lockSlim;
+    
     private readonly ILogger<TokenizerService> _logger;
+    private readonly IServiceScopeFactory _factory;
     private readonly bool _isEnabled;
 
     /// <summary>

@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SearchEngine.Common;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Data.Repository;
 using SearchEngine.Engine.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using SearchEngine.Tools.MigrationAssistant;
 using static SearchEngine.Common.ControllerMessages;
 
@@ -21,9 +22,8 @@ namespace SearchEngine.Controllers;
 /// Контроллер для создания заметок
 /// </summary>
 [Authorize, Route("api/create"), ApiController]
-[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
+[ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
-    IServiceScopeFactory serviceScopeFactory,
     ILogger<CreateController> logger,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
@@ -42,8 +42,8 @@ public class CreateController(
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            var model = new CreateManager(scope);
+            var scopedProvider = HttpContext.RequestServices;
+            var model = new CreateManager(scopedProvider);
             return await model.ReadStructuredTagList();
         }
         catch (Exception ex)
@@ -63,8 +63,8 @@ public class CreateController(
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            var model = new CreateManager(scope);
+            var scopedProvider = HttpContext.RequestServices;
+            var model = new CreateManager(scopedProvider);
 
             var result = await model.CreateNote(dto);
 
@@ -75,7 +75,7 @@ public class CreateController(
 
             await model.CreateTagFromTitle(dto);
 
-            var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 
             tokenizer.Create(result.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 

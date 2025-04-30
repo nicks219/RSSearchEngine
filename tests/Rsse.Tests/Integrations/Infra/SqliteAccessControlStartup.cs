@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Common.Configuration;
 using SearchEngine.Common.Logger;

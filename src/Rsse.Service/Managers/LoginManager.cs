@@ -4,20 +4,21 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using static SearchEngine.Common.ModelMessages;
+using static SearchEngine.Common.ErrorMessages;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал авторизации
 /// </summary>
-public class LoginModel(IServiceScope scope)
+public class LoginManager(IServiceProvider scopedProvider)
 {
-    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<LoginModel> _logger = scope.ServiceProvider.GetRequiredService<ILogger<LoginModel>>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<LoginManager> _logger = scopedProvider.GetRequiredService<ILogger<LoginManager>>();
 
     /// <summary>
     /// Войти в систему

@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using Serilog;
 

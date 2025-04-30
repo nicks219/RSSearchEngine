@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Repository;
 

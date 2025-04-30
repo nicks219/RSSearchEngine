@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Tests.Integrations.Infra;
 

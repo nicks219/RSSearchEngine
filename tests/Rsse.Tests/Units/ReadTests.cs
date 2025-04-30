@@ -12,7 +12,8 @@ using SearchEngine.Common;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
+using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -26,7 +27,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadManager ReadManager;
-    public required CustomServiceProvider<ReadManager> CustomServiceProvider;
+    public required ServiceProviderStub<ReadManager> Host;
     public required NoopLogger<ReadManager> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -34,9 +35,9 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        CustomServiceProvider = new CustomServiceProvider<ReadManager>();
-        ReadManager = new ReadManager(CustomServiceProvider.Scope);
-        Logger = (NoopLogger<ReadManager>)CustomServiceProvider.Provider.GetRequiredService<ILogger<ReadManager>>();
+        Host = new ServiceProviderStub<ReadManager>();
+        ReadManager = new ReadManager(Host.Provider);
+        Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
 
     [TestMethod]
@@ -65,8 +66,8 @@ public class ReadTests
         }
 
         // asserts:
-        Assert.AreEqual(ModelMessages.ElectNoteError, responseDto.CommonErrorMessageResponse);
-        Assert.AreEqual(ModelMessages.ElectNoteError, Logger.Message);
+        Assert.AreEqual(ErrorMessages.ElectNoteError, responseDto.CommonErrorMessageResponse);
+        Assert.AreEqual(ErrorMessages.ElectNoteError, Logger.Message);
     }
 
     [TestMethod]
@@ -81,17 +82,15 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ReadController_ShouldLogError_WhenThrow()
+    public async Task ReadController_ShouldLogError_OnUndefinedRequest()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        serviceScopeFactory
-            .When(s => s.CreateScope())
-            .Do(i => throw new Exception());
+        // var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
+        // serviceScopeFactory.When(s => s.CreateScope()).Do(i => throw new Exception());
 
         // act:
-        var readController = new ReadController(serviceScopeFactory, logger);
+        var readController = new ReadController(logger);
         _ = await readController.GetNextOrSpecificNote(null, null);
 
         // assert:
@@ -105,8 +104,9 @@ public class ReadTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new CustomScopeFactory(CustomServiceProvider.Provider);
-        var readController = new ReadController(factory, logger);
+        var host = new ServiceProviderStub<ReadManager>();
+        var readController = new ReadController(logger);
+        readController.AddHttpContext(host.Provider);
 
         // act:
         var responseDto = (await readController.GetNextOrSpecificNote(null, null)).Value;
@@ -133,7 +133,7 @@ public class ReadTests
     // NB: в тч демонстрация распределения результатов алгоритме выбора
     public async Task ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
     {
-        await using var repo = (FakeCatalogRepository)CustomServiceProvider.Provider.GetRequiredService<IDataRepository>();
+        await using var repo = (FakeCatalogRepository)Host.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(ElectionTestNotesCount);
 

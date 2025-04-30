@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Engine.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
@@ -16,8 +17,8 @@ namespace SearchEngine.Controllers;
 /// Контроллер для обновления заметки
 /// </summary>
 [Authorize, Route("api/update"), ApiController]
-[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
-public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<UpdateController> logger)
+[ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
+public class UpdateController(ILogger<UpdateController> logger)
     : ControllerBase
 {
     /// <summary>
@@ -29,8 +30,8 @@ public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            return await new UpdateManager(scope).GetOriginalNote(id);
+            var scopedProvider = HttpContext.RequestServices;
+            return await new UpdateManager(scopedProvider).GetOriginalNote(id);
         }
         catch (Exception ex)
         {
@@ -48,10 +49,10 @@ public class UpdateController(IServiceScopeFactory serviceScopeFactory, ILogger<
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            var response = await new UpdateManager(scope).UpdateNote(dto);
+            var scopedProvider = HttpContext.RequestServices;
+            var response = await new UpdateManager(scopedProvider).UpdateNote(dto);
 
-            var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Update(dto.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response;

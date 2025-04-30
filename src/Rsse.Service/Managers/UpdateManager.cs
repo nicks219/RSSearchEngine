@@ -6,17 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using static SearchEngine.Common.ModelMessages;
+using static SearchEngine.Common.ErrorMessages;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateManager(IServiceScope scope)
+public class UpdateManager(IServiceProvider scopedProvider)
 {
-    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<UpdateManager> _logger = scope.ServiceProvider.GetRequiredService<ILogger<UpdateManager>>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<UpdateManager> _logger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
 
     /// <summary>
     /// Прочитать обновляемую заметку

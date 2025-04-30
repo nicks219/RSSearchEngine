@@ -6,21 +6,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using static SearchEngine.Common.ModelMessages;
+using static SearchEngine.Common.ErrorMessages;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogManager(IServiceScope serviceScope)
+public class CatalogManager(IServiceProvider scopedProvider)
 {
     private const int Backward = 1;
     private const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
-    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CatalogManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<CatalogManager> _logger = scopedProvider.GetRequiredService<ILogger<CatalogManager>>();
 
     /// <summary>
     /// Получить страницу каталога

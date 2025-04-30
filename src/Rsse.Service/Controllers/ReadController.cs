@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Data.Dto;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
@@ -14,9 +14,8 @@ namespace SearchEngine.Controllers;
 /// Контроллер для получения заметок
 /// </summary>
 [ApiController, Route("api/read")]
-[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
-public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<ReadController> logger)
-    : ControllerBase
+[ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
+public class ReadController(ILogger<ReadController> logger) : ControllerBase
 {
     private static bool _randomElection = true;
 
@@ -39,8 +38,8 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            var res = new ReadManager(scope).ReadTitleByNoteId(int.Parse(id));
+            var scopedProvider = HttpContext.RequestServices;
+            var res = new ReadManager(scopedProvider).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
@@ -58,8 +57,8 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            return await new ReadManager(scope).ReadTagList();
+            var scopedProvider = HttpContext.RequestServices;
+            return await new ReadManager(scopedProvider).ReadTagList();
         }
         catch (Exception ex)
         {
@@ -81,15 +80,17 @@ public class ReadController(IServiceScopeFactory serviceScopeFactory, ILogger<Re
         {
             if (dto?.TagsCheckedRequest?.Count == 0)
             {
+                // для пустого запроса считаем все теги отмеченными
                 dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
 
-            using var scope = serviceScopeFactory.CreateScope();
-            var model = await new ReadManager(scope).GetNextOrSpecificNote(dto, id, _randomElection);
+            var scopedProvider = HttpContext.RequestServices;
+            var model = await new ReadManager(scopedProvider).GetNextOrSpecificNote(dto, id, _randomElection);
             return model;
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex);
             logger.LogError(ex, ElectNoteError);
             return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
         }

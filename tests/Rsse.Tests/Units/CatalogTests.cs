@@ -11,7 +11,7 @@ using SearchEngine.Common;
 using SearchEngine.Controllers;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -25,14 +25,14 @@ public class CatalogTests
 
     private const int NotesPerPage = 10;
     private int _notesCount;
-    private CustomServiceProvider<CatalogManager>? _host;
+    private ServiceProviderStub<CatalogManager>? _host;
     private NoopLogger<CatalogManager>? _logger;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new CustomServiceProvider<CatalogManager>();
-        CatalogManager = new CatalogManager(_host.Scope);
+        _host = new ServiceProviderStub<CatalogManager>();
+        CatalogManager = new CatalogManager(_host.Scope.ServiceProvider);
         Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = Repo.ReadAllNotes().Count();
@@ -81,7 +81,7 @@ public class CatalogTests
         _ = await CatalogManager.NavigateCatalog(null!);
 
         // assert:
-        Assert.AreEqual(_logger?.Message, ModelMessages.NavigateCatalogError);
+        Assert.AreEqual(_logger?.Message, ErrorMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class CatalogTests
         var responseDto = await CatalogManager.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(responseDto.ErrorMessage, ModelMessages.NavigateCatalogError);
+        Assert.AreEqual(responseDto.ErrorMessage, ErrorMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -117,8 +117,7 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var factory = new CustomScopeFactory(new CustomServiceProvider<CatalogManager>().Provider);
-        var catalogController = new CatalogController(factory, logger);
+        var catalogController = new CatalogController(logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -128,13 +127,11 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task CatalogController_ShouldLogError_WhenThrow()
+    public async Task CatalogController_ShouldLogError_OnUndefinedRequest()
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        serviceScopeFactory.When(s => s.CreateScope()).Do(_ => throw new Exception());
-        var catalogController = new CatalogController(serviceScopeFactory, logger);
+        var catalogController = new CatalogController(logger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -15,8 +15,8 @@ public class CreateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomServiceProvider<CreateManager>();
-        CreateManager = new CreateManager(host.Scope);
+        var host = new ServiceProviderStub<CreateManager>();
+        CreateManager = new CreateManager(host.Scope.ServiceProvider);
     }
 
     [TestMethod]
@@ -42,7 +42,8 @@ public class CreateTests
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
-        var expectedDto = await new UpdateManager(new CustomServiceProvider<UpdateManager>().Scope)
+        var host = new ServiceProviderStub<UpdateManager>();
+        var expectedDto = await new UpdateManager(host.Provider)
             .GetOriginalNote(responseDto.CommonNoteId);
 
         // assert:

@@ -10,19 +10,19 @@ using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 namespace SearchEngine.Tests.Units.Mocks;
 
 /// <summary/> Для тестов
-public class CustomServiceProvider<TScope> where TScope : class
+public class ServiceProviderStub<TService> where TService : class
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public CustomServiceProvider()
+    public ServiceProviderStub()
     {
         var services = new ServiceCollection();
 
         services.AddSingleton<IDataRepository, FakeCatalogRepository>();
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
-        services.AddSingleton<ILogger<TScope>, NoopLogger<TScope>>();
+        services.AddSingleton<ILogger<TService>, NoopLogger<TService>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddTransient<ITokenizerService, TokenizerService>();
 

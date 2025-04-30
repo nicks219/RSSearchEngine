@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Tokenizer;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
 
@@ -22,15 +22,15 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomServiceProvider<TokenizerService>();
-        var provider = new CustomServiceProvider<UpdateManager>();
-        var findModel = new CompliantModel(host.Scope);
+        var host = new ServiceProviderStub<TokenizerService>();
+        var secondHost = new ServiceProviderStub<UpdateManager>();
+        var findModel = new CompliantManager(host.Provider);
 
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.CreateStubData(10);
-
         _testNoteId = findModel.FindNoteId(Title);
-        UpdateManager = new UpdateManager(provider.Scope);
+
+        UpdateManager = new UpdateManager(secondHost.Provider);
     }
 
     [TestMethod]

@@ -1,22 +1,22 @@
-using SearchEngine.Models;
+using SearchEngine.Managers;
 
 namespace SearchEngine.Common;
 
 /// <summary>
 /// Сообщения для функционала логирования.
 /// </summary>
-internal abstract class ModelMessages
+internal abstract class ErrorMessages
 {
     internal const string NavigateCatalogError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.ReadPage)} error";
     internal const string DeleteNoteError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.DeleteNote)} error";
 
-    internal const string CreateModelReadTagListError = $"[{nameof(CreateManager)}] {nameof(CreateManager.ReadStructuredTagList)} error";
+    internal const string CreateManagerReadTagListError = $"[{nameof(CreateManager)}] {nameof(CreateManager.ReadStructuredTagList)} error";
     internal const string CreateNoteError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error";
     internal const string CreateNoteUnsuccessfulError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error: create unsuccessful";
     internal const string CreateNoteEmptyDataError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error: empty data";
 
-    internal const string SignInError = $"[{nameof(LoginModel)}] {nameof(LoginModel.TrySignInWith)} system error";
+    internal const string SignInError = $"[{nameof(LoginManager)}] {nameof(LoginManager.TrySignInWith)} system error";
 
     internal const string ElectNoteError = $"[{nameof(ReadManager)}] {nameof(ReadManager.GetNextOrSpecificNote)} error";
     internal const string ReadTitleByNoteIdError = $"[{nameof(ReadManager)}] {nameof(ReadManager.ReadTitleByNoteId)} error";

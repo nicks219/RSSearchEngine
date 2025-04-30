@@ -3,7 +3,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Models;
+using SearchEngine.Common;
+using SearchEngine.Managers;
 using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
@@ -12,8 +13,8 @@ namespace SearchEngine.Controllers;
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
 [Route("api/compliance")]
-[ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
-public class ComplianceController(IServiceScopeFactory scopeFactory, ILogger<ComplianceController> logger)
+[ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
+public class ComplianceController(ILogger<ComplianceController> logger)
     : ControllerBase
 {
     /// <summary>
@@ -31,8 +32,8 @@ public class ComplianceController(IServiceScopeFactory scopeFactory, ILogger<Com
 
         try
         {
-            using var scope = scopeFactory.CreateScope();
-            var model = new CompliantModel(scope);
+            var scopedProvider = HttpContext.RequestServices;
+            var model = new CompliantManager(scopedProvider);
             var searchIndexes = model.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 

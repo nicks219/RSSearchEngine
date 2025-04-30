@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Rsse.Tests")]
-namespace SearchEngine.Common.Auth;
+namespace SearchEngine.Common;
 
 /// <summary>
 /// Системные константы приложения.

@@ -10,9 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using Swashbuckle.AspNetCore.Annotations;
 using ZstdSharp.Unsafe;
 using static SearchEngine.Common.ControllerMessages;
@@ -24,7 +25,6 @@ namespace SearchEngine.Controllers;
 /// </summary>
 [ApiController, Route("account")]
 public class AccountController(
-    IServiceScopeFactory serviceScopeFactory,
     IWebHostEnvironment env,
     ILogger<AccountController> logger)
     : ControllerBase
@@ -71,7 +71,7 @@ public class AccountController(
     }
 
     /// <summary/> Проверить, авторизован ли запрос
-    [ApiExplorerSettings(IgnoreApi = !Common.Auth.Constants.IsDebug)]
+    [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
     [HttpGet("check"), Authorize]
     public ActionResult CheckAuth()
     {
@@ -85,8 +85,8 @@ public class AccountController(
     [HttpGet("update"), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery]UpdateCredosRequest credos)
     {
-        using var scope = serviceScopeFactory.CreateScope();
-        await using var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var scopedProvider = HttpContext.RequestServices;
+        await using var repo = scopedProvider.GetRequiredService<IDataRepository>();
         await repo.UpdateCredos(credos);
         await Logout();
         return Ok("updated");
@@ -98,10 +98,10 @@ public class AccountController(
     /// <param name="loginDto">данные для авторизации</param>
     private async Task<string> TryLogin(LoginDto loginDto)
     {
-        using var scope = serviceScopeFactory.CreateScope();
+        var scopedProvider = HttpContext.RequestServices;
         try
         {
-            var identity = await new LoginModel(scope).TrySignInWith(loginDto);
+            var identity = await new LoginManager(scopedProvider).TrySignInWith(loginDto);
 
             if (identity == null)
             {

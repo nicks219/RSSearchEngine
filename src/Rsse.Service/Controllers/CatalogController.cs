@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Dto;
 using SearchEngine.Engine.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Managers;
 using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
@@ -17,7 +18,7 @@ namespace SearchEngine.Controllers;
 /// </summary>
 [Route("api/catalog"), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger<CatalogController> logger) : ControllerBase
+public class CatalogController(ILogger<CatalogController> logger) : ControllerBase
 {
     /// <summary>
     /// Прочитать страницу каталога
@@ -28,8 +29,8 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            return await new CatalogManager(scope).ReadPage(id);
+            var scopedProvider = HttpContext.RequestServices;
+            return await new CatalogManager(scopedProvider).ReadPage(id);
         }
         catch (Exception ex)
         {
@@ -47,8 +48,8 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-            return await new CatalogManager(scope).NavigateCatalog(dto);
+            var scopedProvider = HttpContext.RequestServices;
+            return await new CatalogManager(scopedProvider).NavigateCatalog(dto);
         }
         catch (Exception ex)
         {
@@ -69,12 +70,11 @@ public class CatalogController(IServiceScopeFactory serviceScopeFactory, ILogger
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
-
-            var tokenizer = scope.ServiceProvider.GetRequiredService<ITokenizerService>();
+            var scopedProvider = HttpContext.RequestServices;
+            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Delete(id);
 
-            return await new CatalogManager(scope).DeleteNote(id, pg);
+            return await new CatalogManager(scopedProvider).DeleteNote(id, pg);
         }
         catch (Exception ex)
         {

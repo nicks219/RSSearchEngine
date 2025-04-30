@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,18 +7,18 @@ using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал поиска заметок
 /// </summary>
-public class CompliantModel(IServiceScope scope)
+public class CompliantManager(IServiceProvider scopedProvider)
 {
-    private readonly IDataRepository _repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ITokenizerProcessor _processor = scope.ServiceProvider.GetRequiredService<ITokenizerProcessor>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
+    private readonly ITokenizerProcessor _processor = scopedProvider.GetRequiredService<ITokenizerProcessor>();
 
-    private readonly ConcurrentDictionary<int, List<int>> _reducedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
-    private readonly ConcurrentDictionary<int, List<int>> _extendedLines = scope.ServiceProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
+    private readonly ConcurrentDictionary<int, List<int>> _reducedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+    private readonly ConcurrentDictionary<int, List<int>> _extendedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
 
     /// <summary>
     /// Найти идентификатор заметки по её имени

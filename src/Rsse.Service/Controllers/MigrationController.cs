@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
@@ -28,7 +29,6 @@ public class MigrationController(
     ILogger<MigrationController> logger,
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
-    // todo: MySQL WORK. DELETE
     IDataRepository repo) : ControllerBase
 {
     /// <summary>

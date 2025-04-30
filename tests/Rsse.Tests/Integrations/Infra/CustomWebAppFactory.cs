@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using SearchEngine.Common;
 using SearchEngine.Common.Auth;
 
 namespace SearchEngine.Tests.Integrations.Infra;

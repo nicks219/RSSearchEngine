@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Controllers;
 using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Units;
@@ -23,9 +25,9 @@ public class ComplianceTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceController>>();
-        var collection = new CustomServiceProvider<TokenizerService>();
-        var factory = new CustomScopeFactory(collection.Provider);
-        var complianceController = new ComplianceController(factory, logger);
+        var host = new ServiceProviderStub<TokenizerService>();
+        var complianceController = new ComplianceController(logger);
+        complianceController.AddHttpContext(host.Provider);
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);

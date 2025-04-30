@@ -1,4 +1,6 @@
 using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,5 +77,21 @@ public static class TestConfigurationExtensions
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+    }
+
+    /// <summary>
+    /// Добавить в контекст контроллера scoped контейнер со службами
+    /// </summary>
+    /// <param name="controller"></param>
+    /// <param name="serviceProvider"></param>
+    public static void AddHttpContext(this ControllerBase controller, IServiceProvider serviceProvider)
+    {
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            }
+        };
     }
 }

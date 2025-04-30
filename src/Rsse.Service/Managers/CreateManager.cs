@@ -6,17 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
-using static SearchEngine.Common.ModelMessages;
+using static SearchEngine.Common.ErrorMessages;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateManager(IServiceScope serviceScope)
+public class CreateManager(IServiceProvider scopedProvider)
 {
-    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CreateManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<CreateManager>>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<CreateManager> _logger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
 
     /// <summary>
     /// Получить структурированный список тегов
@@ -32,8 +32,8 @@ public class CreateManager(IServiceScope serviceScope)
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, CreateModelReadTagListError);
-            return new NoteDto { CommonErrorMessageResponse = CreateModelReadTagListError };
+            _logger.LogError(ex, CreateManagerReadTagListError);
+            return new NoteDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
         }
     }
 

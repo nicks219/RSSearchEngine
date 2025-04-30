@@ -6,17 +6,17 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Elector;
-using static SearchEngine.Common.ModelMessages;
+using static SearchEngine.Common.ErrorMessages;
 
-namespace SearchEngine.Models;
+namespace SearchEngine.Managers;
 
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadManager(IServiceScope serviceScope)
+public class ReadManager(IServiceProvider scopedProvider)
 {
-    private readonly ILogger<ReadManager> _logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ReadManager>>();
-    private readonly IDataRepository _repo = serviceScope.ServiceProvider.GetRequiredService<IDataRepository>();
+    private readonly ILogger<ReadManager> _logger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
+    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
 
     /// <summary>
     /// Прочитать название заметки по её идентификатору
