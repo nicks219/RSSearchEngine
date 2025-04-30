@@ -10,9 +10,10 @@
 
     <ItemGroup>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Include="Volo.Abp.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <!-- <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design"/> -->
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design"/>
+        MySql.EntityFrameworkCore -->
     </ItemGroup>
 
 </Project>

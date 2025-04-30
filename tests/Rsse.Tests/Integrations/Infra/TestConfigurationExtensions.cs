@@ -29,16 +29,17 @@ public static class TestConfigurationExtensions
         // SQLite: https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
         // функциональность проверена на Windows/Ubuntu:
 
-        var mysqlConnectionString = services.GetConfiguration().GetConnectionString(Startup.DefaultConnectionKey);
-        var npgConnectionString = services.GetConfiguration().GetConnectionString(Startup.AdditionalConnectionKey);
-
-        services.AddDbContext<MysqlCatalogContext>(options =>
+        services.AddDbContext<MysqlCatalogContext>((sp, options) =>
         {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var mysqlConnectionString = config.GetConnectionString(Startup.DefaultConnectionKey);
             options.UseSqlite(mysqlConnectionString);
         });
         // для резолва CatalogRepository также регистрируем контекст postgres с базой данных Sqllite
-        services.AddDbContext<NpgsqlCatalogContext>(options =>
+        services.AddDbContext<NpgsqlCatalogContext>((sp, options) =>
         {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var npgConnectionString = config.GetConnectionString(Startup.AdditionalConnectionKey);
             options.UseSqlite(npgConnectionString);
         });
 
@@ -53,17 +54,18 @@ public static class TestConfigurationExtensions
     {
         services.AddControllers().AddApplicationPart(typeof(ReadController).Assembly);
 
-        var mysqlConnectionString = services.GetConfiguration().GetConnectionString(Startup.DefaultConnectionKey);
-        var npgConnectionString = services.GetConfiguration().GetConnectionString(Startup.AdditionalConnectionKey);
-
         var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
-        services.AddDbContext<MysqlCatalogContext>(options =>
+        services.AddDbContext<MysqlCatalogContext>((sp, options) =>
         {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var mysqlConnectionString = config.GetConnectionString(Startup.DefaultConnectionKey);
             options.UseMySql(mysqlConnectionString, mySqlVersion);
             options.EnableSensitiveDataLogging();
         });
-        services.AddDbContext<NpgsqlCatalogContext>(options =>
+        services.AddDbContext<NpgsqlCatalogContext>((sp, options) =>
         {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var npgConnectionString = config.GetConnectionString(Startup.AdditionalConnectionKey);
             options.UseNpgsql(npgConnectionString);
             options.EnableSensitiveDataLogging();
         });
