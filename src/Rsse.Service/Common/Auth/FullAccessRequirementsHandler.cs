@@ -25,6 +25,7 @@ public class FullAccessRequirementsHandler : AuthorizationHandler<FullAccessRequ
     private static bool ContainsAdminIdentifier(List<Claim> claims)
     {
         var claim = claims.FirstOrDefault(a => a.Type == Constants.IdInternalClaimType);
+        // запись с id = 1 обладает максимальными правами
         var result = claim?.Value == Constants.AdminId;
         return result;
     }

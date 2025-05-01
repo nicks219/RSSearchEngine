@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -18,6 +17,8 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiTests
 {
+    private readonly WebApplicationFactoryClientOptions _options = new() { BaseAddress = new Uri("http://localhost:5000/") };
+
     /// <summary>
     /// Запустить отложенную очистку файлов бд sqlite (на windows) в финале тестовой сборки
     /// </summary>
@@ -28,39 +29,61 @@ public class ApiTests
     }
 
     [TestMethod]
+    public async Task Api_SystemController_Get_ReturnsResult()
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
+        using var client = factory.CreateClient(_options);
+        var uri = new Uri("system/version", UriKind.Relative);
+
+        // act:
+        using var response = await client.GetAsync(uri);
+        var content = await response
+            .Content
+            .ReadFromJsonAsync<Dictionary<string, object?>>();
+
+        // assert:
+        content
+            .Should()
+            .NotBeNull();
+        content.Values.First()!.ToString()
+            .Should()
+            .Be(Common.Constants.ApplicationFullName);
+    }
+
+    [TestMethod]
     [DataRow("api/read/title?id=1", "res", "Розенбаум -- Вечерняя застольная")]
     [DataRow("api/read/election", "randomElection", false)]
     [DataRow("api/read", "structuredTagsListResponse", TagListResponse)]// ReadTagList
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)
     {
         // arrange:
-        var baseUri = new Uri("http://localhost:5000/");
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
-        using var client = factory.CreateClient(options);
-        var uri = new Uri(uriString, UriKind.Relative);
+        using var client = factory.CreateClient(_options);
+        var uri = new System.Uri(uriString, UriKind.Relative);
 
         // act:
         using var response = await client.GetAsync(uri);
-        var status = response.ReasonPhrase;
-        dynamic contentTask = expected is string
-            ? response.Content.ReadFromJsonAsync<Dictionary<string, object?>>()
-            : response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
+        var content = await response
+            .EnsureSuccessStatusCode()
+            .Content
+            .ReadFromJsonAsync<System.Collections.Generic.Dictionary<string, object?>>();
+        content.ThrowIfNull();
+        var value = content[key] as JsonElement?;
+        value.ThrowIfNull();
 
         // assert:
-        response.EnsureSuccessStatusCode();
-        status.Should().Be(HttpStatusCode.OK.ToString());
-        var content = await contentTask;
         switch (expected)
         {
             case string expectedAsString:
             {
-                var actualAsString = (string)content[key].ToString();
+                var actualAsString = value.Value.ToString();
                 Assert.AreEqual(expectedAsString, actualAsString);
                 break;
             }
             case bool expectedAsBool:
-                Assert.AreEqual(expectedAsBool, content[key]);
+                var actualAsBool = value.Value.GetBoolean();
+                Assert.AreEqual(expectedAsBool, actualAsBool);
                 break;
         }
     }
@@ -70,32 +93,31 @@ public class ApiTests
     public async Task Api_ReadController_Post_ShouldReturnsExpectedResult(string uriString, string key, string expected)
     {
         // arrange:
-        var baseUri = new Uri("http://localhost:5000/");
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        var options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
         // в TagsCheckedRequest содержатся отмеченные теги
-        var json = new NoteDto
-        {
-            TagsCheckedRequest = Enumerable.Range(1, 44).ToList()
-        };
+        var json = new NoteDto { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
         var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
-        using var client = factory!.CreateClient(options!);
+        using var client = factory.CreateClient(_options);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
         using var response = await client.PostAsync(uri, jsonContent);
-        var reason = response.ReasonPhrase;
-        var statusCode = response.StatusCode;
-        var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object?>>();
-        var structuredTagsListResponse = result!["structuredTagsListResponse"]!.ToString()!;
-        var titleResponse = result[key]!.ToString()!;
+        var result = await response
+            .EnsureSuccessStatusCode()
+            .Content
+            .ReadFromJsonAsync<Dictionary<string, object?>>();
+        var structuredTagsListResponse = result!["structuredTagsListResponse"]!
+            .ToString()!;
+        var titleResponse = result[key]!
+            .ToString()!;
 
         // assert:
-        statusCode.Should().Be(HttpStatusCode.OK);
-        reason.Should().Be(HttpStatusCode.OK.ToString());
-
-        structuredTagsListResponse.Should().BeEquivalentTo(TagListResponse);
-        titleResponse.Should().BeEquivalentTo(expected);
+        structuredTagsListResponse
+            .Should()
+            .BeEquivalentTo(TagListResponse);
+        titleResponse
+            .Should()
+            .BeEquivalentTo(expected);
     }
 
     // константы с результатами запросов

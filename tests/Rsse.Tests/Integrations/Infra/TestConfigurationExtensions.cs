@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -93,5 +94,16 @@ public static class TestConfigurationExtensions
                 RequestServices = serviceProvider
             }
         };
+    }
+}
+
+/// <summary>
+/// Для отключения проверки типа на null в коде
+/// </summary>
+public static class ThrowableExtensions
+{
+    public static void ThrowIfNull<T>([NotNull] this T obj)
+    {
+        if (obj == null) throw new NullReferenceException(nameof(ThrowIfNull));
     }
 }

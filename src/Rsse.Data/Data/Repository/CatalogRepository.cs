@@ -36,7 +36,8 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
             return;
         }
 
-        var maxId = await context.Tags!.Select(tagEntity => tagEntity.TagId).MaxAsync();
+        var tags = await context.Tags!.Select(tagEntity => tagEntity.TagId).ToListAsync();
+        var maxId = tags.Count > 0 ? tags.Max(tagEntity => tagEntity) : 0;
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 

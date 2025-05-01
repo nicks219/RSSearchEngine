@@ -10,7 +10,7 @@ using SearchEngine.Common.Auth;
 
 namespace SearchEngine.Tests.Integrations.Infra;
 
-internal class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
+public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {
     internal IHost? HostInternal { get; private set; }
 
