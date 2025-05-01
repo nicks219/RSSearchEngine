@@ -54,7 +54,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore -c Release
+      run: dotnet build --no-restore -p:IsPublishing=true -c Release
     - name: Test
       env:
         # идём на локалхост тк мапим порты

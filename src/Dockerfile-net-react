@@ -24,7 +24,7 @@ COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/
 
 WORKDIR /app/Rsse.Service
 # .NET: публикуем в папку /app/Rsse.Service/out/
-RUN dotnet publish -c Release -r linux-musl-x64 -o out Rsse.Service.csproj
+RUN dotnet publish -c Release -r linux-musl-x64 -p:IsPublishing=true -o out Rsse.Service.csproj
 
 ################
 FROM alpine:3.19

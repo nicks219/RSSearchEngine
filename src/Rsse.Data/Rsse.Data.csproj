@@ -5,7 +5,11 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>SearchEngine</RootNamespace>
-        <DebugType>none</DebugType> <!-- завяжи на DOTNET_CI -->
+    </PropertyGroup>
+
+    <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
+    <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
+        <DebugType>none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
