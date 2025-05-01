@@ -60,6 +60,10 @@ public class MirrorRepository(
         if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
             throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
 
+        // пересоздаём базу перед копированием данных
+        await npgsqlCatalogContext.Database.EnsureDeletedAsync();
+        await npgsqlCatalogContext.Database.EnsureCreatedAsync();
+
         // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
         var notes = mysqlCatalogContext.Notes!.Select(note => note).ToList();
         var tags = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
