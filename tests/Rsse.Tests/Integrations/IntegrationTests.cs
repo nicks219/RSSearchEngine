@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -228,13 +229,14 @@ public class IntegrationTests
         }
 
         // assert:
+        var separator = Path.DirectorySeparatorChar;
         createdId
             .Should()
             .BeGreaterThan(0);
 
         fakePathToDump
             .Should()
-            .BeEquivalentTo("ClientApp/build\\dump.zip");
+            .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
 
         // clean up:
         TestHelper.CleanUpDatabases(factory);
