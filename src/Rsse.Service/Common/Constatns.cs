@@ -16,11 +16,11 @@ public abstract class Constants
 #endif
 
     /// <summary/> Мажорная версия
-    private const string MajorVersion = "5";
+    private const string MajorVersion = "6";
     /// <summary/> Минорная версия
-    private const string MinorVersion = "2";
+    private const string MinorVersion = "0";
     /// <summary/> Патч
-    private const string PatchVersion = "9";
+    private const string PatchVersion = "0";
 
     // <summary/> Рут для статики
     internal const string StaticDirectory = "ClientApp/build";
@@ -34,7 +34,7 @@ public abstract class Constants
     // <summary>Версия API.</summary>
     internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: .NET9/React19/PostgreSQL";
+    internal const string ApplicationFullName = $"v{ApplicationVersion}: preview | .NET9/React19/PostgreSQL";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
     internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>
