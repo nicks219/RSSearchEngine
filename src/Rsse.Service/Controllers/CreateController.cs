@@ -66,6 +66,7 @@ public class CreateController(
             var scopedProvider = HttpContext.RequestServices;
             var model = new CreateManager(scopedProvider);
 
+            await model.CreateTagFromTitle(dto);
             var result = await model.CreateNote(dto);
 
             if (!string.IsNullOrEmpty(result.CommonErrorMessageResponse))
@@ -73,7 +74,7 @@ public class CreateController(
                 return result;
             }
 
-            await model.CreateTagFromTitle(dto);
+            // await model.CreateTagFromTitle(dto); // перенесен до создания заметки
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 

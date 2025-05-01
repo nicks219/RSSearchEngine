@@ -144,7 +144,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        MultipartFormDataContent content = TestHelper.GetRequestContent(true);
+        using MultipartFormDataContent content = TestHelper.GetRequestContent(true);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -232,7 +232,7 @@ public class ApiAccessControlTests
         await client.TryAuthorizeToService();
 
         var uri = new Uri(uriString, UriKind.Relative);
-        var content = TestHelper.GetRequestContent(appendFile);
+        using var content = TestHelper.GetRequestContent(appendFile);
 
         // act:
         using var response = await client.PostAsync(uri, content);

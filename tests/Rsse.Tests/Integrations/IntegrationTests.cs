@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Controllers;
+using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tools.MigrationAssistant;
-using SearchEngine.Tests.Integrations.Extensions;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
@@ -56,7 +61,8 @@ public class IntegrationTests
 
         _cookiesOptions = new WebApplicationFactoryClientOptions
         {
-            BaseAddress = BaseAddress, HandleCookies = true
+            BaseAddress = BaseAddress,
+            HandleCookies = true
         };
     }
 
@@ -93,9 +99,163 @@ public class IntegrationTests
         TestHelper.CleanUpDatabases(factory);
     }
 
+
+    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
+    // отрефакторенный Integration_PKSequencesAreValid_AfterDatabaseCopy
+
     [TestMethod]
-    // мотивация теста: при некорректном состоянии ключей после копирования создание заметки упадёт на constraint
-    // todo: упрости тест, можно оставить в только вызов CreateNote после миграции и проверку отсутствия исключения
+    [DataRow([
+        "migration/restore?databaseType=MySql",
+        "migration/copy",
+        "api/create",
+        "api/update"
+    ])]
+    // todo: тест и TestHelper разделить на части - практически "божественные объекты"
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(string[] uris)
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
+        using var client = factory.CreateClient(_options);
+        await client.TryAuthorizeToService("1@2", "12");
+
+        using var enumerator = TestHelper
+            .GetEnumeratedRequestContent(forUpdate: true)
+            .GetEnumerator();
+        enumerator.MoveNext();
+        var processedId = 0;
+
+        // act:
+        foreach (var uri in uris)
+        {
+            if (uri is "api/create" or "api/update")
+            {
+                // POST
+                var note = enumerator.Current;
+                enumerator.MoveNext();
+                if (uri == "api/update")
+                {
+                    // необходимо выставить id обновляемой заметки note.CommonNoteId
+                    var dto = await note.ReadFromJsonAsync<NoteDto>();
+                    dto.EnsureNotNull().CommonNoteId = processedId;
+                    note = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+                }
+
+                using var postResponse = await client.PostAsync(uri, note);
+                var deserializedPostResponse = await postResponse
+                    .EnsureSuccessStatusCode()
+                    .Content
+                    .ReadFromJsonAsync<NoteDto>();
+                processedId = deserializedPostResponse
+                    .EnsureNotNull()
+                    .CommonNoteId;// 946 - 946
+                note.Dispose();
+                continue;
+            }
+
+            // GET
+            using var response = await client.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
+        }
+
+        // текст из update
+        const string textToFind = "раз два три четыре";
+        var complianceId = await client.GetFirstComplianceIndexFromTokenizer(textToFind);
+        var tags = await client.GetTagsFromReaderOnly();
+        await client.DeleteNoteFromService(processedId);
+
+        // assert:
+        processedId
+            .Should()
+            .Be(complianceId);
+
+        // тег из дампа
+        tags.Should().Contain("Авторские: 80");
+
+        // добавленный через create тег
+        tags.Should().Contain("1");
+
+        // clean up:
+        TestHelper.CleanUpDatabases(factory);
+    }
+
+    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
+    // отрефакторенный Integration_PKSequencesAreValid_AfterDatabaseRestore
+
+    [TestMethod]
+    [DataRow([
+        "api/create",
+        "migration/create?databaseType=Postgres",
+        "migration/restore?databaseType=Postgres",
+        "api/create"
+        ])]
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string[] uris)
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
+        using var client = factory.CreateClient(_options);
+        await client.TryAuthorizeToService("1@2", "12");
+
+        using var enumerator = TestHelper
+            .GetEnumeratedRequestContent()
+            .GetEnumerator();
+        enumerator.MoveNext();
+        var createdId = 0;
+        var fakePathToDump = "";
+
+        // act
+        foreach (var uri in uris)
+        {
+            if (uri == "api/create")
+            {
+                // POST
+                using var note = enumerator.Current;
+                enumerator.MoveNext();
+                using var postResponse = await client.PostAsync(uri, note);
+                var deserializedPostResponse = await postResponse
+                    .EnsureSuccessStatusCode()
+                    .Content
+                    .ReadFromJsonAsync<NoteDto>();
+                createdId = deserializedPostResponse
+                    .EnsureNotNull()
+                    .CommonNoteId;// 1 - 2
+                fakePathToDump = deserializedPostResponse.TextResponse;
+                continue;
+            }
+
+            // GET
+            using var response = await client.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
+        }
+
+        // assert:
+        createdId
+            .Should()
+            .BeGreaterThan(0);
+
+        fakePathToDump
+            .Should()
+            .BeEquivalentTo("ClientApp/build\\dump.zip");
+
+        // clean up:
+        TestHelper.CleanUpDatabases(factory);
+    }
+
+    // WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI:
+    // I.      название заметки при создании тега можно очищать от скобочек
+    // II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле CommonErrorMessageResponse
+    //          например исключение менеджера оверрайдится контроллером
+
+    // WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI:
+    // I.      на pg контексте: получил [CreateManager] CreateNote error: DETAIL: Key (TagId)=(1) is not present in table "Tag", тк заметка не создавалась, то и тег падал
+    //         перенес создание тега до создания заметки - надо при удачном создании тега возвращаться, не пытаясь создать заметку
+    // II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле details
+    // III.    на заметку не создаётся zip (только файлы) - а возвращается dump.zip
+    // IV.     postgres: как ресториться из "последних" файлов? рестор сделан только из *.zip
+
+    // удалить два теста:
+
+    [TestMethod]
+    [Ignore("отрефакторен")]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
     {
         // arrange:
@@ -154,8 +314,7 @@ public class IntegrationTests
     }
 
     [TestMethod]
-    // мотивация теста: при некорректном состоянии ключей после миграции создание заметки упадёт на constraint
-    // можно оставить в тесте только вызов CreateNote и проверку отсутствия исключения
+    [Ignore("отрефакторен")]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:

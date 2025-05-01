@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integrations.Infra;
 
 namespace SearchEngine.Tests.Integrations;
 
@@ -104,7 +104,7 @@ public class ApiTests
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        var content = TestHelper.GetRequestContentWithTags();
+        using var content = TestHelper.GetRequestContentWithTags();
         using var client = factory.CreateClient(_options);
         var uri = new Uri(uriString, UriKind.Relative);
 

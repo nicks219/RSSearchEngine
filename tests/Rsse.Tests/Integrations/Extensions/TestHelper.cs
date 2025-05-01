@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -59,6 +60,41 @@ public static class TestHelper
     }
 
     /// <summary>
+    /// Получить первый элемент из списка релевантности для текста
+    /// </summary>
+    internal static async Task<int> GetFirstComplianceIndexFromTokenizer(this HttpClient client, string text)
+    {
+        using var complianceResponse = await client.GetAsync($"api/compliance/indices?text={text}");
+        var result = await complianceResponse.Content.ReadAsStringAsync();
+        var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
+        Int32.TryParse(firstKey, out var complianceId);
+
+        return complianceId;
+    }
+
+    /// <summary>
+    /// Получить список тегов в формате "тег: количество заметок" либо "тег" если заметки в категории отсутствуют
+    /// </summary>
+    internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
+    {
+        using var tagsResponse = await client.GetAsync("api/create");
+        var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteDto>();
+        var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
+
+        return tags;
+    }
+
+    /// <summary>
+    /// Удалить заметку с требуемым идентификатором
+    /// </summary>
+    internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
+    {
+        // CatalogDto
+        using var noteResponse = await client.GetAsync($"api/catalog?id={noteId}&pg=1");
+        noteResponse.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
     /// Получить контент для POST запроса
     /// </summary>
     internal static dynamic GetRequestContent(bool appendFile)
@@ -73,11 +109,27 @@ public static class TestHelper
         return content;
     }
 
+    /// <summary>
+    /// Получить контент для POST запроса
+    /// </summary>
+    internal static IEnumerable<StringContent> GetEnumeratedRequestContent(bool forUpdate = false)
+    {
+        var dto = new NoteDto { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+        yield return jsonContent;
+
+        var title = forUpdate ? "[1]" : "1";
+        // todo: название заметки не очищается от скобочек, только именование тега
+        dto = new NoteDto { TitleRequest = title, TextRequest = "раз два три четыре", TagsCheckedRequest = [1] };
+        jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+        yield return jsonContent;
+    }
+
     internal static StringContent GetRequestContentWithTags()
     {
         // в TagsCheckedRequest содержатся отмеченные теги
-        var json = new NoteDto { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
+        var dto = new NoteDto { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
     }

@@ -30,7 +30,11 @@ public class IntegrationStartup(IConfiguration configuration)
         services.AddDbsTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
-        services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
+        services.Configure<CommonBaseOptions>(options =>
+        {
+            options.TokenizerIsEnable = true;
+            options.CreateBackupForNewSong = true;
+        });
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();

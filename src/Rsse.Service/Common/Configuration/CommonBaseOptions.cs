@@ -8,7 +8,7 @@ public class CommonBaseOptions
     /// <summary>
     /// Разрешение на создания бэкапа для каждой новой песни
     /// </summary>
-    public bool CreateBackupForNewSong { get; init; }
+    public bool CreateBackupForNewSong { get; set; }
 
     /// <summary>
     /// Активация функционала токенизации
