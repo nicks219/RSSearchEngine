@@ -1,23 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Dto;
 using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Integrations.Extensions;
 
 namespace SearchEngine.Tests.Integrations;
 
 [TestClass]
 public class ApiTests
 {
-    private readonly WebApplicationFactoryClientOptions _options = new() { BaseAddress = new Uri("http://localhost:5000/") };
+    private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private readonly WebApplicationFactoryClientOptions _options = new() { BaseAddress = BaseAddress };
 
     /// <summary>
     /// Запустить отложенную очистку файлов бд sqlite (на windows) в финале тестовой сборки
@@ -46,7 +45,10 @@ public class ApiTests
         content
             .Should()
             .NotBeNull();
-        content.Values.First()!.ToString()
+
+        content.Values.First()
+            .EnsureNotNull()
+            .ToString()
             .Should()
             .Be(Common.Constants.ApplicationFullName);
     }
@@ -54,76 +56,87 @@ public class ApiTests
     [TestMethod]
     [DataRow("api/read/title?id=1", "res", "Розенбаум -- Вечерняя застольная")]
     [DataRow("api/read/election", "randomElection", false)]
-    [DataRow("api/read", "structuredTagsListResponse", TagListResponse)]// ReadTagList
+    [DataRow("api/read", "structuredTagsListResponse", TestHelper.TagListResponse)]
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
         using var client = factory.CreateClient(_options);
-        var uri = new System.Uri(uriString, UriKind.Relative);
+        var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
         using var response = await client.GetAsync(uri);
         var content = await response
             .EnsureSuccessStatusCode()
             .Content
-            .ReadFromJsonAsync<System.Collections.Generic.Dictionary<string, object?>>();
-        content.ThrowIfNull();
+            .ReadFromJsonAsync<Dictionary<string, object?>>();
+
+        content.EnsureNotNull();
         var value = content[key] as JsonElement?;
-        value.ThrowIfNull();
+        value.EnsureNotNull();
 
         // assert:
         switch (expected)
         {
             case string expectedAsString:
-            {
-                var actualAsString = value.Value.ToString();
-                Assert.AreEqual(expectedAsString, actualAsString);
-                break;
-            }
+                {
+                    var actualAsString = value.Value.ToString();
+                    actualAsString
+                        .Should()
+                        .Be(expectedAsString);
+
+                    break;
+                }
+
             case bool expectedAsBool:
                 var actualAsBool = value.Value.GetBoolean();
-                Assert.AreEqual(expectedAsBool, actualAsBool);
+                actualAsBool
+                    .Should()
+                    .Be(expectedAsBool);
+
                 break;
         }
     }
 
     [TestMethod]
-    [DataRow("api/read", "titleResponse", "Розенбаум -- Вечерняя застольная")]// GetNextOrSpecificNote
+    [DataRow("api/read", "titleResponse", "Розенбаум -- Вечерняя застольная")]
     public async Task Api_ReadController_Post_ShouldReturnsExpectedResult(string uriString, string key, string expected)
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        // в TagsCheckedRequest содержатся отмеченные теги
-        var json = new NoteDto { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
+        var content = TestHelper.GetRequestContentWithTags();
         using var client = factory.CreateClient(_options);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.PostAsync(uri, jsonContent);
+        using var response = await client.PostAsync(uri, content);
         var result = await response
             .EnsureSuccessStatusCode()
             .Content
             .ReadFromJsonAsync<Dictionary<string, object?>>();
-        var structuredTagsListResponse = result!["structuredTagsListResponse"]!
-            .ToString()!;
-        var titleResponse = result[key]!
-            .ToString()!;
+
+        var structuredTagsListResponse = result
+            .EnsureNotNull()
+            .GetValueOrDefault("structuredTagsListResponse")
+            .EnsureNotNull()
+            .ToString()
+            .EnsureNotNull();
+
+        var titleResponse = result[key]
+            .EnsureNotNull()
+            .ToString()
+            .EnsureNotNull();
 
         // assert:
         structuredTagsListResponse
             .Should()
-            .BeEquivalentTo(TagListResponse);
+            .BeEquivalentTo(TestHelper.TagListResponse);
+
         titleResponse
             .Should()
             .BeEquivalentTo(expected);
     }
 
-    // константы с результатами запросов
-    private const string TagListResponse = "[\"Авторские: 1\",\"Бардовские\",\"Блюз: 1\",\"Народный стиль\",\"Вальсы\",\"Военные\",\"Военные (ВОВ)\",\"Гранж\",\"Дворовые\",\"Детские\"," +
-                                           "\"Джаз\",\"Дуэты\",\"Зарубежные\",\"Застольные\",\"Авторские (Павел)\",\"Из мюзиклов\",\"Из фильмов\",\"Кавказские\",\"Классика\",\"Лирика\"," +
-                                           "\"Медленные\",\"Народные\",\"Новогодние\",\"Панк\",\"Патриотические\",\"Песни 30х-60х\",\"Песни 60х-70х\",\"На стихи Есенина\",\"Поп-музыка\"," +
-                                           "\"Походные\",\"Про водителей\",\"Про ГИБДД\",\"Про космонавтов\",\"Про милицию\",\"Ретро хиты\",\"Рождественские\",\"Рок\",\"Романсы\",\"Свадебные\"," +
-                                           "\"Танго\",\"Танцевальные\",\"Шансон\",\"Шуточные\",\"Новые\"]";
+
+
 }

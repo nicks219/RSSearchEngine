@@ -1,7 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +7,7 @@ using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Tools.MigrationAssistant;
 
-namespace SearchEngine.Tests.Integrations.Infra;
+namespace SearchEngine.Tests.Integrations.Extensions;
 
 /// <summary>
 /// Расширение функционала регистрации служб, для целей тестирования.
@@ -78,32 +75,5 @@ public static class TestConfigurationExtensions
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
-    }
-
-    /// <summary>
-    /// Добавить в контекст контроллера scoped контейнер со службами
-    /// </summary>
-    /// <param name="controller"></param>
-    /// <param name="serviceProvider"></param>
-    public static void AddHttpContext(this ControllerBase controller, IServiceProvider serviceProvider)
-    {
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext
-            {
-                RequestServices = serviceProvider
-            }
-        };
-    }
-}
-
-/// <summary>
-/// Для отключения проверки типа на null в коде
-/// </summary>
-public static class ThrowableExtensions
-{
-    public static void ThrowIfNull<T>([NotNull] this T obj)
-    {
-        if (obj == null) throw new NullReferenceException(nameof(ThrowIfNull));
     }
 }

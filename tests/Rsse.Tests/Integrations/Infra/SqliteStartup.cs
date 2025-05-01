@@ -7,6 +7,7 @@ using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Integrations.Infra;

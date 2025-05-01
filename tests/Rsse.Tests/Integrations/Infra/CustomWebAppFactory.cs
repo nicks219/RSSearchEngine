@@ -20,10 +20,10 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
         var pgConnectionString = GetPgConnectionString();
 
         var initialData = new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:DefaultConnection"] = mysqlConnectionString,
-                ["ConnectionStrings:AdditionalConnection"] = pgConnectionString,
-            };
+        {
+            ["ConnectionStrings:DefaultConnection"] = mysqlConnectionString,
+            ["ConnectionStrings:AdditionalConnection"] = pgConnectionString,
+        };
 
         var builder = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((_, config) =>

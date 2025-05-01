@@ -10,6 +10,7 @@ using NSubstitute;
 using SearchEngine.Controllers;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Units.Mocks;
 
@@ -35,7 +36,7 @@ public class ComplianceTests
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);
-        var anonymousTypeAsResult = ((OkObjectResult) actionResult).Value;
+        var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
         var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
         var deserialized = JsonSerializer.Deserialize<ResponseModel>(serialized);
 

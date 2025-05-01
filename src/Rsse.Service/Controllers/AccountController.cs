@@ -52,7 +52,7 @@ public class AccountController(
             return Unauthorized("Authorize please: empty credentials detected");
         }
 
-        var loginDto = new LoginDto{ Email = email, Password = password };
+        var loginDto = new LoginDto { Email = email, Password = password };
         var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
@@ -83,7 +83,7 @@ public class AccountController(
 
     /// <summary/> Обновить логин и пароль
     [HttpGet("update"), Authorize]
-    public async Task<ActionResult> UpdateCredos([FromQuery]UpdateCredosRequest credos)
+    public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredosRequest credos)
     {
         var scopedProvider = HttpContext.RequestServices;
         var repo = scopedProvider.GetRequiredService<IDataRepository>();

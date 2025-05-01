@@ -160,7 +160,7 @@ public class FakeCatalogRepository : IDataRepository
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId)
     {
-        var note = new List<Tuple<string, string>> {_notes[noteId]};
+        var note = new List<Tuple<string, string>> { _notes[noteId] };
         return new FakeDbSet<Tuple<string, string>>(note);
     }
 
@@ -186,7 +186,7 @@ public class FakeCatalogRepository : IDataRepository
         var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
         var asyncQueryProvider = mock.Object;
 
-        var result =  new FakeDbSet<int>(ids, asyncQueryProvider);
+        var result = new FakeDbSet<int>(ids, asyncQueryProvider);
 
         return result;
     }

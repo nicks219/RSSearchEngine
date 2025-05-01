@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -48,7 +48,7 @@ public abstract class Docker
         InitializeContainer(args, true, PostgresContainer, "pg_isready", "accepting connections");
         args = $"run --name {MySqlContainer}  --env=MYSQL_PASSWORD=1  --env=MYSQL_USER=1--env=MYSQL_DATABASE=tagit --env=MYSQL_ROOT_PASSWORD=1 " +
                $"--volume={MySqlVolume}:/var/lib/mysql -p {MySqlPort}:3306 -d mysql:8.0.31-debian";
-        InitializeContainer(args, true,"mysql_test_8", "mysqladmin ping -uroot -p1", "mysqld is alive");
+        InitializeContainer(args, true, "mysql_test_8", "mysqladmin ping -uroot -p1", "mysqld is alive");
     }
 
     /// <summary/> Выполнить команду для docker

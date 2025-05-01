@@ -1,4 +1,4 @@
-﻿namespace SearchEngine.Data.Repository;
+namespace SearchEngine.Data.Repository;
 
 /// <summary>
 /// Настройки доступа к данным

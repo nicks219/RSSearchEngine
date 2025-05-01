@@ -89,7 +89,7 @@ public class CatalogTests
     {
         // arrange:
         List<int> invalidData = [1000, 2000];
-        var request = new CatalogDto { Direction = invalidData};
+        var request = new CatalogDto { Direction = invalidData };
 
         // act:
         var responseDto = await CatalogManager.NavigateCatalog(request);

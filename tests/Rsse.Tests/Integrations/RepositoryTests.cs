@@ -3,14 +3,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Context;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
-using Microsoft.Data.Sqlite;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace SearchEngine.Tests.Integrations;
@@ -18,6 +19,7 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class RepositoryTests
 {
+    private static readonly Uri BaseUri = new("http://localhost:5000/");
     private static CustomWebAppFactory<SqliteStartup>? _factory;
     private static WebApplicationFactoryClientOptions? _options;
 
@@ -26,8 +28,7 @@ public class RepositoryTests
     {
         // arrange:
         _factory = new CustomWebAppFactory<SqliteStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
-        _options = new WebApplicationFactoryClientOptions { BaseAddress = baseUri };
+        _options = new WebApplicationFactoryClientOptions { BaseAddress = BaseUri };
 
         // NB: в тестах используется метод из Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
         // чтобы разрезолвить конфликт типов со сборкой Microsoft.Testing.Platform
@@ -69,15 +70,20 @@ public class RepositoryTests
         using var serviceScope = _factory.Services.CreateScope();
         await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
         await using var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
-        if (mysqlRepo == null || npgsqlRepo == null) throw new TestCanceledException("missing repo(s)");
+        mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
         var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
         var tagsFromNpg = await npgsqlRepo.ReadStructuredTagList();
 
         // assert:
         // теги сохраняются в верхнем регистре
-        tagsFromMysql.Should().Contain(tag.ToUpper());
-        tagsFromNpg.Should().NotContain(tag.ToUpper());
+        tagsFromMysql
+            .Should()
+            .Contain(tag.ToUpper());
+
+        tagsFromNpg
+            .Should()
+            .NotContain(tag.ToUpper());
     }
 
     [TestMethod]
@@ -89,15 +95,25 @@ public class RepositoryTests
         using var serviceScope = _factory.Services.CreateScope();
         await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
         await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
-        if (mysqlRepo == null || repo == null) throw new TestCanceledException("missing repo(s)");
+        mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
-        var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
-        var writer = repo.GetPrimaryWriterContext()?.Tags?.Select(x => x.Tag).ToList();
+        var reader = repo
+            .GetReaderContext()?.Tags?
+            .Select(x => x.Tag)
+            .ToList();
+        var writer = repo
+            .GetPrimaryWriterContext()?.Tags?
+            .Select(x => x.Tag)
+            .ToList();
 
         // assert:
-        // теги сохраняются в верхнем регистре
-        writer.Should().Contain(tag.ToUpper());
-        reader.Should().NotContain(tag.ToUpper());
+        writer
+            .Should()
+            .Contain(tag.ToUpper());
+
+        reader
+            .Should()
+            .NotContain(tag.ToUpper());
     }
 
     [TestMethod]
@@ -107,16 +123,27 @@ public class RepositoryTests
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
         await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
-        if (repo == null) throw new TestCanceledException("missing repo(s)");
+        repo.EnsureNotNull();
 
         // act:
         await repo.CreateTagIfNotExists(tag);
-        var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
-        var writer = repo.GetPrimaryWriterContext()?.Tags?.Select(x => x.Tag).ToList();
+        var reader = repo
+            .GetReaderContext()?.Tags?
+            .Select(x => x.Tag)
+            .ToList();
+        var writer = repo
+            .GetPrimaryWriterContext()?.Tags?
+            .Select(x => x.Tag)
+            .ToList();
 
         // assert:
         // теги сохраняются в верхнем регистре
-        writer.Should().Contain(tag.ToUpper());
-        reader.Should().Contain(tag.ToUpper());
+        writer
+            .Should()
+            .Contain(tag.ToUpper());
+
+        reader
+            .Should()
+            .Contain(tag.ToUpper());
     }
 }

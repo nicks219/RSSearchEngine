@@ -15,8 +15,8 @@ using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tools.MigrationAssistant;
-using static SearchEngine.Common.ControllerMessages;
 using Swashbuckle.AspNetCore.Annotations;
+using static SearchEngine.Common.ControllerMessages;
 
 namespace SearchEngine.Controllers;
 

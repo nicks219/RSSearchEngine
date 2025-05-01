@@ -1,26 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MySql.Data.MySqlClient;
-using Npgsql;
 using SearchEngine.Controllers;
-using SearchEngine.Data.Dto;
 using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tools.MigrationAssistant;
+using SearchEngine.Tests.Integrations.Extensions;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
@@ -31,21 +26,13 @@ namespace SearchEngine.Tests.Integrations;
 public class IntegrationTests
 {
     private const string Tag = "new";
+    private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static WebApplicationFactoryClientOptions _cookiesOptions;
     private static WebApplicationFactoryClientOptions _options;
 
     [ClassInitialize]
     public static void IntegrationTestsSetup(TestContext context)
     {
-        _cookiesOptions = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("http://localhost:5000/"), HandleCookies = true
-        };
-        _options = new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("http://localhost:5000/")
-        };
-
         var isGitHubAction = Docker.IsGitHubAction();
         if (isGitHubAction)
         {
@@ -61,6 +48,16 @@ public class IntegrationTests
         }
 
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
+
+        _options = new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = BaseAddress
+        };
+
+        _cookiesOptions = new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = BaseAddress, HandleCookies = true
+        };
     }
 
     [TestMethod]
@@ -73,16 +70,10 @@ public class IntegrationTests
     public async Task Integration_Migrations_ShouldApplyCorrectly(string uriString)
     {
         // arrange:
-        var uri = new Uri("account/login?email=1@2&password=12", UriKind.Relative);
         await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         using var client = factory.CreateClient(_cookiesOptions);
-        using var authResponse = await client.GetAsync(uri);
-        authResponse.EnsureSuccessStatusCode();
-
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
-        uri = new Uri(uriString, UriKind.Relative);
+        await client.TryAuthorizeToService("1@2", "12");
+        var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
         using var response = await client.GetAsync(uri);
@@ -98,41 +89,35 @@ public class IntegrationTests
             .Should()
             .Be(HttpStatusCode.OK.ToString());
 
-        // чистим таблицы
-        CleanUpDatabases(factory);
+        // clean up:
+        TestHelper.CleanUpDatabases(factory);
     }
 
     [TestMethod]
+    // мотивация теста: при некорректном состоянии ключей после копирования создание заметки упадёт на constraint
+    // todo: упрости тест, можно оставить в только вызов CreateNote после миграции и проверку отсутствия исключения
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         using var client = factory.CreateClient(_options);
-        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
+        var services = factory.HostInternal.EnsureNotNull().Services;
+        await using var repo = services.GetRequiredService<IDataRepository>();
+        var migrators = services.GetServices<IDbMigrator>().ToList();
+        var mysqlMigrator = MigrationController.GetMigrator(migrators, DatabaseType.MySql);
+        var tokenizer = services.GetRequiredService<ITokenizerService>();
 
-        var migrators = factory.HostInternal?.Services.GetServices<IDbMigrator>();
-        if (migrators == null) throw new TestCanceledException("missing migrators");
-        var dbMigrators = migrators.ToList();
-        var mysqlMigrator = MigrationController.GetMigrator(dbMigrators, DatabaseType.MySql);
-        var tokenizer = factory.HostInternal?.Services.GetRequiredService<ITokenizerService>();
-
-        repo.ThrowIfNull();
-        mysqlMigrator.ThrowIfNull();
-        tokenizer.ThrowIfNull();
-
-        // NB: рестору требуется файл миграции на пути ClientApp\build\backup_9.dump
-        // NB: редко Attempted to read past the end of the stream, разберись
+        // NB: c pomelo иногда бывает исключение attempted to read past the end of the stream, разберись
         mysqlMigrator.Restore(string.Empty);
         await repo.CopyDbFromMysqlToNpgsql();
 
-        using var scope = factory.Server.Services.CreateScope();
+        using var scope = services.CreateScope();
         await using var scopedRepo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
         const string text = "раз два три четыре";
         List<int> tags = [1, 2, 3];
-        List<int> tagsForUpdate = [4];
-        var note = new NoteDto { TitleRequest = "название", TextRequest = "раз два три", TagsCheckedRequest = tags};
-        var noteForUpdate = new NoteDto { TitleRequest = "название", TextRequest = text, TagsCheckedRequest = tagsForUpdate};
+        var note = TestHelper.GetNoteDto(tags);
+        var noteForUpdate = TestHelper.GetNoteForUpdate(text);
 
         // act:
         await scopedRepo.CreateTagIfNotExists(Tag);
@@ -144,7 +129,7 @@ public class IntegrationTests
 
         using var response = await client.GetAsync($"api/compliance/indices?text={text}");
         var result = await response.Content.ReadAsStringAsync();
-        var firstKey = JsonSerializer.Deserialize<ResponseModel>(result)?.res.Keys.ElementAt(0);
+        var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
         Int64.TryParse(firstKey, out var complianceId);
 
         await scopedRepo.DeleteNote(createdId);
@@ -155,41 +140,42 @@ public class IntegrationTests
         writer
             .Should()
             .Contain(Tag.ToUpper());
+
         reader
             .Should()
             .Contain(Tag.ToUpper());
+
         complianceId
             .Should()
             .Be(createdId);
 
-        // чистим таблицы
-        CleanUpDatabases(factory);
+        // clean up:
+        TestHelper.CleanUpDatabases(factory);
     }
 
     [TestMethod]
+    // мотивация теста: при некорректном состоянии ключей после миграции создание заметки упадёт на constraint
+    // можно оставить в тесте только вызов CreateNote и проверку отсутствия исключения
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<IntegrationStartup>();
         using var _ = factory.CreateClient(_options);
-        await using var repo = factory.HostInternal?.Services.GetRequiredService<IDataRepository>();
-        var migrators = factory.HostInternal?.Services.GetServices<IDbMigrator>().ToList();
-        migrators.ThrowIfNull();
+        var services = factory.HostInternal.EnsureNotNull().Services;
+        await using var repo = services.GetRequiredService<IDataRepository>();
+        var migrators = services.GetServices<IDbMigrator>().ToList();
         var pgsqlMigrator = MigrationController.GetMigrator(migrators, DatabaseType.Postgres);
-        repo.ThrowIfNull();
-        pgsqlMigrator.ThrowIfNull();
-        List<int> checkedTags = [1];
-        var note = new NoteDto { TitleRequest = "тестовая запись", TextRequest = "раз два три", TagsCheckedRequest = checkedTags};
+        var note = TestHelper.GetNoteDto();
 
         // act:
-        // тк тестовая база postgres не содержит данных (кроме users), следует добавить тег, чтобы сослаться на него в checkedTags
+        // тестовая база postgres не содержит данных (кроме users), следует добавить тег, чтобы сослаться на него в checkedTags
         await repo.CreateTagIfNotExists(Tag);
         pgsqlMigrator.Create(string.Empty);
-        await repo.GetReaderContext()?.Database.EnsureDeletedAsync()!;
-        await repo.GetReaderContext()?.Database.EnsureCreatedAsync()!;
+        await repo.GetReaderContext().EnsureNotNull().Database.EnsureDeletedAsync();
+        await repo.GetReaderContext().EnsureNotNull().Database.EnsureCreatedAsync();
         pgsqlMigrator.Restore(string.Empty);
 
-        using var scope = factory.Server.Services.CreateScope();
+        using var scope = services.CreateScope();
         await using var scopedRepo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
         var createdId = await scopedRepo.CreateNote(note);
 
@@ -198,58 +184,7 @@ public class IntegrationTests
             .Should()
             .BeGreaterThan(0);
 
-        // чистим таблицы
-        CleanUpDatabases(factory);
-    }
-
-    /// <summary>
-    /// Очистка таблиц двух баз данных
-    /// </summary>
-    /// <param name="factory"></param>
-    private static void CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory)
-    {
-        var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
-        var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
-
-        using var pgConnection = new NpgsqlConnection(pgConnectionString);
-        pgConnection.Open();
-        var commands = new List<string>
-        {
-            // """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "TagsToNotes" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "Tag" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "Note" RESTART IDENTITY CASCADE;"""
-        };
-        foreach (var command in commands)
-        {
-            using var cmd = new NpgsqlCommand(command, pgConnection);
-            cmd.ExecuteNonQuery();
-        }
-        pgConnection.Close();
-
-        using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
-        mysqlConnection.Open();
-        commands =
-        [
-            "SET FOREIGN_KEY_CHECKS = 0;",
-            // "TRUNCATE TABLE `Users`;",
-            "TRUNCATE TABLE `Tag`;",
-            "TRUNCATE TABLE `Note`;",
-            "TRUNCATE TABLE `TagsToNotes`;",
-            "SET FOREIGN_KEY_CHECKS = 1;",
-        ];
-        foreach (var command in commands)
-        {
-            using var cmd = new MySqlCommand(command, mysqlConnection);
-            cmd.ExecuteNonQuery();
-        }
-        mysqlConnection.Close();
-    }
-
-    public class ResponseModel
-    {
-        // ReSharper disable once CollectionNeverUpdated.Global
-        // ReSharper disable once InconsistentNaming
-        public required Dictionary<string, double> res { get; init; }
+        // clean up:
+        TestHelper.CleanUpDatabases(factory);
     }
 }

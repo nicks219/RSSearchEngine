@@ -16,6 +16,7 @@ using SearchEngine.Data.Repository;
 using SearchEngine.Data.Repository.Contracts;
 using SearchEngine.Engine.Contracts;
 using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Tests.Integrations.Extensions;
 
 namespace SearchEngine.Tests.Integrations.Infra;
 

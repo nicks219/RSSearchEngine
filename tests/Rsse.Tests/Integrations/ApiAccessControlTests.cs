@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Common;
-using SearchEngine.Data.Dto;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -24,6 +20,7 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiAccessControlTests
 {
+    private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static CustomWebAppFactory<SqliteAccessControlStartup> _factory;
     private static WebApplicationFactoryClientOptions _options;
 
@@ -31,7 +28,7 @@ public class ApiAccessControlTests
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
         _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
+        var baseUri = BaseAddress;
         _options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri,
@@ -54,15 +51,18 @@ public class ApiAccessControlTests
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
-        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.Unauthorized);
+
         reason
             .Should()
             .Be(HttpStatusCode.Unauthorized.ToString());
+
         shift.Value.First()
             .Should()
             .Be(Constants.ShiftHeaderValue);
@@ -72,27 +72,28 @@ public class ApiAccessControlTests
     public async Task Api_Unauthenticated_Delete_ShouldReturns403()
     {
         // arrange:
-        var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
+        const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
-        using var authResponse = await client.GetAsync(uri);
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-        uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
+        await client.TryAuthorizeToService(unauthenticated, unauthenticated);
+        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
 
         // act:
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
         using var response = await client.DeleteAsync(uri);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await response
+            .Content
+            .ReadAsStringAsync();
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.Forbidden);
+
         reason
             .Should()
             .Be(HttpStatusCode.Forbidden.ToString());
+
         content
             .Should()
             .Be("GET: access denied.");
@@ -105,8 +106,8 @@ public class ApiAccessControlTests
     [DataRow("migration/download?filename=123")]
     [DataRow("account/check")]
     [DataRow("account/update?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
-    [DataRow("api/create")]// GetStructuredTagListAsync
-    [DataRow("api/update?id=1")]// GetInitialNote
+    [DataRow("api/create")]
+    [DataRow("api/update?id=1")]
     public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
@@ -118,15 +119,18 @@ public class ApiAccessControlTests
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
-        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.Unauthorized);
+
         reason
             .Should()
             .Be(HttpStatusCode.Unauthorized.ToString());
+
         shift.Value.First()
             .Should()
             .Be(Constants.ShiftHeaderValue);
@@ -140,25 +144,26 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-        var formData = new MultipartFormDataContent();
+        MultipartFormDataContent content = TestHelper.GetRequestContent(true);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.PostAsync(uri, formData);
+        using var response = await client.PostAsync(uri, content);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
-        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.Unauthorized);
+
         reason
             .Should()
             .Be(HttpStatusCode.Unauthorized.ToString());
+
         shift.Value.First()
             .Should()
             .Be(Constants.ShiftHeaderValue);
@@ -168,15 +173,10 @@ public class ApiAccessControlTests
     public async Task Api_Authorized_Delete_ShouldReturns200()
     {
         // arrange:
-        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
-        using var authResponse = await client.GetAsync(uri);
-        authResponse.EnsureSuccessStatusCode();
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-        // запрос на удаление несуществующей заметки - чтобы не аффектить тесты, завязанные на её чтение
-        uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+        await client.TryAuthorizeToService();
+        // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
+        var uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -187,6 +187,7 @@ public class ApiAccessControlTests
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
+
         reason
             .Should()
             .Be(HttpStatusCode.OK.ToString());
@@ -201,14 +202,9 @@ public class ApiAccessControlTests
     public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
-        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
-        using var authResponse = await client.GetAsync(uri);
-        authResponse.EnsureSuccessStatusCode();
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-        uri = new Uri(uriString, UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+        await client.TryAuthorizeToService();
+        var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
         using var response = await client.GetAsync(uri);
@@ -219,34 +215,24 @@ public class ApiAccessControlTests
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
+
         reason
             .Should()
             .Be(HttpStatusCode.OK.ToString());
     }
 
     [TestMethod]
-    [DataRow("migration/upload", true)]// IFormFile
-    [DataRow("api/create", false)]// json
-    [DataRow("api/update", false)]// json
+    [DataRow("migration/upload", true)]
+    [DataRow("api/create", false)]
+    [DataRow("api/update", false)]
     public async Task Api_Authorized_Post_ShouldReturns200(string uriString, bool appendFile)
     {
         // arrange:
-        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
-        using var authResponse = await client.GetAsync(uri);
-        authResponse.EnsureSuccessStatusCode();
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+        await client.TryAuthorizeToService();
 
-        var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-        var json = new NoteDto();
-        var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
-        dynamic content = appendFile ? new MultipartFormDataContent() : jsonContent;
-        if (appendFile) content.Add(fileContent, "file", "file.txt");
-
-        uri = new Uri(uriString, UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
+        var uri = new Uri(uriString, UriKind.Relative);
+        var content = TestHelper.GetRequestContent(appendFile);
 
         // act:
         using var response = await client.PostAsync(uri, content);
@@ -257,6 +243,7 @@ public class ApiAccessControlTests
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
+
         reason
             .Should()
             .Be(HttpStatusCode.OK.ToString());
