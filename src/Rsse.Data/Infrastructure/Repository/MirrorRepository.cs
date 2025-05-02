@@ -170,5 +170,5 @@ public class MirrorRepository(
 
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
-    public Task<UserEntity?> GetUser(LoginDto login) => _reader.GetUser(login);
+    public Task<UserEntity?> GetUser(CredentialsDto credentials) => _reader.GetUser(credentials);
 }

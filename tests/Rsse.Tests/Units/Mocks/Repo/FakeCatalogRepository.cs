@@ -116,9 +116,9 @@ public class FakeCatalogRepository : IDataRepository
     }
 
     //Login Ok
-    public Task<UserEntity?> GetUser(LoginDto login)
+    public Task<UserEntity?> GetUser(CredentialsDto credentials)
     {
-        var user = login.Password == "skip"
+        var user = credentials.Password == "skip"
             ? null
             : new UserEntity();
 

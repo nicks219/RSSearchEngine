@@ -115,9 +115,9 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <summary>
     /// Получить сущность с авторизованным пользователем
     /// </summary>
-    /// <param name="login">шаблон авторизации</param>
+    /// <param name="credentials">шаблон авторизации</param>
     /// <returns>сущность авторизованного пользователя</returns>
-    Task<UserEntity?> GetUser(LoginDto login);
+    Task<UserEntity?> GetUser(CredentialsDto credentials);
 
     /// <summary>
     /// Создать тег если отсутствует

@@ -51,7 +51,7 @@ public class AccountController(
             return Unauthorized("Authorize please: empty credentials detected");
         }
 
-        var loginDto = new LoginDto { Email = email, Password = password };
+        var loginDto = new CredentialsDto { Email = email, Password = password };
         var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
@@ -82,11 +82,11 @@ public class AccountController(
 
     /// <summary/> Обновить логин и пароль
     [HttpGet("update"), Authorize]
-    public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredosRequest credos)
+    public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var scopedProvider = HttpContext.RequestServices;
         var repo = scopedProvider.GetRequiredService<IDataRepository>();
-        var credosForUpdate = credos.MapToDto();
+        var credosForUpdate = credentials.MapToDto();
         await repo.UpdateCredos(credosForUpdate);
         await Logout();
         return Ok("updated");
@@ -95,13 +95,13 @@ public class AccountController(
     /// <summary>
     /// Вход в систему, аутентификация на основе кук
     /// </summary>
-    /// <param name="loginDto">данные для авторизации</param>
-    private async Task<string> TryLogin(LoginDto loginDto)
+    /// <param name="credentialsDto">данные для авторизации</param>
+    private async Task<string> TryLogin(CredentialsDto credentialsDto)
     {
         var scopedProvider = HttpContext.RequestServices;
         try
         {
-            var identity = await new LoginManager(scopedProvider).TrySignInWith(loginDto);
+            var identity = await new LoginManager(scopedProvider).TrySignInWith(credentialsDto);
 
             if (identity == null)
             {

@@ -22,18 +22,18 @@ public class LoginManager(IServiceProvider scopedProvider)
     /// <summary>
     /// Войти в систему
     /// </summary>
-    /// <param name="login">данные для авторизации</param>
+    /// <param name="credentials">данные для авторизации</param>
     /// <returns>объект содержащий подверждение идентичности</returns>
-    public async Task<ClaimsIdentity?> TrySignInWith(LoginDto login)
+    public async Task<ClaimsIdentity?> TrySignInWith(CredentialsDto credentials)
     {
         try
         {
-            if (string.IsNullOrEmpty(login.Email) || string.IsNullOrEmpty(login.Password))
+            if (string.IsNullOrEmpty(credentials.Email) || string.IsNullOrEmpty(credentials.Password))
             {
                 return null;
             }
 
-            var user = await _repo.GetUser(login);
+            var user = await _repo.GetUser(credentials);
 
             if (user == null)
             {
@@ -42,7 +42,7 @@ public class LoginManager(IServiceProvider scopedProvider)
 
             var claims = new List<Claim>
             {
-                new(ClaimsIdentity.DefaultNameClaimType, login.Email),
+                new(ClaimsIdentity.DefaultNameClaimType, credentials.Email),
                 new(Constants.IdInternalClaimType, user.Id.ToString())
             };
 

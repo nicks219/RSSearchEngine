@@ -127,9 +127,9 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public async Task<UserEntity?> GetUser(LoginDto login)
+    public async Task<UserEntity?> GetUser(CredentialsDto credentials)
     {
-        return await context.Users.FirstOrDefaultAsync(user => user.Email == login.Email && user.Password == login.Password);
+        return await context.Users.FirstOrDefaultAsync(user => user.Email == credentials.Email && user.Password == credentials.Password);
     }
 
     /// <inheritdoc/>

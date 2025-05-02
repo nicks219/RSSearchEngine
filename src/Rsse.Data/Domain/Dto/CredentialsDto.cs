@@ -3,7 +3,7 @@ namespace SearchEngine.Domain.Dto;
 /// <summary>
 /// Шаблон передачи данных авторизации
 /// </summary>
-public record struct LoginDto
+public record struct CredentialsDto
 {
     public required string Email { get; init; }
 

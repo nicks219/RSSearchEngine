@@ -8,33 +8,18 @@ namespace SearchEngine.Domain.ApiModels;
 
 public record CatalogResponse
 {
-    /// <summary>
-    /// Названия заметок и соответствующие им Id
-    /// </summary>
-    [JsonPropertyName("catalogPage")]
-    public List<Tuple<string, int>>? CatalogPage { get; init; }
+    // <summary/> Названия заметок и соответствующие им Id
+    [JsonPropertyName("catalogPage")] public List<Tuple<string, int>>? CatalogPage { get; init; }
 
-    /// <summary>
-    /// Количество заметок
-    /// </summary>
-    [JsonPropertyName("notesCount")]
-    public int NotesCount { get; init; }
+    // <summary/> Количество заметок
+    [JsonPropertyName("notesCount")] public int NotesCount { get; init; }
 
-    /// <summary>
-    /// Номер страницы каталога
-    /// </summary>
-    [JsonPropertyName("pageNumber")]
-    public int PageNumber { get; init; }
+    // <summary/> Номер страницы каталога
+    [JsonPropertyName("pageNumber")] public int PageNumber { get; init; }
 
-    /// <summary>
-    /// Сообщение об ошибке, если потребуется
-    /// </summary>
-    [JsonPropertyName("errorMessage")]
-    public string? ErrorMessage { get; init; }
+    // <summary/> Сообщение об ошибке, если потребуется
+    [JsonPropertyName("errorMessage")] public string? ErrorMessage { get; init; }
 
-    /// <summary>
-    /// Направление перемещения по каталогу
-    /// </summary>
-    [JsonPropertyName("direction")]
-    public List<int> Direction { get; init; }
+    // <summary/> Направление перемещения по каталогу
+    [JsonPropertyName("direction")] public List<int> Direction { get; init; }
 }

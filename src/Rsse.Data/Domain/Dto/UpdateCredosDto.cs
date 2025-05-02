@@ -5,6 +5,6 @@ namespace SearchEngine.Domain.Dto;
 /// </summary>
 public record struct UpdateCredosDto
 {
-    public required LoginDto OldCredos { get; init; }
-    public required LoginDto NewCredos { get; init; }
+    public required CredentialsDto OldCredos { get; init; }
+    public required CredentialsDto NewCredos { get; init; }
 }
