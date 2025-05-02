@@ -52,7 +52,7 @@ public class UpdateTests
             TitleRequest = Title,
             TextRequest = Text,
             TagsCheckedRequest = [1, 2, 3, 11],
-            CommonNoteId = _testNoteId
+            NoteIdExchange = _testNoteId
         };
 
         // act:

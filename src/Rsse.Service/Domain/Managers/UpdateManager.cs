@@ -86,16 +86,16 @@ public class UpdateManager(IServiceProvider scopedProvider)
                 || string.IsNullOrEmpty(updatedNote.TitleRequest)
                 || updatedNote.TagsCheckedRequest.Count == 0)
             {
-                return await GetOriginalNote(updatedNote.CommonNoteId);
+                return await GetOriginalNote(updatedNote.NoteIdExchange);
             }
 
             var initialNoteTags = await _repo
-                .ReadNoteTags(updatedNote.CommonNoteId)
+                .ReadNoteTags(updatedNote.NoteIdExchange)
                 .ToListAsync();
 
             await _repo.UpdateNote(initialNoteTags, updatedNote);
 
-            return await GetOriginalNote(updatedNote.CommonNoteId);
+            return await GetOriginalNote(updatedNote.NoteIdExchange);
         }
         catch (Exception ex)
         {

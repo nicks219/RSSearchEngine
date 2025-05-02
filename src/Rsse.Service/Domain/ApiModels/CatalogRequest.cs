@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -10,19 +9,9 @@ namespace SearchEngine.Domain.ApiModels;
 /// Шаблон передачи данных каталога
 /// </summary>
 public record CatalogRequest
-{
-    /// <summary/> Названия заметок и соответствующие им Id
-    [JsonPropertyName("catalogPage")] public List<Tuple<string, int>>? CatalogPage { get; init; }
-
-    // <summary/> Количество заметок
-    [JsonPropertyName("notesCount")] public int NotesCount { get; init; }
-
+(
     // <summary/> Номер страницы каталога
-    [JsonPropertyName("pageNumber")] public int PageNumber { get; init; }
-
-    // <summary/> Сообщение об ошибке, если потребуется
-    [JsonPropertyName("errorMessage")] public string? ErrorMessage { get; init; }
-
+    [property: JsonPropertyName("pageNumber")] int PageNumber,
     // <summary/> Направление перемещения по каталогу
-    [JsonPropertyName("direction")] public List<int> Direction { get; init; }
-}
+    [property: JsonPropertyName("direction")] List<int> Direction
+);

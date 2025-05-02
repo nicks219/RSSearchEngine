@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Tests.Integrations.Api;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
@@ -34,7 +34,7 @@ public static class TestHelper
     {
         var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-        var json = new NoteDto();
+        var json = new NoteRequest();
         var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
         dynamic content = appendFile ? new MultipartFormDataContent() : jsonContent;
         if (appendFile) content.Add(fileContent, "file", "file.txt");
@@ -47,13 +47,13 @@ public static class TestHelper
     /// </summary>
     internal static IEnumerable<StringContent> GetEnumerableRequestContent(bool forUpdate = false)
     {
-        var dto = new NoteDto { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
+        var dto = new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         yield return jsonContent;
 
         var title = forUpdate ? "[1]" : "1";
         // todo: название заметки не очищается от скобочек, только именование тега
-        dto = new NoteDto { TitleRequest = title, TextRequest = "раз два три четыре", TagsCheckedRequest = [1] };
+        dto = new NoteRequest { TitleRequest = title, TextRequest = "раз два три четыре", TagsCheckedRequest = [1] };
         jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         yield return jsonContent;
     }
@@ -61,29 +61,29 @@ public static class TestHelper
     internal static StringContent GetRequestContentWithTags()
     {
         // в TagsCheckedRequest содержатся отмеченные теги
-        var dto = new NoteDto { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
+        var dto = new NoteRequest { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
     }
 
-    internal static NoteDto GetNoteDto()
+    internal static NoteRequest GetNoteDto()
     {
         List<int> checkedTags = [1];
-        var note = new NoteDto { TitleRequest = "тестовая запись", TextRequest = "раз два три", TagsCheckedRequest = checkedTags };
+        var note = new NoteRequest { TitleRequest = "тестовая запись", TextRequest = "раз два три", TagsCheckedRequest = checkedTags };
         return note;
     }
 
-    internal static NoteDto GetNoteDto(List<int> tags)
+    internal static NoteRequest GetNoteDto(List<int> tags)
     {
-        var note = new NoteDto { TitleRequest = "название", TextRequest = "раз два три", TagsCheckedRequest = tags };
+        var note = new NoteRequest { TitleRequest = "название", TextRequest = "раз два три", TagsCheckedRequest = tags };
         return note;
     }
 
-    internal static NoteDto GetNoteForUpdate(string text)
+    internal static NoteRequest GetNoteForUpdate(string text)
     {
         List<int> tagsForUpdate = [4];
-        var noteForUpdate = new NoteDto { TitleRequest = "название", TextRequest = text, TagsCheckedRequest = tagsForUpdate };
+        var noteForUpdate = new NoteRequest { TitleRequest = "название", TextRequest = text, TagsCheckedRequest = tagsForUpdate };
         return noteForUpdate;
     }
 

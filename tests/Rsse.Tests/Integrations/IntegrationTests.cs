@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -11,17 +8,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Tests.Integrations.Api;
-using SearchEngine.Tests.Integrations.Dto;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
-using SearchEngine.Tooling.Contracts;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
@@ -136,8 +127,8 @@ public class IntegrationTests
                 if (uri == "api/update")
                 {
                     // необходимо выставить id обновляемой заметки note.CommonNoteId
-                    var dto = await note.ReadFromJsonAsync<NoteDto>();
-                    dto.EnsureNotNull().CommonNoteId = processedId;
+                    var dto = await note.ReadFromJsonAsync<NoteRequest>();
+                    dto = dto.EnsureNotNull() with { NoteIdExchange = processedId };
                     note = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
                 }
 
@@ -145,10 +136,10 @@ public class IntegrationTests
                 var deserializedPostResponse = await postResponse
                     .EnsureSuccessStatusCode()
                     .Content
-                    .ReadFromJsonAsync<NoteDto>();
+                    .ReadFromJsonAsync<NoteResponse>();
                 processedId = deserializedPostResponse
                     .EnsureNotNull()
-                    .CommonNoteId;// 946 - 946
+                    .NoteIdExchange;// 946 - 946
                 note.Dispose();
                 continue;
             }
@@ -215,10 +206,10 @@ public class IntegrationTests
                 var deserializedPostResponse = await postResponse
                     .EnsureSuccessStatusCode()
                     .Content
-                    .ReadFromJsonAsync<NoteDto>();
+                    .ReadFromJsonAsync<NoteResponse>();
                 createdId = deserializedPostResponse
                     .EnsureNotNull()
-                    .CommonNoteId;// 1 - 2
+                    .NoteIdExchange;// 1 - 2
                 fakePathToDump = deserializedPostResponse.TextResponse;
                 continue;
             }
@@ -237,7 +228,7 @@ public class IntegrationTests
         fakePathToDump
             .Should()
             .BeEquivalentTo("dump files created");
-            // .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
+        // .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
 
         // clean up:
         TestHelper.CleanUpDatabases(factory);
@@ -254,103 +245,4 @@ public class IntegrationTests
     // II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле details
     // III.    на заметку не создаётся zip (только файлы) - а возвращается dump.zip
     // IV.     postgres: как ресториться из "последних" файлов? рестор сделан только из *.zip
-
-    // удалить два теста:
-
-    [TestMethod]
-    [Ignore("отрефакторен")]
-    [Obsolete("отрефакторен")]
-    [ExcludeFromCodeCoverage]
-    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
-    {
-        // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_options);
-        var services = factory.HostInternal.EnsureNotNull().Services;
-        await using var repo = services.GetRequiredService<IDataRepository>();
-        var migrators = services.GetServices<IDbMigrator>().ToList();
-        var mysqlMigrator = MigrationController.GetMigrator(migrators, DatabaseType.MySql);
-        var tokenizer = services.GetRequiredService<ITokenizerService>();
-
-        // NB: c pomelo иногда бывает исключение attempted to read past the end of the stream, разберись
-        mysqlMigrator.Restore(string.Empty);
-        await repo.CopyDbFromMysqlToNpgsql();
-
-        using var scope = services.CreateScope();
-        await using var scopedRepo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
-        const string text = "раз два три четыре";
-        List<int> tags = [1, 2, 3];
-        var note = TestHelper.GetNoteDto(tags);
-        var noteForUpdate = TestHelper.GetNoteForUpdate(text);
-
-        // act:
-        await scopedRepo.CreateTagIfNotExists(Tag);
-        var createdId = await scopedRepo.CreateNote(note);
-        noteForUpdate.CommonNoteId = createdId;
-        await scopedRepo.UpdateNote(tags, noteForUpdate);
-        // repo не апдейтит кэш
-        tokenizer.Initialize();
-
-        using var response = await client.GetAsync($"api/compliance/indices?text={text}");
-        var result = await response.Content.ReadAsStringAsync();
-        var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
-        Int64.TryParse(firstKey, out var complianceId);
-
-        await scopedRepo.DeleteNote(createdId);
-        var reader = repo.GetReaderContext()?.Tags?.Select(x => x.Tag).ToList();
-        var writer = repo.GetPrimaryWriterContext()?.Tags?.Select(x => x.Tag).ToList();
-
-        // assert:
-        writer
-            .Should()
-            .Contain(Tag.ToUpper());
-
-        reader
-            .Should()
-            .Contain(Tag.ToUpper());
-
-        complianceId
-            .Should()
-            .Be(createdId);
-
-        // clean up:
-        TestHelper.CleanUpDatabases(factory);
-    }
-
-    [TestMethod]
-    [Ignore("отрефакторен")]
-    [Obsolete("отрефакторен")]
-    [ExcludeFromCodeCoverage]
-    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
-    {
-        // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var _ = factory.CreateClient(_options);
-        var services = factory.HostInternal.EnsureNotNull().Services;
-        await using var repo = services.GetRequiredService<IDataRepository>();
-        var migrators = services.GetServices<IDbMigrator>().ToList();
-        var pgsqlMigrator = MigrationController.GetMigrator(migrators, DatabaseType.Postgres);
-        var note = TestHelper.GetNoteDto();
-
-        // act:
-        // тестовая база postgres не содержит данных (кроме users), следует добавить тег, чтобы сослаться на него в checkedTags
-        await repo.CreateTagIfNotExists(Tag);
-        pgsqlMigrator.Create(string.Empty);
-        await repo.GetReaderContext().EnsureNotNull().Database.EnsureDeletedAsync();
-        await repo.GetReaderContext().EnsureNotNull().Database.EnsureCreatedAsync();
-        pgsqlMigrator.Restore(string.Empty);
-
-        using var scope = services.CreateScope();
-        await using var scopedRepo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var createdId = await scopedRepo.CreateNote(note);
-
-        // assert:
-        createdId
-            .Should()
-            .BeGreaterThan(0);
-
-        // clean up:
-        TestHelper.CleanUpDatabases(factory);
-    }
 }

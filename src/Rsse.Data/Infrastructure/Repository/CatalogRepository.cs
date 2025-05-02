@@ -167,14 +167,14 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
         forDelete.ExceptWith(except);
 
-        if (await VerifyTagNotExists(note.CommonNoteId, forAddition))
+        if (await VerifyTagNotExists(note.NoteIdExchange, forAddition))
         {
             // ID тегов и номера кнопок с фронта совпадают
             await using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
-                var processedNote = await context.Notes!.FindAsync(note.CommonNoteId);
+                var processedNote = await context.Notes!.FindAsync(note.NoteIdExchange);
 
                 if (processedNote == null)
                 {
@@ -190,14 +190,14 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
                 context.TagsToNotesRelation!
                     .RemoveRange(context.TagsToNotesRelation
                         .Where(relation =>
-                            relation.NoteId == note.CommonNoteId && forDelete.Contains(relation.TagId)));
+                            relation.NoteId == note.NoteIdExchange && forDelete.Contains(relation.TagId)));
 
                 await context.TagsToNotesRelation
                     .AddRangeAsync(forAddition
                         .Select(id =>
                             new TagsToNotesEntity
                             {
-                                NoteId = note.CommonNoteId,
+                                NoteId = note.NoteIdExchange,
                                 TagId = id
                             }));
 
@@ -245,7 +245,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     {
         if (await VerifyTitleNotExists(note.TitleRequest!) == false)
         {
-            return note.CommonNoteId;
+            return note.NoteIdExchange;
         }
 
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -271,24 +271,24 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
             await transaction.CommitAsync();
 
-            note.CommonNoteId = forAddition.NoteId;
+            note.NoteIdExchange = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
             await transaction.RollbackAsync();
 
-            note.CommonNoteId = 0;
+            note.NoteIdExchange = 0;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
 
-            note.CommonNoteId = 0;
+            note.NoteIdExchange = 0;
 
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
 
-        return note.CommonNoteId;
+        return note.NoteIdExchange;
     }
 
     /// <inheritdoc/>

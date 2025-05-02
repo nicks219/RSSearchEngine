@@ -30,7 +30,7 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var response =  await new CatalogManager(scopedProvider).ReadPage(id);
+            var response = await new CatalogManager(scopedProvider).ReadPage(id);
             return response.MapFromDto();
         }
         catch (Exception ex)

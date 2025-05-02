@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Infrastructure.Context;
 using SearchEngine.Tooling;
 
 namespace SearchEngine.Domain.Tokenizer;

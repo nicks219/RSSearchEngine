@@ -56,7 +56,7 @@ public class UpdateController(ILogger<UpdateController> logger)
             var response = await new UpdateManager(scopedProvider).UpdateNote(dto);
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
-            tokenizer.Update(dto.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response.MapFromDto();
         }

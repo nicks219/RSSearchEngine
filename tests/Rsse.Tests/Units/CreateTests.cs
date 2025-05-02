@@ -44,7 +44,7 @@ public class CreateTests
         var responseDto = await CreateManager.CreateNote(requestDto);
         var host = new ServicesStubStartup<UpdateManager>();
         var expectedDto = await new UpdateManager(host.Provider)
-            .GetOriginalNote(responseDto.CommonNoteId);
+            .GetOriginalNote(responseDto.NoteIdExchange);
 
         // assert:
         Assert.AreEqual(expectedDto.TitleRequest, responseDto.TitleRequest);

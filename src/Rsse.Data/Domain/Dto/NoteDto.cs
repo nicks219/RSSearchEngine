@@ -44,9 +44,9 @@ public record NoteDto
     public List<string>? StructuredTagsListResponse { get; init; }
 
     /// <summary>
-    /// Поле для хранения идентификатора сохраненной/измененной заметки
+    /// Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны
     /// </summary>
-    public int CommonNoteId { get; set; }
+    public int NoteIdExchange { get; set; }
 
     /// <summary>
     /// Сообщение об ошибке
@@ -66,7 +66,7 @@ public record NoteDto
     // todo: это response
     public NoteDto(
         List<string> structuredTagsListResponse,
-        int commonNoteId = 0,
+        int noteIdExchange = 0,
         string textResponse = "",
         string titleResponse = "",
         List<string>? tagsCheckedUncheckedResponse = null)
@@ -75,6 +75,6 @@ public record NoteDto
         TitleResponse = titleResponse;
         TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
         StructuredTagsListResponse = structuredTagsListResponse;
-        CommonNoteId = commonNoteId;
+        NoteIdExchange = noteIdExchange;
     }
 }

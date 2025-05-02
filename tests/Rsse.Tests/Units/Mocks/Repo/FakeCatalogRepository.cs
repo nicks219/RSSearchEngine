@@ -198,7 +198,7 @@ public class FakeCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[note.CommonNoteId] = new Tuple<string, string>(note.TextRequest, note.TitleRequest);
+        _notes[note.NoteIdExchange] = new Tuple<string, string>(note.TextRequest, note.TitleRequest);
 
         return Task.CompletedTask;
     }

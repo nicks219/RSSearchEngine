@@ -9,6 +9,6 @@ namespace SearchEngine.Domain.ApiModels;
 /// </summary>
 public record CredentialsRequest
 (
-    [property: JsonPropertyName("email")] string Email ,
+    [property: JsonPropertyName("email")] string Email,
     [property: JsonPropertyName("password")] string Password
 );

@@ -79,7 +79,7 @@ public class CreateController(
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 
-            tokenizer.Create(response.CommonNoteId, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
 
             var path = CreateDumpAndGetFilePath();
 

@@ -14,9 +14,10 @@ public static class Mapper
     /// </summary>
     public static UpdateCredosDto MapToDto(this UpdateCredentialsRequest request)
     {
-        var response = new UpdateCredosDto{
-            NewCredos = new CredentialsDto{Email = request.NewCredos.Email, Password = request.NewCredos.Password},
-            OldCredos = new CredentialsDto{Email = request.OldCredos.Email, Password = request.OldCredos.Password}
+        var response = new UpdateCredosDto
+        {
+            NewCredos = new CredentialsDto { Email = request.NewCredos.Email, Password = request.NewCredos.Password },
+            OldCredos = new CredentialsDto { Email = request.OldCredos.Email, Password = request.OldCredos.Password }
         };
 
         return response;
@@ -27,11 +28,9 @@ public static class Mapper
     /// </summary>
     public static CatalogDto MapToDto(this CatalogRequest request)
     {
-        var response = new CatalogDto{
-            CatalogPage = request.CatalogPage,
-            NotesCount = request.NotesCount,
+        var response = new CatalogDto
+        {
             PageNumber = request.PageNumber,
-            ErrorMessage = request.ErrorMessage,
             Direction = request.Direction
         };
 
@@ -43,12 +42,12 @@ public static class Mapper
     /// </summary>
     public static CatalogResponse MapFromDto(this CatalogDto dto)
     {
-        var response = new CatalogResponse{
+        var response = new CatalogResponse
+        {
             CatalogPage = dto.CatalogPage,
             NotesCount = dto.NotesCount,
             PageNumber = dto.PageNumber,
-            ErrorMessage = dto.ErrorMessage,
-            Direction = dto.Direction
+            ErrorMessage = dto.ErrorMessage
         };
 
         return response;
@@ -59,16 +58,12 @@ public static class Mapper
     /// </summary>
     public static NoteDto MapToDto(this NoteRequest request)
     {
-        var response = new NoteDto{
-           TagsCheckedRequest = request.TagsCheckedRequest,
-           TitleRequest = request.TitleRequest,
-           TextRequest = request.TextRequest,
-           TagsCheckedUncheckedResponse = request.TagsCheckedUncheckedResponse,
-           TitleResponse = request.TitleResponse,
-           TextResponse = request.TextResponse,
-           StructuredTagsListResponse = request.StructuredTagsListResponse,
-           CommonNoteId = request.CommonNoteId,
-           CommonErrorMessageResponse = request.CommonErrorMessageResponse
+        var response = new NoteDto
+        {
+            TagsCheckedRequest = request.TagsCheckedRequest,
+            TitleRequest = request.TitleRequest,
+            TextRequest = request.TextRequest,
+            NoteIdExchange = request.NoteIdExchange,
         };
 
         return response;
@@ -79,15 +74,13 @@ public static class Mapper
     /// </summary>
     public static NoteResponse MapFromDto(this NoteDto dto)
     {
-        var response = new NoteResponse{
-            TagsCheckedRequest = dto.TagsCheckedRequest,
-            TitleRequest = dto.TitleRequest,
-            TextRequest = dto.TextRequest,
+        var response = new NoteResponse
+        {
             TagsCheckedUncheckedResponse = dto.TagsCheckedUncheckedResponse,
             TitleResponse = dto.TitleResponse,
             TextResponse = dto.TextResponse,
             StructuredTagsListResponse = dto.StructuredTagsListResponse,
-            CommonNoteId = dto.CommonNoteId,
+            NoteIdExchange = dto.NoteIdExchange,
             CommonErrorMessageResponse = dto.CommonErrorMessageResponse,
         };
 

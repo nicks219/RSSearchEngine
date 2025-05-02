@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace SearchEngine.Domain.ApiModels;
 
+// todo: выделить ErrorResponse
 public record CatalogResponse
 {
     // <summary/> Названия заметок и соответствующие им Id
@@ -19,7 +20,4 @@ public record CatalogResponse
 
     // <summary/> Сообщение об ошибке, если потребуется
     [JsonPropertyName("errorMessage")] public string? ErrorMessage { get; init; }
-
-    // <summary/> Направление перемещения по каталогу
-    [JsonPropertyName("direction")] public List<int> Direction { get; init; }
 }

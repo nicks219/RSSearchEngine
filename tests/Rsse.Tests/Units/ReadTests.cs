@@ -157,7 +157,7 @@ public class ReadTests
         {
             var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto);
 
-            var id = responseDto.CommonNoteId;
+            var id = responseDto.NoteIdExchange;
 
             if (!idStorage.TryAdd(id, 1))
             {

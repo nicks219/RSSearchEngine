@@ -5,15 +5,6 @@ namespace SearchEngine.Domain.ApiModels;
 
 public record NoteResponse
 {
-    /// <summary/> Список отмеченных тегов в запросе
-    [JsonPropertyName("tagsCheckedRequest")] public List<int>? TagsCheckedRequest { get; init; }
-
-    /// <summary/> Именование заметки в запросе
-    [JsonPropertyName("titleRequest")] public string? TitleRequest { get; init; }
-
-    /// <summary/> Текст заметки в запросе
-    [JsonPropertyName("textRequest")] public string? TextRequest { get; init; }
-
     /// <summary/> Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
     [JsonPropertyName("tagsCheckedUncheckedResponse")] public List<string>? TagsCheckedUncheckedResponse { get; init; }
 
@@ -26,8 +17,8 @@ public record NoteResponse
     /// <summary/> Список тегов в формате "имя : количество записей"
     [JsonPropertyName("structuredTagsListResponse")] public List<string>? StructuredTagsListResponse { get; init; }
 
-    /// <summary/> Поле для хранения идентификатора сохраненной/измененной заметки
-    [JsonPropertyName("commonNoteID")] public int CommonNoteId { get; init; }
+    /// <summary/> Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны
+    [JsonPropertyName("commonNoteID")] public int NoteIdExchange { get; init; }
 
     /// <summary/> Сообщение об ошибке
     [JsonPropertyName("errorMessageResponse")] public string? CommonErrorMessageResponse { get; init; }
