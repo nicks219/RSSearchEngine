@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
@@ -7,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using SearchEngine.Controllers;
-using SearchEngine.Engine.Contracts;
-using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Units.Dto;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Units;
@@ -38,7 +37,7 @@ public class ComplianceTests
         var actionResult = complianceController.GetComplianceIndices(Text);
         var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
         var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ResponseModel>(serialized);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponseModel>(serialized);
 
         // assert:
         deserialized.Should().NotBeNull();
@@ -56,10 +55,4 @@ public class ComplianceTests
             .Should()
             .Be(2.3529411764705883D);
     }
-
-    public class ResponseModel
-    {
-        public required Dictionary<string, double> Res { get; set; }
-    }
 }
-

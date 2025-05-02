@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Managers;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 

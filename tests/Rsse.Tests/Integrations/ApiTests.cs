@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 
@@ -50,7 +52,7 @@ public class ApiTests
             .EnsureNotNull()
             .ToString()
             .Should()
-            .Be(Common.Constants.ApplicationFullName);
+            .Be(Constants.ApplicationFullName);
     }
 
     [TestMethod]
@@ -136,7 +138,4 @@ public class ApiTests
             .Should()
             .BeEquivalentTo(expected);
     }
-
-
-
 }

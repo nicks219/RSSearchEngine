@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Engine.Tokenizer;
-using SearchEngine.Managers;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 

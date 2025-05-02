@@ -2,10 +2,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Controllers;
-using SearchEngine.Data.Context;
-using SearchEngine.Data.Repository;
-using SearchEngine.Tools.MigrationAssistant;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Api.Startup;
+using SearchEngine.Infrastructure.Context;
+using SearchEngine.Infrastructure.Repository;
+using SearchEngine.Tooling.Contracts;
+using SearchEngine.Tooling.MigrationAssistant;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 

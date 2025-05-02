@@ -10,18 +10,18 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Controllers;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Repository;
-using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Engine.Contracts;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Tests.Integrations.Api;
+using SearchEngine.Tests.Integrations.Dto;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
-using SearchEngine.Tools.MigrationAssistant;
+using SearchEngine.Tooling.Contracts;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 

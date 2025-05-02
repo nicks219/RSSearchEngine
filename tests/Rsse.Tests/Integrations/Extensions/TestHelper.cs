@@ -13,14 +13,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Npgsql;
-using SearchEngine.Data.Dto;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Api.Startup;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Tests.Integrations.Api;
+using SearchEngine.Tests.Integrations.Dto;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
 /// <summary>
 /// Контейнер с потрохами из тестов
 /// </summary>
+// todo: отрефакторить
 public static class TestHelper
 {
     // константы с результатами запросов

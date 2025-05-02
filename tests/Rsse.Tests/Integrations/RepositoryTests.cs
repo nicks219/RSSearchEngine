@@ -7,11 +7,12 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Context;
-using SearchEngine.Data.Repository;
-using SearchEngine.Data.Repository.Contracts;
+using SearchEngine.Api.Startup;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Infrastructure.Context;
+using SearchEngine.Infrastructure.Repository;
+using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace SearchEngine.Tests.Integrations;
