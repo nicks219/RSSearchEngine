@@ -136,7 +136,7 @@ public class MirrorRepository(
         return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, note), _writerSecondary.UpdateNote(enumerable, note));
     }
 
-    public Task UpdateCredos(UpdateCredosRequest credos)
+    public Task UpdateCredos(UpdateCredosDto credos)
     {
         return Task.WhenAll(_writerPrimary.UpdateCredos(credos), _writerSecondary.UpdateCredos(credos));
     }

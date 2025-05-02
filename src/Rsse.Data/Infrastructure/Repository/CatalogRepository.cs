@@ -218,7 +218,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         }
     }
 
-    public async Task UpdateCredos(UpdateCredosRequest credos)
+    public async Task UpdateCredos(UpdateCredosDto credos)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
 

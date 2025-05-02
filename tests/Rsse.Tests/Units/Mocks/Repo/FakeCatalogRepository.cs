@@ -95,9 +95,9 @@ public class FakeCatalogRepository : IDataRepository
         throw new NotImplementedException($"Note `{noteTitle}` not found");
     }
 
-    public Task<int> CreateNote(NoteDto? note)
+    public Task<int> CreateNote(NoteDto note)
     {
-        if (note?.TitleRequest == null || note.TextRequest == null || _notes == null)
+        if (note.TitleRequest == null || note.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
@@ -107,7 +107,7 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_id - 1);
     }
 
-    public Task UpdateCredos(UpdateCredosRequest credos) => throw new NotImplementedException();
+    public Task UpdateCredos(UpdateCredosDto credos) => throw new NotImplementedException();
 
     public Task<int> DeleteNote(int noteId)
     {
@@ -191,9 +191,9 @@ public class FakeCatalogRepository : IDataRepository
         return result;
     }
 
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto? note)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
     {
-        if (note?.TitleRequest == null || note.TextRequest == null || _notes == null)
+        if (note.TitleRequest == null || note.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }

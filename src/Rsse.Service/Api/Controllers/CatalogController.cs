@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Mapping;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -24,36 +25,39 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
     /// </summary>
     /// <param name="id">номер страницы</param>
     [HttpGet]
-    public async Task<ActionResult<CatalogDto>> ReadCatalogPage(int id)
+    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            return await new CatalogManager(scopedProvider).ReadPage(id);
+            var response =  await new CatalogManager(scopedProvider).ReadPage(id);
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, ReadCatalogPageError);
-            return new CatalogDto { ErrorMessage = ReadCatalogPageError };
+            return new CatalogResponse { ErrorMessage = ReadCatalogPageError };
         }
     }
 
     /// <summary>
     /// Переместиться по каталогу
     /// </summary>
-    /// <param name="dto">шаблон с информацией для навигации</param>
+    /// <param name="request">шаблон с информацией для навигации</param>
     [HttpPost]
-    public async Task<ActionResult<CatalogDto>> NavigateCatalog([FromBody] CatalogDto dto)
+    public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            return await new CatalogManager(scopedProvider).NavigateCatalog(dto);
+            var dto = request.MapToDto();
+            var response = await new CatalogManager(scopedProvider).NavigateCatalog(dto);
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, NavigateCatalogError);
-            return new CatalogDto { ErrorMessage = NavigateCatalogError };
+            return new CatalogResponse { ErrorMessage = NavigateCatalogError };
         }
     }
 
@@ -65,7 +69,7 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
     /// <returns>актуальная страница каталога</returns>
     [Authorize, HttpDelete]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<ActionResult<CatalogDto>> DeleteNote(int id, int pg)
+    public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
     {
         try
         {
@@ -73,12 +77,13 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Delete(id);
 
-            return await new CatalogManager(scopedProvider).DeleteNote(id, pg);
+            var response = await new CatalogManager(scopedProvider).DeleteNote(id, pg);
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, DeleteNoteError);
-            return new CatalogDto { ErrorMessage = DeleteNoteError };
+            return new CatalogResponse { ErrorMessage = DeleteNoteError };
         }
     }
 }

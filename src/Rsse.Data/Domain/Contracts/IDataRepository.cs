@@ -45,7 +45,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// Обновить логин и пароль
     /// </summary>
     /// <param name="credos">данные авторизации</param>
-    Task UpdateCredos(UpdateCredosRequest credos);
+    Task UpdateCredos(UpdateCredosDto credos);
 
     /// <summary>
     /// Удалить заметку

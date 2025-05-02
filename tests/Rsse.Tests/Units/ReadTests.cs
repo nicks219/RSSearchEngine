@@ -109,10 +109,12 @@ public class ReadTests
         readController.AddHttpContext(host.Provider);
 
         // act:
-        var responseDto = (await readController.GetNextOrSpecificNote(null, null)).Value;
+        var responseDto = (await readController.GetNextOrSpecificNote(null, null))
+            .Value
+            .EnsureNotNull();
 
         // assert:
-        Assert.AreEqual(string.Empty, responseDto?.TitleResponse);
+        Assert.AreEqual(string.Empty, responseDto.TitleResponse);
     }
 
     [TestMethod]

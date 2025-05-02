@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Mapping;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -84,7 +86,8 @@ public class AccountController(
     {
         var scopedProvider = HttpContext.RequestServices;
         var repo = scopedProvider.GetRequiredService<IDataRepository>();
-        await repo.UpdateCredos(credos);
+        var credosForUpdate = credos.MapToDto();
+        await repo.UpdateCredos(credosForUpdate);
         await Logout();
         return Ok("updated");
     }

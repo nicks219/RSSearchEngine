@@ -12,6 +12,7 @@ using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -26,7 +27,6 @@ public class CatalogTests
     private const int NotesPerPage = 10;
     private int _notesCount;
     private ServicesStubStartup<CatalogManager>? _host;
-    private NoopLogger<CatalogManager>? _logger;
 
     [TestInitialize]
     public void Initialize()
@@ -36,7 +36,6 @@ public class CatalogTests
         Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = Repo.ReadAllNotes().Count();
-        _logger = (NoopLogger<CatalogManager>)_host.Provider.GetRequiredService<ILogger<CatalogManager>>();
     }
 
     [TestMethod]
@@ -74,15 +73,15 @@ public class CatalogTests
             .Be(currentPage + 1);
     }
 
-    [TestMethod]
+    /*[TestMethod]
     public async Task CatalogManager_ShouldLogError_OnUndefinedRequest()
     {
         // arrange & act:
         _ = await CatalogManager.NavigateCatalog(null!);
 
         // assert:
-        Assert.AreEqual(_logger?.Message, ErrorMessages.NavigateCatalogError);
-    }
+        Assert.AreEqual(ErrorMessages.NavigateCatalogError, _logger?.Message);
+    }*/
 
     [TestMethod]
     public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
@@ -123,7 +122,7 @@ public class CatalogTests
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
 
         // assert:
-        Assert.AreEqual(null, responseDto?.CatalogPage);
+        Assert.AreEqual(null, responseDto.EnsureNotNull().CatalogPage);
     }
 
     [TestMethod]

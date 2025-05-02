@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CS0162 // Unreachable code detected
@@ -34,8 +35,8 @@ internal static class ClientLauncher
     private const string NodeProcessName = "node";
 
     private static readonly char SeparatorChar = Path.DirectorySeparatorChar;
-    private static readonly string ShellFolder = $"Tools{SeparatorChar}DevelopmentAssistant{SeparatorChar}";
-    private static readonly object Lock = new();
+    private static readonly string ShellFolder = $"Tooling{SeparatorChar}DevelopmentAssistant{SeparatorChar}";
+    private static readonly Lock Lock = new();
     private static volatile bool _initialized;
 
     /// <summary>
