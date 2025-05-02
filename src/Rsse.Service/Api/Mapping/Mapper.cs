@@ -39,7 +39,7 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из model в dto
+    /// Маппинг из dto в model
     /// </summary>
     public static CatalogResponse MapFromDto(this CatalogDto dto)
     {
@@ -49,6 +49,46 @@ public static class Mapper
             PageNumber = dto.PageNumber,
             ErrorMessage = dto.ErrorMessage,
             Direction = dto.Direction
+        };
+
+        return response;
+    }
+
+    /// <summary>
+    /// Маппинг из dto в model
+    /// </summary>
+    public static NoteDto MapToDto(this NoteRequest request)
+    {
+        var response = new NoteDto{
+           TagsCheckedRequest = request.TagsCheckedRequest,
+           TitleRequest = request.TitleRequest,
+           TextRequest = request.TextRequest,
+           TagsCheckedUncheckedResponse = request.TagsCheckedUncheckedResponse,
+           TitleResponse = request.TitleResponse,
+           TextResponse = request.TextResponse,
+           StructuredTagsListResponse = request.StructuredTagsListResponse,
+           CommonNoteId = request.CommonNoteId,
+           CommonErrorMessageResponse = request.CommonErrorMessageResponse
+        };
+
+        return response;
+    }
+
+    /// <summary>
+    /// Маппинг из dto в model
+    /// </summary>
+    public static NoteResponse MapFromDto(this NoteDto dto)
+    {
+        var response = new NoteResponse{
+            TagsCheckedRequest = dto.TagsCheckedRequest,
+            TitleRequest = dto.TitleRequest,
+            TextRequest = dto.TextRequest,
+            TagsCheckedUncheckedResponse = dto.TagsCheckedUncheckedResponse,
+            TitleResponse = dto.TitleResponse,
+            TextResponse = dto.TextResponse,
+            StructuredTagsListResponse = dto.StructuredTagsListResponse,
+            CommonNoteId = dto.CommonNoteId,
+            CommonErrorMessageResponse = dto.CommonErrorMessageResponse,
         };
 
         return response;

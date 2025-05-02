@@ -3,8 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Mapping;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -53,31 +54,33 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
     /// Получить список тегов
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<NoteDto>> ReadTagList()
+    public async Task<ActionResult<NoteResponse>> ReadTagList()
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            return await new ReadManager(scopedProvider).ReadTagList();
+            var response = await new ReadManager(scopedProvider).ReadTagList();
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, ReadTagListError);
-            return new NoteDto { CommonErrorMessageResponse = ReadTagListError };
+            return new NoteResponse { CommonErrorMessageResponse = ReadTagListError };
         }
     }
 
     /// <summary>
     /// Выбрать следующую либо прочитать конкретную заметку, по отмеченным тегам или идентификатору
     /// </summary>
-    /// <param name="dto">данные с отмеченными тегами</param>
+    /// <param name="request">данные с отмеченными тегами</param>
     /// <param name="id">строка с идентификатором, если требуется</param>
     /// <returns>ответ с заметкой</returns>
     [HttpPost]
-    public async Task<ActionResult<NoteDto>> GetNextOrSpecificNote([FromBody] NoteDto? dto, [FromQuery] string? id)
+    public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
     {
         try
         {
+            var dto = request?.MapToDto();
             if (dto?.TagsCheckedRequest?.Count == 0)
             {
                 // для пустого запроса считаем все теги отмеченными
@@ -85,14 +88,14 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
             }
 
             var scopedProvider = HttpContext.RequestServices;
-            var model = await new ReadManager(scopedProvider).GetNextOrSpecificNote(dto, id, _randomElection);
-            return model;
+            var response = await new ReadManager(scopedProvider).GetNextOrSpecificNote(dto, id, _randomElection);
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             logger.LogError(ex, ElectNoteError);
-            return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
+            return new NoteResponse { CommonErrorMessageResponse = ElectNoteError };
         }
     }
 }

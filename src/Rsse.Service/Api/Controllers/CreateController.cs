@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SearchEngine.Api.Mapping;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 using SearchEngine.Domain.Managers;
 using SearchEngine.Tooling.Contracts;
@@ -36,58 +37,60 @@ public class CreateController(
     /// Получить список тегов
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<NoteDto>> GetStructuredTagListAsync()
+    public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
             var model = new CreateManager(scopedProvider);
-            return await model.ReadStructuredTagList();
+            var response = await model.ReadStructuredTagList();
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, GetTagListError);
-            return new NoteDto { CommonErrorMessageResponse = GetTagListError };
+            return new NoteResponse { CommonErrorMessageResponse = GetTagListError };
         }
     }
 
     /// <summary>
     /// Создать заметку
     /// </summary>
-    /// <param name="dto">данные для создания заметки</param>
+    /// <param name="request">данные для создания заметки</param>
     /// <returns>данные с созданной заметкой либо ошибкой</returns>
     [HttpPost]
-    public async Task<ActionResult<NoteDto>> CreateNoteAndDumpAsync([FromBody] NoteDto dto)
+    public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var model = new CreateManager(scopedProvider);
+            var manager = new CreateManager(scopedProvider);
+            var dto = request.MapToDto();
 
-            await model.CreateTagFromTitle(dto);
-            var result = await model.CreateNote(dto);
+            await manager.CreateTagFromTitle(dto);
+            var resposne = await manager.CreateNote(dto);
 
-            if (!string.IsNullOrEmpty(result.CommonErrorMessageResponse))
+            if (!string.IsNullOrEmpty(resposne.CommonErrorMessageResponse))
             {
-                return result;
+                return dto.MapFromDto();
             }
 
             // await model.CreateTagFromTitle(dto); // перенесен до создания заметки
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 
-            tokenizer.Create(result.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            tokenizer.Create(resposne.CommonNoteId, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
 
             var path = CreateDumpAndGetFilePath();
 
-            result.TextResponse = path ?? string.Empty;
+            resposne.TextResponse = path ?? string.Empty;
 
-            return result;
+            return resposne.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, CreateNoteError);
-            return new NoteDto { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteResponse { CommonErrorMessageResponse = CreateNoteError };
         }
     }
 

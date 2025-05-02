@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Mapping;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
@@ -26,41 +27,43 @@ public class UpdateController(ILogger<UpdateController> logger)
     /// </summary>
     /// <param name="id">идентификатор обновляемой заметки</param>
     [HttpGet]
-    public async Task<ActionResult<NoteDto>> GetInitialNote(int id)
+    public async Task<ActionResult<NoteResponse>> GetInitialNote(int id)
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            return await new UpdateManager(scopedProvider).GetOriginalNote(id);
+            var response = await new UpdateManager(scopedProvider).GetOriginalNote(id);
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, GetInitialNoteError);
-            return new NoteDto { CommonErrorMessageResponse = GetInitialNoteError };
+            return new NoteResponse { CommonErrorMessageResponse = GetInitialNoteError };
         }
     }
 
     /// <summary>
     /// Обновить заметку
     /// </summary>
-    /// <param name="dto">данные для обновления</param>
+    /// <param name="request">данные для обновления</param>
     [Authorize, HttpPost]
-    public async Task<ActionResult<NoteDto>> UpdateNote([FromBody] NoteDto dto)
+    public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
         try
         {
             var scopedProvider = HttpContext.RequestServices;
+            var dto = request.MapToDto();
             var response = await new UpdateManager(scopedProvider).UpdateNote(dto);
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Update(dto.CommonNoteId, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
-            return response;
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, UpdateNoteError);
-            return new NoteDto { CommonErrorMessageResponse = UpdateNoteError };
+            return new NoteResponse { CommonErrorMessageResponse = UpdateNoteError };
         }
     }
 }

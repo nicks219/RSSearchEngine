@@ -6,22 +6,22 @@ namespace SearchEngine.Domain.ApiModels;
 /// <summary>
 /// Шаблон передачи данных для заметки
 /// </summary>
-public record NoteDto
+public record NoteRequest
 {
     /// <summary>
     /// Список отмеченных тегов в запросе
     /// </summary>
-    [JsonPropertyName("tagsCheckedRequest")] public List<int>? TagsCheckedRequest { get; set; }
+    [JsonPropertyName("tagsCheckedRequest")] public List<int>? TagsCheckedRequest { get; init; }
 
     /// <summary>
     /// Именование заметки в запросе
     /// </summary>
-    [JsonPropertyName("titleRequest")] public string? TitleRequest { get; set; }
+    [JsonPropertyName("titleRequest")] public string? TitleRequest { get; init; }
 
     /// <summary>
     /// Текст заметки в запросе
     /// </summary>
-    [JsonPropertyName("textRequest")] public string? TextRequest { get; set; }
+    [JsonPropertyName("textRequest")] public string? TextRequest { get; init; }
 
     /// <summary>
     /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
@@ -31,12 +31,12 @@ public record NoteDto
     /// <summary>
     /// Именование заметки в ответе
     /// </summary>
-    [JsonPropertyName("titleResponse")] public string? TitleResponse { get; set; }
+    [JsonPropertyName("titleResponse")] public string? TitleResponse { get; init; }
 
     /// <summary>
     /// Текст заметки в ответе
     /// </summary>
-    [JsonPropertyName("textResponse")] public string? TextResponse { get; set; }
+    [JsonPropertyName("textResponse")] public string? TextResponse { get; init; }
 
     /// <summary>
     /// Список тегов в формате "имя : количество записей"
@@ -46,34 +46,10 @@ public record NoteDto
     /// <summary>
     /// Поле для хранения идентификатора сохраненной/измененной заметки
     /// </summary>
-    [JsonPropertyName("commonNoteID")] public int CommonNoteId { get; set; }
+    [JsonPropertyName("commonNoteID")] public int CommonNoteId { get; init; }
 
     /// <summary>
     /// Сообщение об ошибке
     /// </summary>
-    [JsonPropertyName("errorMessageResponse")] public string? CommonErrorMessageResponse { get; set; }
-
-    /// <summary>
-    /// Создать незаполненный шаблон передачи данных для заметки
-    /// </summary>
-    public NoteDto()
-    {
-    }
-
-    /// <summary>
-    /// Создать шаблон передачи данных для заметки
-    /// </summary>
-    public NoteDto(
-        List<string> structuredTagsListResponse,
-        int commonNoteId = 0,
-        string textResponse = "",
-        string titleResponse = "",
-        List<string>? tagsCheckedUncheckedResponse = null)
-    {
-        TextResponse = textResponse;
-        TitleResponse = titleResponse;
-        TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
-        StructuredTagsListResponse = structuredTagsListResponse;
-        CommonNoteId = commonNoteId;
-    }
+    [JsonPropertyName("errorMessageResponse")] public string? CommonErrorMessageResponse { get; init; }
 }
