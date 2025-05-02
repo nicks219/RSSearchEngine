@@ -1,6 +1,7 @@
 #if WINDOWS
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace SearchEngine.Tooling.DevelopmentAssistant;
 /// <summary>
 /// Подъём и остановка среды разработки JS
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ClientLauncher
 {
     // запуск и остановка сервера разработки при старте

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace SearchEngine.Tooling.DevelopmentAssistant;
@@ -9,6 +10,8 @@ namespace SearchEngine.Tooling.DevelopmentAssistant;
 /// Утилита для определения родительского процесса
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
+[ExcludeFromCodeCoverage]
+[Obsolete("не используется в данной версии сервиса")]
 public struct ParentProcessUtilities
 {
     // не редактировать, совпадает с PROCESS_BASIC_INFORMATION

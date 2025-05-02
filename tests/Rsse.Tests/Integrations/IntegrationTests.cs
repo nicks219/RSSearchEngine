@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -120,7 +121,7 @@ public class IntegrationTests
         await client.TryAuthorizeToService("1@2", "12");
 
         using var enumerator = TestHelper
-            .GetEnumeratedRequestContent(forUpdate: true)
+            .GetEnumerableRequestContent(forUpdate: true)
             .GetEnumerator();
         enumerator.MoveNext();
         var processedId = 0;
@@ -197,7 +198,7 @@ public class IntegrationTests
         await client.TryAuthorizeToService("1@2", "12");
 
         using var enumerator = TestHelper
-            .GetEnumeratedRequestContent()
+            .GetEnumerableRequestContent()
             .GetEnumerator();
         enumerator.MoveNext();
         var createdId = 0;
@@ -258,6 +259,8 @@ public class IntegrationTests
 
     [TestMethod]
     [Ignore("отрефакторен")]
+    [Obsolete("отрефакторен")]
+    [ExcludeFromCodeCoverage]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopy()
     {
         // arrange:
@@ -317,6 +320,8 @@ public class IntegrationTests
 
     [TestMethod]
     [Ignore("отрефакторен")]
+    [Obsolete("отрефакторен")]
+    [ExcludeFromCodeCoverage]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestore()
     {
         // arrange:

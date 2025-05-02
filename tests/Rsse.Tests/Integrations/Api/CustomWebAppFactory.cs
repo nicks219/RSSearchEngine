@@ -1,11 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Infrastructure.Context;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 
 namespace SearchEngine.Tests.Integrations.Api;
@@ -30,12 +37,12 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             {
                 config.AddInMemoryCollection(initialData);
             })
-            // .ConfigureServices((ctx, services) => services.AddSingleton<IConfiguration>(provider => ctx.Configuration))
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.TestingEnvironment);
                 webBuilder.UseStartup<T>();
-            });
+            })
+            .ConfigureServices(TryReplaceDatabaseProviders);
 
         return builder;
     }
@@ -46,6 +53,26 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
         var host = base.CreateHost(builder);
         HostInternal = host;
         return host;
+    }
+
+    // заменить оригинальную регистрацию контекстов на тестовую
+    private static void TryReplaceDatabaseProviders(IServiceCollection services)
+    {
+        if (typeof(T) != typeof(Startup)) return;
+
+        var types = new List<Type>
+        {
+            typeof(DbContextOptions<MysqlCatalogContext>),typeof(DbContextOptions<NpgsqlCatalogContext>),
+            typeof(MysqlCatalogContext), typeof(NpgsqlCatalogContext),
+            typeof(IDbContextOptionsConfiguration<MysqlCatalogContext>), typeof(IDbContextOptionsConfiguration<NpgsqlCatalogContext>)
+        };
+
+        foreach (var descriptor in types.Select(type => services.FirstOrDefault(d => d.ServiceType == type)).OfType<ServiceDescriptor>())
+        {
+            services.Remove(descriptor);
+        }
+
+        services.AddSqliteTestEnvironment();
     }
 
     private static string GetMysqlConnectionString()

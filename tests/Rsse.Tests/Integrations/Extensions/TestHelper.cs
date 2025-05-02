@@ -1,14 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
@@ -16,7 +11,6 @@ using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Tests.Integrations.Api;
-using SearchEngine.Tests.Integrations.Dto;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -32,70 +26,6 @@ public static class TestHelper
                                             "\"Медленные\",\"Народные\",\"Новогодние\",\"Панк\",\"Патриотические\",\"Песни 30х-60х\",\"Песни 60х-70х\",\"На стихи Есенина\",\"Поп-музыка\"," +
                                             "\"Походные\",\"Про водителей\",\"Про ГИБДД\",\"Про космонавтов\",\"Про милицию\",\"Ретро хиты\",\"Рождественские\",\"Рок\",\"Романсы\",\"Свадебные\"," +
                                             "\"Танго\",\"Танцевальные\",\"Шансон\",\"Шуточные\",\"Новые\"]";
-
-    /// <summary>
-    /// Добавить в контекст контроллера scoped контейнер со службами
-    /// </summary>
-    /// <param name="controller"></param>
-    /// <param name="serviceProvider"></param>
-    internal static void AddHttpContext(this ControllerBase controller, IServiceProvider serviceProvider)
-    {
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext
-            {
-                RequestServices = serviceProvider
-            }
-        };
-    }
-
-    /// <summary>
-    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха
-    /// </summary>
-    internal static async Task TryAuthorizeToService(this HttpClient client, string login = "admin", string password = "admin")
-    {
-        var uri = new Uri($"account/login?email={login}&password={password}", UriKind.Relative);
-        using var authResponse = await client.GetAsync(uri);
-        authResponse.EnsureSuccessStatusCode();
-        var headers = authResponse.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
-    }
-
-    /// <summary>
-    /// Получить первый элемент из списка релевантности для текста
-    /// </summary>
-    internal static async Task<int> GetFirstComplianceIndexFromTokenizer(this HttpClient client, string text)
-    {
-        using var complianceResponse = await client.GetAsync($"api/compliance/indices?text={text}");
-        var result = await complianceResponse.Content.ReadAsStringAsync();
-        var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
-        Int32.TryParse(firstKey, out var complianceId);
-
-        return complianceId;
-    }
-
-    /// <summary>
-    /// Получить список тегов в формате "тег: количество заметок" либо "тег" если заметки в категории отсутствуют
-    /// </summary>
-    internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
-    {
-        using var tagsResponse = await client.GetAsync("api/create");
-        var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteDto>();
-        var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
-
-        return tags;
-    }
-
-    /// <summary>
-    /// Удалить заметку с требуемым идентификатором
-    /// </summary>
-    internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
-    {
-        // CatalogDto
-        using var noteResponse = await client.GetAsync($"api/catalog?id={noteId}&pg=1");
-        noteResponse.EnsureSuccessStatusCode();
-    }
 
     /// <summary>
     /// Получить контент для POST запроса
@@ -115,7 +45,7 @@ public static class TestHelper
     /// <summary>
     /// Получить контент для POST запроса
     /// </summary>
-    internal static IEnumerable<StringContent> GetEnumeratedRequestContent(bool forUpdate = false)
+    internal static IEnumerable<StringContent> GetEnumerableRequestContent(bool forUpdate = false)
     {
         var dto = new NoteDto { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -161,6 +91,7 @@ public static class TestHelper
     /// Очистить таблицы двух баз данных
     /// </summary>
     /// <param name="factory"></param>
+    // todo: перенести в сид если требуется очистка
     internal static void CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory)
     {
         var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);

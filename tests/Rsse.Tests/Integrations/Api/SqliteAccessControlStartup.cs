@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -21,6 +23,8 @@ namespace SearchEngine.Tests.Integrations.Api;
 /// <summary>
 /// Копия класса настроек сервиса с настроенной авторизацией.
 /// </summary>
+[Obsolete("заменён на Startup сервиса")]
+[ExcludeFromCodeCoverage]
 public class SqliteAccessControlStartup(IConfiguration configuration)
 {
     private const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);

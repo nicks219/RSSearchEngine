@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
@@ -21,13 +22,13 @@ namespace SearchEngine.Tests.Integrations;
 public class ApiAccessControlTests
 {
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
-    private static CustomWebAppFactory<SqliteAccessControlStartup> _factory;
+    private static CustomWebAppFactory<Startup> _factory;
     private static WebApplicationFactoryClientOptions _options;
 
     [ClassInitialize]
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
-        _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
+        _factory = new CustomWebAppFactory<Startup>();
         var baseUri = BaseAddress;
         _options = new WebApplicationFactoryClientOptions
         {

@@ -217,7 +217,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         loggerFactory.AddFileLoggerProviderInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
     }
 
-    // todo: есть же serilog в проекте?
+    // todo: в проекте есть serilog | единственное применение - для примитивной записи логов на тестах
     private void LogSystemInfo(ILoggerFactory loggerFactory, bool isDevelopment, bool isProduction)
     {
         var logger = loggerFactory.CreateLogger<FileLoggerInternal>();

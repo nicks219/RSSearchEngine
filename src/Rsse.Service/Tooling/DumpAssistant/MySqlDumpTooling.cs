@@ -1,6 +1,7 @@
 #if WINDOWS
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using SearchEngine.Tooling.Contracts;
@@ -10,6 +11,9 @@ namespace SearchEngine.Tooling.DumpAssistant;
 /// <summary>
 /// Функционал обработки дампа
 /// </summary>
+/// [
+[ExcludeFromCodeCoverage]
+[Obsolete("не используется в данной версии сервиса")]
 internal class MySqlDumpTooling
 {
     private const string DumpName = "backup_9.txt";
