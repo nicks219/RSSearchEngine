@@ -230,14 +230,15 @@ public class IntegrationTests
         }
 
         // assert:
-        var separator = Path.DirectorySeparatorChar;
+        // var separator = Path.DirectorySeparatorChar;
         createdId
             .Should()
             .BeGreaterThan(0);
 
         fakePathToDump
             .Should()
-            .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
+            .BeEquivalentTo("dump files created");
+            // .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
 
         // clean up:
         TestHelper.CleanUpDatabases(factory);

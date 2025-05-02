@@ -52,7 +52,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
 
         Directory.CreateDirectory(ArchiveTempDirectory);
 
-        if (IsCreateDumpMode(fileName))
+        if (IsCreateZippedDumpMode(fileName))
         {
             _version = (_version + 1) % MaxVersion;
         }
@@ -104,15 +104,16 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
 
         connection.Close();
 
-        var destinationArchiveFileName = GetArchiveFileName();
-
-        File.Delete(destinationArchiveFileName);
+        // путь к архиву можно отдавать только при создании zip - что тогда отдавать в режиме files-only?
+        var destinationArchiveFileName = "dump files created";
 
         try
         {
             // NB: при вызове на создании заметки будут созданы незаархивированные файлы
-            if (IsCreateDumpMode(fileName))
+            if (IsCreateZippedDumpMode(fileName))
             {
+                destinationArchiveFileName = GetArchiveFileName();
+                File.Delete(destinationArchiveFileName);
                 ZipFile.CreateFromDirectory(ArchiveTempDirectory, destinationArchiveFileName);
             }
         }
@@ -123,7 +124,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
 
         return destinationArchiveFileName;
 
-        bool IsCreateDumpMode(string? name) => string.IsNullOrEmpty(name);
+        bool IsCreateZippedDumpMode(string? name) => string.IsNullOrEmpty(name);
     }
 
     /// <summary/> Вернёт dump.zip в клиентской директории

@@ -68,9 +68,9 @@ public class CreateController(
             var dto = request.MapToDto();
 
             await manager.CreateTagFromTitle(dto);
-            var resposne = await manager.CreateNote(dto);
+            var response = await manager.CreateNote(dto);
 
-            if (!string.IsNullOrEmpty(resposne.CommonErrorMessageResponse))
+            if (!string.IsNullOrEmpty(response.CommonErrorMessageResponse))
             {
                 return dto.MapFromDto();
             }
@@ -79,13 +79,13 @@ public class CreateController(
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 
-            tokenizer.Create(resposne.CommonNoteId, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            tokenizer.Create(response.CommonNoteId, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
 
             var path = CreateDumpAndGetFilePath();
 
-            resposne.TextResponse = path ?? string.Empty;
+            response.TextResponse = path ?? string.Empty;
 
-            return resposne.MapFromDto();
+            return response.MapFromDto();
         }
         catch (Exception ex)
         {
