@@ -70,7 +70,7 @@ public class MirrorRepository(
         var tags = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
         var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation!.Select(relation => relation).ToList();
 
-        var users = mysqlCatalogContext.Users!.Select(user => user).ToList();
+        var users = mysqlCatalogContext.Users.Select(user => user).ToList();
 
         await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync();
 
@@ -82,8 +82,8 @@ public class MirrorRepository(
             await npgsqlCatalogContext.TagsToNotesRelation!.AddRangeAsync(tagsToNotes);
 
             // users:
-            await npgsqlCatalogContext.Users!.ExecuteDeleteAsync();
-            await npgsqlCatalogContext.Users!.AddRangeAsync(users);
+            await npgsqlCatalogContext.Users.ExecuteDeleteAsync();
+            await npgsqlCatalogContext.Users.AddRangeAsync(users);
 
             await npgsqlCatalogContext.SaveChangesAsync();
 

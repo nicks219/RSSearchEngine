@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Domain.ApiModels;
+using SearchEngine.Domain.Managers;
 using SearchEngine.Tests.Integrations.Api;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
@@ -132,4 +133,23 @@ public static class TestHelper
         mysqlConnection.Close();
     }
 
+
+    // для сценарных тестов
+    private static readonly NoteRequest CreateRequest = new() { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
+    private static readonly NoteRequest UpdateRequest = new() { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1], NoteIdExchange = 946};
+    private static readonly NoteRequest ReadRequest = new() { TagsCheckedRequest = [1] };
+    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [CatalogManager.Forward]);
+    public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
+    public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
+    public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
+    public static StringContent CatalogContent => new(JsonSerializer.Serialize(CatalogRequest), Encoding.UTF8, "application/json");
+    public static StringContent Empty => new("");
+}
+
+// <summary/> тип http вызова
+public enum Request
+{
+    Get = 0,
+    Post = 1,
+    Delete =2
 }

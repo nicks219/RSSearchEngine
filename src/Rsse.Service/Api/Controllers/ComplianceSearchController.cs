@@ -33,8 +33,8 @@ public class ComplianceSearchController(ILogger<ComplianceSearchController> logg
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var model = new ComplianceSearchManager(scopedProvider);
-            var searchIndexes = model.ComputeComplianceIndices(text);
+            var manager = new ComplianceSearchManager(scopedProvider);
+            var searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 
             switch (searchIndexes.Count)

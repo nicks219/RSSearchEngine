@@ -15,8 +15,8 @@ namespace SearchEngine.Domain.Managers;
 /// </summary>
 public class CatalogManager(IServiceProvider scopedProvider)
 {
-    private const int Backward = 1;
-    private const int Forward = 2;
+    public const int Backward = 1;
+    public const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
     private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
