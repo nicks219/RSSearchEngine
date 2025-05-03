@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Tests.Integrations.Dto;
 
@@ -49,7 +50,7 @@ public static class HttpClientExtensions
     internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
     {
         using var tagsResponse = await client.GetAsync("api/create");
-        var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteDto>();
+        var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteResponse>();
         var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
 
         return tags;

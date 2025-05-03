@@ -127,9 +127,9 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public async Task<UserEntity?> GetUser(CredentialsDto credentials)
+    public async Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest)
     {
-        return await context.Users.FirstOrDefaultAsync(user => user.Email == credentials.Email && user.Password == credentials.Password);
+        return await context.Users.FirstOrDefaultAsync(user => user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password);
     }
 
     /// <inheritdoc/>
@@ -155,9 +155,9 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public async Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
+    public async Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
-        var forAddition = note.TagsCheckedRequest!.ToHashSet();
+        var forAddition = noteRequest.TagsCheckedRequest!.ToHashSet();
 
         var forDelete = initialTags.ToHashSet();
 
@@ -167,37 +167,37 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
         forDelete.ExceptWith(except);
 
-        if (await VerifyTagNotExists(note.NoteIdExchange, forAddition))
+        if (await VerifyTagNotExists(noteRequest.NoteIdExchange, forAddition))
         {
             // ID тегов и номера кнопок с фронта совпадают
             await using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
-                var processedNote = await context.Notes!.FindAsync(note.NoteIdExchange);
+                var processedNote = await context.Notes!.FindAsync(noteRequest.NoteIdExchange);
 
                 if (processedNote == null)
                 {
                     throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
                 }
 
-                processedNote.Title = note.TitleRequest;
+                processedNote.Title = noteRequest.TitleRequest;
 
-                processedNote.Text = note.TextRequest;
+                processedNote.Text = noteRequest.TextRequest;
 
                 context.Notes.Update(processedNote);
 
                 context.TagsToNotesRelation!
                     .RemoveRange(context.TagsToNotesRelation
                         .Where(relation =>
-                            relation.NoteId == note.NoteIdExchange && forDelete.Contains(relation.TagId)));
+                            relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
 
                 await context.TagsToNotesRelation
                     .AddRangeAsync(forAddition
                         .Select(id =>
                             new TagsToNotesEntity
                             {
-                                NoteId = note.NoteIdExchange,
+                                NoteId = noteRequest.NoteIdExchange,
                                 TagId = id
                             }));
 
@@ -218,17 +218,17 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         }
     }
 
-    public async Task UpdateCredos(UpdateCredosDto credos)
+    public async Task UpdateCredos(UpdateCredosRequestDto credosRequest)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
-                userEntity.Email == credos.OldCredos.Email && userEntity.Password == credos.NewCredos.Password);
-            if (processed == null) throw new InvalidDataException($"credos '{credos.OldCredos.Email}:{credos.OldCredos.Password}' are invalid");
-            processed.Email = credos.NewCredos.Email;
-            processed.Password = credos.NewCredos.Password;
+                userEntity.Email == credosRequest.OldCredos.Email && userEntity.Password == credosRequest.NewCredos.Password);
+            if (processed == null) throw new InvalidDataException($"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
+            processed.Email = credosRequest.NewCredos.Email;
+            processed.Password = credosRequest.NewCredos.Password;
             context.Users.Update(processed);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -241,25 +241,25 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public async Task<int> CreateNote(NoteDto note)
+    public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        if (await VerifyTitleNotExists(note.TitleRequest!) == false)
+        if (await VerifyTitleNotExists(noteRequest.TitleRequest!) == false)
         {
-            return note.NoteIdExchange;
+            return noteRequest.NoteIdExchange;
         }
 
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var forAddition = new NoteEntity { Title = note.TitleRequest, Text = note.TextRequest };
+            var forAddition = new NoteEntity { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest };
 
             await context.Notes!.AddAsync(forAddition);
 
             await context.SaveChangesAsync();
 
             await context.TagsToNotesRelation!
-                .AddRangeAsync(note.TagsCheckedRequest!
+                .AddRangeAsync(noteRequest.TagsCheckedRequest!
                     .Select(id =>
                         new TagsToNotesEntity
                         {
@@ -271,24 +271,24 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
             await transaction.CommitAsync();
 
-            note.NoteIdExchange = forAddition.NoteId;
+            noteRequest.NoteIdExchange = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
             await transaction.RollbackAsync();
 
-            note.NoteIdExchange = 0;
+            noteRequest.NoteIdExchange = 0;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
 
-            note.NoteIdExchange = 0;
+            noteRequest.NoteIdExchange = 0;
 
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
 
-        return note.NoteIdExchange;
+        return noteRequest.NoteIdExchange;
     }
 
     /// <inheritdoc/>

@@ -13,7 +13,7 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [Route("api/compliance")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ComplianceController(ILogger<ComplianceController> logger) : ControllerBase
+public class ComplianceSearchController(ILogger<ComplianceSearchController> logger) : ControllerBase
 {
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
@@ -33,7 +33,7 @@ public class ComplianceController(ILogger<ComplianceController> logger) : Contro
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var model = new CompliantManager(scopedProvider);
+            var model = new ComplianceSearchManager(scopedProvider);
             var searchIndexes = model.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 

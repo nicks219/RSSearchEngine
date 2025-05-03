@@ -5,24 +5,8 @@ namespace SearchEngine.Domain.Dto;
 /// <summary>
 /// Шаблон передачи данных для заметки
 /// </summary>
-public record NoteDto
+public record NoteResultDto
 {
-    /// <summary>
-    /// Список отмеченных тегов в запросе
-    /// </summary>
-    public List<int>? TagsCheckedRequest { get; set; }
-
-    /// <summary>
-    /// Именование заметки в запросе
-    /// </summary>
-    public string? TitleRequest { get; set; }
-
-    /// <summary>
-    /// Текст заметки в запросе
-    /// </summary>
-    // todo: сделай init и поправь ошибки
-    public string? TextRequest { get; set; }
-
     /// <summary>
     /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
     /// </summary>
@@ -53,18 +37,17 @@ public record NoteDto
     /// </summary>
     public string? CommonErrorMessageResponse { get; set; }
 
+
     /// <summary>
     /// Создать незаполненный шаблон передачи данных для заметки
     /// </summary>
-    public NoteDto()
-    {
-    }
+    public NoteResultDto() { }
 
     /// <summary>
     /// Создать шаблон передачи данных для заметки
     /// </summary>
     // todo: это response
-    public NoteDto(
+    public NoteResultDto(
         List<string> structuredTagsListResponse,
         int noteIdExchange = 0,
         string textResponse = "",
@@ -73,7 +56,7 @@ public record NoteDto
     {
         TextResponse = textResponse;
         TitleResponse = titleResponse;
-        TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? new List<string>();
+        TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? [];
         StructuredTagsListResponse = structuredTagsListResponse;
         NoteIdExchange = noteIdExchange;
     }

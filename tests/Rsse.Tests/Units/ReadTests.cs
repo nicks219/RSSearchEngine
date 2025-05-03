@@ -54,7 +54,7 @@ public class ReadTests
     public async Task ReadManager_ShouldReturnErrorMessage_OnInvalidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteDto { TagsCheckedRequest = [25000] };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = [25000] };
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto).ConfigureAwait(false);
@@ -121,7 +121,7 @@ public class ReadTests
     public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
@@ -147,7 +147,7 @@ public class ReadTests
 
         var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var requestDto = new NoteDto { TagsCheckedRequest = new List<int>() };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = new List<int>() };
 
         requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
 

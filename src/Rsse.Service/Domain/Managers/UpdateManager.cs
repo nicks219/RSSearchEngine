@@ -23,7 +23,7 @@ public class UpdateManager(IServiceProvider scopedProvider)
     /// </summary>
     /// <param name="originalNoteId">идентификатор обновляемой заметки</param>
     /// <returns>ответ с заметкой</returns>
-    public async Task<NoteDto> GetOriginalNote(int originalNoteId)
+    public async Task<NoteResultDto> GetOriginalNote(int originalNoteId)
     {
         try
         {
@@ -36,6 +36,7 @@ public class UpdateManager(IServiceProvider scopedProvider)
 
             if (notes.Count > 0)
             {
+                // сначала текст потом название
                 text = notes[0].Item1;
 
                 title = notes[0].Item2;
@@ -63,45 +64,45 @@ public class UpdateManager(IServiceProvider scopedProvider)
                 checkboxes[i - 1] = "checked";
             }
 
-            return new NoteDto(tagList, originalNoteId, text, title, checkboxes);
+            return new NoteResultDto(tagList, originalNoteId, text, title, checkboxes);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, GetOriginalNoteError);
-            return new NoteDto { CommonErrorMessageResponse = GetOriginalNoteError };
+            return new NoteResultDto { CommonErrorMessageResponse = GetOriginalNoteError };
         }
     }
 
     /// <summary>
     /// Обновить заметку
     /// </summary>
-    /// <param name="updatedNote">данные для обновления</param>
+    /// <param name="updatedNoteRequest">данные для обновления</param>
     /// <returns>обновленная заметка</returns>
-    public async Task<NoteDto> UpdateNote(NoteDto updatedNote)
+    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest)
     {
         try
         {
-            if (updatedNote.TagsCheckedRequest == null
-                || string.IsNullOrEmpty(updatedNote.TextRequest)
-                || string.IsNullOrEmpty(updatedNote.TitleRequest)
-                || updatedNote.TagsCheckedRequest.Count == 0)
+            if (updatedNoteRequest.TagsCheckedRequest == null
+                || string.IsNullOrEmpty(updatedNoteRequest.TextRequest)
+                || string.IsNullOrEmpty(updatedNoteRequest.TitleRequest)
+                || updatedNoteRequest.TagsCheckedRequest.Count == 0)
             {
-                return await GetOriginalNote(updatedNote.NoteIdExchange);
+                return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
             }
 
             var initialNoteTags = await _repo
-                .ReadNoteTags(updatedNote.NoteIdExchange)
+                .ReadNoteTags(updatedNoteRequest.NoteIdExchange)
                 .ToListAsync();
 
-            await _repo.UpdateNote(initialNoteTags, updatedNote);
+            await _repo.UpdateNote(initialNoteTags, updatedNoteRequest);
 
-            return await GetOriginalNote(updatedNote.NoteIdExchange);
+            return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, UpdateNoteError);
 
-            return new NoteDto { CommonErrorMessageResponse = UpdateNoteError };
+            return new NoteResultDto { CommonErrorMessageResponse = UpdateNoteError };
         }
     }
 }

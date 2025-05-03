@@ -14,26 +14,26 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал авторизации
 /// </summary>
-public class LoginManager(IServiceProvider scopedProvider)
+public class AccountManager(IServiceProvider scopedProvider)
 {
     private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<LoginManager> _logger = scopedProvider.GetRequiredService<ILogger<LoginManager>>();
+    private readonly ILogger<AccountManager> _logger = scopedProvider.GetRequiredService<ILogger<AccountManager>>();
 
     /// <summary>
     /// Войти в систему
     /// </summary>
-    /// <param name="credentials">данные для авторизации</param>
+    /// <param name="credentialsRequest">данные для авторизации</param>
     /// <returns>объект содержащий подверждение идентичности</returns>
-    public async Task<ClaimsIdentity?> TrySignInWith(CredentialsDto credentials)
+    public async Task<ClaimsIdentity?> TrySignInWith(CredentialsRequestDto credentialsRequest)
     {
         try
         {
-            if (string.IsNullOrEmpty(credentials.Email) || string.IsNullOrEmpty(credentials.Password))
+            if (string.IsNullOrEmpty(credentialsRequest.Email) || string.IsNullOrEmpty(credentialsRequest.Password))
             {
                 return null;
             }
 
-            var user = await _repo.GetUser(credentials);
+            var user = await _repo.GetUser(credentialsRequest);
 
             if (user == null)
             {
@@ -42,7 +42,7 @@ public class LoginManager(IServiceProvider scopedProvider)
 
             var claims = new List<Claim>
             {
-                new(ClaimsIdentity.DefaultNameClaimType, credentials.Email),
+                new(ClaimsIdentity.DefaultNameClaimType, credentialsRequest.Email),
                 new(Constants.IdInternalClaimType, user.Id.ToString())
             };
 

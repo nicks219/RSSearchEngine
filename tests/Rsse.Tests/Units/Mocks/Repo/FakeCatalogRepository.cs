@@ -36,7 +36,7 @@ public class FakeCatalogRepository : IDataRepository
         _notes.Add(TestNoteId, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
     }
 
-    private int _id;
+    private int _lastId = 1;
 
     public void CreateStubData(int count)
     {
@@ -95,19 +95,20 @@ public class FakeCatalogRepository : IDataRepository
         throw new NotImplementedException($"Note `{noteTitle}` not found");
     }
 
-    public Task<int> CreateNote(NoteDto note)
+    public Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        if (note.TitleRequest == null || note.TextRequest == null || _notes == null)
+        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes.Add(_id, new Tuple<string, string>(note.TitleRequest, note.TextRequest));
-        _id++;
-        return Task.FromResult(_id - 1);
+        _lastId++;
+        _notes.Add(_lastId, new Tuple<string, string>(noteRequest.TitleRequest, noteRequest.TextRequest));
+
+        return Task.FromResult(_lastId);
     }
 
-    public Task UpdateCredos(UpdateCredosDto credos) => throw new NotImplementedException();
+    public Task UpdateCredos(UpdateCredosRequestDto credosRequest) => throw new NotImplementedException();
 
     public Task<int> DeleteNote(int noteId)
     {
@@ -116,9 +117,9 @@ public class FakeCatalogRepository : IDataRepository
     }
 
     //Login Ok
-    public Task<UserEntity?> GetUser(CredentialsDto credentials)
+    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest)
     {
-        var user = credentials.Password == "skip"
+        var user = credentialsRequest.Password == "skip"
             ? null
             : new UserEntity();
 
@@ -191,14 +192,14 @@ public class FakeCatalogRepository : IDataRepository
         return result;
     }
 
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
-        if (note.TitleRequest == null || note.TextRequest == null || _notes == null)
+        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[note.NoteIdExchange] = new Tuple<string, string>(note.TextRequest, note.TitleRequest);
+        _notes[noteRequest.NoteIdExchange] = new Tuple<string, string>(noteRequest.TextRequest, noteRequest.TitleRequest);
 
         return Task.CompletedTask;
     }

@@ -51,7 +51,7 @@ public class AccountController(
             return Unauthorized("Authorize please: empty credentials detected");
         }
 
-        var loginDto = new CredentialsDto { Email = email, Password = password };
+        var loginDto = new CredentialsRequestDto { Email = email, Password = password };
         var response = await TryLogin(loginDto);
         return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
     }
@@ -95,13 +95,13 @@ public class AccountController(
     /// <summary>
     /// Вход в систему, аутентификация на основе кук
     /// </summary>
-    /// <param name="credentialsDto">данные для авторизации</param>
-    private async Task<string> TryLogin(CredentialsDto credentialsDto)
+    /// <param name="credentialsRequestDto">данные для авторизации</param>
+    private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
     {
         var scopedProvider = HttpContext.RequestServices;
         try
         {
-            var identity = await new LoginManager(scopedProvider).TrySignInWith(credentialsDto);
+            var identity = await new AccountManager(scopedProvider).TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {

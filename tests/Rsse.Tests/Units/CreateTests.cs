@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
@@ -11,12 +12,13 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateManager CreateManager;
+    public required ServicesStubStartup<CreateManager> Host;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServicesStubStartup<CreateManager>();
-        CreateManager = new CreateManager(host.Scope.ServiceProvider);
+        Host = new ServicesStubStartup<CreateManager>();
+        CreateManager = new CreateManager(Host.Scope.ServiceProvider);
     }
 
     [TestMethod]
@@ -33,20 +35,21 @@ public class CreateTests
     public async Task CreateManager_ShouldCreatValidNote_Correctly()
     {
         // arrange:
-        var requestDto = new NoteDto
+        var requestDto = new NoteRequestDto
         {
-            TitleRequest = "test title",
-            TextRequest = "test text",
-            TagsCheckedRequest = [1, 2, 3, 4, 11]
+            TitleRequest = "test: title",
+            TextRequest = "test: text",
+            TagsCheckedRequest = [1, 2, 3]
         };
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
-        var host = new ServicesStubStartup<UpdateManager>();
-        var expectedDto = await new UpdateManager(host.Provider)
-            .GetOriginalNote(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateManager(Host.Provider).GetOriginalNote(responseDto.NoteIdExchange);
 
         // assert:
-        Assert.AreEqual(expectedDto.TitleRequest, responseDto.TitleRequest);
+        responseDto.CommonErrorMessageResponse.Should().BeNull();
+        responseDto.TitleResponse.Should().Be("[OK]");
+        // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
+        Assert.AreEqual(requestDto.TitleRequest, actualDto.TextResponse);
     }
 }

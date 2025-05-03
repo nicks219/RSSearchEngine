@@ -22,65 +22,65 @@ public class CreateManager(IServiceProvider scopedProvider)
     /// Получить структурированный список тегов
     /// </summary>
     /// <returns>шаблон с ответом</returns>
-    public async Task<NoteDto> ReadStructuredTagList()
+    public async Task<NoteResultDto> ReadStructuredTagList()
     {
         try
         {
             var tagList = await _repo.ReadStructuredTagList();
 
-            return new NoteDto(tagList);
+            return new NoteResultDto(tagList);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, CreateManagerReadTagListError);
-            return new NoteDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
+            return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
         }
     }
 
     /// <summary>
     /// Создать заметку
     /// </summary>
-    /// <param name="noteDto">данные для создания заметки</param>
+    /// <param name="noteRequestDto">данные для создания заметки</param>
     /// <returns>созданная заметка</returns>
-    public async Task<NoteDto> CreateNote(NoteDto noteDto)
+    public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto)
     {
         try
         {
-            if (noteDto.TagsCheckedRequest == null ||
-                string.IsNullOrEmpty(noteDto.TextRequest) ||
-                string.IsNullOrEmpty(noteDto.TitleRequest) ||
-                noteDto.TagsCheckedRequest.Count == 0)
+            if (noteRequestDto.TagsCheckedRequest == null ||
+                string.IsNullOrEmpty(noteRequestDto.TextRequest) ||
+                string.IsNullOrEmpty(noteRequestDto.TitleRequest) ||
+                noteRequestDto.TagsCheckedRequest.Count == 0)
             {
-                var errorDto = await ReadStructuredTagList();
+                var errorDtoWithTags = await ReadStructuredTagList();
 
-                errorDto.CommonErrorMessageResponse = CreateNoteEmptyDataError;
+                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteEmptyDataError;
 
-                if (string.IsNullOrEmpty(noteDto.TextRequest))
+                if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
                 {
-                    return errorDto;
+                    return errorDtoWithTags;
                 }
 
-                errorDto.TextResponse = noteDto.TextRequest;
-                errorDto.TitleResponse = noteDto.TitleRequest;
+                errorDtoWithTags.TextResponse = noteRequestDto.TextRequest;
+                errorDtoWithTags.TitleResponse = noteRequestDto.TitleRequest;
 
-                return errorDto;
+                return errorDtoWithTags;
             }
 
             // createdNote.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdNote.Text)).ToString();
 
-            noteDto.TitleRequest = noteDto.TitleRequest.Trim();
+            noteRequestDto.TitleRequest = noteRequestDto.TitleRequest.Trim();
 
-            var newNoteId = await _repo.CreateNote(noteDto);
+            var newNoteId = await _repo.CreateNote(noteRequestDto);
 
             if (newNoteId == 0)
             {
-                var errorDto = await ReadStructuredTagList();
+                var errorDtoWithTags = await ReadStructuredTagList();
 
-                errorDto.CommonErrorMessageResponse = CreateNoteUnsuccessfulError;
+                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteUnsuccessfulError;
 
-                errorDto.TitleResponse = "[Already Exist]";
+                errorDtoWithTags.TitleResponse = "[Already Exist]";
 
-                return errorDto;
+                return errorDtoWithTags;
             }
 
             var updatedDto = await ReadStructuredTagList();
@@ -94,18 +94,18 @@ public class CreateManager(IServiceProvider scopedProvider)
                 checkboxes.Add("unchecked");
             }
 
-            foreach (var i in noteDto.TagsCheckedRequest)
+            foreach (var i in noteRequestDto.TagsCheckedRequest)
             {
                 checkboxes[i - 1] = "checked";
             }
 
-            return new NoteDto(updatedTagList, newNoteId, "", "[OK]", checkboxes);
+            return new NoteResultDto(updatedTagList, newNoteId, "", "[OK]", checkboxes);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, CreateNoteError);
 
-            return new NoteDto { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteResultDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }
 
@@ -116,7 +116,7 @@ public class CreateManager(IServiceProvider scopedProvider)
     /// Создать новый тег из размеченного квадратными скобками заголовка
     /// </summary>
     /// <param name="noteDto">данные для создания тега</param>
-    internal Task CreateTagFromTitle(NoteDto? noteDto)
+    internal Task CreateTagFromTitle(NoteRequestDto? noteDto)
     {
         const string tagPattern = "[]";
 

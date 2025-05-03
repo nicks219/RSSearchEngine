@@ -1,6 +1,5 @@
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Dto;
-using CatalogDto = SearchEngine.Domain.Dto.CatalogDto;
 
 namespace SearchEngine.Api.Mapping;
 
@@ -10,25 +9,25 @@ namespace SearchEngine.Api.Mapping;
 public static class Mapper
 {
     /// <summary>
-    /// Маппинг из model в dto
+    /// Маппинг из request model в request dto
     /// </summary>
-    public static UpdateCredosDto MapToDto(this UpdateCredentialsRequest request)
+    public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest request)
     {
-        var response = new UpdateCredosDto
+        var response = new UpdateCredosRequestDto
         {
-            NewCredos = new CredentialsDto { Email = request.NewCredos.Email, Password = request.NewCredos.Password },
-            OldCredos = new CredentialsDto { Email = request.OldCredos.Email, Password = request.OldCredos.Password }
+            NewCredos = new CredentialsRequestDto { Email = request.NewCredos.Email, Password = request.NewCredos.Password },
+            OldCredos = new CredentialsRequestDto { Email = request.OldCredos.Email, Password = request.OldCredos.Password }
         };
 
         return response;
     }
 
     /// <summary>
-    /// Маппинг из model в dto
+    /// Маппинг из request model в request dto
     /// </summary>
-    public static CatalogDto MapToDto(this CatalogRequest request)
+    public static CatalogRequestDto MapToDto(this CatalogRequest request)
     {
-        var response = new CatalogDto
+        var response = new CatalogRequestDto
         {
             PageNumber = request.PageNumber,
             Direction = request.Direction
@@ -38,9 +37,9 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из dto в model
+    /// Маппинг из result dto в response model
     /// </summary>
-    public static CatalogResponse MapFromDto(this CatalogDto dto)
+    public static CatalogResponse MapFromDto(this CatalogResultDto dto)
     {
         var response = new CatalogResponse
         {
@@ -54,11 +53,11 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из dto в model
+    /// Маппинг из request dto в request model
     /// </summary>
-    public static NoteDto MapToDto(this NoteRequest request)
+    public static NoteRequestDto MapToDto(this NoteRequest request)
     {
-        var response = new NoteDto
+        var response = new NoteRequestDto
         {
             TagsCheckedRequest = request.TagsCheckedRequest,
             TitleRequest = request.TitleRequest,
@@ -70,18 +69,18 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из dto в model
+    /// Маппинг из result dto в response model
     /// </summary>
-    public static NoteResponse MapFromDto(this NoteDto dto)
+    public static NoteResponse MapFromDto(this NoteResultDto requestDto)
     {
         var response = new NoteResponse
         {
-            TagsCheckedUncheckedResponse = dto.TagsCheckedUncheckedResponse,
-            TitleResponse = dto.TitleResponse,
-            TextResponse = dto.TextResponse,
-            StructuredTagsListResponse = dto.StructuredTagsListResponse,
-            NoteIdExchange = dto.NoteIdExchange,
-            CommonErrorMessageResponse = dto.CommonErrorMessageResponse,
+            TagsCheckedUncheckedResponse = requestDto.TagsCheckedUncheckedResponse,
+            TitleResponse = requestDto.TitleResponse,
+            TextResponse = requestDto.TextResponse,
+            StructuredTagsListResponse = requestDto.StructuredTagsListResponse,
+            NoteIdExchange = requestDto.NoteIdExchange,
+            CommonErrorMessageResponse = requestDto.CommonErrorMessageResponse,
         };
 
         return response;

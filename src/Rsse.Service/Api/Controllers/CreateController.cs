@@ -72,7 +72,15 @@ public class CreateController(
 
             if (!string.IsNullOrEmpty(response.CommonErrorMessageResponse))
             {
-                return dto.MapFromDto();
+                // теги structuredTagsListResponse - ошибка - титл - текст
+                return new NoteResponse
+                {
+                    // NoteExchangeId ??
+                    TitleResponse = response.TitleResponse,
+                    TextResponse = response.TextResponse,
+                    StructuredTagsListResponse = response.StructuredTagsListResponse,
+                    CommonErrorMessageResponse = response.CommonErrorMessageResponse
+                };
             }
 
             // await model.CreateTagFromTitle(dto); // перенесен до создания заметки

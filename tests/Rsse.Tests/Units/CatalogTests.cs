@@ -62,7 +62,7 @@ public class CatalogTests
 
         // arrange:
         Repo.CreateStubData(50);
-        var request = new CatalogDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
+        var request = new CatalogRequestDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
         var responseDto = await CatalogManager.NavigateCatalog(request);
@@ -88,7 +88,7 @@ public class CatalogTests
     {
         // arrange:
         List<int> invalidData = [1000, 2000];
-        var request = new CatalogDto { Direction = invalidData };
+        var request = new CatalogRequestDto { Direction = invalidData };
 
         // act:
         var responseDto = await CatalogManager.NavigateCatalog(request);

@@ -11,7 +11,7 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал поиска заметок
 /// </summary>
-public class CompliantManager(IServiceProvider scopedProvider)
+public class ComplianceSearchManager(IServiceProvider scopedProvider)
 {
     private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
     private readonly ITokenizerProcessor _processor = scopedProvider.GetRequiredService<ITokenizerProcessor>();
@@ -98,7 +98,7 @@ public class CompliantManager(IServiceProvider scopedProvider)
             return result;
         }
 
-        // убираем дубликаты слов для intersect - это меняет результаты поиска
+        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         newTokensLine = newTokensLine.ToHashSet().ToList();
 
         foreach (var (key, cachedTokensLine) in _reducedLines)

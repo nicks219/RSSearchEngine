@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Managers;
 using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -24,6 +25,9 @@ public class ServicesStubStartup<TService> where TService : class
         services.AddSingleton<ILogger<TService>, NoopLogger<TService>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddSingleton<ITokenizerService, TokenizerService>();
+
+        // для тестов create
+        services.AddSingleton<ILogger<UpdateManager>, NoopLogger<UpdateManager>>();
 
         var serviceProvider = services.BuildServiceProvider();
         Provider = serviceProvider;

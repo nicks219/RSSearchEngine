@@ -24,7 +24,7 @@ public class UpdateTests
     {
         var host = new ServicesStubStartup<TokenizerService>();
         var secondHost = new ServicesStubStartup<UpdateManager>();
-        var findModel = new CompliantManager(host.Provider);
+        var findModel = new ComplianceSearchManager(host.Provider);
 
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.CreateStubData(10);
@@ -47,7 +47,7 @@ public class UpdateTests
     public async Task UpdateManager_ShouldUpdateNoteToExpected()
     {
         // arrange:
-        var requestDto = new NoteDto
+        var requestDto = new NoteRequestDto
         {
             TitleRequest = Title,
             TextRequest = Text,

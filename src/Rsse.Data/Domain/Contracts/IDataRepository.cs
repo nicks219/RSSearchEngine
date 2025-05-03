@@ -23,9 +23,9 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <summary>
     /// Создать заметку
     /// </summary>
-    /// <param name="note">шаблон заметки</param>
+    /// <param name="noteRequest">шаблон заметки</param>
     /// <returns>идентификатор созданной заметки либо ноль в случае неудачи</returns>
-    Task<int> CreateNote(NoteDto note);
+    Task<int> CreateNote(NoteRequestDto noteRequest);
 
     /// <summary>
     /// Прочитать заметку
@@ -38,14 +38,14 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// Изменить заметку
     /// </summary>
     /// <param name="initialTags">отмеченные теги</param>
-    /// <param name="note">шаблон заметки</param>
-    Task UpdateNote(IEnumerable<int> initialTags, NoteDto note);
+    /// <param name="noteRequest">шаблон заметки</param>
+    Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest);
 
     /// <summary>
     /// Обновить логин и пароль
     /// </summary>
-    /// <param name="credos">данные авторизации</param>
-    Task UpdateCredos(UpdateCredosDto credos);
+    /// <param name="credosRequest">данные авторизации</param>
+    Task UpdateCredos(UpdateCredosRequestDto credosRequest);
 
     /// <summary>
     /// Удалить заметку
@@ -115,9 +115,9 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <summary>
     /// Получить сущность с авторизованным пользователем
     /// </summary>
-    /// <param name="credentials">шаблон авторизации</param>
+    /// <param name="credentialsRequest">шаблон авторизации</param>
     /// <returns>сущность авторизованного пользователя</returns>
-    Task<UserEntity?> GetUser(CredentialsDto credentials);
+    Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest);
 
     /// <summary>
     /// Создать тег если отсутствует

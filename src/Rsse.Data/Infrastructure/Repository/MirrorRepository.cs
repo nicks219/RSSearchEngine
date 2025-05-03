@@ -119,26 +119,26 @@ public class MirrorRepository(
         Console.WriteLine($"repo set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
     }
 
-    public async Task<int> CreateNote(NoteDto note)
+    public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        _ = await _writerPrimary.CreateNote(note);
+        _ = await _writerPrimary.CreateNote(noteRequest);
         // secondary: CatalogRepository<NpgsqlCatalogContext>
-        var secondary = await _writerSecondary.CreateNote(note);
+        var secondary = await _writerSecondary.CreateNote(noteRequest);
         return secondary;
     }
 
     public IQueryable<Tuple<string, string>> ReadNote(int noteId) => _reader.ReadNote(noteId);
 
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteDto note)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
         // todo: можно сразу принимать IList
         var enumerable = initialTags.ToList();
-        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, note), _writerSecondary.UpdateNote(enumerable, note));
+        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest), _writerSecondary.UpdateNote(enumerable, noteRequest));
     }
 
-    public Task UpdateCredos(UpdateCredosDto credos)
+    public Task UpdateCredos(UpdateCredosRequestDto credosRequest)
     {
-        return Task.WhenAll(_writerPrimary.UpdateCredos(credos), _writerSecondary.UpdateCredos(credos));
+        return Task.WhenAll(_writerPrimary.UpdateCredos(credosRequest), _writerSecondary.UpdateCredos(credosRequest));
     }
 
     public async Task<int> DeleteNote(int noteId)
@@ -170,5 +170,5 @@ public class MirrorRepository(
 
     public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
-    public Task<UserEntity?> GetUser(CredentialsDto credentials) => _reader.GetUser(credentials);
+    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest) => _reader.GetUser(credentialsRequest);
 }

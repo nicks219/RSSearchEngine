@@ -43,19 +43,19 @@ public class ReadManager(IServiceProvider scopedProvider)
     /// Получить структурированный список тегов
     /// </summary>
     /// <returns>ответ со списком тегов</returns>
-    public async Task<NoteDto> ReadTagList()
+    public async Task<NoteResultDto> ReadTagList()
     {
         try
         {
             var tagList = await _repo.ReadStructuredTagList();
 
-            return new NoteDto(tagList);
+            return new NoteResultDto(tagList);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ReadModelReadTagListError);
 
-            return new NoteDto { CommonErrorMessageResponse = ReadModelReadTagListError };
+            return new NoteResultDto { CommonErrorMessageResponse = ReadModelReadTagListError };
         }
     }
 
@@ -66,7 +66,7 @@ public class ReadManager(IServiceProvider scopedProvider)
     /// <param name="id">строка с идентификатором, если требуется</param>
     /// <param name="randomElectionEnabled">алгоритм выбора следующей заметки</param>
     /// <returns>ответ с заметкой</returns>
-    public async Task<NoteDto> GetNextOrSpecificNote(NoteDto? request, string? id = null, bool randomElectionEnabled = true)
+    public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null, bool randomElectionEnabled = true)
     {
         var text = string.Empty;
         var title = string.Empty;
@@ -100,13 +100,13 @@ public class ReadManager(IServiceProvider scopedProvider)
 
             var tagList = await _repo.ReadStructuredTagList();
 
-            return new NoteDto(tagList, noteId, text, title);
+            return new NoteResultDto(tagList, noteId, text, title);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ElectNoteError);
 
-            return new NoteDto { CommonErrorMessageResponse = ElectNoteError };
+            return new NoteResultDto { CommonErrorMessageResponse = ElectNoteError };
         }
 
         bool IsSpecific() => int.TryParse(id, out noteId);

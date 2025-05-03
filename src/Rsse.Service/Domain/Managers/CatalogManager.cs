@@ -27,7 +27,7 @@ public class CatalogManager(IServiceProvider scopedProvider)
     /// </summary>
     /// <param name="pageNumber">номер страницы</param>
     /// <returns>страница каталога</returns>
-    public async Task<CatalogDto> ReadPage(int pageNumber)
+    public async Task<CatalogResultDto> ReadPage(int pageNumber)
     {
         try
         {
@@ -35,28 +35,28 @@ public class CatalogManager(IServiceProvider scopedProvider)
 
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
-            return new CatalogDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
+            return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ReadCatalogPageError);
 
-            return new CatalogDto { ErrorMessage = ReadCatalogPageError };
+            return new CatalogResultDto { ErrorMessage = ReadCatalogPageError };
         }
     }
 
     /// <summary>
     /// Перейти на другую страницу
     /// </summary>
-    /// <param name="catalog">данные для навигации</param>
+    /// <param name="catalogRequest">данные для навигации</param>
     /// <returns>страница каталога</returns>
-    public async Task<CatalogDto> NavigateCatalog(CatalogDto catalog)
+    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest)
     {
         try
         {
-            var direction = GetDirection(catalog.Direction);
+            var direction = GetDirection(catalogRequest.Direction);
 
-            var pageNumber = catalog.PageNumber;
+            var pageNumber = catalogRequest.PageNumber;
 
             var notesCount = await _repo.ReadNotesCount();
 
@@ -64,13 +64,13 @@ public class CatalogManager(IServiceProvider scopedProvider)
 
             var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
-            return new CatalogDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
+            return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, NavigateCatalogError);
 
-            return new CatalogDto { ErrorMessage = NavigateCatalogError };
+            return new CatalogResultDto { ErrorMessage = NavigateCatalogError };
         }
     }
 
@@ -80,7 +80,7 @@ public class CatalogManager(IServiceProvider scopedProvider)
     /// <param name="noteId">идентификатор заметки</param>
     /// <param name="pageNumber">номер страницы каталога с удаляемой заметкой</param>
     /// <returns>актуальная страница каталога</returns>
-    public async Task<CatalogDto> DeleteNote(int noteId, int pageNumber)
+    public async Task<CatalogResultDto> DeleteNote(int noteId, int pageNumber)
     {
         try
         {
@@ -92,7 +92,7 @@ public class CatalogManager(IServiceProvider scopedProvider)
         {
             _logger.LogError(ex, DeleteNoteError);
 
-            return new CatalogDto { ErrorMessage = DeleteNoteError };
+            return new CatalogResultDto { ErrorMessage = DeleteNoteError };
         }
     }
 

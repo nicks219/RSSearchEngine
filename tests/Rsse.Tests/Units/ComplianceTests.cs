@@ -24,9 +24,9 @@ public class ComplianceTests
     public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<ComplianceController>>();
+        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
         var host = new ServicesStubStartup<TokenizerService>();
-        var complianceController = new ComplianceController(logger);
+        var complianceController = new ComplianceSearchController(logger);
         complianceController.AddHttpContext(host.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена

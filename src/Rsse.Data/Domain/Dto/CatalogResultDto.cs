@@ -6,7 +6,7 @@ namespace SearchEngine.Domain.Dto;
 /// <summary>
 /// Шаблон передачи данных каталога
 /// </summary>
-public record struct CatalogDto
+public record struct CatalogResultDto
 {
     /// <summary>
     /// Названия заметок и соответствующие им Id
@@ -27,9 +27,4 @@ public record struct CatalogDto
     /// Сообщение об ошибке, если потребуется
     /// </summary>
     public string? ErrorMessage { get; init; }
-
-    /// <summary>
-    /// Направление перемещения по каталогу
-    /// </summary>
-    public List<int> Direction { get; init; }
 }
