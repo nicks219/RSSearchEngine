@@ -91,9 +91,9 @@ public class ReadManager(IServiceProvider scopedProvider)
 
                     if (notes.Count > 0)
                     {
-                        text = notes[0].Item1;
+                        text = notes[0].Text;
 
-                        title = notes[0].Item2;
+                        title = notes[0].Title;
                     }
                 }
             }

@@ -127,7 +127,7 @@ public class MirrorRepository(
         return secondary;
     }
 
-    public IQueryable<Tuple<string, string>> ReadNote(int noteId) => _reader.ReadNote(noteId);
+    public IQueryable<TextResult> ReadNote(int noteId) => _reader.ReadNote(noteId);
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
@@ -168,7 +168,7 @@ public class MirrorRepository(
 
     public IQueryable<int> ReadNoteTags(int noteId) => _reader.ReadNoteTags(noteId);
 
-    public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
+    public IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
     public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest) => _reader.GetUser(credentialsRequest);
 }

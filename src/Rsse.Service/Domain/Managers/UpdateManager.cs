@@ -37,9 +37,9 @@ public class UpdateManager(IServiceProvider scopedProvider)
             if (notes.Count > 0)
             {
                 // сначала текст потом название
-                text = notes[0].Item1;
+                text = notes[0].Text;
 
-                title = notes[0].Item2;
+                title = notes[0].Title;
             }
             else
             {

@@ -29,11 +29,11 @@ public class FakeCatalogRepository : IDataRepository
 
     internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
-    private readonly Dictionary<int, Tuple<string, string>> _notes = new();
+    private readonly Dictionary<int, TextResult> _notes = new();
 
     public FakeCatalogRepository()
     {
-        _notes.Add(TestNoteId, new Tuple<string, string>(FirstNoteTitle, FirstNoteText));
+        _notes.Add(TestNoteId, new TextResult { Title = FirstNoteTitle, Text = FirstNoteText});
     }
 
     private int _lastId = 1;
@@ -44,7 +44,7 @@ public class FakeCatalogRepository : IDataRepository
         {
             if (i != 1 && !_notes.ContainsKey(i))
             {
-                _notes.Add(i, new Tuple<string, string>(i + ": key", i + ": value"));
+                _notes.Add(i, new TextResult { Title = i + ": key", Text = i + ": value" });
             }
         }
     }
@@ -62,8 +62,8 @@ public class FakeCatalogRepository : IDataRepository
         var notes = _notes
             .Select(keyValue => new NoteEntity
             {
-                Text = keyValue.Value.Item2,
-                Title = keyValue.Value.Item1,
+                Text = keyValue.Value.Text,
+                Title = keyValue.Value.Title,
                 NoteId = keyValue.Key
             })
             .ToList();
@@ -77,7 +77,7 @@ public class FakeCatalogRepository : IDataRepository
 
         foreach (var keyValue in _notes.Where(keyValue => keyValue.Key == noteId))
         {
-            return keyValue.Value.Item1;
+            return keyValue.Value.Title;
         }
 
         throw new NotImplementedException($"Note with id `{noteId}` not found");
@@ -87,7 +87,7 @@ public class FakeCatalogRepository : IDataRepository
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
-        foreach (var keyValue in _notes.Where(keyValue => keyValue.Value.Item1 == noteTitle))
+        foreach (var keyValue in _notes.Where(keyValue => keyValue.Value.Title == noteTitle))
         {
             return keyValue.Key;
         }
@@ -103,7 +103,7 @@ public class FakeCatalogRepository : IDataRepository
         }
 
         _lastId++;
-        _notes.Add(_lastId, new Tuple<string, string>(noteRequest.TitleRequest, noteRequest.TextRequest));
+        _notes.Add(_lastId, new TextResult { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest });
 
         return Task.FromResult(_lastId);
     }
@@ -126,7 +126,7 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(user);
     }
 
-    public IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize)
+    public IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -134,10 +134,10 @@ public class FakeCatalogRepository : IDataRepository
             ? throw new Exception("Page number error")
             : Enumerable
                 .Range(pageNumber * pageSize, pageSize)
-                .Select<int, Tuple<string, int>>(x => new Tuple<string, int>(_notes[x].Item1, x))
+                .Select<int, CatalogResult>(x => new CatalogResult { Title = _notes[x].Title, NoteId = x})
                 .ToList();
 
-        return new FakeDbSet<Tuple<string, int>>(titlesList);
+        return new FakeDbSet<CatalogResult>(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()
@@ -159,10 +159,10 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_notes.Count);
     }
 
-    public IQueryable<Tuple<string, string>> ReadNote(int noteId)
+    public IQueryable<TextResult> ReadNote(int noteId)
     {
-        var note = new List<Tuple<string, string>> { _notes[noteId] };
-        return new FakeDbSet<Tuple<string, string>>(note);
+        var note = new List<TextResult> { _notes[noteId] };
+        return new FakeDbSet<TextResult>(note);
     }
 
     public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
@@ -199,7 +199,7 @@ public class FakeCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[noteRequest.NoteIdExchange] = new Tuple<string, string>(noteRequest.TextRequest, noteRequest.TitleRequest);
+        _notes[noteRequest.NoteIdExchange] = new TextResult { Text = noteRequest.TextRequest, Title = noteRequest.TitleRequest };
 
         return Task.CompletedTask;
     }

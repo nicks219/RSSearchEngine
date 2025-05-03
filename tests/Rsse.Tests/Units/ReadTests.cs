@@ -128,7 +128,7 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(Logger.Message, string.Empty);
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TitleResponse);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TextResponse);
     }
 
     [TestMethod]

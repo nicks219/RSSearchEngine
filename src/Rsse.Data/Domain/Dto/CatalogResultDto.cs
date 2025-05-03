@@ -11,7 +11,7 @@ public record struct CatalogResultDto
     /// <summary>
     /// Названия заметок и соответствующие им Id
     /// </summary>
-    public List<Tuple<string, int>>? CatalogPage { get; init; }
+    public List<CatalogResult>? CatalogPage { get; init; }
 
     /// <summary>
     /// Количество заметок

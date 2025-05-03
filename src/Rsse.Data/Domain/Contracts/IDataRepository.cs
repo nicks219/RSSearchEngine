@@ -32,7 +32,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="noteId">идентификатор заметки</param>
     /// <returns>кортеж с текстом и названием заметки</returns>
-    IQueryable<Tuple<string, string>> ReadNote(int noteId);
+    IQueryable<TextResult> ReadNote(int noteId);
 
     /// <summary>
     /// Изменить заметку
@@ -110,7 +110,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <param name="pageNumber">номер страницы</param>
     /// <param name="pageSize">размер страницы</param>
     /// <returns></returns>
-    IQueryable<Tuple<string, int>> ReadCatalogPage(int pageNumber, int pageSize);
+    IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize);
 
     /// <summary>
     /// Получить сущность с авторизованным пользователем

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using SearchEngine.Domain.Dto;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -10,7 +11,7 @@ namespace SearchEngine.Domain.ApiModels;
 public record CatalogResponse
 {
     // <summary/> Названия заметок и соответствующие им Id
-    [JsonPropertyName("catalogPage")] public List<Tuple<string, int>>? CatalogPage { get; init; }
+    [JsonPropertyName("catalogPage")] public List<CatalogResult>? CatalogPage { get; init; }
 
     // <summary/> Количество заметок
     [JsonPropertyName("notesCount")] public int NotesCount { get; init; }

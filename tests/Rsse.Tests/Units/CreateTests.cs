@@ -50,6 +50,6 @@ public class CreateTests
         responseDto.CommonErrorMessageResponse.Should().BeNull();
         responseDto.TitleResponse.Should().Be("[OK]");
         // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
-        Assert.AreEqual(requestDto.TitleRequest, actualDto.TextResponse);
+        Assert.AreEqual(requestDto.TitleRequest, actualDto.TitleResponse);
     }
 }
