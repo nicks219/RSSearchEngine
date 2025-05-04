@@ -33,7 +33,7 @@ public class FakeCatalogRepository : IDataRepository
 
     public FakeCatalogRepository()
     {
-        _notes.Add(TestNoteId, new TextResult { Title = FirstNoteTitle, Text = FirstNoteText});
+        _notes.Add(TestNoteId, new TextResult { Title = FirstNoteTitle, Text = FirstNoteText });
     }
 
     private int _lastId = 1;
@@ -134,7 +134,7 @@ public class FakeCatalogRepository : IDataRepository
             ? throw new Exception("Page number error")
             : Enumerable
                 .Range(pageNumber * pageSize, pageSize)
-                .Select<int, CatalogResult>(x => new CatalogResult { Title = _notes[x].Title, NoteId = x})
+                .Select<int, CatalogResult>(x => new CatalogResult { Title = _notes[x].Title, NoteId = x })
                 .ToList();
 
         return new FakeDbSet<CatalogResult>(titlesList);

@@ -99,7 +99,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(note => new CatalogResult { Title = note.Title!, NoteId = note.NoteId})
+            .Select(note => new CatalogResult { Title = note.Title!, NoteId = note.NoteId })
             .AsNoTracking();
 
         return titleAndIdList;

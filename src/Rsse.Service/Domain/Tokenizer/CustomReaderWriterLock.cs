@@ -16,10 +16,10 @@ public class CustomReaderWriterLock : IDisposable
     public readonly struct WriteLockToken : IDisposable
     {
         private readonly ReaderWriterLockSlim _lock;
-        public WriteLockToken(ReaderWriterLockSlim @lock)
+        public WriteLockToken(ReaderWriterLockSlim rwLock)
         {
-            _lock = @lock;
-            @lock.EnterWriteLock();
+            _lock = rwLock;
+            rwLock.EnterWriteLock();
         }
         public void Dispose() => _lock.ExitWriteLock();
     }
@@ -27,9 +27,9 @@ public class CustomReaderWriterLock : IDisposable
     public readonly struct ReadLockToken : IDisposable
     {
         private readonly ReaderWriterLockSlim _lock;
-        public ReadLockToken(ReaderWriterLockSlim @lock)
+        public ReadLockToken(ReaderWriterLockSlim rwLock)
         {
-            _lock = @lock;
+            _lock = rwLock;
             _lock.EnterReadLock();
         }
         public void Dispose() => _lock.ExitReadLock();

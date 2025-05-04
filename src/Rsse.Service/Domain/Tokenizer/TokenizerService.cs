@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,11 +40,11 @@ public class TokenizerService : ITokenizerService, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
     }
 
-    /// <inheritdoc/>
-    public Dictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
+    // используется для тестов
+    internal Dictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
 
-    /// <inheritdoc/>
-    public Dictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
+    // используется для тестов
+    internal Dictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
 
     /// <inheritdoc/>
     public void Delete(int id)
@@ -83,9 +84,6 @@ public class TokenizerService : ITokenizerService, IDisposable
             _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors create error");
         }
     }
-
-    /// <inheritdoc/>
-    public Dictionary<int, double> ComputeComplianceIndices(string text) => throw new NotImplementedException();
 
     /// <inheritdoc/>
     public void Update(int id, NoteEntity note)
@@ -187,6 +185,95 @@ public class TokenizerService : ITokenizerService, IDisposable
         var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
+    }
+
+    /// <inheritdoc/>
+    public Dictionary<int, double> ComputeComplianceIndices(string text)
+    {
+        using var _ = RwLockSlim.ReadLock();
+        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
+
+        var result = new Dictionary<int, double>();
+
+        // I. коэффициент extended поиска: 0.8D
+        const double extended = 0.8D;
+        // II. коэффициент reduced поиска: 0.4D
+        const double reduced = 0.6D; // 0.6 .. 0.75
+
+        var reducedChainSearch = true;
+
+        processor.SetupChain(ConsonantChain.Extended);
+
+        var preprocessedStrings = processor.PreProcessNote(text);
+
+        if (preprocessedStrings.Count == 0)
+        {
+            // заметки вида "123 456" не ищем, так как получим весь каталог
+            return result;
+        }
+
+        var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
+
+        foreach (var (key, cachedTokensLine) in _extendedTokenLines)
+        {
+            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+
+            // I. 100% совпадение по extended последовательности, по reduced можно не искать
+            if (metric == newTokensLine.Count)
+            {
+                reducedChainSearch = false;
+                result.Add(key, metric * (1000D / cachedTokensLine.Count)); // было int
+                continue;
+            }
+
+            // II. extended% совпадение
+            if (metric >= newTokensLine.Count * extended)
+            {
+                // [TODO] можно так оценить
+                // reducedChainSearch = false;
+                result.Add(key, metric * (100D / cachedTokensLine.Count)); // было int
+            }
+        }
+
+        if (!reducedChainSearch)
+        {
+            return result;
+        }
+
+        processor.SetupChain(ConsonantChain.Reduced);
+
+        preprocessedStrings = processor.PreProcessNote(text);
+
+        newTokensLine = processor.TokenizeSequence(preprocessedStrings);
+
+        if (preprocessedStrings.Count == 0)
+        {
+            // песни вида "123 456" не ищем, так как получим весь каталог
+            return result;
+        }
+
+        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
+        newTokensLine = newTokensLine.ToHashSet().ToList();
+
+        foreach (var (key, cachedTokensLine) in _reducedTokenLines)
+        {
+            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+
+            // III. 100% совпадение по reduced
+            if (metric == newTokensLine.Count)
+            {
+                result.TryAdd(key, metric * (10D / cachedTokensLine.Count)); // было int
+                continue;
+            }
+
+            // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
+            if (metric >= newTokensLine.Count * reduced)
+            {
+                result.TryAdd(key, metric * (1D / cachedTokensLine.Count)); // было int
+            }
+        }
+
+        return result;
     }
 
     public void Dispose()

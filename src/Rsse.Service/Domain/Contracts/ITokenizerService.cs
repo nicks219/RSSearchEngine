@@ -9,27 +9,6 @@ namespace SearchEngine.Domain.Contracts;
 /// </summary>
 public interface ITokenizerService
 {
-    /// <summary/> Блокировка
-    CustomReaderWriterLock RwLockSlim { get; init; }
-
-    /// <summary>
-    /// Получить редуцированный вектор для заметки
-    /// </summary>
-    /// <returns>идентификаторы заметок и соответствующие им векторы</returns>
-    public Dictionary<int, List<int>> GetReducedLines();
-
-    /// <summary>
-    /// Получить расширенный вектор для заметки
-    /// </summary>
-    /// <returns>идентификаторы заметок и соответствующие им векторы</returns>
-    public Dictionary<int, List<int>> GetExtendedLines();
-
-    /// <summary>
-    /// Удалить вектор для заметки
-    /// </summary>
-    /// <param name="id">идентификатор заметки</param>
-    public void Delete(int id);
-
     /// <summary>
     /// Создать вектор для заметки
     /// </summary>
@@ -50,6 +29,12 @@ public interface ITokenizerService
     /// <param name="id">идентификатор заметки</param>
     /// <param name="note">заметка</param>
     public void Update(int id, NoteEntity note);
+
+    /// <summary>
+    /// Удалить вектор для заметки
+    /// </summary>
+    /// <param name="id">идентификатор заметки</param>
+    public void Delete(int id);
 
     /// <summary>
     /// Инициализация функционала токенизации

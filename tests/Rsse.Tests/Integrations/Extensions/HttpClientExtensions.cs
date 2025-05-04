@@ -77,7 +77,7 @@ public static class HttpClientExtensions
         for (var i = 0; i < notes; i++)
         {
             var guid = Guid.NewGuid();
-            var createRequest = new NoteRequest { TitleRequest = $"название: {guid}", TextRequest =$"текст: {guid}", TagsCheckedRequest = [1] };
+            var createRequest = new NoteRequest { TitleRequest = $"название: {guid}", TextRequest = $"текст: {guid}", TagsCheckedRequest = [1] };
             using var content = new StringContent(JsonSerializer.Serialize(createRequest), Encoding.UTF8, "application/json");
             using var _ = await client.PostAsync("api/create", content);
         }

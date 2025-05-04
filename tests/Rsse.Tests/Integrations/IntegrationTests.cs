@@ -281,36 +281,36 @@ public class IntegrationTests
         {
             // act:
             case Request.Get:
-            {
-                using var response = await client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                if (uriString.StartsWith("migration"))
                 {
+                    using var response = await client.GetAsync(uri);
+                    response.EnsureSuccessStatusCode();
+                    if (uriString.StartsWith("migration"))
+                    {
+                        // assert:
+                        var res = await response.Content.ReadAsStringAsync();
+                        res.Should().Be(titleExpected);
+                        break;
+                    }
+
+                    var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
+
                     // assert:
-                    var res = await response.Content.ReadAsStringAsync();
-                    res.Should().Be(titleExpected);
+                    result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
+                    _ = double.TryParse(textExpected, out var doubleExpected);
+                    result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
                     break;
                 }
-
-                var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
-
-                // assert:
-                result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
-                _ = double.TryParse(textExpected, out var doubleExpected);
-                result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
-                break;
-            }
             case Request.Post:
-            {
-                using var response = await client.PostAsync(uri, content);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
+                {
+                    using var response = await client.PostAsync(uri, content);
+                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
 
-                // assert:
-                result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                result.EnsureNotNull().TextResponse.Should().Be(textExpected);
-                break;
-            }
+                    // assert:
+                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
+                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                    break;
+                }
 
             default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
@@ -362,76 +362,76 @@ public class IntegrationTests
         {
             // act:
             case Request.Get:
-            {
-                using var response = await client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                if (responseType == typeof(ComplianceResponseModel))
                 {
-                    var asString = (await response.Content.ReadFromJsonAsync(typeof(object))).EnsureNotNull().ToString();
-                    if (asString.EnsureNotNull() == firstExpected)
+                    using var response = await client.GetAsync(uri);
+                    response.EnsureSuccessStatusCode();
+                    if (responseType == typeof(ComplianceResponseModel))
                     {
+                        var asString = (await response.Content.ReadFromJsonAsync(typeof(object))).EnsureNotNull().ToString();
+                        if (asString.EnsureNotNull() == firstExpected)
+                        {
+                            break;
+                        }
+
+                        var deserialized = JsonSerializer.Deserialize<SearchEngine.Tests.Integrations.Dto.ComplianceResponseModel>(asString);
+                        // assert:
+                        deserialized.EnsureNotNull().res.Keys.First().Should().Be(firstExpected);
+                        var value = Math.Round(deserialized.EnsureNotNull().res.Values.First(), 2);
+                        value.Should().Be(double.Parse(secondExpected));
                         break;
                     }
 
-                    var deserialized = JsonSerializer.Deserialize<SearchEngine.Tests.Integrations.Dto.ComplianceResponseModel>(asString);
-                    // assert:
-                    deserialized.EnsureNotNull().res.Keys.First().Should().Be(firstExpected);
-                    var value = Math.Round(deserialized.EnsureNotNull().res.Values.First(), 2);
-                    value.Should().Be(double.Parse(secondExpected));
+                    if (responseType == typeof(OkObjectResult))
+                    {
+                        // assert: для миграций
+                        var res = await response.Content.ReadAsStringAsync();
+                        res.Should().Be(firstExpected);
+                        break;
+                    }
+
+                    var result = await response.Content.ReadFromJsonAsync(responseType);
+                    if (responseType == typeof(CatalogResponse))
+                    {
+                        // assert: CatalogPage: List<Tuple<string, int>>()
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10); // 1я страница
+                        (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
+                        (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                    }
+
                     break;
                 }
-
-                if (responseType == typeof(OkObjectResult))
-                {
-                    // assert: для миграций
-                    var res = await response.Content.ReadAsStringAsync();
-                    res.Should().Be(firstExpected);
-                    break;
-                }
-
-                var result = await response.Content.ReadFromJsonAsync(responseType);
-                if (responseType == typeof(CatalogResponse))
-                {
-                    // assert: CatalogPage: List<Tuple<string, int>>()
-                    (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10); // 1я страница
-                    (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                    (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
-                }
-
-                break;
-            }
             case Request.Post:
-            {
-                using var response = await client.PostAsync(uri, content);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync(responseType);
-                if (responseType == typeof(CatalogResponse))
                 {
-                    // assert: CatalogPage: List<Tuple<string, int>>()
-                    (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10);// 2я страница
-                    (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                    (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
-                }
-                if (responseType == typeof(NoteResponse))
-                {
-                    // assert:
-                    (result as NoteResponse).EnsureNotNull().TitleResponse.Should().Be(firstExpected);
-                    (result as NoteResponse).EnsureNotNull().TextResponse.Should().Be(secondExpected);
-                }
+                    using var response = await client.PostAsync(uri, content);
+                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadFromJsonAsync(responseType);
+                    if (responseType == typeof(CatalogResponse))
+                    {
+                        // assert: CatalogPage: List<Tuple<string, int>>()
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10);// 2я страница
+                        (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
+                        (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                    }
+                    if (responseType == typeof(NoteResponse))
+                    {
+                        // assert:
+                        (result as NoteResponse).EnsureNotNull().TitleResponse.Should().Be(firstExpected);
+                        (result as NoteResponse).EnsureNotNull().TextResponse.Should().Be(secondExpected);
+                    }
 
-                break;
-            }
+                    break;
+                }
             case Request.Delete:
-            {
-                using var response = await client.DeleteAsync(uri);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<CatalogResponse>();
+                {
+                    using var response = await client.DeleteAsync(uri);
+                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadFromJsonAsync<CatalogResponse>();
 
-                // assert:
-                result.EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                result.EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
-                break;
-            }
+                    // assert:
+                    result.EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
+                    result.EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                    break;
+                }
 
             default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
