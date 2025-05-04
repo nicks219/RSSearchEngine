@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,30 +14,28 @@ public class ComplianceSearchManager(IServiceProvider scopedProvider)
 {
     private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
     private readonly ITokenizerProcessor _processor = scopedProvider.GetRequiredService<ITokenizerProcessor>();
+    private readonly CustomReaderWriterLock _rwLockSlim = scopedProvider.GetRequiredService<ITokenizerService>().RwLockSlim;
 
-    private readonly ConcurrentDictionary<int, List<int>> _reducedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
-    private readonly ConcurrentDictionary<int, List<int>> _extendedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
+    private readonly Dictionary<int, List<int>> _reducedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetReducedLines();
+    private readonly Dictionary<int, List<int>> _extendedLines = scopedProvider.GetRequiredService<ITokenizerService>().GetExtendedLines();
 
     /// <summary>
-    /// Найти идентификатор заметки по её имени
+    /// Найти идентификатор заметки по её имени, требуется только для тестов
     /// </summary>
     /// <param name="name">имя заметки</param>
     /// <returns>идентификатор заметки</returns>
-    public int FindNoteId(string name)
-    {
-        var id = _repo.ReadNoteId(name);
-
-        return id;
-    }
+    public int FindNoteId(string name) =>_repo.ReadNoteId(name);
 
     /// <summary>
     /// Вычислить индексы соответствия хранимых заметок поисковому запросу
     /// </summary>
     /// <param name="text">текст для поиска соответствий</param>
     /// <returns>идентификаторы заметок и их индексы соответствия</returns>
-    // NB: по сути read для TokenizerService
+    // todo: это read для ITokenizerService, подумай как лучше затащить в него этот метод
     public Dictionary<int, double> ComputeComplianceIndices(string text)
     {
+        using var _ = _rwLockSlim.ReadLock();
+
         var result = new Dictionary<int, double>();
 
         // I. коэффициент extended поиска: 0.8D

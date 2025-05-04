@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SearchEngine.Domain.Entities;
+using SearchEngine.Domain.Tokenizer;
 
 namespace SearchEngine.Domain.Contracts;
 
@@ -9,17 +9,20 @@ namespace SearchEngine.Domain.Contracts;
 /// </summary>
 public interface ITokenizerService
 {
+    /// <summary/> Блокировка
+    CustomReaderWriterLock RwLockSlim { get; init; }
+
     /// <summary>
     /// Получить редуцированный вектор для заметки
     /// </summary>
     /// <returns>идентификаторы заметок и соответствующие им векторы</returns>
-    public ConcurrentDictionary<int, List<int>> GetReducedLines();
+    public Dictionary<int, List<int>> GetReducedLines();
 
     /// <summary>
     /// Получить расширенный вектор для заметки
     /// </summary>
     /// <returns>идентификаторы заметок и соответствующие им векторы</returns>
-    public ConcurrentDictionary<int, List<int>> GetExtendedLines();
+    public Dictionary<int, List<int>> GetExtendedLines();
 
     /// <summary>
     /// Удалить вектор для заметки
@@ -33,6 +36,13 @@ public interface ITokenizerService
     /// <param name="id">идентификатор заметки</param>
     /// <param name="note">заметка</param>
     public void Create(int id, NoteEntity note);
+
+    /// <summary>
+    /// Вычислить индексы соответствия хранимых заметок поисковому запросу
+    /// </summary>
+    /// <param name="text">текст для поиска соответствий</param>
+    /// <returns>идентификаторы заметок и их индексы соответствия</returns>
+    public Dictionary<int, double> ComputeComplianceIndices(string text);
 
     /// <summary>
     /// Обновить вектор для заметки

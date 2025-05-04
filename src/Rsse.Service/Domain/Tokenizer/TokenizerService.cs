@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,14 +12,13 @@ namespace SearchEngine.Domain.Tokenizer;
 /// <summary>
 /// Сервис поддержки токенайзера
 /// </summary>
-public class TokenizerService : ITokenizerService
+public class TokenizerService : ITokenizerService, IDisposable
 {
-    // todo: можно перенести сюда ComputeComplianceIndices и использовать ReaderWriterLockSlim правильно
-    // сейчас блокировки отделяют delete от create/update
+    public CustomReaderWriterLock RwLockSlim { get; init; } = new();
+
     // todo: дополнить логирование ошибок пересозданием линии кэша
-    private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
-    private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
-    private readonly ReaderWriterLockSlim _lockSlim;
+    private readonly Dictionary<int, List<int>> _reducedTokenLines;
+    private readonly Dictionary<int, List<int>> _extendedTokenLines;
 
     private readonly IServiceProvider _provider;
     private readonly ILogger<TokenizerService> _logger;
@@ -36,36 +33,33 @@ public class TokenizerService : ITokenizerService
     public TokenizerService(IServiceProvider provider, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
         _provider = provider;
-        _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
-        _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _reducedTokenLines = new Dictionary<int, List<int>>();
+        _extendedTokenLines = new Dictionary<int, List<int>>();
         _logger = logger;
-        _lockSlim = new ReaderWriterLockSlim();
         _isEnabled = options.Value.TokenizerIsEnable;
     }
 
     /// <inheritdoc/>
-    public ConcurrentDictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
+    public Dictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
 
     /// <inheritdoc/>
-    public ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
+    public Dictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
 
     /// <inheritdoc/>
     public void Delete(int id)
     {
         if (!_isEnabled) return;
 
-        _lockSlim.EnterWriteLock();
+        using var __ = RwLockSlim.WriteLock();
 
-        var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
+        var isReducedRemoved = _reducedTokenLines.Remove(id);
 
-        var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
+        var isExtendedRemoved = _extendedTokenLines.Remove(id);
 
         if (!(isReducedRemoved && isExtendedRemoved))
         {
             _logger.LogError($"[{nameof(TokenizerService)}] delete error");
         }
-
-        _lockSlim.ExitWriteLock();
     }
 
     /// <inheritdoc/>
@@ -73,7 +67,7 @@ public class TokenizerService : ITokenizerService
     {
         if (!_isEnabled) return;
 
-        _lockSlim.EnterReadLock();
+        using var _ = RwLockSlim.WriteLock();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
@@ -88,46 +82,39 @@ public class TokenizerService : ITokenizerService
         {
             _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors create error");
         }
-
-        _lockSlim.ExitReadLock();
     }
+
+    /// <inheritdoc/>
+    public Dictionary<int, double> ComputeComplianceIndices(string text) => throw new NotImplementedException();
 
     /// <inheritdoc/>
     public void Update(int id, NoteEntity note)
     {
         if (!_isEnabled) return;
 
-        _lockSlim.EnterReadLock();
+        using var _ = RwLockSlim.WriteLock();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
-        if (_extendedTokenLines.TryGetValue(id, out var cachedTokensLine))
+        if (_extendedTokenLines.ContainsKey(id))
         {
-            if (!_extendedTokenLines.TryUpdate(id, extendedLine, cachedTokensLine))
-            {
-                _logger.LogError($"[{nameof(TokenizerService)}] extended vectors concurrent update error");
-            }
+            _extendedTokenLines[id] = extendedLine;
         }
         else
         {
             _logger.LogError($"[{nameof(TokenizerService)}] extended vectors has not been updated");
         }
 
-        if (_reducedTokenLines.TryGetValue(id, out cachedTokensLine))
+        if (_reducedTokenLines.ContainsKey(id))
         {
-            if (!_reducedTokenLines.TryUpdate(id, reducedLine, cachedTokensLine))
-            {
-                _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors concurrent update error");
-            }
+            _reducedTokenLines[id] = reducedLine;
         }
         else
         {
             _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors has not been updated");
         }
-
-        _lockSlim.ExitReadLock();
     }
 
     /// <inheritdoc/>
@@ -135,7 +122,7 @@ public class TokenizerService : ITokenizerService
     {
         if (!_isEnabled) return;
 
-        _lockSlim.EnterWriteLock();
+        using var _ = RwLockSlim.WriteLock();
 
         // чтобы не закрывать контекст в корневом scope провайдера
         using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
@@ -173,10 +160,6 @@ public class TokenizerService : ITokenizerService
         {
             _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'", nameof(TokenizerService), ex.Source, ex.Message);
         }
-        finally
-        {
-            _lockSlim.ExitWriteLock();
-        }
 
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'", nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
     }
@@ -204,5 +187,11 @@ public class TokenizerService : ITokenizerService
         var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        RwLockSlim.Dispose();
     }
 }

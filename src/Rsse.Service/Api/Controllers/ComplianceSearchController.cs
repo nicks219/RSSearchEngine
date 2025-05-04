@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ public class ComplianceSearchController(ILogger<ComplianceSearchController> logg
         {
             var scopedProvider = HttpContext.RequestServices;
             var manager = new ComplianceSearchManager(scopedProvider);
-            var searchIndexes = manager.ComputeComplianceIndices(text);
+            Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 
             switch (searchIndexes.Count)
