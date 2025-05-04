@@ -11,7 +11,7 @@ public record struct CatalogResultDto
     /// <summary>
     /// Названия заметок и соответствующие им Id
     /// </summary>
-    public List<CatalogResult>? CatalogPage { get; init; }
+    public List<CatalogItemDto>? CatalogPage { get; init; }
 
     /// <summary>
     /// Количество заметок

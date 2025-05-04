@@ -392,7 +392,10 @@ public class IntegrationTests
                     var result = await response.Content.ReadFromJsonAsync(responseType);
                     if (responseType == typeof(CatalogResponse))
                     {
-                        // assert: CatalogPage: List<Tuple<string, int>>()
+                        // assert:
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should().Be(" Ветлицкая Наталья - Непогода");
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().NoteId.Should().Be(238);
+
                         (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10); // 1я страница
                         (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
                         (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
@@ -407,7 +410,10 @@ public class IntegrationTests
                     var result = await response.Content.ReadFromJsonAsync(responseType);
                     if (responseType == typeof(CatalogResponse))
                     {
-                        // assert: CatalogPage: List<Tuple<string, int>>()
+                        // assert:
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should().Be("Агата Кристи - Вольно");
+                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().NoteId.Should().Be(280);
+
                         (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10);// 2я страница
                         (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
                         (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));

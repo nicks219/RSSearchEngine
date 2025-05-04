@@ -93,13 +93,13 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize)
+    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
     {
         var titleAndIdList = context.Notes!
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(note => new CatalogResult { Title = note.Title!, NoteId = note.NoteId })
+            .Select(note => new CatalogItemDto { Title = note.Title!, NoteId = note.NoteId })
             .AsNoTracking();
 
         return titleAndIdList;

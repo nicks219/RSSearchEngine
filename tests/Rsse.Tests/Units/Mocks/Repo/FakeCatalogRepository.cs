@@ -126,7 +126,7 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(user);
     }
 
-    public IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize)
+    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -134,10 +134,10 @@ public class FakeCatalogRepository : IDataRepository
             ? throw new Exception("Page number error")
             : Enumerable
                 .Range(pageNumber * pageSize, pageSize)
-                .Select<int, CatalogResult>(x => new CatalogResult { Title = _notes[x].Title, NoteId = x })
+                .Select<int, CatalogItemDto>(x => new CatalogItemDto { Title = _notes[x].Title, NoteId = x })
                 .ToList();
 
-        return new FakeDbSet<CatalogResult>(titlesList);
+        return new FakeDbSet<CatalogItemDto>(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()

@@ -110,7 +110,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <param name="pageNumber">номер страницы</param>
     /// <param name="pageSize">размер страницы</param>
     /// <returns></returns>
-    IQueryable<CatalogResult> ReadCatalogPage(int pageNumber, int pageSize);
+    IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize);
 
     /// <summary>
     /// Получить сущность с авторизованным пользователем

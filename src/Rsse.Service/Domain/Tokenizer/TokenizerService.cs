@@ -162,31 +162,6 @@ public class TokenizerService : ITokenizerService, IDisposable
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'", nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
     }
 
-    /// <summary>
-    /// Создать два вектора токенов для заметки
-    /// </summary>
-    /// <param name="processor">токенайзер</param>
-    /// <param name="note">заметка</param>
-    /// <returns>векторы на базе двух разных эталонных наборов</returns>
-    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
-    {
-        // расширенная эталонная последовательность:
-        processor.SetupChain(ConsonantChain.Extended);
-
-        var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
-
-        var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
-
-        // урезанная эталонная последовательность:
-        processor.SetupChain(ConsonantChain.Reduced);
-
-        preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
-
-        var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
-
-        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
-    }
-
     /// <inheritdoc/>
     public Dictionary<int, double> ComputeComplianceIndices(string text)
     {
@@ -274,6 +249,31 @@ public class TokenizerService : ITokenizerService, IDisposable
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Создать два вектора токенов для заметки
+    /// </summary>
+    /// <param name="processor">токенайзер</param>
+    /// <param name="note">заметка</param>
+    /// <returns>векторы на базе двух разных эталонных наборов</returns>
+    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
+    {
+        // расширенная эталонная последовательность:
+        processor.SetupChain(ConsonantChain.Extended);
+
+        var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
+
+        var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
+
+        // урезанная эталонная последовательность:
+        processor.SetupChain(ConsonantChain.Reduced);
+
+        preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
+
+        var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
+
+        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
     }
 
     public void Dispose()

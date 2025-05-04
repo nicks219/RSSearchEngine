@@ -11,7 +11,7 @@ namespace SearchEngine.Domain.ApiModels;
 public record CatalogResponse
 {
     // <summary/> Названия заметок и соответствующие им Id
-    [JsonPropertyName("catalogPage")] public List<CatalogResult>? CatalogPage { get; init; }
+    [JsonPropertyName("catalogPage")] public List<CatalogItemDto>? CatalogPage { get; init; }
 
     // <summary/> Количество заметок
     [JsonPropertyName("notesCount")] public int NotesCount { get; init; }
