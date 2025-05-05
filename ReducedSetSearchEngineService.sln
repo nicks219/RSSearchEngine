@@ -22,9 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 		tests\Directory.Packages.props = tests\Directory.Packages.props
 		.common\scripts.docker.md = .common\scripts.docker.md
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
-		.common\rsse.api.v5.2.json = .common\rsse.api.v5.2.json
 		src\Rsse.Service\Properties\launchSettings.json = src\Rsse.Service\Properties\launchSettings.json
 		.common\ssl.update.md = .common\ssl.update.md
+		.common\rsse.api.v6.0.json = .common\rsse.api.v6.0.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"

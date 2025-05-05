@@ -1,12 +1,13 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Engine.Tokenizer;
-using SearchEngine.Models;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 
@@ -22,15 +23,17 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomServiceProvider<TokenizerService>();
-        var provider = new CustomServiceProvider<UpdateManager>();
-        var findModel = new CompliantModel(host.Scope);
-
+        var host = new ServiceProviderStub<TokenizerService>();
+        var secondHost = new ServiceProviderStub<UpdateManager>();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        repo.CreateStubData(10);
+        var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
+        var manager = new ComplianceSearchManager(repo, tokenizer);
+        var managerLogger = secondHost.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
-        _testNoteId = findModel.FindNoteId(Title);
-        UpdateManager = new UpdateManager(provider.Scope);
+        repo.CreateStubData(10);
+        _testNoteId = manager.FindNoteId(Title);
+
+        UpdateManager = new UpdateManager(repo, managerLogger);
     }
 
     [TestMethod]
@@ -47,12 +50,12 @@ public class UpdateTests
     public async Task UpdateManager_ShouldUpdateNoteToExpected()
     {
         // arrange:
-        var requestDto = new NoteDto
+        var requestDto = new NoteRequestDto
         {
             TitleRequest = Title,
             TextRequest = Text,
             TagsCheckedRequest = [1, 2, 3, 11],
-            CommonNoteId = _testNoteId
+            NoteIdExchange = _testNoteId
         };
 
         // act:

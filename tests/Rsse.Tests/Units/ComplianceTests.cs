@@ -1,13 +1,16 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using SearchEngine.Controllers;
-using SearchEngine.Engine.Tokenizer;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Units.Dto;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Units;
@@ -18,20 +21,25 @@ public class ComplianceTests
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    // todo:развяжи по stub-бд c тестами токенайзера
     public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<ComplianceController>>();
-        var collection = new CustomServiceProvider<TokenizerService>();
-        var factory = new CustomScopeFactory(collection.Provider);
-        var complianceController = new ComplianceController(factory, logger);
+        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
+        var sp = new ServiceProviderStub<TokenizerService>();
+        var repo = sp.Provider.GetRequiredService<IDataRepository>();
+        var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
+
+        var complianceController = new ComplianceSearchController(repo, tokenizer, logger);
+        complianceController.AddHttpContext(sp.Provider);
+
+        // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+        tokenizer.Initialize();
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);
-        var anonymousTypeAsResult = ((OkObjectResult) actionResult).Value;
+        var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
         var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ResponseModel>(serialized);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponseModel>(serialized);
 
         // assert:
         deserialized.Should().NotBeNull();
@@ -49,10 +57,4 @@ public class ComplianceTests
             .Should()
             .Be(2.3529411764705883D);
     }
-
-    public class ResponseModel
-    {
-        public required Dictionary<string, double> Res { get; set; }
-    }
 }
-

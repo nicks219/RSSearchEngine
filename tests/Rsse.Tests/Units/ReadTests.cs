@@ -8,13 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using SearchEngine.Common;
-using SearchEngine.Controllers;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.ApiModels;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 
@@ -26,7 +28,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadManager ReadManager;
-    public required CustomServiceProvider<ReadManager> CustomServiceProvider;
+    public required ServiceProviderStub<ReadManager> Host;
     public required NoopLogger<ReadManager> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -34,9 +36,12 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        CustomServiceProvider = new CustomServiceProvider<ReadManager>();
-        ReadManager = new ReadManager(CustomServiceProvider.Scope);
-        Logger = (NoopLogger<ReadManager>)CustomServiceProvider.Provider.GetRequiredService<ILogger<ReadManager>>();
+        Host = new ServiceProviderStub<ReadManager>();
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+
+        ReadManager = new ReadManager(repo, managerLogger);
+        Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
 
     [TestMethod]
@@ -53,7 +58,7 @@ public class ReadTests
     public async Task ReadManager_ShouldReturnErrorMessage_OnInvalidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteDto { TagsCheckedRequest = [25000] };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = [25000] };
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto).ConfigureAwait(false);
@@ -65,8 +70,8 @@ public class ReadTests
         }
 
         // asserts:
-        Assert.AreEqual(ModelMessages.ElectNoteError, responseDto.CommonErrorMessageResponse);
-        Assert.AreEqual(ModelMessages.ElectNoteError, Logger.Message);
+        Assert.AreEqual(ErrorMessages.ElectNoteError, responseDto.CommonErrorMessageResponse);
+        Assert.AreEqual(ErrorMessages.ElectNoteError, Logger.Message);
     }
 
     [TestMethod]
@@ -81,59 +86,63 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ReadController_ShouldLogError_WhenThrow()
+    public async Task ReadController_ShouldReturnNextNote_OnValidElectionRequestWithTags()
     {
         // arrange:
+        var requestDto = new NoteRequest { TagsCheckedRequest = [ElectionTestCheckedTag] };
         var logger = Substitute.For<ILogger<ReadController>>();
-        var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        serviceScopeFactory
-            .When(s => s.CreateScope())
-            .Do(i => throw new Exception());
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
 
         // act:
-        var readController = new ReadController(serviceScopeFactory, logger);
-        _ = await readController.GetNextOrSpecificNote(null, null);
+        var readController = new ReadController(repo, logger, managerLogger);
+        var responseDto = await readController.GetNextOrSpecificNote(requestDto, null);
 
         // assert:
-        logger
-            .Received()
-            .LogError(Arg.Any<Exception>(), ControllerMessages.ElectNoteError);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, responseDto.Value.EnsureNotNull().TitleResponse);
     }
 
     [TestMethod]
-    public async Task ReadController_ShouldReturnEmptyTitle_OnNullElectionRequest()
+    public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
+        var host = new ServiceProviderStub<ReadManager>();
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var logger = Substitute.For<ILogger<ReadController>>();
-        var factory = new CustomScopeFactory(CustomServiceProvider.Provider);
-        var readController = new ReadController(factory, logger);
+        var managerLogger = Substitute.For<ILogger<ReadManager>>();
+
+        var readController = new ReadController(repo, logger, managerLogger);
+        readController.AddHttpContext(host.Provider);
 
         // act:
-        var responseDto = (await readController.GetNextOrSpecificNote(null, null)).Value;
+        var responseDto = (await readController.GetNextOrSpecificNote(null, null))
+            .Value
+            .EnsureNotNull();
 
         // assert:
-        Assert.AreEqual(string.Empty, responseDto?.TitleResponse);
+        Assert.AreEqual(string.Empty, responseDto.TitleResponse);
+        Assert.AreEqual(string.Empty, responseDto.TextResponse);
     }
 
     [TestMethod]
     public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
 
         // assert:
         Assert.AreEqual(Logger.Message, string.Empty);
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TitleResponse);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, responseDto.TextResponse);
     }
 
     [TestMethod]
     // NB: в тч демонстрация распределения результатов алгоритме выбора
     public async Task ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
     {
-        await using var repo = (FakeCatalogRepository)CustomServiceProvider.Provider.GetRequiredService<IDataRepository>();
+        await using var repo = (FakeCatalogRepository)Host.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(ElectionTestNotesCount);
 
@@ -145,7 +154,7 @@ public class ReadTests
 
         var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var requestDto = new NoteDto { TagsCheckedRequest = new List<int>() };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = new List<int>() };
 
         requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
 
@@ -155,7 +164,7 @@ public class ReadTests
         {
             var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto);
 
-            var id = responseDto.CommonNoteId;
+            var id = responseDto.NoteIdExchange;
 
             if (!idStorage.TryAdd(id, 1))
             {

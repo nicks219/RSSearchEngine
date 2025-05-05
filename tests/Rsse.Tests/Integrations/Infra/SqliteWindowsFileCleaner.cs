@@ -25,10 +25,10 @@ internal abstract class SqliteFileCleaner
         Process.Start(new ProcessStartInfo
         {
             FileName = "cmd.exe",
-            Arguments = $"/c timeout /t 2 & del {args}",
+            Arguments = $"/c start \"\" cmd /c \"timeout /t 2 & del {args}\"",
             CreateNoWindow = false,
             UseShellExecute = true,
-            WindowStyle = ProcessWindowStyle.Normal
+            WindowStyle = ProcessWindowStyle.Hidden
         });
     }
 }

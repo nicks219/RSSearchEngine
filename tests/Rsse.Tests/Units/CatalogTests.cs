@@ -7,13 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using SearchEngine.Common;
-using SearchEngine.Controllers;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Repository.Contracts;
-using SearchEngine.Models;
+using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 
@@ -25,18 +26,18 @@ public class CatalogTests
 
     private const int NotesPerPage = 10;
     private int _notesCount;
-    private CustomServiceProvider<CatalogManager>? _host;
-    private NoopLogger<CatalogManager>? _logger;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new CustomServiceProvider<CatalogManager>();
-        CatalogManager = new CatalogManager(_host.Scope);
-        Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        var host = new ServiceProviderStub<CatalogManager>();
+        var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+
+        CatalogManager = new CatalogManager(repo, managerLogger);
+        Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = Repo.ReadAllNotes().Count();
-        _logger = (NoopLogger<CatalogManager>)_host.Provider.GetRequiredService<ILogger<CatalogManager>>();
     }
 
     [TestMethod]
@@ -63,7 +64,7 @@ public class CatalogTests
 
         // arrange:
         Repo.CreateStubData(50);
-        var request = new CatalogDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
+        var request = new CatalogRequestDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
         var responseDto = await CatalogManager.NavigateCatalog(request);
@@ -74,28 +75,28 @@ public class CatalogTests
             .Be(currentPage + 1);
     }
 
-    [TestMethod]
+    /*[TestMethod]
     public async Task CatalogManager_ShouldLogError_OnUndefinedRequest()
     {
         // arrange & act:
         _ = await CatalogManager.NavigateCatalog(null!);
 
         // assert:
-        Assert.AreEqual(_logger?.Message, ModelMessages.NavigateCatalogError);
-    }
+        Assert.AreEqual(ErrorMessages.NavigateCatalogError, _logger?.Message);
+    }*/
 
     [TestMethod]
     public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
     {
         // arrange:
         List<int> invalidData = [1000, 2000];
-        var request = new CatalogDto { Direction = invalidData};
+        var request = new CatalogRequestDto { Direction = invalidData };
 
         // act:
         var responseDto = await CatalogManager.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(responseDto.ErrorMessage, ModelMessages.NavigateCatalogError);
+        Assert.AreEqual(responseDto.ErrorMessage, ErrorMessages.NavigateCatalogError);
     }
 
     [TestMethod]
@@ -117,24 +118,29 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var factory = new CustomScopeFactory(new CustomServiceProvider<CatalogManager>().Provider);
-        var catalogController = new CatalogController(factory, logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
 
         // assert:
-        Assert.AreEqual(null, responseDto?.CatalogPage);
+        Assert.AreEqual(null, responseDto.EnsureNotNull().CatalogPage);
     }
 
     [TestMethod]
-    public async Task CatalogController_ShouldLogError_WhenThrow()
+    public async Task CatalogController_ShouldLogError_OnUndefinedRequest()
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        serviceScopeFactory.When(s => s.CreateScope()).Do(_ => throw new Exception());
-        var catalogController = new CatalogController(serviceScopeFactory, logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

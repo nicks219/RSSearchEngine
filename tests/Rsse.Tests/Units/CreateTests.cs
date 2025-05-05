@@ -1,9 +1,13 @@
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Models;
+using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Managers;
 using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.DatabaseRepo;
+using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units;
 
@@ -11,12 +15,15 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateManager CreateManager;
+    public required ServiceProviderStub<CreateManager> Host;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new CustomServiceProvider<CreateManager>();
-        CreateManager = new CreateManager(host.Scope);
+        Host = new ServiceProviderStub<CreateManager>();
+        var repo = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateManager>>();
+        CreateManager = new CreateManager(repo, managerLogger);
     }
 
     [TestMethod]
@@ -33,19 +40,24 @@ public class CreateTests
     public async Task CreateManager_ShouldCreatValidNote_Correctly()
     {
         // arrange:
-        var requestDto = new NoteDto
+        var requestDto = new NoteRequestDto
         {
-            TitleRequest = "test title",
-            TextRequest = "test text",
-            TagsCheckedRequest = [1, 2, 3, 4, 11]
+            TitleRequest = "test: title",
+            TextRequest = "test: text",
+            TagsCheckedRequest = [1, 2, 3]
         };
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
-        var expectedDto = await new UpdateManager(new CustomServiceProvider<UpdateManager>().Scope)
-            .GetOriginalNote(responseDto.CommonNoteId);
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateManager>>();
+
+        var actualDto = await new UpdateManager(repo, managerLogger).GetOriginalNote(responseDto.NoteIdExchange);
 
         // assert:
-        Assert.AreEqual(expectedDto.TitleRequest, responseDto.TitleRequest);
+        responseDto.CommonErrorMessageResponse.Should().BeNull();
+        responseDto.TitleResponse.Should().Be("[OK]");
+        // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
+        Assert.AreEqual(requestDto.TitleRequest, actualDto.TitleResponse);
     }
 }

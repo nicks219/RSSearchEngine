@@ -25,13 +25,13 @@ spec:
           - containerPort: 5000
           livenessProbe:
             httpGet:
-              path: /
+              path: /system/version
               port: 5000
             periodSeconds: 5
             initialDelaySeconds: 5
           readinessProbe:
             httpGet:
-              path: /
+              path: /system/version
               port: 5000
             periodSeconds: 10
             initialDelaySeconds: 5

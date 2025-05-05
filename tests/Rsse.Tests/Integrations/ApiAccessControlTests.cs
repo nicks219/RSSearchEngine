@@ -1,12 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Common.Auth;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Api.Startup;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Tests.Integrations.Api;
+using SearchEngine.Tests.Integrations.Extensions;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace SearchEngine.Tests.Integrations;
 
@@ -16,15 +21,15 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class ApiAccessControlTests
 {
-    private static CustomWebAppFactory<SqliteAccessControlStartup>? _factory;
-    private static WebApplicationFactoryClientOptions? _options;
+    private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private static CustomWebAppFactory<Startup> _factory;
+    private static WebApplicationFactoryClientOptions _options;
 
     [ClassInitialize]
     public static void ApiAccessControlTestsSetup(TestContext context)
     {
-        // arrange:
-        _factory = new CustomWebAppFactory<SqliteAccessControlStartup>();
-        var baseUri = new Uri("http://localhost:5000/");
+        _factory = new CustomWebAppFactory<Startup>();
+        var baseUri = BaseAddress;
         _options = new WebApplicationFactoryClientOptions
         {
             BaseAddress = baseUri,
@@ -33,76 +38,216 @@ public class ApiAccessControlTests
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void CleanUp() => _factory!.Dispose();
+    public static void CleanUp() => _factory.Dispose();
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByUnauthenticatedUser_Returns401()
+    public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
-        // act:
-        using var client = _factory!.CreateClient(_options!);
+        // arrange:
         var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
+        using var client = _factory.CreateClient(_options);
+
+        // act:
         using var response = await client.DeleteAsync(uri);
+        var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
-        var statusCode = (int)response.StatusCode;
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
 
         // assert:
-        statusCode.Should().Be(401);
-        reason.Should().Be("Unauthorized");
-        response.Should().NotBeNull();
-        var shift = headers.FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
-        shift.Value.First().Should().Be(Constants.ShiftHeaderValue);
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.Unauthorized);
+
+        reason
+            .Should()
+            .Be(HttpStatusCode.Unauthorized.ToString());
+
+        shift.Value.First()
+            .Should()
+            .Be(Constants.ShiftHeaderValue);
     }
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByUnauthorizedUser_Returns403()
+    public async Task Api_Unauthenticated_Delete_ShouldReturns403()
     {
-        // act: invalid login:
-        using var client = _factory!.CreateClient(_options!);
-        var uri = new Uri("account/login?email=editor&password=editor", UriKind.Relative);
-        var response = await client.GetAsync(uri);
-        var headers = response.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+        // arrange:
+        const string unauthenticated = "editor";
+        using var client = _factory.CreateClient(_options);
+        await client.TryAuthorizeToService(unauthenticated, unauthenticated);
+        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
 
-        // act: request:
-        uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
-        response = await client.DeleteAsync(uri);
+        // act:
+        using var response = await client.DeleteAsync(uri);
+        var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
-        var content = await response.Content.ReadAsStringAsync();
-        var statusCode = (int)response.StatusCode;
+        var content = await response
+            .Content
+            .ReadAsStringAsync();
 
         // assert:
-        statusCode.Should().Be(403);
-        reason.Should().Be("Forbidden");
-        content.Should().NotBeNull();
-        content.Should().Be("GET: access denied.");
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.Forbidden);
 
-        response.Dispose();
+        reason
+            .Should()
+            .Be(HttpStatusCode.Forbidden.ToString());
+
+        content
+            .Should()
+            .Be("GET: access denied.");
     }
 
     [TestMethod]
-    public async Task Api_DeleteNote_ByAuthorizedUser_ShouldSucceed()
+    [DataRow("migration/copy")]
+    [DataRow("migration/create?fileName=123&databaseType=MySql")]
+    [DataRow("migration/restore?fileName=123&databaseType=MySql")]
+    [DataRow("migration/download?filename=123")]
+    [DataRow("account/check")]
+    [DataRow("account/update?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
+    [DataRow("api/create")]
+    [DataRow("api/update?id=1")]
+    public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
-        // act: valid login:
-        using var client = _factory!.CreateClient(_options!);
-        var uri = new Uri("account/login?email=admin&password=admin", UriKind.Relative);
-        var response = await client.GetAsync(uri);
-        var headers = response.Headers;
-        var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        var uri = new Uri(uriString, UriKind.Relative);
 
-        // act: request:
-        // запрос на удаление несуществующей заметки - чтобы не аффектить тесты, завязанные на её чтение
-        uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
-        client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
-        response = await client.DeleteAsync(uri);
+        // act:
+        using var response = await client.GetAsync(uri);
+        var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
-        var statusCode = (int)response.StatusCode;
+        var headers = response.Headers;
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
 
         // assert:
-        statusCode.Should().Be(200);
-        reason.Should().Be("OK");
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.Unauthorized);
 
-        response.Dispose();
+        reason
+            .Should()
+            .Be(HttpStatusCode.Unauthorized.ToString());
+
+        shift.Value.First()
+            .Should()
+            .Be(Constants.ShiftHeaderValue);
+    }
+
+    [TestMethod]
+    [DataRow("migration/upload")]
+    [DataRow("api/create")]
+    [DataRow("api/update")]
+    public async Task Api_Unauthorized_Post_ShouldReturns401(string uriString)
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        using MultipartFormDataContent content = TestHelper.GetRequestContent(true);
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        using var response = await client.PostAsync(uri, content);
+        var statusCode = response.StatusCode;
+        var reason = response.ReasonPhrase;
+        var headers = response.Headers;
+        var shift = headers
+            .FirstOrDefault(e => e.Key == Constants.ShiftHeaderName);
+
+        // assert:
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.Unauthorized);
+
+        reason
+            .Should()
+            .Be(HttpStatusCode.Unauthorized.ToString());
+
+        shift.Value.First()
+            .Should()
+            .Be(Constants.ShiftHeaderValue);
+    }
+
+    [TestMethod]
+    public async Task Api_Authorized_Delete_ShouldReturns200()
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        await client.TryAuthorizeToService();
+        // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
+        var uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
+
+        // act:
+        using var response = await client.DeleteAsync(uri);
+        var statusCode = response.StatusCode;
+        var reason = response.ReasonPhrase;
+
+        // assert:
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.OK);
+
+        reason
+            .Should()
+            .Be(HttpStatusCode.OK.ToString());
+    }
+
+    [TestMethod]
+    [DataRow("migration/download?filename=backup_9.dump")]
+    [DataRow("account/check")]
+    [DataRow("account/update?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
+    [DataRow("api/create")]
+    [DataRow("api/update?id=1")]
+    public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        await client.TryAuthorizeToService();
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        using var response = await client.GetAsync(uri);
+        var statusCode = response.StatusCode;
+        var reason = response.ReasonPhrase;
+
+        // assert:
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.OK);
+
+        reason
+            .Should()
+            .Be(HttpStatusCode.OK.ToString());
+    }
+
+    [TestMethod]
+    [DataRow("migration/upload", true)]
+    [DataRow("api/create", false)]
+    [DataRow("api/update", false)]
+    public async Task Api_Authorized_Post_ShouldReturns200(string uriString, bool appendFile)
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        await client.TryAuthorizeToService();
+
+        var uri = new Uri(uriString, UriKind.Relative);
+        using var content = TestHelper.GetRequestContent(appendFile);
+
+        // act:
+        using var response = await client.PostAsync(uri, content);
+        HttpStatusCode statusCode = response.StatusCode;
+        string reason = response.ReasonPhrase;
+
+        // assert:
+        statusCode
+            .Should()
+            .Be(HttpStatusCode.OK);
+
+        reason
+            .Should()
+            .Be(HttpStatusCode.OK.ToString());
     }
 }
+

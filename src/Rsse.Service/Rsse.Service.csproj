@@ -13,7 +13,11 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
-        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
+    <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
+     <DebugType>none</DebugType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">

@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using SearchEngine;
-using SearchEngine.Common.Auth;
-using SearchEngine.Tools.DevelopmentAssistant;
+using SearchEngine.Api.Startup;
+using SearchEngine.Domain.Configuration;
+using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
 
 #if WINDOWS
@@ -46,17 +46,16 @@ try
     var app = builder.Build();
     app.Run();
     return 0;
-    // Postgres: SocketException | MySql: InvalidOperationException
 }
 catch (InvalidOperationException ex)
 {
-    Log.Fatal(ex, "[{Reporter}] Startup error, more likely db server is down, see exception:\r\n{Message}",
+    Log.Fatal(ex, "[{Reporter}] | startup error, more likely db server is down, see exception:\r\n{Message}",
         nameof(Program), ex.Message);
     return 1;
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "[{Reporter}] Startup error, see exception:\r\n{Message}", nameof(Program), ex.Message);
+    Log.Fatal(ex, "[{Reporter}] | startup error, see exception:\r\n{Message}", nameof(Program), ex.Message);
     return 1;
 }
 finally
