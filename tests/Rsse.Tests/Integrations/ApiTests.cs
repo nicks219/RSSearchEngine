@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace SearchEngine.Tests.Integrations;
 
@@ -18,7 +20,11 @@ namespace SearchEngine.Tests.Integrations;
 public class ApiTests
 {
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private static CustomWebAppFactory<SqliteApiStartup> _factory;
     private readonly WebApplicationFactoryClientOptions _options = new() { BaseAddress = BaseAddress };
+
+    [ClassInitialize]
+    public static void ClassInitialize(TestContext _) => _factory = new CustomWebAppFactory<SqliteApiStartup>();
 
     /// <summary>
     /// Запустить отложенную очистку файлов бд sqlite (на windows) в финале тестовой сборки
@@ -26,6 +32,7 @@ public class ApiTests
     [ClassCleanup(ClassCleanupBehavior.EndOfAssembly)]
     public static void CleanUp()
     {
+        _factory.Dispose();
         SqliteFileCleaner.ScheduleFileDeletionWindowsOnly();
     }
 
@@ -62,8 +69,7 @@ public class ApiTests
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -105,9 +111,8 @@ public class ApiTests
     public async Task Api_ReadController_Post_ShouldReturnsExpectedResult(string uriString, string key, string expected)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
         using var content = TestHelper.GetRequestContentWithTags();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:

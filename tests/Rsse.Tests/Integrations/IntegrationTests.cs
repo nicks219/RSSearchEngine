@@ -26,8 +26,8 @@ namespace SearchEngine.Tests.Integrations;
 [TestClass]
 public class IntegrationTests
 {
-    private const string Tag = "new";
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private static CustomWebAppFactory<IntegrationStartup> _factory;
     private static WebApplicationFactoryClientOptions _cookiesOptions;
     private static WebApplicationFactoryClientOptions _options;
 
@@ -60,7 +60,15 @@ public class IntegrationTests
             BaseAddress = BaseAddress,
             HandleCookies = true
         };
+
+        _factory = new CustomWebAppFactory<IntegrationStartup>();
     }
+
+    [TestInitialize]
+    public void IntegrationTestsSetup() => _factory = new CustomWebAppFactory<IntegrationStartup>();
+
+    [TestCleanup]
+    public void IntegrationTestsCleanup() => _factory.Dispose();
 
     [TestMethod]
     [DataRow("migration/copy")]
@@ -72,8 +80,7 @@ public class IntegrationTests
     public async Task Integration_Migrations_ShouldApplyCorrectly(string uriString)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_cookiesOptions);
+        using var client = _factory.CreateClient(_cookiesOptions);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
 
@@ -92,7 +99,7 @@ public class IntegrationTests
             .Be(HttpStatusCode.OK.ToString());
 
         // clean up:
-        TestHelper.CleanUpDatabases(factory);
+        TestHelper.CleanUpDatabases(_factory);
     }
 
 
@@ -110,8 +117,7 @@ public class IntegrationTests
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(string[] uris)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
 
         using var enumerator = TestHelper
@@ -171,7 +177,7 @@ public class IntegrationTests
         tags.Should().Contain("1");
 
         // clean up:
-        TestHelper.CleanUpDatabases(factory);
+        TestHelper.CleanUpDatabases(_factory);
     }
 
     // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
@@ -187,8 +193,7 @@ public class IntegrationTests
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string[] uris)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
 
         using var enumerator = TestHelper
@@ -235,7 +240,7 @@ public class IntegrationTests
         // .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
 
         // clean up:
-        TestHelper.CleanUpDatabases(factory);
+        TestHelper.CleanUpDatabases(_factory);
     }
 
     // WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI:
@@ -272,8 +277,7 @@ public class IntegrationTests
     public async Task Api_ReadNoteTextAndTitle_ShouldCompleteSuccessful(string uriString, Request type, string? titleExpected, string? textExpected, StringContent content)
     {
         // arrange:
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
 
@@ -328,8 +332,9 @@ public class IntegrationTests
 
         ["api/create", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
         ["api/catalog?id=1", Request.Get, typeof(CatalogResponse), "1", "930", TestHelper.Empty],
-        ["api/catalog", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],// навигация >>>
-        // // проверим наличие заметки 1
+        // навигация "вперёд" по каталогу
+        ["api/catalog", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],
+        // проверим наличие заметки 1
         [$"api/compliance/indices?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "1", "1.2", TestHelper.Empty],
         ["api/catalog?id=1&pg=2", Request.Delete, typeof(CatalogResponse), "2", "929", TestHelper.Empty],
         ["api/catalog?id=2&pg=1", Request.Delete, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
@@ -353,8 +358,7 @@ public class IntegrationTests
     {
         // arrange:
         // todo: тест новый хост каждый раз поднимает - перенеси в IntegrationTestsSetup
-        await using var factory = new CustomWebAppFactory<IntegrationStartup>();
-        using var client = factory.CreateClient(_options);
+        using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
 
         var uri = new Uri(uriString, UriKind.Relative);
