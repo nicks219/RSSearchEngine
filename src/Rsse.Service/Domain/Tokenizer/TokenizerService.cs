@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,11 +16,10 @@ namespace SearchEngine.Domain.Tokenizer;
 /// </summary>
 public class TokenizerService : ITokenizerService, IDisposable
 {
-    public CustomReaderWriterLock RwLockSlim { get; init; } = new();
+    private TokenizerLock TokenizerLock { get; } = new();
 
-    // todo: дополнить логирование ошибок пересозданием линии кэша
-    private readonly Dictionary<int, List<int>> _reducedTokenLines;
-    private readonly Dictionary<int, List<int>> _extendedTokenLines;
+    private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
+    private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
 
     private readonly IServiceProvider _provider;
     private readonly ILogger<TokenizerService> _logger;
@@ -34,28 +34,28 @@ public class TokenizerService : ITokenizerService, IDisposable
     public TokenizerService(IServiceProvider provider, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
         _provider = provider;
-        _reducedTokenLines = new Dictionary<int, List<int>>();
-        _extendedTokenLines = new Dictionary<int, List<int>>();
+        _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
     }
 
     // используется для тестов
-    internal Dictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
+    internal ConcurrentDictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
 
     // используется для тестов
-    internal Dictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
+    internal ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
 
     /// <inheritdoc/>
     public void Delete(int id)
     {
         if (!_isEnabled) return;
 
-        using var __ = RwLockSlim.WriteLock();
+        using var __ = TokenizerLock.AcquireSharedLock();
 
-        var isReducedRemoved = _reducedTokenLines.Remove(id);
+        var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
 
-        var isExtendedRemoved = _extendedTokenLines.Remove(id);
+        var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
 
         if (!(isReducedRemoved && isExtendedRemoved))
         {
@@ -68,7 +68,7 @@ public class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var _ = RwLockSlim.WriteLock();
+        using var _ = TokenizerLock.AcquireSharedLock();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
@@ -90,24 +90,30 @@ public class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var _ = RwLockSlim.WriteLock();
+        using var _ = TokenizerLock.AcquireSharedLock();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
 
-        if (_extendedTokenLines.ContainsKey(id))
+        if (_extendedTokenLines.TryGetValue(id, out var existedLine))
         {
-            _extendedTokenLines[id] = extendedLine;
+            if (!_extendedTokenLines.TryUpdate(id, extendedLine, existedLine))
+            {
+                _logger.LogError($"[{nameof(TokenizerService)}] extended vectors concurrent update error");
+            }
         }
         else
         {
             _logger.LogError($"[{nameof(TokenizerService)}] extended vectors has not been updated");
         }
 
-        if (_reducedTokenLines.ContainsKey(id))
+        if (_reducedTokenLines.TryGetValue(id, out existedLine))
         {
-            _reducedTokenLines[id] = reducedLine;
+            if (!_reducedTokenLines.TryUpdate(id, reducedLine, existedLine))
+            {
+                _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors concurrent update error");
+            }
         }
         else
         {
@@ -120,9 +126,10 @@ public class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var _ = RwLockSlim.WriteLock();
+        // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
+        using var _ = TokenizerLock.AcquireExclusiveLock();
 
-        // чтобы не закрывать контекст в корневом scope провайдера
+        // Не закрываем контекст в корневом scope провайдера.
         using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
@@ -163,9 +170,10 @@ public class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
+    // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
+    // Допустимо, если метод вернёт неактуальные данные.
     public Dictionary<int, double> ComputeComplianceIndices(string text)
     {
-        using var _ = RwLockSlim.ReadLock();
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var result = new Dictionary<int, double>();
@@ -279,6 +287,6 @@ public class TokenizerService : ITokenizerService, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        RwLockSlim.Dispose();
+        TokenizerLock.Dispose();
     }
 }

@@ -6,12 +6,15 @@ namespace SearchEngine.Domain.Tokenizer;
 /// <summary>
 /// Блокировка в disposable-обертке
 /// </summary>
-public class CustomReaderWriterLock : IDisposable
+public class TokenizerLock : IDisposable
 {
     private readonly ReaderWriterLockSlim _lock = new();
 
-    public ReadLockToken ReadLock() => new(_lock);
-    public WriteLockToken WriteLock() => new(_lock);
+    /// <summary/> Разделяемая блокировка
+    public ReadLockToken AcquireSharedLock() => new(_lock);
+
+    /// <summary/> Эксклюзивная блокировку
+    public WriteLockToken AcquireExclusiveLock() => new(_lock);
 
     public readonly struct WriteLockToken : IDisposable
     {
