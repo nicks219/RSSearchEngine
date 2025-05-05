@@ -99,9 +99,12 @@ public class AccountController(
     private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
     {
         var scopedProvider = HttpContext.RequestServices;
+        var repo = scopedProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = scopedProvider.GetRequiredService<ILogger<AccountManager>>();
+
         try
         {
-            var identity = await new AccountManager(scopedProvider).TrySignInWith(credentialsRequestDto);
+            var identity = await new AccountManager(repo, managerLogger).TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {

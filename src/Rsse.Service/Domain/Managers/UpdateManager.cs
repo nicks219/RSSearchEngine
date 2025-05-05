@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -13,11 +12,8 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateManager(IServiceProvider scopedProvider)
+public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
 {
-    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<UpdateManager> _logger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
-
     /// <summary>
     /// Прочитать обновляемую заметку
     /// </summary>
@@ -30,7 +26,7 @@ public class UpdateManager(IServiceProvider scopedProvider)
             string text;
             var title = string.Empty;
 
-            var notes = await _repo
+            var notes = await repo
                 .ReadNote(originalNoteId)
                 .ToListAsync();
 
@@ -46,9 +42,9 @@ public class UpdateManager(IServiceProvider scopedProvider)
                 text = $"[{nameof(GetOriginalNote)}] action is not possible, note to be updated is not specified";
             }
 
-            var tagList = await _repo.ReadStructuredTagList();
+            var tagList = await repo.ReadStructuredTagList();
 
-            var noteTags = await _repo
+            var noteTags = await repo
                 .ReadNoteTags(originalNoteId)
                 .ToListAsync();
 
@@ -68,7 +64,7 @@ public class UpdateManager(IServiceProvider scopedProvider)
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, GetOriginalNoteError);
+            logger.LogError(ex, GetOriginalNoteError);
             return new NoteResultDto { CommonErrorMessageResponse = GetOriginalNoteError };
         }
     }
@@ -90,17 +86,17 @@ public class UpdateManager(IServiceProvider scopedProvider)
                 return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
             }
 
-            var initialNoteTags = await _repo
+            var initialNoteTags = await repo
                 .ReadNoteTags(updatedNoteRequest.NoteIdExchange)
                 .ToListAsync();
 
-            await _repo.UpdateNote(initialNoteTags, updatedNoteRequest);
+            await repo.UpdateNote(initialNoteTags, updatedNoteRequest);
 
             return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, UpdateNoteError);
+            logger.LogError(ex, UpdateNoteError);
 
             return new NoteResultDto { CommonErrorMessageResponse = UpdateNoteError };
         }

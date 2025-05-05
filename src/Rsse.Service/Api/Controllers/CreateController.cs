@@ -42,7 +42,10 @@ public class CreateController(
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var model = new CreateManager(scopedProvider);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
+
+            var model = new CreateManager(repo, managerLogger);
             var response = await model.ReadStructuredTagList();
             return response.MapFromDto();
         }
@@ -64,7 +67,10 @@ public class CreateController(
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var manager = new CreateManager(scopedProvider);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
+
+            var manager = new CreateManager(repo, managerLogger);
             var dto = request.MapToDto();
 
             await manager.CreateTagFromTitle(dto);

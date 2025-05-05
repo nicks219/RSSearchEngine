@@ -32,7 +32,10 @@ public class UpdateController(ILogger<UpdateController> logger)
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var response = await new UpdateManager(scopedProvider).GetOriginalNote(id);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
+
+            var response = await new UpdateManager(repo, managerLogger).GetOriginalNote(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -52,8 +55,11 @@ public class UpdateController(ILogger<UpdateController> logger)
         try
         {
             var scopedProvider = HttpContext.RequestServices;
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
+
             var dto = request.MapToDto();
-            var response = await new UpdateManager(scopedProvider).UpdateNote(dto);
+            var response = await new UpdateManager(repo, managerLogger).UpdateNote(dto);
 
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });

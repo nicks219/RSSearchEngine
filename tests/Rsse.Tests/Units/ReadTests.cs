@@ -36,7 +36,10 @@ public class ReadTests
     public void Initialize()
     {
         Host = new ServicesStubStartup<ReadManager>();
-        ReadManager = new ReadManager(Host.Provider);
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+
+        ReadManager = new ReadManager(repo, managerLogger);
         Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
 

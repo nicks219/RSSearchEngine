@@ -100,7 +100,7 @@
   * ci: pdb удаляются по флагу IsPublishing=true, локально остаются доступны  
   * `develop/release/6.0.0-pre-1` `пре-релиз`
     * upd: увеличение тестового покрытия 
-    * upd: рефакторинг архитектуры проектов (по слоям)
+    * upd: рефакторинг архитектуры проектов (функционал/dto по слоям, убран service locator)
 
 
   * upd: [сравнение 6.0.0-pre с последним релизом k0.0.1 в github](https://github.com/nicks219/RSSearchEngine/compare/k0.0.1...preview)

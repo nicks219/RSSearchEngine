@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -24,13 +25,15 @@ public class UpdateTests
     {
         var host = new ServicesStubStartup<TokenizerService>();
         var secondHost = new ServicesStubStartup<UpdateManager>();
-        var findModel = new ComplianceSearchManager(host.Provider);
-
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        repo.CreateStubData(10);
-        _testNoteId = findModel.FindNoteId(Title);
+        var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
+        var manager = new ComplianceSearchManager(repo, tokenizer);
+        var managerLogger = secondHost.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
-        UpdateManager = new UpdateManager(secondHost.Provider);
+        repo.CreateStubData(10);
+        _testNoteId = manager.FindNoteId(Title);
+
+        UpdateManager = new UpdateManager(repo, managerLogger);
     }
 
     [TestMethod]

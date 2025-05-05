@@ -30,7 +30,10 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var response = await new CatalogManager(scopedProvider).ReadPage(id);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<CatalogManager>>();
+
+            var response = await new CatalogManager(repo, managerLogger).ReadPage(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -50,8 +53,11 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
         try
         {
             var scopedProvider = HttpContext.RequestServices;
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<CatalogManager>>();
+
             var dto = request.MapToDto();
-            var response = await new CatalogManager(scopedProvider).NavigateCatalog(dto);
+            var response = await new CatalogManager(repo, managerLogger).NavigateCatalog(dto);
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -74,10 +80,12 @@ public class CatalogController(ILogger<CatalogController> logger) : ControllerBa
         try
         {
             var scopedProvider = HttpContext.RequestServices;
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<CatalogManager>>();
             var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Delete(id);
 
-            var response = await new CatalogManager(scopedProvider).DeleteNote(id, pg);
+            var response = await new CatalogManager(repo, managerLogger).DeleteNote(id, pg);
             return response.MapFromDto();
         }
         catch (Exception ex)

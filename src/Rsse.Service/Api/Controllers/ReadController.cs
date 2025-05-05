@@ -2,10 +2,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -40,7 +42,10 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var res = new ReadManager(scopedProvider).ReadTitleByNoteId(int.Parse(id));
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
+
+            var res = new ReadManager(repo, managerLogger).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
@@ -59,7 +64,10 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var response = await new ReadManager(scopedProvider).ReadTagList();
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
+
+            var response = await new ReadManager(repo, managerLogger).ReadTagList();
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -88,7 +96,10 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
             }
 
             var scopedProvider = HttpContext.RequestServices;
-            var response = await new ReadManager(scopedProvider).GetNextOrSpecificNote(dto, id, _randomElection);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
+
+            var response = await new ReadManager(repo, managerLogger).GetNextOrSpecificNote(dto, id, _randomElection);
             return response.MapFromDto();
         }
         catch (Exception ex)

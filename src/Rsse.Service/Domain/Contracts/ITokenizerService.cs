@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using SearchEngine.Domain.Entities;
-using SearchEngine.Domain.Tokenizer;
 
 namespace SearchEngine.Domain.Contracts;
 

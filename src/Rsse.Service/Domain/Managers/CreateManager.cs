@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -13,11 +12,8 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateManager(IServiceProvider scopedProvider)
+public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
 {
-    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CreateManager> _logger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
-
     /// <summary>
     /// Получить структурированный список тегов
     /// </summary>
@@ -26,13 +22,13 @@ public class CreateManager(IServiceProvider scopedProvider)
     {
         try
         {
-            var tagList = await _repo.ReadStructuredTagList();
+            var tagList = await repo.ReadStructuredTagList();
 
             return new NoteResultDto(tagList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, CreateManagerReadTagListError);
+            logger.LogError(ex, CreateManagerReadTagListError);
             return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
         }
     }
@@ -70,7 +66,7 @@ public class CreateManager(IServiceProvider scopedProvider)
 
             noteRequestDto.TitleRequest = noteRequestDto.TitleRequest.Trim();
 
-            var newNoteId = await _repo.CreateNote(noteRequestDto);
+            var newNoteId = await repo.CreateNote(noteRequestDto);
 
             if (newNoteId == 0)
             {
@@ -103,7 +99,7 @@ public class CreateManager(IServiceProvider scopedProvider)
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, CreateNoteError);
+            logger.LogError(ex, CreateNoteError);
 
             return new NoteResultDto { CommonErrorMessageResponse = CreateNoteError };
         }
@@ -128,7 +124,7 @@ public class CreateManager(IServiceProvider scopedProvider)
         var tag = TitlePattern.Match(noteDto.TitleRequest).Value.Trim(tagPattern.ToCharArray());
 
         return !string.IsNullOrEmpty(tag)
-            ? _repo.CreateTagIfNotExists(tag)
+            ? repo.CreateTagIfNotExists(tag)
             : Task.CompletedTask;
     }
 }

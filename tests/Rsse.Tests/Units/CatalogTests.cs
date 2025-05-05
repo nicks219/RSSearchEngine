@@ -26,14 +26,16 @@ public class CatalogTests
 
     private const int NotesPerPage = 10;
     private int _notesCount;
-    private ServicesStubStartup<CatalogManager>? _host;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new ServicesStubStartup<CatalogManager>();
-        CatalogManager = new CatalogManager(_host.Scope.ServiceProvider);
-        Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        var host = new ServicesStubStartup<CatalogManager>();
+        var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+
+        CatalogManager = new CatalogManager(repo, managerLogger);
+        Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = Repo.ReadAllNotes().Count();
     }

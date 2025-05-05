@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Dto;
 using SearchEngine.Tests.Integrations.Dto;
 
 namespace SearchEngine.Tests.Integrations.Extensions;

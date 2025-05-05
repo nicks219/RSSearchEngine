@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -34,7 +36,10 @@ public class ComplianceSearchController(ILogger<ComplianceSearchController> logg
         try
         {
             var scopedProvider = HttpContext.RequestServices;
-            var manager = new ComplianceSearchManager(scopedProvider);
+            var repo = scopedProvider.GetRequiredService<IDataRepository>();
+            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
+
+            var manager = new ComplianceSearchManager(repo, tokenizer);
             Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 
