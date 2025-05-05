@@ -30,7 +30,7 @@ public class CatalogTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServicesStubStartup<CatalogManager>();
+        var host = new ServiceProviderStub<CatalogManager>();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
 
@@ -118,7 +118,11 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var catalogController = new CatalogController(logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo  = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -132,7 +136,11 @@ public class CatalogTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var catalogController = new CatalogController(logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo  = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

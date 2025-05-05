@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
@@ -23,11 +22,13 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, Route("api/create"), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
-    ILogger<CreateController> logger,
+    IDataRepository repo,
+    ITokenizerService tokenizer,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
-    IOptionsSnapshot<DatabaseOptions> dbOptions)
-    : ControllerBase
+    IOptionsSnapshot<DatabaseOptions> dbOptions,
+    ILogger<CreateController> logger,
+    ILogger<CreateManager> managerLogger) : ControllerBase
 {
     private const string BackupFileName = "db_last_dump";
     private readonly CommonBaseOptions _baseOptions = options.Value;
@@ -41,10 +42,6 @@ public class CreateController(
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
-
             var model = new CreateManager(repo, managerLogger);
             var response = await model.ReadStructuredTagList();
             return response.MapFromDto();
@@ -66,10 +63,6 @@ public class CreateController(
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<CreateManager>>();
-
             var manager = new CreateManager(repo, managerLogger);
             var dto = request.MapToDto();
 
@@ -88,10 +81,6 @@ public class CreateController(
                     CommonErrorMessageResponse = response.CommonErrorMessageResponse
                 };
             }
-
-            // await model.CreateTagFromTitle(dto); // перенесен до создания заметки
-
-            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
 
             tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
 

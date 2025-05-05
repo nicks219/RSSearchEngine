@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
@@ -18,7 +17,10 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [ApiController, Route("api/read")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ReadController(ILogger<ReadController> logger) : ControllerBase
+public class ReadController(
+    IDataRepository repo,
+    ILogger<ReadController> logger,
+    ILogger<ReadManager> managerLogger) : ControllerBase
 {
     private static bool _randomElection = true;
 
@@ -41,10 +43,6 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
-
             var res = new ReadManager(repo, managerLogger).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
@@ -63,10 +61,6 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
-
             var response = await new ReadManager(repo, managerLogger).ReadTagList();
             return response.MapFromDto();
         }
@@ -94,10 +88,6 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
                 // для пустого запроса считаем все теги отмеченными
                 dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
-
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<ReadManager>>();
 
             var response = await new ReadManager(repo, managerLogger).GetNextOrSpecificNote(dto, id, _randomElection);
             return response.MapFromDto();

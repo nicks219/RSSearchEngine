@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
@@ -25,8 +24,9 @@ namespace SearchEngine.Api.Controllers;
 [ApiController, Route("account")]
 public class AccountController(
     IWebHostEnvironment env,
-    ILogger<AccountController> logger)
-    : ControllerBase
+    IDataRepository repo,
+    ILogger<AccountController> logger,
+    ILogger<AccountManager> managerLogger) : ControllerBase
 {
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
@@ -84,8 +84,6 @@ public class AccountController(
     [HttpGet("update"), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
-        var scopedProvider = HttpContext.RequestServices;
-        var repo = scopedProvider.GetRequiredService<IDataRepository>();
         var credosForUpdate = credentials.MapToDto();
         await repo.UpdateCredos(credosForUpdate);
         await Logout();
@@ -98,10 +96,6 @@ public class AccountController(
     /// <param name="credentialsRequestDto">данные для авторизации</param>
     private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
     {
-        var scopedProvider = HttpContext.RequestServices;
-        var repo = scopedProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = scopedProvider.GetRequiredService<ILogger<AccountManager>>();
-
         try
         {
             var identity = await new AccountManager(repo, managerLogger).TrySignInWith(credentialsRequestDto);

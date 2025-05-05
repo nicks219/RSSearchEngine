@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
@@ -19,8 +18,11 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [Authorize, Route("api/update"), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class UpdateController(ILogger<UpdateController> logger)
-    : ControllerBase
+public class UpdateController(
+    IDataRepository repo,
+    ITokenizerService tokenizer,
+    ILogger<UpdateController> logger,
+    ILogger<UpdateManager> managerLogger) : ControllerBase
 {
     /// <summary>
     /// Получить обновляемую заметку
@@ -31,10 +33,6 @@ public class UpdateController(ILogger<UpdateController> logger)
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
-
             var response = await new UpdateManager(repo, managerLogger).GetOriginalNote(id);
             return response.MapFromDto();
         }
@@ -54,14 +52,9 @@ public class UpdateController(ILogger<UpdateController> logger)
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var repo = scopedProvider.GetRequiredService<IDataRepository>();
-            var managerLogger = scopedProvider.GetRequiredService<ILogger<UpdateManager>>();
-
             var dto = request.MapToDto();
             var response = await new UpdateManager(repo, managerLogger).UpdateNote(dto);
 
-            var tokenizer = scopedProvider.GetRequiredService<ITokenizerService>();
             tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
             return response.MapFromDto();

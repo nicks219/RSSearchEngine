@@ -23,8 +23,8 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServicesStubStartup<TokenizerService>();
-        var secondHost = new ServicesStubStartup<UpdateManager>();
+        var host = new ServiceProviderStub<TokenizerService>();
+        var secondHost = new ServiceProviderStub<UpdateManager>();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
         var manager = new ComplianceSearchManager(repo, tokenizer);

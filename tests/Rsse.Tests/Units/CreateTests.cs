@@ -15,12 +15,12 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateManager CreateManager;
-    public required ServicesStubStartup<CreateManager> Host;
+    public required ServiceProviderStub<CreateManager> Host;
 
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServicesStubStartup<CreateManager>();
+        Host = new ServiceProviderStub<CreateManager>();
         var repo = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateManager>>();
         CreateManager = new CreateManager(repo, managerLogger);
