@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -14,7 +15,10 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [Route("api/compliance")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ComplianceSearchController(ILogger<ComplianceSearchController> logger) : ControllerBase
+public class ComplianceSearchController(
+    IDataRepository repo,
+    ITokenizerService tokenizer,
+    ILogger<ComplianceSearchController> logger) : ControllerBase
 {
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
@@ -33,8 +37,7 @@ public class ComplianceSearchController(ILogger<ComplianceSearchController> logg
 
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var manager = new ComplianceSearchManager(scopedProvider);
+            var manager = new ComplianceSearchManager(repo, tokenizer);
             Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 

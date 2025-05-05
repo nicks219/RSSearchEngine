@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -13,14 +12,12 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogManager(IServiceProvider scopedProvider)
+public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger)
 {
     public const int Backward = 1;
     public const int Forward = 2;
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
-    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<CatalogManager> _logger = scopedProvider.GetRequiredService<ILogger<CatalogManager>>();
 
     /// <summary>
     /// Получить страницу каталога
@@ -31,15 +28,15 @@ public class CatalogManager(IServiceProvider scopedProvider)
     {
         try
         {
-            var notesCount = await _repo.ReadNotesCount();
+            var notesCount = await repo.ReadNotesCount();
 
-            var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadCatalogPageError);
+            logger.LogError(ex, ReadCatalogPageError);
 
             return new CatalogResultDto { ErrorMessage = ReadCatalogPageError };
         }
@@ -58,17 +55,17 @@ public class CatalogManager(IServiceProvider scopedProvider)
 
             var pageNumber = catalogRequest.PageNumber;
 
-            var notesCount = await _repo.ReadNotesCount();
+            var notesCount = await repo.ReadNotesCount();
 
             pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-            var catalogPage = await _repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, NavigateCatalogError);
+            logger.LogError(ex, NavigateCatalogError);
 
             return new CatalogResultDto { ErrorMessage = NavigateCatalogError };
         }
@@ -84,13 +81,13 @@ public class CatalogManager(IServiceProvider scopedProvider)
     {
         try
         {
-            await _repo.DeleteNote(noteId);
+            await repo.DeleteNote(noteId);
 
             return await ReadPage(pageNumber);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, DeleteNoteError);
+            logger.LogError(ex, DeleteNoteError);
 
             return new CatalogResultDto { ErrorMessage = DeleteNoteError };
         }

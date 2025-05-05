@@ -1,6 +1,9 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
 using SearchEngine.Tests.Units.Mocks;
@@ -12,13 +15,15 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateManager CreateManager;
-    public required ServicesStubStartup<CreateManager> Host;
+    public required ServiceProviderStub<CreateManager> Host;
 
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServicesStubStartup<CreateManager>();
-        CreateManager = new CreateManager(Host.Scope.ServiceProvider);
+        Host = new ServiceProviderStub<CreateManager>();
+        var repo = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateManager>>();
+        CreateManager = new CreateManager(repo, managerLogger);
     }
 
     [TestMethod]
@@ -44,7 +49,10 @@ public class CreateTests
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
-        var actualDto = await new UpdateManager(Host.Provider).GetOriginalNote(responseDto.NoteIdExchange);
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateManager>>();
+
+        var actualDto = await new UpdateManager(repo, managerLogger).GetOriginalNote(responseDto.NoteIdExchange);
 
         // assert:
         responseDto.CommonErrorMessageResponse.Should().BeNull();

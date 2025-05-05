@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -27,7 +28,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadManager ReadManager;
-    public required ServicesStubStartup<ReadManager> Host;
+    public required ServiceProviderStub<ReadManager> Host;
     public required NoopLogger<ReadManager> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -35,8 +36,11 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServicesStubStartup<ReadManager>();
-        ReadManager = new ReadManager(Host.Provider);
+        Host = new ServiceProviderStub<ReadManager>();
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+
+        ReadManager = new ReadManager(repo, managerLogger);
         Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
     }
 
@@ -82,30 +86,32 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ReadController_ShouldLogError_OnUndefinedRequest()
+    public async Task ReadController_ShouldReturnNextNote_OnValidElectionRequestWithTags()
     {
         // arrange:
+        var requestDto = new NoteRequest { TagsCheckedRequest = [ElectionTestCheckedTag] };
         var logger = Substitute.For<ILogger<ReadController>>();
-        // var serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
-        // serviceScopeFactory.When(s => s.CreateScope()).Do(i => throw new Exception());
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
 
         // act:
-        var readController = new ReadController(logger);
-        _ = await readController.GetNextOrSpecificNote(null, null);
+        var readController = new ReadController(repo, logger, managerLogger);
+        var responseDto = await readController.GetNextOrSpecificNote(requestDto, null);
 
         // assert:
-        logger
-            .Received()
-            .LogError(Arg.Any<Exception>(), ControllerMessages.ElectNoteError);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, responseDto.Value.EnsureNotNull().TitleResponse);
     }
 
     [TestMethod]
-    public async Task ReadController_ShouldReturnEmptyTitle_OnNullElectionRequest()
+    public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
+        var host = new ServiceProviderStub<ReadManager>();
+        var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var logger = Substitute.For<ILogger<ReadController>>();
-        var host = new ServicesStubStartup<ReadManager>();
-        var readController = new ReadController(logger);
+        var managerLogger = Substitute.For<ILogger<ReadManager>>();
+
+        var readController = new ReadController(repo, logger, managerLogger);
         readController.AddHttpContext(host.Provider);
 
         // act:
@@ -115,6 +121,7 @@ public class ReadTests
 
         // assert:
         Assert.AreEqual(string.Empty, responseDto.TitleResponse);
+        Assert.AreEqual(string.Empty, responseDto.TextResponse);
     }
 
     [TestMethod]

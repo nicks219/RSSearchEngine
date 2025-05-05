@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
@@ -14,11 +13,8 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал авторизации
 /// </summary>
-public class AccountManager(IServiceProvider scopedProvider)
+public class AccountManager(IDataRepository repo, ILogger<AccountManager> logger)
 {
-    private readonly IDataRepository _repo = scopedProvider.GetRequiredService<IDataRepository>();
-    private readonly ILogger<AccountManager> _logger = scopedProvider.GetRequiredService<ILogger<AccountManager>>();
-
     /// <summary>
     /// Войти в систему
     /// </summary>
@@ -33,7 +29,7 @@ public class AccountManager(IServiceProvider scopedProvider)
                 return null;
             }
 
-            var user = await _repo.GetUser(credentialsRequest);
+            var user = await repo.GetUser(credentialsRequest);
 
             if (user == null)
             {
@@ -56,7 +52,7 @@ public class AccountManager(IServiceProvider scopedProvider)
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, SignInError);
+            logger.LogError(ex, SignInError);
             return null;
         }
     }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -16,7 +17,10 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [ApiController, Route("api/read")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ReadController(ILogger<ReadController> logger) : ControllerBase
+public class ReadController(
+    IDataRepository repo,
+    ILogger<ReadController> logger,
+    ILogger<ReadManager> managerLogger) : ControllerBase
 {
     private static bool _randomElection = true;
 
@@ -39,8 +43,7 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var res = new ReadManager(scopedProvider).ReadTitleByNoteId(int.Parse(id));
+            var res = new ReadManager(repo, managerLogger).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
@@ -58,8 +61,7 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
     {
         try
         {
-            var scopedProvider = HttpContext.RequestServices;
-            var response = await new ReadManager(scopedProvider).ReadTagList();
+            var response = await new ReadManager(repo, managerLogger).ReadTagList();
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -87,8 +89,7 @@ public class ReadController(ILogger<ReadController> logger) : ControllerBase
                 dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
 
-            var scopedProvider = HttpContext.RequestServices;
-            var response = await new ReadManager(scopedProvider).GetNextOrSpecificNote(dto, id, _randomElection);
+            var response = await new ReadManager(repo, managerLogger).GetNextOrSpecificNote(dto, id, _randomElection);
             return response.MapFromDto();
         }
         catch (Exception ex)

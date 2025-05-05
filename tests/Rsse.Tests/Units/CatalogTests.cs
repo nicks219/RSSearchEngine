@@ -26,14 +26,16 @@ public class CatalogTests
 
     private const int NotesPerPage = 10;
     private int _notesCount;
-    private ServicesStubStartup<CatalogManager>? _host;
 
     [TestInitialize]
     public void Initialize()
     {
-        _host = new ServicesStubStartup<CatalogManager>();
-        CatalogManager = new CatalogManager(_host.Scope.ServiceProvider);
-        Repo = (FakeCatalogRepository)_host.Provider.GetRequiredService<IDataRepository>();
+        var host = new ServiceProviderStub<CatalogManager>();
+        var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+
+        CatalogManager = new CatalogManager(repo, managerLogger);
+        Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = Repo.ReadAllNotes().Count();
     }
@@ -116,7 +118,11 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var catalogController = new CatalogController(logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -130,7 +136,11 @@ public class CatalogTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var catalogController = new CatalogController(logger);
+        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var repo = Substitute.For<IDataRepository>();
+        var tokenizer = Substitute.For<ITokenizerService>();
+
+        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

@@ -9,13 +9,13 @@ using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units.Mocks;
 
-/// <summary/> Для тестов
-public class ServicesStubStartup<TService> where TService : class
+/// <summary/> Для тестов, с двумя логгерами.
+public class ServiceProviderStub<TService> where TService : class
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServicesStubStartup()
+    public ServiceProviderStub()
     {
         var services = new ServiceCollection();
 
