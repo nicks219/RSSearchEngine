@@ -4,21 +4,27 @@ import {
     RecoveryStateStorage,
     StateTypesAlias
 } from "./state.handlers";
+import {RouteConstants} from "../../api-routes.tsx";
 
 export class Loader {
-    static createUrl: string = "/api/create";
-    static readUrl: string = "/api/read";
-    static readTitleUrl: string = "/api/read/title";
-    static updateUrl: string = "/api/update";
-    static catalogUrl: string = "/api/catalog";
-    static loginUrl: string = "/account/login";
-    static logoutUrl: string = "/account/logout";
-    static checkAuth: string = "/account/check";
-    static complianceIndicesUrl: string = "/api/compliance/indices";
+    static createGetTagsUrl: string = RouteConstants.createGetTagsUrl;
+    static createNotePostUrl: string = RouteConstants.createNotePostUrl;
+    static readGetTagsUrl: string = RouteConstants.readGetTagsUrl;
+    static readNotePostUrl: string = RouteConstants.readNotePostUrl;
+    static readTitleGetUrl: string = RouteConstants.readTitleGetUrl;
+    static updateGetMoteWithTagsUrl: string = RouteConstants.updateGetNoteWithTagsUrl;
+    static updateNotePostUrl: string = RouteConstants.updateNotePostUrl;
+    static catalogPageGetUrl: string = RouteConstants.catalogPageGetUrl;
+    static catalogNavigatePostUrl: string = RouteConstants.catalogNavigatePostUrl;
+    static catalogDeleteNoteUrl: string = RouteConstants.catalogDeleteNoteUrl;
+    static loginUrl: string = RouteConstants.accountLoginGetUrl;
+    static logoutUrl: string = RouteConstants.accountLogoutGetUrl;
+    static checkAuth: string = RouteConstants.accountCheckGetUrl;
+    static complianceIndicesUrl: string = RouteConstants.complianceIndicesGetUrl;
 
-    static migrationCreateUrl: string = "/migration/create";
-    static migrationRestoreUrl: string = "/migration/restore";
-    static migrationDownloadUrl: string = "/migration/download";
+    static migrationCreateUrl: string = RouteConstants.migrationCreateGetUrl;
+    static migrationRestoreUrl: string = RouteConstants.migrationRestoreGetUrl;
+    static migrationDownloadUrl: string = RouteConstants.migrationDownloadGetUrl;
 
     static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
     static corsServiceBaseUrl: string = "";

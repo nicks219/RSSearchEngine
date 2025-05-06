@@ -20,7 +20,7 @@ export const CatalogContainer: FC = (): JSX.Element|undefined => {
     const [dialog, setDialog] = useState<ReactNode|null>(null);
 
     useEffect(() => {
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogUrl);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, 1, Loader.catalogPageGetUrl);
         return function onUnmount() {
             mounted[0] = false;
         };
@@ -34,7 +34,7 @@ export const CatalogContainer: FC = (): JSX.Element|undefined => {
             "direction": [target]
         };
         let requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.catalogUrl);
+        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.catalogNavigatePostUrl);
     }
 
     const onCreateDump = (e: React.SyntheticEvent) => {
@@ -88,7 +88,7 @@ export const CatalogContainer: FC = (): JSX.Element|undefined => {
         const onConfirm = () => {
             let id = Number(targetId);
             console.log('Try to delete song id: ' + id);
-            Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogUrl, getPageNumber(data), recoveryContext);
+            Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.catalogDeleteNoteUrl, getPageNumber(data), recoveryContext);
         }
 
         askForConfirmation(onConfirm, Messages.confirmDelete);

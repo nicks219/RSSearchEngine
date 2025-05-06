@@ -10,7 +10,7 @@ using Microsoft.Build.Utilities;
 namespace SearchEngine.Tooling.Generators;
 
 /// <summary>
-/// Билд-таска для генерации json по файлу с константами
+/// Билд-таска для генерации json/tsx по файлу с константами
 /// </summary>
 public sealed class GenerateConstantsJsonTask : Task
 {
@@ -22,6 +22,8 @@ public sealed class GenerateConstantsJsonTask : Task
 
     public override bool Execute()
     {
+        var isTsx = OutputFile.EndsWith(".tsx");
+        var isJson = OutputFile.EndsWith(".json");
         try
         {
             var dllPath = DllPath;
@@ -34,14 +36,32 @@ public sealed class GenerateConstantsJsonTask : Task
                 .ToDictionary(f => f.Name, f => f.GetValue(null));
 
             using var sw = new StreamWriter(OutputFile);
-            sw.WriteLine("{");
-            var last = fields.Last();
-            foreach (var pair in fields)
+            if (isJson)
             {
-                var comma = pair.Key == last.Key ? "" : ",";
-                sw.WriteLine($"  \"{char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}\": \"{pair.Value}\"{comma}");
+                sw.WriteLine("{");
+                var last = fields.Last();
+                foreach (var pair in fields)
+                {
+                    var comma = pair.Key == last.Key ? "" : ",";
+                    sw.WriteLine($"  \"{char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}\": \"{pair.Value}\"{comma}");
+                }
+
+                sw.WriteLine("}");
             }
-            sw.WriteLine("}");
+
+            if (isTsx)
+            {
+                sw.WriteLine("export const RouteConstants = {");
+                var last = fields.Last();
+                foreach (var pair in fields)
+                {
+                    var comma = pair.Key == last.Key ? "" : ",";
+                    sw.WriteLine($"  {char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}: \"{pair.Value}\"{comma}");
+                }
+
+                sw.WriteLine("} as const;");
+            }
+
             return true;
         }
         catch (Exception ex)

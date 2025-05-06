@@ -48,7 +48,7 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
             if (formElement) formElement.style.display = SystemConstants.none;
             (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
         } else {
-            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readUrl);
+            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readGetTagsUrl);
         }
     }
 
@@ -63,7 +63,7 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
         const item = {"tagsCheckedRequest": []};
         const requestBody = JSON.stringify(item);
 
-        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readUrl, props.noteId);
+        Loader.unusedPromise = Loader.postData(stateWrapper, requestBody, Loader.readNotePostUrl, props.noteId);
     }
 
     let checkboxes = [];

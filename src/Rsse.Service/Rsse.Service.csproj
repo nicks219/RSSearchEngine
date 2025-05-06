@@ -64,7 +64,7 @@
     <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'" >
       <GenerateConstantsJsonTask
         ConstantsClass="SearchEngine.Domain.Configuration.RouteConstants"
-        OutputFile="$(ProjectDir)api-routes.json"
+        OutputFile="$(SolutionDir)/src/Rsse.Client/ClientApp/src/api-routes.tsx"
         DllPath="$(TargetPath)" />
     </Target>
     <!-- end: code gen section -->

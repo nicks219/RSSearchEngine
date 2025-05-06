@@ -32,7 +32,7 @@ public abstract class RouteConstants
 
     // read controller
     public const string ReadElectionGetUrl = "/api/read/election";
-    public const string ReadTitlePostUrl = "/api/read/title";
+    public const string ReadTitleGetUrl = "/api/read/title";
     // дублирует [CreateGetTagsUrl]
     public const string ReadGetTagsUrl = "/api/read";// различается http глаголом
     public const string ReadNotePostUrl = "/api/read";// различается http глаголом

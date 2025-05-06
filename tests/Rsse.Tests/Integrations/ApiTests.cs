@@ -64,7 +64,7 @@ public class ApiTests
     }
 
     [TestMethod]
-    [DataRow($"{ReadTitlePostUrl}?id=1", "res", "Розенбаум -- Вечерняя застольная")]
+    [DataRow($"{ReadTitleGetUrl}?id=1", "res", "Розенбаум -- Вечерняя застольная")]
     [DataRow($"{ReadElectionGetUrl}", "randomElection", false)]
     [DataRow(ReadNotePostUrl, "structuredTagsListResponse", TestHelper.TagListResponse)]
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)

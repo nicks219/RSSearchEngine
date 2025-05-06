@@ -33,7 +33,7 @@ export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, st
             "titleRequest": title
         });
 
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createNotePostUrl);
     }
 
     const componentDidMount = () => {
@@ -61,7 +61,7 @@ export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, st
             // подтверждение: extended режим "подтверждение/отмена": при необходимости восстанавливаем заметку из внешнего стейта:
             commonContext.componentMode = ComponentMode.Classic;
             if (jsonString == SystemConstants.empty) jsonString = commonContext.componentString;
-            Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
+            Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createNotePostUrl);
             return;
         }
 
@@ -88,7 +88,7 @@ export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, st
         }
 
         // совпадения не обнаружены, сохраняем заметку (classic режим):
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, jsonString, Loader.createNotePostUrl);
     }
 
     const findSimilarNotes = async (formMessage: FormDataEntryValue|null, formTitle: FormDataEntryValue|null) => {
@@ -137,7 +137,7 @@ export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, st
             const query = "?id=" + id;
             const callback = (data: Response) => getTitle(data, id);
             try {
-                await Loader.getWithPromise(Loader.readTitleUrl, query, callback);
+                await Loader.getWithPromise(Loader.readTitleGetUrl, query, callback);
             } catch (err) {
                 console.log(`Get note titles on create: ${err} in try-catch scope`);
             }

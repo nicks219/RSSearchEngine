@@ -38,7 +38,7 @@ public class ReadController(
     /// Прочитать заголовок заметки по её идентификатору
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
-    [HttpGet(RouteConstants.ReadTitlePostUrl)]
+    [HttpGet(RouteConstants.ReadTitleGetUrl)]
     public ActionResult ReadTitleByNoteId(string id)
     {
         try

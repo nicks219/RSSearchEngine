@@ -26,7 +26,7 @@ export const UpdateSubmitButton = (props: {formElement: HTMLFormElement|null, no
         };
         const requestBody = JSON.stringify(item);
         // используется recovery context
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateUrl, null, recoveryContext);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.updateNotePostUrl, null, recoveryContext);
     }
 
     return (
