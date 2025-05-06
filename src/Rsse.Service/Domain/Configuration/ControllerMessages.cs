@@ -15,12 +15,12 @@ internal abstract class ControllerMessages
 
     internal const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(CatalogController.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogController)}] {nameof(CatalogController.ReadCatalogPage)} error";
-    internal const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(CatalogController.DeleteNote)} error";
+    internal const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(DeleteController.DeleteNote)} error";
 
     internal const string ComplianceError = $"[{nameof(ComplianceSearchController)}] {nameof(ComplianceSearchController.GetComplianceIndices)} error: search indices may corrupted";
 
     internal const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateController.CreateNoteAndDumpAsync)} error";
-    internal const string GetTagListError = $"[{nameof(CreateController)}] {nameof(CreateController.GetStructuredTagListAsync)} error";
+    internal const string GetTagListError = $"[{nameof(CreateController)}] {nameof(ReadController.GetStructuredTagListForCreate)} error";
 
     internal const string CreateError = $"[{nameof(MigrationController)}] {nameof(MigrationController.CreateDump)} error";
     internal const string RestoreError = $"[{nameof(MigrationController)}] {nameof(MigrationController.RestoreFromDump)} error";
@@ -29,6 +29,6 @@ internal abstract class ControllerMessages
     internal const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadController.ReadTitleByNoteId)} error";
     internal const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadController.ReadTagList)} error";
 
-    internal const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateController.GetInitialNote)} error";
+    internal const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(ReadController.GetInitialNoteForUpdate)} error";
     internal const string UpdateNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateController.UpdateNote)} error";
 }

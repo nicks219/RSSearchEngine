@@ -76,13 +76,13 @@ export const LoginContainer = () => {
         if (stateWrapper) {
             switch (recoveryContext.recoveryString) {
                 // продолжение для update:
-                case Loader.updateGetMoteWithTagsUrl: {// совпадает с Loader.updatePostUrl
+                case Loader.updateGetMoteWithTagsUrl: {
                     const id = commonContext.commonNumber;
                     Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.updateGetMoteWithTagsUrl);
                     break;
                 }
                 // продолжение для delete (catalog): загрузка первой страницы:
-                case Loader.catalogPageGetUrl: {// совпадает с Loader.catalogPostUrl | Loader.catalogDeleteUrl
+                case Loader.catalogDeleteNoteUrl: {
                     const id = 1;
                     Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.catalogPageGetUrl);
                     break;
@@ -93,7 +93,7 @@ export const LoginContainer = () => {
                 case Loader.migrationCreateUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
                     break;
-                case Loader.createGetTagsAuthorizedUrl:// совпадает с Loader.createPostUrl
+                case Loader.createGetTagsAuthorizedUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createGetTagsAuthorizedUrl);
                     break;
                 case Loader.logoutUrl:

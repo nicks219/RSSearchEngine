@@ -16,7 +16,7 @@ public abstract class Constants
 #endif
 
     /// <summary/> Мажорная версия
-    private const string MajorVersion = "6";
+    internal const string MajorVersion = "6";
     /// <summary/> Минорная версия
     private const string MinorVersion = "0";
     /// <summary/> Патч

@@ -13,13 +13,12 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для функционала каталога с возможностью удаления заметки
+/// Контроллер для функционала каталога
 /// </summary>
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CatalogController(
     IDataRepository repo,
-    ITokenizerService tokenizer,
     ILogger<CatalogController> logger,
     ILogger<CatalogManager> managerLogger) : ControllerBase
 {
@@ -59,30 +58,6 @@ public class CatalogController(
         {
             logger.LogError(ex, NavigateCatalogError);
             return new CatalogResponse { ErrorMessage = NavigateCatalogError };
-        }
-    }
-
-    /// <summary>
-    /// Удалить заметку
-    /// </summary>
-    /// <param name="id">идентификатор заметки</param>
-    /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
-    /// <returns>актуальная страница каталога</returns>
-    [Authorize, HttpDelete(RouteConstants.CatalogDeleteNoteUrl)]
-    [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
-    {
-        try
-        {
-            tokenizer.Delete(id);
-
-            var response = await new CatalogManager(repo, managerLogger).DeleteNote(id, pg);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, DeleteNoteError);
-            return new CatalogResponse { ErrorMessage = DeleteNoteError };
         }
     }
 }

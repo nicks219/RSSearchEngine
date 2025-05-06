@@ -12,7 +12,7 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
+public class CreateManager(IDataRepository repo, ILogger logger)
 {
     /// <summary>
     /// Получить структурированный список тегов

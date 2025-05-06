@@ -12,7 +12,7 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
+public class UpdateManager(IDataRepository repo, ILogger logger)
 {
     /// <summary>
     /// Прочитать обновляемую заметку

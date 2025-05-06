@@ -122,7 +122,7 @@ public class CatalogTests
         var repo = Substitute.For<IDataRepository>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
+        var catalogController = new DeleteController(repo, tokenizer, logger, managerLogger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -138,9 +138,8 @@ public class CatalogTests
         var logger = Substitute.For<ILogger<CatalogController>>();
         var managerLogger = Substitute.For<ILogger<CatalogManager>>();
         var repo = Substitute.For<IDataRepository>();
-        var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
+        var catalogController = new CatalogController(repo, logger, managerLogger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

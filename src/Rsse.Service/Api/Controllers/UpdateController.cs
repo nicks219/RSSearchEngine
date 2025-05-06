@@ -25,25 +25,6 @@ public class UpdateController(
     ILogger<UpdateManager> managerLogger) : ControllerBase
 {
     /// <summary>
-    /// Получить обновляемую заметку
-    /// </summary>
-    /// <param name="id">идентификатор обновляемой заметки</param>
-    [HttpGet(RouteConstants.UpdateGetNoteWithTagsUrl)]
-    public async Task<ActionResult<NoteResponse>> GetInitialNote(int id)
-    {
-        try
-        {
-            var response = await new UpdateManager(repo, managerLogger).GetOriginalNote(id);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetInitialNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = GetInitialNoteError };
-        }
-    }
-
-    /// <summary>
     /// Обновить заметку
     /// </summary>
     /// <param name="request">данные для обновления</param>

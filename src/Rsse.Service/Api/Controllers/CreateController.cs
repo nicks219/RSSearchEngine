@@ -35,26 +35,6 @@ public class CreateController(
     private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
 
     /// <summary>
-    /// Получить список тегов
-    /// </summary>
-    [HttpGet(RouteConstants.CreateGetTagsAuthorizedUrl)]
-    [Obsolete("используйте ReadController.ReadTagList")]
-    public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
-    {
-        try
-        {
-            var model = new CreateManager(repo, managerLogger);
-            var response = await model.ReadStructuredTagList();
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetTagListError);
-            return new NoteResponse { CommonErrorMessageResponse = GetTagListError };
-        }
-    }
-
-    /// <summary>
     /// Создать заметку
     /// </summary>
     /// <param name="request">данные для создания заметки</param>

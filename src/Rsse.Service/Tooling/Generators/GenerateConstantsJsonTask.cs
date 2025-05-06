@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace SearchEngine.Tooling.Generators;
 /// <summary>
 /// Билд-таска для генерации json/tsx по файлу с константами
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class GenerateConstantsJsonTask : Task
 {
     [Required] public string ConstantsClass { get; set; }
@@ -32,7 +34,7 @@ public sealed class GenerateConstantsJsonTask : Task
 
             var fields = type
                 .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                .Where(f => f is {IsLiteral: true, IsInitOnly: false})
+                .Where(f => f is { IsLiteral: true, IsInitOnly: false })
                 .ToDictionary(f => f.Name, f => f.GetValue(null));
 
             using var sw = new StreamWriter(OutputFile);

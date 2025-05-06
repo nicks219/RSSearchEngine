@@ -207,7 +207,7 @@ public class IntegrationTests
         // act
         foreach (var uri in uris)
         {
-            if (uri ==  $"{CreateNotePostUrl}")
+            if (uri == $"{CreateNotePostUrl}")
             {
                 // POST
                 using var note = enumerator.Current;
