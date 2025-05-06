@@ -42,6 +42,33 @@
       <PackageReference Include="OpenTelemetry.Exporter.Console" />
     </ItemGroup>
 
+    <!-- start: code gen section -->
+    <ItemGroup Label="DomainCodeGen" Condition="'$(Configuration)' == 'Debug'" >
+      <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    </ItemGroup>
+  
+    <UsingTask
+      TaskName="GenerateConstantsJsonTask"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+      <ParameterGroup>
+        <ConstantsClass ParameterType="System.String" Required="true" />
+        <OutputFile ParameterType="System.String" Required="true" />
+        <DllPath ParameterType="System.String" Required="true" />
+      </ParameterGroup>
+      <Task>
+        <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)Tooling/Generators/GenerateConstantsJsonTask.cs"/>
+      </Task>
+    </UsingTask>
+  
+    <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'" >
+      <GenerateConstantsJsonTask
+        ConstantsClass="SearchEngine.Domain.Configuration.RouteConstants"
+        OutputFile="$(ProjectDir)api-routes.json"
+        DllPath="$(TargetPath)" />
+    </Target>
+    <!-- end: code gen section -->
+
     <ItemGroup>
       <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
     </ItemGroup>
