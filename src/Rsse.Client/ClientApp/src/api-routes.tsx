@@ -7,7 +7,7 @@ export const RouteConstants = {
   catalogNavigatePostUrl: "/api/catalog",
   catalogDeleteNoteUrl: "/api/catalog",
   complianceIndicesGetUrl: "/api/compliance/indices",
-  createGetTagsUrl: "/api/create",
+  createGetTagsAuthorizedUrl: "/api/create",
   createNotePostUrl: "/api/create",
   migrationCopyGetUrl: "/migration/copy",
   migrationCreateGetUrl: "/migration/create",

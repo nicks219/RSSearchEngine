@@ -7,7 +7,7 @@ import {
 import {RouteConstants} from "../../api-routes.tsx";
 
 export class Loader {
-    static createGetTagsUrl: string = RouteConstants.createGetTagsUrl;
+    static createGetTagsAuthorizedUrl: string = RouteConstants.createGetTagsAuthorizedUrl;// дубль readGetTagsUrl, но под авторизацией
     static createNotePostUrl: string = RouteConstants.createNotePostUrl;
     static readGetTagsUrl: string = RouteConstants.readGetTagsUrl;
     static readNotePostUrl: string = RouteConstants.readNotePostUrl;

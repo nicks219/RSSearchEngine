@@ -11,16 +11,14 @@ public abstract class RouteConstants
     // catalog controller
     public const string CatalogPageGetUrl = "/api/catalog";// различается http глаголом
     public const string CatalogNavigatePostUrl = "/api/catalog";// различается http глаголом
-    // есть query-параметр, см HttpClientExtensions
-    public const string CatalogDeleteNoteUrl = "/api/catalog";// различается http глаголом
+    public const string CatalogDeleteNoteUrl = "/api/catalog";// различается http глаголом, есть query-параметр, см HttpClientExtensions
 
     // compliance controller
     public const string ComplianceIndicesGetUrl = "/api/compliance/indices";
 
     // create controller
-    // нет query-параметров, см HttpClientExtensions
-    // дублирует [ReadGetTagsUrl], оставить в read
-    public const string CreateGetTagsUrl = "/api/create";// различается http глаголом
+    // дублирует [ReadGetTagsUrl] под авторизацией
+    public const string CreateGetTagsAuthorizedUrl = "/api/create";// различается http глаголом, нет query-параметров, см HttpClientExtensions
     public const string CreateNotePostUrl = "/api/create";// различается http глаголом
 
     // migration controller
@@ -33,7 +31,7 @@ public abstract class RouteConstants
     // read controller
     public const string ReadElectionGetUrl = "/api/read/election";
     public const string ReadTitleGetUrl = "/api/read/title";
-    // дублирует [CreateGetTagsUrl]
+    // дублирует [CreateGetTagsUrl] без авторизации
     public const string ReadGetTagsUrl = "/api/read";// различается http глаголом
     public const string ReadNotePostUrl = "/api/read";// различается http глаголом
 

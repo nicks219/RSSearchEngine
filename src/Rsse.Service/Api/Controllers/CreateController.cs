@@ -37,7 +37,8 @@ public class CreateController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet(RouteConstants.CreateGetTagsUrl)]
+    [HttpGet(RouteConstants.CreateGetTagsAuthorizedUrl)]
+    [Obsolete("используйте ReadController.ReadTagList")]
     public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
     {
         try

@@ -17,7 +17,7 @@ internal abstract class ControllerMessages
     internal const string ReadCatalogPageError = $"[{nameof(CatalogController)}] {nameof(CatalogController.ReadCatalogPage)} error";
     internal const string DeleteNoteError = $"[{nameof(CatalogController)}] {nameof(CatalogController.DeleteNote)} error";
 
-    internal const string FindError = $"[{nameof(ComplianceSearchController)}] {nameof(ComplianceSearchController.GetComplianceIndices)} error: search indices may corrupted";
+    internal const string ComplianceError = $"[{nameof(ComplianceSearchController)}] {nameof(ComplianceSearchController.GetComplianceIndices)} error: search indices may corrupted";
 
     internal const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateController.CreateNoteAndDumpAsync)} error";
     internal const string GetTagListError = $"[{nameof(CreateController)}] {nameof(CreateController.GetStructuredTagListAsync)} error";

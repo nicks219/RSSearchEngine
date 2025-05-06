@@ -93,8 +93,8 @@ export const LoginContainer = () => {
                 case Loader.migrationCreateUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
                     break;
-                case Loader.createGetTagsUrl:// совпадает с Loader.createPostUrl
-                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createGetTagsUrl);
+                case Loader.createGetTagsAuthorizedUrl:// совпадает с Loader.createPostUrl
+                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createGetTagsAuthorizedUrl);
                     break;
                 case Loader.logoutUrl:
                     break;

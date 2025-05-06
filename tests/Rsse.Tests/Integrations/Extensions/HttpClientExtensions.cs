@@ -50,7 +50,7 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
     {
-        using var tagsResponse = await client.GetAsync($"{CreateGetTagsUrl}");
+        using var tagsResponse = await client.GetAsync($"{CreateGetTagsAuthorizedUrl}");
         var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteResponse>();
         var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
 

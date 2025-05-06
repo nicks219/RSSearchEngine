@@ -108,7 +108,7 @@ public class ApiAccessControlTests
     [DataRow($"{MigrationDownloadGetUrl}?filename=123")]
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
-    [DataRow($"{CreateGetTagsUrl}")]
+    [DataRow($"{CreateGetTagsAuthorizedUrl}")]
     [DataRow($"{UpdateGetNoteWithTagsUrl}?id=1")]
     public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
@@ -199,7 +199,7 @@ public class ApiAccessControlTests
     [DataRow($"{MigrationDownloadGetUrl}?filename=backup_9.dump")]
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
-    [DataRow($"{CreateGetTagsUrl}")]
+    [DataRow($"{CreateGetTagsAuthorizedUrl}")]
     [DataRow($"{UpdateGetNoteWithTagsUrl}?id=1")]
     public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {

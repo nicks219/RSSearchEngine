@@ -63,8 +63,8 @@ public class ComplianceSearchController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, FindError);
-            return new BadRequestObjectResult(FindError);
+            logger.LogError(ex, ComplianceError);
+            return new BadRequestObjectResult(ComplianceError);
         }
     }
 }
