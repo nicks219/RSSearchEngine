@@ -37,7 +37,7 @@ public class CreateController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet(RouteConstants.CreateGetUrl)]
+    [HttpGet(RouteConstants.CreateGetTagsUrl)]
     public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
     {
         try
@@ -58,7 +58,7 @@ public class CreateController(
     /// </summary>
     /// <param name="request">данные для создания заметки</param>
     /// <returns>данные с созданной заметкой либо ошибкой</returns>
-    [HttpPost(RouteConstants.CreatePostUrl)]
+    [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
         try

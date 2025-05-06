@@ -9,16 +9,16 @@ public abstract class RouteConstants
     public const string AccountLoginGetUrl = "login";
     public const string AccountLogoutGetUrl = "logout";
     public const string AccountCheckGetUrl = "check";
-    public const string AccountUpdateGetUrl = "update";
+    public const string AccountUpdateGetUrl = "update";// антипаттерн
 
     // catalog controller
     // требует исправления, если используется вне контроллера не как часть сегмента
     public const string Catalog = "api/catalog";
     // продолжение route
-    public const string CatalogGetUrl = "";// дать имя
-    public const string CatalogPostUrl = "";// дать имя
+    public const string CatalogPageGetUrl = "";
+    public const string CatalogNavigatePostUrl = "";
     // есть query, нельзя через `/`, см HttpClientExtensions
-    public const string CatalogDeleteUrl = "";// дать имя
+    public const string CatalogDeleteNoteUrl = "";
 
     // compliance controller
     // если используется вне контроллера не как часть сегмента, значит требует исправления
@@ -31,8 +31,8 @@ public abstract class RouteConstants
     public const string Create = "api/create";
     // продолжение route
     // нет query, можно через `/`, см HttpClientExtensions
-    public const string CreateGetUrl = "";// дать имя
-    public const string CreatePostUrl = "";// дать имя
+    public const string CreateGetTagsUrl = "";// дублирует [ReadGetTagsUrl], оставить в read
+    public const string CreateNotePostUrl = "";
 
     // migration controller
     // требует исправления, если используется вне контроллера не как часть сегмента
@@ -50,8 +50,8 @@ public abstract class RouteConstants
     // продолжение route
     public const string ReadElectionGetUrl = "election";
     public const string ReadTitlePostUrl = "title";
-    public const string ReadGetUrl = "";// дать имя
-    public const string ReadPostUrl = "";// дать имя
+    public const string ReadGetTagsUrl = "";// дублирует [CreateGetTagsUrl]
+    public const string ReadNotePostUrl = "";
 
     // system controller
     // требует исправления, если используется вне контроллера не как часть сегмента
@@ -63,6 +63,6 @@ public abstract class RouteConstants
     // требует исправления, если используется вне контроллера не как часть сегмента
     public const string Update = "api/update";
     // продолжение route
-    public const string UpdateGetUrl = "";// дать имя
-    public const string UpdatePostUrl = "";// дать имя
+    public const string UpdateGetNoteWithTagsUrl = "";// перенести в read
+    public const string UpdateNotePostUrl = "";
 }

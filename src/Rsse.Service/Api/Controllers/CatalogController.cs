@@ -27,7 +27,7 @@ public class CatalogController(
     /// Прочитать страницу каталога
     /// </summary>
     /// <param name="id">номер страницы</param>
-    [HttpGet(RouteConstants.CatalogGetUrl)]
+    [HttpGet(RouteConstants.CatalogPageGetUrl)]
     public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
     {
         try
@@ -46,7 +46,7 @@ public class CatalogController(
     /// Переместиться по каталогу
     /// </summary>
     /// <param name="request">шаблон с информацией для навигации</param>
-    [HttpPost(RouteConstants.CatalogPostUrl)]
+    [HttpPost(RouteConstants.CatalogNavigatePostUrl)]
     public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
     {
         try
@@ -68,7 +68,7 @@ public class CatalogController(
     /// <param name="id">идентификатор заметки</param>
     /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
     /// <returns>актуальная страница каталога</returns>
-    [Authorize, HttpDelete(RouteConstants.CatalogDeleteUrl)]
+    [Authorize, HttpDelete(RouteConstants.CatalogDeleteNoteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
     {

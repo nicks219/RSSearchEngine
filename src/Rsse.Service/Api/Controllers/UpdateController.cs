@@ -28,7 +28,7 @@ public class UpdateController(
     /// Получить обновляемую заметку
     /// </summary>
     /// <param name="id">идентификатор обновляемой заметки</param>
-    [HttpGet(RouteConstants.UpdateGetUrl)]
+    [HttpGet(RouteConstants.UpdateGetNoteWithTagsUrl)]
     public async Task<ActionResult<NoteResponse>> GetInitialNote(int id)
     {
         try
@@ -47,7 +47,7 @@ public class UpdateController(
     /// Обновить заметку
     /// </summary>
     /// <param name="request">данные для обновления</param>
-    [Authorize, HttpPost(RouteConstants.UpdatePostUrl)]
+    [Authorize, HttpPost(RouteConstants.UpdateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
         try

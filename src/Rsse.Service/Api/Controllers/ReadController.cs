@@ -56,7 +56,7 @@ public class ReadController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet(RouteConstants.ReadGetUrl)]
+    [HttpGet(RouteConstants.ReadGetTagsUrl)]
     public async Task<ActionResult<NoteResponse>> ReadTagList()
     {
         try
@@ -77,7 +77,7 @@ public class ReadController(
     /// <param name="request">данные с отмеченными тегами</param>
     /// <param name="id">строка с идентификатором, если требуется</param>
     /// <returns>ответ с заметкой</returns>
-    [HttpPost(RouteConstants.ReadPostUrl)]
+    [HttpPost(RouteConstants.ReadNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
     {
         try
