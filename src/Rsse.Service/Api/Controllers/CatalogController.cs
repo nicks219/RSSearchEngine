@@ -15,7 +15,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для функционала каталога с возможностью удаления заметки
 /// </summary>
-[Route("api/catalog"), ApiController]
+[Route(RouteConstants.Catalog), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CatalogController(
     IDataRepository repo,
@@ -27,7 +27,7 @@ public class CatalogController(
     /// Прочитать страницу каталога
     /// </summary>
     /// <param name="id">номер страницы</param>
-    [HttpGet]
+    [HttpGet(RouteConstants.CatalogGetUrl)]
     public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
     {
         try
@@ -46,7 +46,7 @@ public class CatalogController(
     /// Переместиться по каталогу
     /// </summary>
     /// <param name="request">шаблон с информацией для навигации</param>
-    [HttpPost]
+    [HttpPost(RouteConstants.CatalogPostUrl)]
     public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
     {
         try
@@ -68,7 +68,7 @@ public class CatalogController(
     /// <param name="id">идентификатор заметки</param>
     /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
     /// <returns>актуальная страница каталога</returns>
-    [Authorize, HttpDelete]
+    [Authorize, HttpDelete(RouteConstants.CatalogDeleteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
     {

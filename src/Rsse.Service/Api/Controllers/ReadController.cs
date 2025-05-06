@@ -15,7 +15,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для получения заметок
 /// </summary>
-[ApiController, Route("api/read")]
+[ApiController, Route(RouteConstants.Read)]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
     IDataRepository repo,
@@ -27,7 +27,7 @@ public class ReadController(
     /// <summary>
     /// Переключить режим выбора следующей заметки
     /// </summary>
-    [HttpGet("election")]
+    [HttpGet(RouteConstants.ReadElectionGetUrl)]
     public ActionResult SwitchNodeElectionMode()
     {
         _randomElection = !_randomElection;
@@ -38,7 +38,7 @@ public class ReadController(
     /// Прочитать заголовок заметки по её идентификатору
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
-    [HttpGet("title")]
+    [HttpGet(RouteConstants.ReadTitlePostUrl)]
     public ActionResult ReadTitleByNoteId(string id)
     {
         try
@@ -56,7 +56,7 @@ public class ReadController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet]
+    [HttpGet(RouteConstants.ReadGetUrl)]
     public async Task<ActionResult<NoteResponse>> ReadTagList()
     {
         try
@@ -77,7 +77,7 @@ public class ReadController(
     /// <param name="request">данные с отмеченными тегами</param>
     /// <param name="id">строка с идентификатором, если требуется</param>
     /// <returns>ответ с заметкой</returns>
-    [HttpPost]
+    [HttpPost(RouteConstants.ReadPostUrl)]
     public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
     {
         try

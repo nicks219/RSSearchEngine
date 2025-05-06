@@ -16,7 +16,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для обновления заметки
 /// </summary>
-[Authorize, Route("api/update"), ApiController]
+[Authorize, Route(RouteConstants.Update), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
     IDataRepository repo,
@@ -28,7 +28,7 @@ public class UpdateController(
     /// Получить обновляемую заметку
     /// </summary>
     /// <param name="id">идентификатор обновляемой заметки</param>
-    [HttpGet]
+    [HttpGet(RouteConstants.UpdateGetUrl)]
     public async Task<ActionResult<NoteResponse>> GetInitialNote(int id)
     {
         try
@@ -47,7 +47,7 @@ public class UpdateController(
     /// Обновить заметку
     /// </summary>
     /// <param name="request">данные для обновления</param>
-    [Authorize, HttpPost]
+    [Authorize, HttpPost(RouteConstants.UpdatePostUrl)]
     public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
         try

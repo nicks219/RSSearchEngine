@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для создания заметок
 /// </summary>
-[Authorize, Route("api/create"), ApiController]
+[Authorize, Route(RouteConstants.Create), ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
     IDataRepository repo,
@@ -37,7 +37,7 @@ public class CreateController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet]
+    [HttpGet(RouteConstants.CreateGetUrl)]
     public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
     {
         try
@@ -58,7 +58,7 @@ public class CreateController(
     /// </summary>
     /// <param name="request">данные для создания заметки</param>
     /// <returns>данные с созданной заметкой либо ошибкой</returns>
-    [HttpPost]
+    [HttpPost(RouteConstants.CreatePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
         try

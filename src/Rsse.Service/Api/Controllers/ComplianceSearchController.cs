@@ -13,7 +13,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
-[Route("api/compliance")]
+[Route(RouteConstants.Compliance)]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ComplianceSearchController(
     IDataRepository repo,
@@ -25,7 +25,7 @@ public class ComplianceSearchController(
     /// </summary>
     /// <param name="text">строка с поисковым запросом</param>
     /// <returns>объект OkObjectResult с результатом поиска</returns>
-    [HttpGet("indices")]
+    [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
     public ActionResult GetComplianceIndices(string text)
     {
         var okEmptyResponse = Ok(new { });

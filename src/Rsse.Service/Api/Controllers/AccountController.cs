@@ -21,7 +21,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер авторизации
 /// </summary>
-[ApiController, Route("account")]
+[ApiController, Route(RouteConstants.Account)]
 public class AccountController(
     IWebHostEnvironment env,
     IDataRepository repo,
@@ -38,7 +38,7 @@ public class AccountController(
     /// <param name="password">пароль</param>
     /// <param name="returnUrl">пиздец</param>
     /// <returns>объект OkObjectResult с результатом</returns>
-    [HttpGet("login")]
+    [HttpGet(RouteConstants.AccountLoginGetUrl)]
     public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
         if (returnUrl != null)
@@ -59,7 +59,7 @@ public class AccountController(
     /// <summary>
     /// Выйти из системы
     /// </summary>
-    [HttpGet("logout")]
+    [HttpGet(RouteConstants.AccountLogoutGetUrl)]
     public async Task<ActionResult<string>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -71,7 +71,7 @@ public class AccountController(
 
     /// <summary/> Проверить, авторизован ли запрос
     [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-    [HttpGet("check"), Authorize]
+    [HttpGet(RouteConstants.AccountCheckGetUrl), Authorize]
     public ActionResult CheckAuth()
     {
         return Ok(new
@@ -81,7 +81,7 @@ public class AccountController(
     }
 
     /// <summary/> Обновить логин и пароль
-    [HttpGet("update"), Authorize]
+    [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var credosForUpdate = credentials.MapToDto();

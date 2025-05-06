@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для работы с миграциями бд
 /// </summary>
-[Authorize, Route("migration"), ApiController]
+[Authorize, Route(RouteConstants.Migration), ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
     ILogger<MigrationController> logger,
@@ -32,7 +32,7 @@ public class MigrationController(
     /// </summary>
     /// <returns></returns>
     // todo: MySQL WORK. DELETE
-    [HttpGet("copy")]
+    [HttpGet(RouteConstants.MigrationCopyGetUrl)]
     [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
     public async Task<IActionResult> CopyFromMySqlToPostgres()
     {
@@ -56,7 +56,7 @@ public class MigrationController(
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
-    [HttpGet("create")]
+    [HttpGet(RouteConstants.MigrationCreateGetUrl)]
     public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
@@ -79,7 +79,7 @@ public class MigrationController(
     /// </summary>
     /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
     /// <param name="databaseType">тип мигратора</param>
-    [HttpGet("restore")]
+    [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
@@ -102,7 +102,7 @@ public class MigrationController(
     /// <summary>
     /// Загрузить файл на сервер
     /// </summary>
-    [HttpPost("upload")]
+    [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
     public IActionResult UploadFile(IFormFile file)
     {
@@ -115,7 +115,7 @@ public class MigrationController(
     /// <summary>
     /// Выгрузить файл с сервера
     /// </summary>
-    [HttpGet("download")]
+    [HttpGet(RouteConstants.MigrationDownloadGetUrl)]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult DownloadFile([FromQuery] string filename)

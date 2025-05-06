@@ -10,6 +10,7 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
+using static SearchEngine.Domain.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
@@ -44,7 +45,7 @@ public class ApiAccessControlTests
     public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
         // arrange:
-        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{Catalog}?id=1&pg=1", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
 
         // act:
@@ -76,7 +77,7 @@ public class ApiAccessControlTests
         const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService(unauthenticated, unauthenticated);
-        var uri = new Uri("api/catalog?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{Catalog}?id=1&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -101,14 +102,14 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow("migration/copy")]
-    [DataRow("migration/create?fileName=123&databaseType=MySql")]
-    [DataRow("migration/restore?fileName=123&databaseType=MySql")]
-    [DataRow("migration/download?filename=123")]
-    [DataRow("account/check")]
-    [DataRow("account/update?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
-    [DataRow("api/create")]
-    [DataRow("api/update?id=1")]
+    [DataRow($"{Migration}/{MigrationCopyGetUrl}")]
+    [DataRow($"{Migration}/{MigrationCreateGetUrl}?fileName=123&databaseType=MySql")]
+    [DataRow($"{Migration}/{MigrationRestoreGetUrl}?fileName=123&databaseType=MySql")]
+    [DataRow($"{Migration}/{MigrationDownloadGetUrl}?filename=123")]
+    [DataRow($"{Account}/{AccountCheckGetUrl}")]
+    [DataRow($"{Account}/{AccountUpdateGetUrl}?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
+    [DataRow($"{Create}")]
+    [DataRow($"{Update}?id=1")]
     public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
@@ -138,9 +139,9 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow("migration/upload")]
-    [DataRow("api/create")]
-    [DataRow("api/update")]
+    [DataRow($"{Migration}/{MigrationUploadPostUrl}")]
+    [DataRow($"{Create}")]
+    [DataRow($"{Update}")]
     public async Task Api_Unauthorized_Post_ShouldReturns401(string uriString)
     {
         // arrange:
@@ -177,7 +178,7 @@ public class ApiAccessControlTests
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService();
         // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
-        var uri = new Uri("api/catalog?id=2&pg=1", UriKind.Relative);
+        var uri = new Uri($"{Catalog}?id=2&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -195,11 +196,11 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow("migration/download?filename=backup_9.dump")]
-    [DataRow("account/check")]
-    [DataRow("account/update?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
-    [DataRow("api/create")]
-    [DataRow("api/update?id=1")]
+    [DataRow($"{Migration}/{MigrationDownloadGetUrl}?filename=backup_9.dump")]
+    [DataRow($"{Account}/{AccountCheckGetUrl}")]
+    [DataRow($"{Account}/{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
+    [DataRow($"{Create}")]
+    [DataRow($"{Update}?id=1")]
     public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
@@ -223,9 +224,9 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow("migration/upload", true)]
-    [DataRow("api/create", false)]
-    [DataRow("api/update", false)]
+    [DataRow($"{Migration}/{MigrationUploadPostUrl}", true)]
+    [DataRow($"{Create}", false)]
+    [DataRow($"{Update}", false)]
     public async Task Api_Authorized_Post_ShouldReturns200(string uriString, bool appendFile)
     {
         // arrange:

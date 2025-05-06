@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Tests.Integrations.Dto;
+using static SearchEngine.Domain.Configuration.RouteConstants;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -23,7 +24,7 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task TryAuthorizeToService(this HttpClient client, string login = "admin", string password = "admin")
     {
-        var uri = new Uri($"account/login?email={login}&password={password}", UriKind.Relative);
+        var uri = new Uri($"{Account}/{AccountLoginGetUrl}?email={login}&password={password}", UriKind.Relative);
         using var authResponse = await client.GetAsync(uri);
         authResponse.EnsureSuccessStatusCode();
         var headers = authResponse.Headers;
@@ -36,7 +37,7 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task<int> GetFirstComplianceIndexFromTokenizer(this HttpClient client, string text)
     {
-        using var complianceResponse = await client.GetAsync($"api/compliance/indices?text={text}");
+        using var complianceResponse = await client.GetAsync($"{Compliance}/{ComplianceIndicesGetUrl}?text={text}");
         var result = await complianceResponse.Content.ReadAsStringAsync();
         var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
         Int32.TryParse(firstKey, out var complianceId);
@@ -49,7 +50,7 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
     {
-        using var tagsResponse = await client.GetAsync("api/create");
+        using var tagsResponse = await client.GetAsync($"{Create}");
         var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteResponse>();
         var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
 
@@ -62,7 +63,7 @@ public static class HttpClientExtensions
     internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
     {
         // CatalogDto
-        using var noteResponse = await client.GetAsync($"api/catalog?id={noteId}&pg=1");
+        using var noteResponse = await client.GetAsync($"{Catalog}?id={noteId}&pg=1");
         noteResponse.EnsureSuccessStatusCode();
     }
 
@@ -78,7 +79,7 @@ public static class HttpClientExtensions
             var guid = Guid.NewGuid();
             var createRequest = new NoteRequest { TitleRequest = $"название: {guid}", TextRequest = $"текст: {guid}", TagsCheckedRequest = [1] };
             using var content = new StringContent(JsonSerializer.Serialize(createRequest), Encoding.UTF8, "application/json");
-            using var _ = await client.PostAsync("api/create", content);
+            using var _ = await client.PostAsync($"{Create}", content);
         }
     }
 

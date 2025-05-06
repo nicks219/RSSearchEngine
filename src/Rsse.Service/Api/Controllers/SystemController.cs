@@ -7,14 +7,14 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер, поставляющий системную информацию.
 /// </summary>
-[Route("system")]
+[Route(RouteConstants.System)]
 public class SystemController(IOptionsSnapshot<DatabaseOptions> options) : Controller
 {
     /// <summary>
     /// Получить версию сервиса.
     /// </summary>
     /// <returns></returns>
-    [HttpGet("version")]
+    [HttpGet(RouteConstants.SystemVersionGetUrl)]
     public ActionResult GetVersion()
     {
         return Ok(new
