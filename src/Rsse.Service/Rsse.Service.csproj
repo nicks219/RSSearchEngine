@@ -46,11 +46,15 @@
     <ItemGroup Label="DomainCodeGen" Condition="'$(Configuration)' == 'Debug'" >
       <PackageReference Include="Microsoft.Build.Utilities.Core" />
     </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+      <Compile Remove="Tooling/Generators/GenerateConstantsJsonTask.cs" />
+    </ItemGroup>
   
     <UsingTask
       TaskName="GenerateConstantsJsonTask"
       TaskFactory="RoslynCodeTaskFactory"
-      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"
+      Condition="'$(Configuration)' == 'Debug'" >
       <ParameterGroup>
         <ConstantsClass ParameterType="System.String" Required="true" />
         <OutputFile ParameterType="System.String" Required="true" />
