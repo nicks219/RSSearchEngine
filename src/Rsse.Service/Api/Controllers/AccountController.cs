@@ -21,7 +21,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер авторизации
 /// </summary>
-[ApiController, Route(RouteConstants.Account)]
+[ApiController]
 public class AccountController(
     IWebHostEnvironment env,
     IDataRepository repo,

@@ -72,12 +72,12 @@ public class IntegrationTests
     public void IntegrationTestsCleanup() => _factory.Dispose();
 
     [TestMethod]
-    [DataRow($"{Migration}/{MigrationCopyGetUrl}")]
-    [DataRow($"{Migration}/{MigrationCreateGetUrl}?databaseType=MySql")]
-    [DataRow($"{Migration}/{MigrationCreateGetUrl}?databaseType=Postgres")]
-    [DataRow($"{Migration}/{MigrationRestoreGetUrl}?databaseType=MySql")]
-    [DataRow($"{Migration}/{MigrationRestoreGetUrl}?databaseType=Postgres")]
-    [DataRow($"{Migration}/{MigrationCreateGetUrl}?fileName=123&databaseType=MySql")]
+    [DataRow($"{MigrationCopyGetUrl}")]
+    [DataRow($"{MigrationCreateGetUrl}?databaseType=MySql")]
+    [DataRow($"{MigrationCreateGetUrl}?databaseType=Postgres")]
+    [DataRow($"{MigrationRestoreGetUrl}?databaseType=MySql")]
+    [DataRow($"{MigrationRestoreGetUrl}?databaseType=Postgres")]
+    [DataRow($"{MigrationCreateGetUrl}?fileName=123&databaseType=MySql")]
     public async Task Integration_Migrations_ShouldApplyCorrectly(string uriString)
     {
         // arrange:
@@ -109,10 +109,10 @@ public class IntegrationTests
 
     [TestMethod]
     [DataRow([
-        $"{Migration}/{MigrationRestoreGetUrl}?databaseType=MySql",
-        $"{Migration}/{MigrationCopyGetUrl}",
-        $"{Create}",
-        $"{Update}"
+        $"{MigrationRestoreGetUrl}?databaseType=MySql",
+        $"{MigrationCopyGetUrl}",
+        $"{CreateNotePostUrl}",
+        $"{UpdateNotePostUrl}"
     ])]
     // todo: тест и TestHelper разделить на части - практически "божественные объекты"
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(string[] uris)
@@ -130,12 +130,12 @@ public class IntegrationTests
         // act:
         foreach (var uri in uris)
         {
-            if (uri is $"{Create}" or $"{Update}")
+            if (uri is $"{CreateNotePostUrl}" or $"{UpdateNotePostUrl}")
             {
                 // POST
                 var note = enumerator.Current;
                 enumerator.MoveNext();
-                if (uri == $"{Update}")
+                if (uri == $"{UpdateNotePostUrl}")
                 {
                     // необходимо выставить id обновляемой заметки note.CommonNoteId
                     var dto = await note.ReadFromJsonAsync<NoteRequest>();
@@ -186,10 +186,10 @@ public class IntegrationTests
 
     [TestMethod]
     [DataRow([
-        $"{Create}",
-        $"{Migration}/{MigrationCreateGetUrl}?databaseType=Postgres",
-        $"{Migration}/{MigrationRestoreGetUrl}?databaseType=Postgres",
-        $"{Create}"
+        $"{CreateNotePostUrl}",
+        $"{MigrationCreateGetUrl}?databaseType=Postgres",
+        $"{MigrationRestoreGetUrl}?databaseType=Postgres",
+        $"{CreateNotePostUrl}"
         ])]
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string[] uris)
     {
@@ -207,7 +207,7 @@ public class IntegrationTests
         // act
         foreach (var uri in uris)
         {
-            if (uri ==  $"{Create}")
+            if (uri ==  $"{CreateNotePostUrl}")
             {
                 // POST
                 using var note = enumerator.Current;
@@ -259,16 +259,16 @@ public class IntegrationTests
     private const string ReadNoteTestText = "рас дваа три";
     public static IEnumerable<object[]> ReadNoteTestData =>
     [
-        [$"{Migration}/{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
-        [$"{Migration}/{MigrationCopyGetUrl}", Request.Get, "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, "success", "", TestHelper.Empty],
 
-        [$"{Create}", Request.Post, "[OK]", "dump files created", TestHelper.CreateContent],
-        [$"{Create}", Request.Post, "[Already Exist]", "", TestHelper.CreateContent],
-        [$"{Read}?id=946", Request.Post, "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
-        [$"{Update}", Request.Post, "[1]", "раз два три четыре", TestHelper.UpdateContent],
+        [$"{CreateNotePostUrl}", Request.Post, "[OK]", "dump files created", TestHelper.CreateContent],
+        [$"{CreateNotePostUrl}", Request.Post, "[Already Exist]", "", TestHelper.CreateContent],
+        [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
+        [$"{UpdateNotePostUrl}", Request.Post, "[1]", "раз два три четыре", TestHelper.UpdateContent],
 
-        [$"{Compliance}/{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, "946", "0.5", TestHelper.Empty],
-        [$"{Read}?id=946", Request.Post, "[1]", "раз два три четыре", TestHelper.ReadContent]
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, "946", "0.5", TestHelper.Empty],
+        [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "раз два три четыре", TestHelper.ReadContent]
     ];
 
     [TestMethod]
@@ -289,7 +289,7 @@ public class IntegrationTests
                 {
                     using var response = await client.GetAsync(uri);
                     response.EnsureSuccessStatusCode();
-                    if (uriString.StartsWith($"{Migration}"))
+                    if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
                     {
                         // assert:
                         var res = await response.Content.ReadAsStringAsync();
@@ -328,24 +328,24 @@ public class IntegrationTests
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
     public static IEnumerable<object[]> ReadCatalogTestData =>
     [
-        [$"{Migration}/{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(OkObjectResult), "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
-        [$"{Migration}/{MigrationCopyGetUrl}", Request.Get, typeof(OkObjectResult), "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(OkObjectResult), "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(OkObjectResult), "success", "", TestHelper.Empty],
 
-        [$"{Create}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
-        [$"{Catalog}?id=1", Request.Get, typeof(CatalogResponse), "1", "930", TestHelper.Empty],
+        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
+        [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "930", TestHelper.Empty],
         // навигация "вперёд" по каталогу
-        [$"{Catalog}", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],
+        [$"{CatalogNavigatePostUrl}", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],
         // проверим наличие заметки 1
-        [$"{Compliance}/{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "1", "1.2", TestHelper.Empty],
-        [$"{Catalog}?id=1&pg=2", Request.Delete, typeof(CatalogResponse), "2", "929", TestHelper.Empty],
-        [$"{Catalog}?id=2&pg=1", Request.Delete, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "1", "1.2", TestHelper.Empty],
+        [$"{CatalogDeleteNoteUrl}?id=1&pg=2", Request.Delete, typeof(CatalogResponse), "2", "929", TestHelper.Empty],
+        [$"{CatalogDeleteNoteUrl}?id=2&pg=1", Request.Delete, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
         // проверим наличие заметки 946
-        [$"{Catalog}?id=1", Request.Get, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
-        [$"{Compliance}/{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponseModel), "946", "6.67", TestHelper.Empty],
-        [$"{Read}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
+        [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponseModel), "946", "6.67", TestHelper.Empty],
+        [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
         // проверим отсутствие заметки 1
-        [$"{Read}?id=1", Request.Post, typeof(NoteResponse), "", "", TestHelper.ReadContent],
-        [$"{Compliance}/{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "{}", "", TestHelper.Empty]
+        [$"{ReadNotePostUrl}?id=1", Request.Post, typeof(NoteResponse), "", "", TestHelper.ReadContent],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "{}", "", TestHelper.Empty]
     ];
 
     [TestMethod]

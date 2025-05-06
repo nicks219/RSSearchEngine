@@ -3,66 +3,45 @@ namespace SearchEngine.Domain.Configuration;
 public abstract class RouteConstants
 {
     // account controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Account = "account";
-    // продолжение route
-    public const string AccountLoginGetUrl = "login";
-    public const string AccountLogoutGetUrl = "logout";
-    public const string AccountCheckGetUrl = "check";
-    public const string AccountUpdateGetUrl = "update";// антипаттерн
+    public const string AccountLoginGetUrl = "/account/login";
+    public const string AccountLogoutGetUrl = "/account/logout";
+    public const string AccountCheckGetUrl = "/account/check";
+    public const string AccountUpdateGetUrl = "/account/update";// антипаттерн
 
     // catalog controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Catalog = "api/catalog";
-    // продолжение route
-    public const string CatalogPageGetUrl = "";
-    public const string CatalogNavigatePostUrl = "";
-    // есть query, нельзя через `/`, см HttpClientExtensions
-    public const string CatalogDeleteNoteUrl = "";
+    public const string CatalogPageGetUrl = "/api/catalog";// различается http глаголом
+    public const string CatalogNavigatePostUrl = "/api/catalog";// различается http глаголом
+    // есть query-параметр, см HttpClientExtensions
+    public const string CatalogDeleteNoteUrl = "/api/catalog";// различается http глаголом
 
     // compliance controller
-    // если используется вне контроллера не как часть сегмента, значит требует исправления
-    public const string Compliance = "api/compliance";
-    // продолжение route
-    public const string ComplianceIndicesGetUrl = "indices";
+    public const string ComplianceIndicesGetUrl = "/api/compliance/indices";
 
     // create controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Create = "api/create";
-    // продолжение route
-    // нет query, можно через `/`, см HttpClientExtensions
-    public const string CreateGetTagsUrl = "";// дублирует [ReadGetTagsUrl], оставить в read
-    public const string CreateNotePostUrl = "";
+    // нет query-параметров, см HttpClientExtensions
+    // дублирует [ReadGetTagsUrl], оставить в read
+    public const string CreateGetTagsUrl = "/api/create";// различается http глаголом
+    public const string CreateNotePostUrl = "/api/create";// различается http глаголом
 
     // migration controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Migration =  "migration";
-    // продолжение route
-    public const string MigrationCopyGetUrl =  "copy";
-    public const string MigrationCreateGetUrl =  "create";
-    public const string MigrationRestoreGetUrl =  "restore";
-    public const string MigrationUploadPostUrl =  "upload";
-    public const string MigrationDownloadGetUrl =  "download";
+    public const string MigrationCopyGetUrl =  "/migration/copy";
+    public const string MigrationCreateGetUrl =  "/migration/create";
+    public const string MigrationRestoreGetUrl =  "/migration/restore";
+    public const string MigrationUploadPostUrl =  "/migration/upload";
+    public const string MigrationDownloadGetUrl =  "/migration/download";
 
     // read controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Read = "api/read";
-    // продолжение route
-    public const string ReadElectionGetUrl = "election";
-    public const string ReadTitlePostUrl = "title";
-    public const string ReadGetTagsUrl = "";// дублирует [CreateGetTagsUrl]
-    public const string ReadNotePostUrl = "";
-
-    // system controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string System = "system";
-    // продолжение route
-    public const string SystemVersionGetUrl = "version";
+    public const string ReadElectionGetUrl = "/api/read/election";
+    public const string ReadTitlePostUrl = "/api/read/title";
+    // дублирует [CreateGetTagsUrl]
+    public const string ReadGetTagsUrl = "/api/read";// различается http глаголом
+    public const string ReadNotePostUrl = "/api/read";// различается http глаголом
 
     // update controller
-    // требует исправления, если используется вне контроллера не как часть сегмента
-    public const string Update = "api/update";
-    // продолжение route
-    public const string UpdateGetNoteWithTagsUrl = "";// перенести в read
-    public const string UpdateNotePostUrl = "";
+    // перенести в read
+    public const string UpdateGetNoteWithTagsUrl = "/api/update";// различается http глаголом
+    public const string UpdateNotePostUrl = "/api/update";// различается http глаголом
+
+    // system controller
+    public const string SystemVersionGetUrl = "/system/version";
 }

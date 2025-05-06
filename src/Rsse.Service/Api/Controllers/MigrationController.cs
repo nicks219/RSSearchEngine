@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для работы с миграциями бд
 /// </summary>
-[Authorize, Route(RouteConstants.Migration), ApiController]
+[Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
     ILogger<MigrationController> logger,

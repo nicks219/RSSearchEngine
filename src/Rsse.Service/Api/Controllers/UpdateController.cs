@@ -16,7 +16,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для обновления заметки
 /// </summary>
-[Authorize, Route(RouteConstants.Update), ApiController]
+[Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
     IDataRepository repo,

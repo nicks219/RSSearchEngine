@@ -15,7 +15,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для получения заметок
 /// </summary>
-[ApiController, Route(RouteConstants.Read)]
+[ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
     IDataRepository repo,

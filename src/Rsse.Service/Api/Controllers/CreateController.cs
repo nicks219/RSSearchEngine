@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для создания заметок
 /// </summary>
-[Authorize, Route(RouteConstants.Create), ApiController]
+[Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
     IDataRepository repo,

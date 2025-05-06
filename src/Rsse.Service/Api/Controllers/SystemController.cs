@@ -7,8 +7,8 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер, поставляющий системную информацию.
 /// </summary>
-[Route(RouteConstants.System)]
-public class SystemController(IOptionsSnapshot<DatabaseOptions> options) : Controller
+[ApiController]
+public class SystemController(IOptionsSnapshot<DatabaseOptions> options) : ControllerBase
 {
     /// <summary>
     /// Получить версию сервиса.

@@ -13,7 +13,6 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
-[Route(RouteConstants.Compliance)]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ComplianceSearchController(
     IDataRepository repo,

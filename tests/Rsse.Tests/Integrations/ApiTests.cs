@@ -64,9 +64,9 @@ public class ApiTests
     }
 
     [TestMethod]
-    [DataRow($"{Read}/{ReadTitlePostUrl}?id=1", "res", "Розенбаум -- Вечерняя застольная")]
-    [DataRow($"{Read}/{ReadElectionGetUrl}", "randomElection", false)]
-    [DataRow(Read, "structuredTagsListResponse", TestHelper.TagListResponse)]
+    [DataRow($"{ReadTitlePostUrl}?id=1", "res", "Розенбаум -- Вечерняя застольная")]
+    [DataRow($"{ReadElectionGetUrl}", "randomElection", false)]
+    [DataRow(ReadNotePostUrl, "structuredTagsListResponse", TestHelper.TagListResponse)]
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)
     {
         // arrange:
@@ -108,7 +108,7 @@ public class ApiTests
     }
 
     [TestMethod]
-    [DataRow(Read, "titleResponse", "Розенбаум -- Вечерняя застольная")]
+    [DataRow(ReadNotePostUrl, "titleResponse", "Розенбаум -- Вечерняя застольная")]
     public async Task Api_ReadController_Post_ShouldReturnsExpectedResult(string uriString, string key, string expected)
     {
         // arrange:
