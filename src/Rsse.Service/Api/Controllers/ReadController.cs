@@ -128,7 +128,7 @@ public class ReadController(
     /// Получить обновляемую заметку
     /// </summary>
     /// <param name="id">идентификатор обновляемой заметки</param>
-    [Authorize, HttpGet(RouteConstants.RedNoteWithTagsForUpdateAuthGetUrl)]
+    [Authorize, HttpGet(RouteConstants.ReadNoteWithTagsForUpdateAuthGetUrl)]
     // todo: неудачный рефакторинг, исправить
     public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)
     {

@@ -151,5 +151,6 @@ public enum Request
 {
     Get = 0,
     Post = 1,
-    Delete = 2
+    Delete = 2,
+    Put = 3
 }

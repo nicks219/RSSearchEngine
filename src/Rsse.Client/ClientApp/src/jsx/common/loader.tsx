@@ -7,13 +7,14 @@ import {
 import {RouteConstants} from "../../api-routes.tsx";
 
 export class Loader {
-    static readTagsForCreateAuthGetUrl: string = RouteConstants.readTagsForCreateAuthGetUrl;// дубль readGetTagsUrl, но под авторизацией
+    // дубль readTagsGetUrl под авторизацией
+    static readTagsForCreateAuthGetUrl: string = RouteConstants.readTagsForCreateAuthGetUrl;
     static createNotePostUrl: string = RouteConstants.createNotePostUrl;
     static readTagsGetUrl: string = RouteConstants.readTagsGetUrl;
     static readNotePostUrl: string = RouteConstants.readNotePostUrl;
     static readTitleGetUrl: string = RouteConstants.readTitleGetUrl;
-    static redNoteWithTagsForUpdateAuthGetUrl: string = RouteConstants.redNoteWithTagsForUpdateAuthGetUrl;
-    static updateNotePostUrl: string = RouteConstants.updateNotePostUrl;
+    static readNoteWithTagsForUpdateAuthGetUrl: string = RouteConstants.readNoteWithTagsForUpdateAuthGetUrl;
+    static updateNotePutUrl: string = RouteConstants.updateNotePutUrl;
     static catalogPageGetUrl: string = RouteConstants.catalogPageGetUrl;
     static catalogNavigatePostUrl: string = RouteConstants.catalogNavigatePostUrl;
     static deleteNoteUrl: string = RouteConstants.deleteNoteUrl;
@@ -141,6 +142,30 @@ export class Loader {
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
                 method: "POST",
+                headers: {'Content-Type': "application/json;charset=utf-8"},
+                body: requestBody,
+                credentials: this.corsCredentialsPolicy
+            });
+
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
+        } catch {
+            console.log(error);
+        }
+    }
+
+    // PUT request: /api/controller
+    static async putData(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
+                          requestBody: string,
+                          url: string,
+                          id: number|string|null = null,
+                          recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
+        const error: string = `${Loader.name}: postData exception`;
+        Loader.setupDevEnvironment();
+        setLoginBoxVisibility(false);
+
+        try {
+            const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
+                method: "PUT",
                 headers: {'Content-Type': "application/json;charset=utf-8"},
                 body: requestBody,
                 credentials: this.corsCredentialsPolicy

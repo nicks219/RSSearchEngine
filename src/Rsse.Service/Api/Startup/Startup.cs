@@ -132,7 +132,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             {
                 policyBuilder.WithOrigins(_allowedOrigins).AllowCredentials();
                 policyBuilder.WithHeaders("Content-Type");
-                policyBuilder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
+                policyBuilder.WithMethods("GET", "POST", "DELETE", "PUT", "OPTIONS");
             });
         });
 

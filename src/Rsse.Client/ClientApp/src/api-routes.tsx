@@ -13,12 +13,12 @@ export const RouteConstants = {
   readNotePostUrl: "/v6/election/note",
   readTagsGetUrl: "/v6/tags",
   readTagsForCreateAuthGetUrl: "/v6/tags/forCreate",
-  redNoteWithTagsForUpdateAuthGetUrl: "/v6/note/forUpdate",
+  readNoteWithTagsForUpdateAuthGetUrl: "/v6/note/forUpdate",
   migrationCopyGetUrl: "/migration/copy",
   migrationCreateGetUrl: "/migration/create",
   migrationRestoreGetUrl: "/migration/restore",
   migrationUploadPostUrl: "/migration/upload",
   migrationDownloadGetUrl: "/migration/download",
   systemVersionGetUrl: "/system/version",
-  updateNotePostUrl: "/v6/note/update"
+  updateNotePutUrl: "/v6/note/update"
 } as const;

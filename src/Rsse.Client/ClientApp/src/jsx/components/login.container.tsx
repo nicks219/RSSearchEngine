@@ -76,9 +76,9 @@ export const LoginContainer = () => {
         if (stateWrapper) {
             switch (recoveryContext.recoveryString) {
                 // продолжение для update:
-                case Loader.redNoteWithTagsForUpdateAuthGetUrl: {
+                case Loader.readNoteWithTagsForUpdateAuthGetUrl: {
                     const id = commonContext.commonNumber;
-                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.redNoteWithTagsForUpdateAuthGetUrl);
+                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.readNoteWithTagsForUpdateAuthGetUrl);
                     break;
                 }
                 // продолжение для delete (catalog): загрузка первой страницы:

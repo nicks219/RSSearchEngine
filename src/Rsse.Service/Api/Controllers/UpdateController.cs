@@ -28,7 +28,7 @@ public class UpdateController(
     /// Обновить заметку
     /// </summary>
     /// <param name="request">данные для обновления</param>
-    [Authorize, HttpPost(RouteConstants.UpdateNotePostUrl)]
+    [Authorize, HttpPut(RouteConstants.UpdateNotePutUrl)]
     public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
         try

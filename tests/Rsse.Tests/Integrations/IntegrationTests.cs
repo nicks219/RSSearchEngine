@@ -112,7 +112,7 @@ public class IntegrationTests
         $"{MigrationRestoreGetUrl}?databaseType=MySql",
         $"{MigrationCopyGetUrl}",
         $"{CreateNotePostUrl}",
-        $"{UpdateNotePostUrl}"
+        $"{UpdateNotePutUrl}"
     ])]
     // todo: тест и TestHelper разделить на части - практически "божественные объекты"
     public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(string[] uris)
@@ -130,12 +130,12 @@ public class IntegrationTests
         // act:
         foreach (var uri in uris)
         {
-            if (uri is $"{CreateNotePostUrl}" or $"{UpdateNotePostUrl}")
+            if (uri is $"{CreateNotePostUrl}" or $"{UpdateNotePutUrl}")
             {
                 // POST
                 var note = enumerator.Current;
                 enumerator.MoveNext();
-                if (uri == $"{UpdateNotePostUrl}")
+                if (uri == $"{UpdateNotePutUrl}")
                 {
                     // необходимо выставить id обновляемой заметки note.CommonNoteId
                     var dto = await note.ReadFromJsonAsync<NoteRequest>();
@@ -143,8 +143,10 @@ public class IntegrationTests
                     note = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
                 }
 
-                using var postResponse = await client.PostAsync(uri, note);
-                var deserializedPostResponse = await postResponse
+                using var postOrPutResponse = uri == UpdateNotePutUrl
+                    ? await client.PutAsync(uri, note)
+                    : await client.PostAsync(uri, note);
+                var deserializedPostResponse = await postOrPutResponse
                     .EnsureSuccessStatusCode()
                     .Content
                     .ReadFromJsonAsync<NoteResponse>();
@@ -265,7 +267,7 @@ public class IntegrationTests
         [$"{CreateNotePostUrl}", Request.Post, "[OK]", "dump files created", TestHelper.CreateContent],
         [$"{CreateNotePostUrl}", Request.Post, "[Already Exist]", "", TestHelper.CreateContent],
         [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
-        [$"{UpdateNotePostUrl}", Request.Post, "[1]", "раз два три четыре", TestHelper.UpdateContent],
+        [$"{UpdateNotePutUrl}", Request.Put, "[1]", "раз два три четыре", TestHelper.UpdateContent],
 
         [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, "946", "0.5", TestHelper.Empty],
         [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "раз два три четыре", TestHelper.ReadContent]
@@ -286,36 +288,47 @@ public class IntegrationTests
         {
             // act:
             case Request.Get:
+            {
+                using var response = await client.GetAsync(uri);
+                response.EnsureSuccessStatusCode();
+                if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
                 {
-                    using var response = await client.GetAsync(uri);
-                    response.EnsureSuccessStatusCode();
-                    if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
-                    {
-                        // assert:
-                        var res = await response.Content.ReadAsStringAsync();
-                        res.Should().Be(titleExpected);
-                        break;
-                    }
-
-                    var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
-
                     // assert:
-                    result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
-                    _ = double.TryParse(textExpected, out var doubleExpected);
-                    result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
+                    var res = await response.Content.ReadAsStringAsync();
+                    res.Should().Be(titleExpected);
                     break;
                 }
+
+                var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
+
+                // assert:
+                result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
+                _ = double.TryParse(textExpected, out var doubleExpected);
+                result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
+                break;
+            }
             case Request.Post:
-                {
-                    using var response = await client.PostAsync(uri, content);
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
+            {
+                using var response = await client.PostAsync(uri, content);
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
 
-                    // assert:
-                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
-                    break;
-                }
+                // assert:
+                result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
+                result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                break;
+            }
+            case Request.Put:
+            {
+                using var response = await client.PutAsync(uri, content);
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
+
+                // assert:
+                result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
+                result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                break;
+            }
 
             default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }

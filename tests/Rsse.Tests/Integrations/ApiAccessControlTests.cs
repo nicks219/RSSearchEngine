@@ -109,7 +109,7 @@ public class ApiAccessControlTests
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
     [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
-    [DataRow($"{RedNoteWithTagsForUpdateAuthGetUrl}?id=1")]
+    [DataRow($"{ReadNoteWithTagsForUpdateAuthGetUrl}?id=1")]
     public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
@@ -141,8 +141,8 @@ public class ApiAccessControlTests
     [TestMethod]
     [DataRow($"{MigrationUploadPostUrl}")]
     [DataRow($"{CreateNotePostUrl}")]
-    [DataRow($"{UpdateNotePostUrl}")]
-    public async Task Api_Unauthorized_Post_ShouldReturns401(string uriString)
+    [DataRow($"{UpdateNotePutUrl}")]
+    public async Task Api_Unauthorized_PostAndPut_ShouldReturns401(string uriString)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -150,7 +150,9 @@ public class ApiAccessControlTests
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.PostAsync(uri, content);
+        using var response = uriString == UpdateNotePutUrl
+            ? await client.PutAsync(uri, content)
+            : await client.PostAsync(uri, content);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -200,7 +202,7 @@ public class ApiAccessControlTests
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
     [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
-    [DataRow($"{RedNoteWithTagsForUpdateAuthGetUrl}?id=1")]
+    [DataRow($"{ReadNoteWithTagsForUpdateAuthGetUrl}?id=1")]
     public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
@@ -226,8 +228,8 @@ public class ApiAccessControlTests
     [TestMethod]
     [DataRow($"{MigrationUploadPostUrl}", true)]
     [DataRow($"{CreateNotePostUrl}", false)]
-    [DataRow($"{UpdateNotePostUrl}", false)]
-    public async Task Api_Authorized_Post_ShouldReturns200(string uriString, bool appendFile)
+    [DataRow($"{UpdateNotePutUrl}", false)]
+    public async Task Api_Authorized_PostAndPut_ShouldReturns200(string uriString, bool appendFile)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -237,7 +239,9 @@ public class ApiAccessControlTests
         using var content = TestHelper.GetRequestContent(appendFile);
 
         // act:
-        using var response = await client.PostAsync(uri, content);
+        using var response = uriString == UpdateNotePutUrl
+            ? await client.PutAsync(uri, content)
+            : await client.PostAsync(uri, content);
         HttpStatusCode statusCode = response.StatusCode;
         string reason = response.ReasonPhrase;
 
