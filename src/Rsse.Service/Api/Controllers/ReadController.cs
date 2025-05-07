@@ -102,41 +102,42 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Получить обновляемую заметку
-    /// </summary>
-    /// <param name="id">идентификатор обновляемой заметки</param>
-    [Authorize, HttpGet(RouteConstants.RedNoteWithTagsForUpdateAuthGetUrl)]
-    public async Task<ActionResult<NoteResponse>> GetInitialNoteForUpdate(int id)
-    {
-        try
-        {
-            var response = await new UpdateManager(repo, managerLogger).GetOriginalNote(id);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetInitialNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = GetInitialNoteError };
-        }
-    }
-
-    /// <summary>
     /// Получить список тегов
     /// </summary>
     [Authorize, HttpGet(RouteConstants.ReadTagsForCreateAuthGetUrl)]
     [Obsolete("используйте ReadController.ReadTagList")]
+    // todo: неудачный рефакторинг, исправить
     public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate()
     {
         try
         {
-            var model = new CreateManager(repo, managerLogger);
-            var response = await model.ReadStructuredTagList();
+            var response = await ReadTagList();
+            return response;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, GetTagListForCreateError);
+            return new NoteResponse { CommonErrorMessageResponse = GetTagListForCreateError };
+        }
+    }
+
+    /// <summary>
+    /// Получить обновляемую заметку
+    /// </summary>
+    /// <param name="id">идентификатор обновляемой заметки</param>
+    [Authorize, HttpGet(RouteConstants.RedNoteWithTagsForUpdateAuthGetUrl)]
+    // todo: неудачный рефакторинг, исправить
+    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)
+    {
+        try
+        {
+            var response = await new UpdateManager(repo, managerLogger).GetNoteWithTagsForUpdate(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, GetTagListError);
-            return new NoteResponse { CommonErrorMessageResponse = GetTagListError };
+            logger.LogError(ex, GetNoteWithTagsForUpdateError);
+            return new NoteResponse { CommonErrorMessageResponse = GetNoteWithTagsForUpdateError };
         }
     }
 }

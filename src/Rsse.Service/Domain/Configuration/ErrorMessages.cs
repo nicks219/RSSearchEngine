@@ -22,6 +22,6 @@ internal abstract class ErrorMessages
     internal const string ReadTitleByNoteIdError = $"[{nameof(ReadManager)}] {nameof(ReadManager.ReadTitleByNoteId)} error";
     internal const string ReadModelReadTagListError = $"[{nameof(ReadManager)}] {nameof(ReadManager.ReadTagList)} error";
 
-    internal const string GetOriginalNoteError = $"[{nameof(UpdateManager)}] {nameof(UpdateManager.GetOriginalNote)} error";
+    internal const string GetOriginalNoteError = $"[{nameof(UpdateManager)}] {nameof(UpdateManager.GetNoteWithTagsForUpdate)} error";
     internal const string UpdateNoteError = $"[{nameof(UpdateManager)}] {nameof(UpdateManager.UpdateNote)} error";
 }

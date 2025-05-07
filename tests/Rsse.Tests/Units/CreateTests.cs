@@ -52,7 +52,7 @@ public class CreateTests
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
-        var actualDto = await new UpdateManager(repo, managerLogger).GetOriginalNote(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateManager(repo, managerLogger).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
 
         // assert:
         responseDto.CommonErrorMessageResponse.Should().BeNull();

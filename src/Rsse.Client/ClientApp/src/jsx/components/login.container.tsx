@@ -82,7 +82,7 @@ export const LoginContainer = () => {
                     break;
                 }
                 // продолжение для delete (catalog): загрузка первой страницы:
-                case Loader.noteDeleteUrl: {
+                case Loader.deleteNoteUrl: {
                     const id = 1;
                     Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.catalogPageGetUrl);
                     break;

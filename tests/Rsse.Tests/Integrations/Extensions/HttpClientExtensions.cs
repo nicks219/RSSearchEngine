@@ -63,7 +63,7 @@ public static class HttpClientExtensions
     internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
     {
         // CatalogDto
-        using var noteResponse = await client.DeleteAsync($"{NoteDeleteUrl}?id={noteId}&pg=1");
+        using var noteResponse = await client.DeleteAsync($"{DeleteNoteUrl}?id={noteId}&pg=1");
         noteResponse.EnsureSuccessStatusCode();
     }
 

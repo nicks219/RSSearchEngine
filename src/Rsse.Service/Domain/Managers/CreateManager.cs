@@ -12,27 +12,8 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateManager(IDataRepository repo, ILogger logger)
+public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
 {
-    /// <summary>
-    /// Получить структурированный список тегов
-    /// </summary>
-    /// <returns>шаблон с ответом</returns>
-    public async Task<NoteResultDto> ReadStructuredTagList()
-    {
-        try
-        {
-            var tagList = await repo.ReadStructuredTagList();
-
-            return new NoteResultDto(tagList);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, CreateManagerReadTagListError);
-            return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
-        }
-    }
-
     /// <summary>
     /// Создать заметку
     /// </summary>
@@ -127,4 +108,24 @@ public class CreateManager(IDataRepository repo, ILogger logger)
             ? repo.CreateTagIfNotExists(tag)
             : Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Получить структурированный список тегов
+    /// </summary>
+    /// <returns>шаблон с ответом</returns>
+    internal async Task<NoteResultDto> ReadStructuredTagList()
+    {
+        try
+        {
+            var tagList = await repo.ReadStructuredTagList();
+
+            return new NoteResultDto(tagList);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, CreateManagerReadTagListError);
+            return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
+        }
+    }
+
 }

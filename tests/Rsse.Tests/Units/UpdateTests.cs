@@ -40,7 +40,7 @@ public class UpdateTests
     public async Task UpdateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var responseDto = await UpdateManager.GetOriginalNote(1);
+        var responseDto = await UpdateManager.GetNoteWithTagsForUpdate(1);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.StructuredTagsListResponse?.Count);

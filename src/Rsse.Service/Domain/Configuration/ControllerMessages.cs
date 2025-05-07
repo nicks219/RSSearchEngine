@@ -20,7 +20,7 @@ internal abstract class ControllerMessages
     internal const string ComplianceError = $"[{nameof(ComplianceSearchController)}] {nameof(ComplianceSearchController.GetComplianceIndices)} error: search indices may corrupted";
 
     internal const string CreateNoteError = $"[{nameof(CreateController)}] {nameof(CreateController.CreateNoteAndDumpAsync)} error";
-    internal const string GetTagListError = $"[{nameof(CreateController)}] {nameof(ReadController.GetStructuredTagListForCreate)} error";
+    internal const string GetTagListForCreateError = $"[{nameof(CreateController)}] {nameof(ReadController.GetStructuredTagListForCreate)} error";
 
     internal const string CreateError = $"[{nameof(MigrationController)}] {nameof(MigrationController.CreateDump)} error";
     internal const string RestoreError = $"[{nameof(MigrationController)}] {nameof(MigrationController.RestoreFromDump)} error";
@@ -29,6 +29,6 @@ internal abstract class ControllerMessages
     internal const string ReadTitleByNoteIdError = $"[{nameof(ReadController)}] {nameof(ReadController.ReadTitleByNoteId)} error";
     internal const string ReadTagListError = $"[{nameof(ReadController)}] {nameof(ReadController.ReadTagList)} error";
 
-    internal const string GetInitialNoteError = $"[{nameof(UpdateController)}] {nameof(ReadController.GetInitialNoteForUpdate)} error";
+    internal const string GetNoteWithTagsForUpdateError = $"[{nameof(UpdateController)}] {nameof(ReadController.GetNoteWithTagsForUpdate)} error";
     internal const string UpdateNoteError = $"[{nameof(UpdateController)}] {nameof(UpdateController.UpdateNote)} error";
 }

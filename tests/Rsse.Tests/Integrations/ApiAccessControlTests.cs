@@ -45,7 +45,7 @@ public class ApiAccessControlTests
     public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
         // arrange:
-        var uri = new Uri($"{NoteDeleteUrl}?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{DeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
 
         // act:
@@ -77,7 +77,7 @@ public class ApiAccessControlTests
         const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService(unauthenticated, unauthenticated);
-        var uri = new Uri($"{NoteDeleteUrl}?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{DeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -178,7 +178,7 @@ public class ApiAccessControlTests
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService();
         // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
-        var uri = new Uri($"{NoteDeleteUrl}?id=2&pg=1", UriKind.Relative);
+        var uri = new Uri($"{DeleteNoteUrl}?id=2&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);

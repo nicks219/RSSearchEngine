@@ -88,7 +88,7 @@ export const CatalogContainer: FC = (): JSX.Element|undefined => {
         const onConfirm = () => {
             let id = Number(targetId);
             console.log('Try to delete song id: ' + id);
-            Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.noteDeleteUrl, getPageNumber(data), recoveryContext);
+            Loader.unusedPromise = Loader.deleteDataById(stateWrapper, id, Loader.deleteNoteUrl, getPageNumber(data), recoveryContext);
         }
 
         askForConfirmation(onConfirm, Messages.confirmDelete);

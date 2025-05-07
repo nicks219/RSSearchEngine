@@ -16,7 +16,7 @@ export class Loader {
     static updateNotePostUrl: string = RouteConstants.updateNotePostUrl;
     static catalogPageGetUrl: string = RouteConstants.catalogPageGetUrl;
     static catalogNavigatePostUrl: string = RouteConstants.catalogNavigatePostUrl;
-    static noteDeleteUrl: string = RouteConstants.noteDeleteUrl;
+    static deleteNoteUrl: string = RouteConstants.deleteNoteUrl;
     static loginUrl: string = RouteConstants.accountLoginGetUrl;
     static logoutUrl: string = RouteConstants.accountLogoutGetUrl;
     static checkAuth: string = RouteConstants.accountCheckGetUrl;

@@ -15,11 +15,44 @@ namespace SearchEngine.Domain.Managers;
 public class UpdateManager(IDataRepository repo, ILogger logger)
 {
     /// <summary>
+    /// Обновить заметку
+    /// </summary>
+    /// <param name="updatedNoteRequest">данные для обновления</param>
+    /// <returns>обновленная заметка</returns>
+    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest)
+    {
+        try
+        {
+            if (updatedNoteRequest.TagsCheckedRequest == null
+                || string.IsNullOrEmpty(updatedNoteRequest.TextRequest)
+                || string.IsNullOrEmpty(updatedNoteRequest.TitleRequest)
+                || updatedNoteRequest.TagsCheckedRequest.Count == 0)
+            {
+                return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange);
+            }
+
+            var initialNoteTags = await repo
+                .ReadNoteTags(updatedNoteRequest.NoteIdExchange)
+                .ToListAsync();
+
+            await repo.UpdateNote(initialNoteTags, updatedNoteRequest);
+
+            return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, UpdateNoteError);
+
+            return new NoteResultDto { CommonErrorMessageResponse = UpdateNoteError };
+        }
+    }
+
+    /// <summary>
     /// Прочитать обновляемую заметку
     /// </summary>
     /// <param name="originalNoteId">идентификатор обновляемой заметки</param>
     /// <returns>ответ с заметкой</returns>
-    public async Task<NoteResultDto> GetOriginalNote(int originalNoteId)
+    public async Task<NoteResultDto> GetNoteWithTagsForUpdate(int originalNoteId)
     {
         try
         {
@@ -39,7 +72,7 @@ public class UpdateManager(IDataRepository repo, ILogger logger)
             }
             else
             {
-                text = $"[{nameof(GetOriginalNote)}] action is not possible, note to be updated is not specified";
+                text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
             }
 
             var tagList = await repo.ReadStructuredTagList();
@@ -66,39 +99,6 @@ public class UpdateManager(IDataRepository repo, ILogger logger)
         {
             logger.LogError(ex, GetOriginalNoteError);
             return new NoteResultDto { CommonErrorMessageResponse = GetOriginalNoteError };
-        }
-    }
-
-    /// <summary>
-    /// Обновить заметку
-    /// </summary>
-    /// <param name="updatedNoteRequest">данные для обновления</param>
-    /// <returns>обновленная заметка</returns>
-    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest)
-    {
-        try
-        {
-            if (updatedNoteRequest.TagsCheckedRequest == null
-                || string.IsNullOrEmpty(updatedNoteRequest.TextRequest)
-                || string.IsNullOrEmpty(updatedNoteRequest.TitleRequest)
-                || updatedNoteRequest.TagsCheckedRequest.Count == 0)
-            {
-                return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
-            }
-
-            var initialNoteTags = await repo
-                .ReadNoteTags(updatedNoteRequest.NoteIdExchange)
-                .ToListAsync();
-
-            await repo.UpdateNote(initialNoteTags, updatedNoteRequest);
-
-            return await GetOriginalNote(updatedNoteRequest.NoteIdExchange);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, UpdateNoteError);
-
-            return new NoteResultDto { CommonErrorMessageResponse = UpdateNoteError };
         }
     }
 }
