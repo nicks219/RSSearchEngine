@@ -76,13 +76,13 @@ export const LoginContainer = () => {
         if (stateWrapper) {
             switch (recoveryContext.recoveryString) {
                 // продолжение для update:
-                case Loader.updateGetMoteWithTagsUrl: {
+                case Loader.redNoteWithTagsForUpdateAuthGetUrl: {
                     const id = commonContext.commonNumber;
-                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.updateGetMoteWithTagsUrl);
+                    Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.redNoteWithTagsForUpdateAuthGetUrl);
                     break;
                 }
                 // продолжение для delete (catalog): загрузка первой страницы:
-                case Loader.catalogDeleteNoteUrl: {
+                case Loader.noteDeleteUrl: {
                     const id = 1;
                     Loader.unusedPromise = Loader.getDataById(stateWrapper, id, Loader.catalogPageGetUrl);
                     break;
@@ -93,8 +93,8 @@ export const LoginContainer = () => {
                 case Loader.migrationCreateUrl:
                     Loader.unusedPromise = Loader.getData(stateWrapper, Loader.migrationCreateUrl);
                     break;
-                case Loader.createGetTagsAuthorizedUrl:
-                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createGetTagsAuthorizedUrl);
+                case Loader.readTagsForCreateAuthGetUrl:
+                    Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readTagsForCreateAuthGetUrl);
                     break;
                 case Loader.logoutUrl:
                     break;

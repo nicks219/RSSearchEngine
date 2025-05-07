@@ -48,7 +48,7 @@ const ReadContainerParametrized = (props: ReadContainerParametrizedProps) => {
             if (formElement) formElement.style.display = SystemConstants.none;
             (document.getElementById(Doms.loginName) as HTMLElement).style.display = SystemConstants.none;
         } else {
-            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readGetTagsUrl);
+            Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readTagsGetUrl);
         }
     }
 

@@ -13,7 +13,7 @@ public abstract class RouteConstants
     public const string CatalogNavigatePostUrl = $"/{Version}/catalog/navigate";
 
     // delete controller | recovery не учитывает HTTP глаголы
-    public const string CatalogDeleteNoteUrl = $"/{Version}/note/delete";
+    public const string NoteDeleteUrl = $"/{Version}/note/delete";
 
     // create controller
     // /v1/note ... POST | recovery не учитывает HTTP глаголы
@@ -27,13 +27,13 @@ public abstract class RouteConstants
     public const string ReadElectionGetUrl = $"/{Version}/election/switch";
     public const string ReadTitleGetUrl = $"/{Version}/title";
     // дублирует [CreateGetTagsUrl] | без авторизации
-    public const string ReadGetTagsUrl = $"/{Version}/tags";
+    public const string ReadTagsGetUrl = $"/{Version}/tags";
     // [глагол] /v1/note?id=... поправить на GET
     public const string ReadNotePostUrl = $"/{Version}/election/note";
     // дублирует [ReadGetTagsUrl] | под авторизацией | recovery не учитывает HTTP глаголы
-    public const string CreateGetTagsAuthorizedUrl = $"/{Version}/tags/forCreate";
+    public const string ReadTagsForCreateAuthGetUrl = $"/{Version}/tags/forCreate";
     // под авторизацией | recovery не учитывает HTTP глаголы
-    public const string UpdateGetNoteWithTagsUrl = $"/{Version}/note/forUpdate";
+    public const string RedNoteWithTagsForUpdateAuthGetUrl = $"/{Version}/note/forUpdate";
 
     // account controller
     public const string AccountLoginGetUrl = $"/{Version}/account/login";

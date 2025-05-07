@@ -50,7 +50,7 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
     {
-        using var tagsResponse = await client.GetAsync($"{CreateGetTagsAuthorizedUrl}");
+        using var tagsResponse = await client.GetAsync($"{ReadTagsForCreateAuthGetUrl}");
         var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteResponse>();
         var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
 
@@ -63,7 +63,7 @@ public static class HttpClientExtensions
     internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
     {
         // CatalogDto
-        using var noteResponse = await client.DeleteAsync($"{CatalogDeleteNoteUrl}?id={noteId}&pg=1");
+        using var noteResponse = await client.DeleteAsync($"{NoteDeleteUrl}?id={noteId}&pg=1");
         noteResponse.EnsureSuccessStatusCode();
     }
 

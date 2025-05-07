@@ -29,7 +29,7 @@ public class DeleteController(
     /// <param name="id">идентификатор заметки</param>
     /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
     /// <returns>актуальная страница каталога</returns>
-    [Authorize, HttpDelete(RouteConstants.CatalogDeleteNoteUrl)]
+    [Authorize, HttpDelete(RouteConstants.NoteDeleteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
     {

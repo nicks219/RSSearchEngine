@@ -24,7 +24,7 @@ export const UpdateContainer = ({buttonRef}: ButtonAnchorProps) => {
 
     const onMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getDataById(stateWrapper, commonContext.commonNumber, Loader.updateGetMoteWithTagsUrl, recoveryContext);
+        Loader.unusedPromise = Loader.getDataById(stateWrapper, commonContext.commonNumber, Loader.redNoteWithTagsForUpdateAuthGetUrl, recoveryContext);
     }
 
     const onUnmount = () => {

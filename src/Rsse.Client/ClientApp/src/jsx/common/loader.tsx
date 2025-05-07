@@ -7,16 +7,16 @@ import {
 import {RouteConstants} from "../../api-routes.tsx";
 
 export class Loader {
-    static createGetTagsAuthorizedUrl: string = RouteConstants.createGetTagsAuthorizedUrl;// дубль readGetTagsUrl, но под авторизацией
+    static readTagsForCreateAuthGetUrl: string = RouteConstants.readTagsForCreateAuthGetUrl;// дубль readGetTagsUrl, но под авторизацией
     static createNotePostUrl: string = RouteConstants.createNotePostUrl;
-    static readGetTagsUrl: string = RouteConstants.readGetTagsUrl;
+    static readTagsGetUrl: string = RouteConstants.readTagsGetUrl;
     static readNotePostUrl: string = RouteConstants.readNotePostUrl;
     static readTitleGetUrl: string = RouteConstants.readTitleGetUrl;
-    static updateGetMoteWithTagsUrl: string = RouteConstants.updateGetNoteWithTagsUrl;
+    static redNoteWithTagsForUpdateAuthGetUrl: string = RouteConstants.redNoteWithTagsForUpdateAuthGetUrl;
     static updateNotePostUrl: string = RouteConstants.updateNotePostUrl;
     static catalogPageGetUrl: string = RouteConstants.catalogPageGetUrl;
     static catalogNavigatePostUrl: string = RouteConstants.catalogNavigatePostUrl;
-    static catalogDeleteNoteUrl: string = RouteConstants.catalogDeleteNoteUrl;
+    static noteDeleteUrl: string = RouteConstants.noteDeleteUrl;
     static loginUrl: string = RouteConstants.accountLoginGetUrl;
     static logoutUrl: string = RouteConstants.accountLogoutGetUrl;
     static checkAuth: string = RouteConstants.accountCheckGetUrl;

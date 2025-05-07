@@ -86,7 +86,7 @@ public class ReadController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [HttpGet(RouteConstants.ReadGetTagsUrl)]
+    [HttpGet(RouteConstants.ReadTagsGetUrl)]
     public async Task<ActionResult<NoteResponse>> ReadTagList()
     {
         try
@@ -105,7 +105,7 @@ public class ReadController(
     /// Получить обновляемую заметку
     /// </summary>
     /// <param name="id">идентификатор обновляемой заметки</param>
-    [Authorize, HttpGet(RouteConstants.UpdateGetNoteWithTagsUrl)]
+    [Authorize, HttpGet(RouteConstants.RedNoteWithTagsForUpdateAuthGetUrl)]
     public async Task<ActionResult<NoteResponse>> GetInitialNoteForUpdate(int id)
     {
         try
@@ -123,7 +123,7 @@ public class ReadController(
     /// <summary>
     /// Получить список тегов
     /// </summary>
-    [Authorize, HttpGet(RouteConstants.CreateGetTagsAuthorizedUrl)]
+    [Authorize, HttpGet(RouteConstants.ReadTagsForCreateAuthGetUrl)]
     [Obsolete("используйте ReadController.ReadTagList")]
     public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate()
     {

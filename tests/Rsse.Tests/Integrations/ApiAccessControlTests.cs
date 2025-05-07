@@ -45,7 +45,7 @@ public class ApiAccessControlTests
     public async Task Api_Unauthorized_Delete_ShouldReturns401()
     {
         // arrange:
-        var uri = new Uri($"{CatalogDeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{NoteDeleteUrl}?id=1&pg=1", UriKind.Relative);
         using var client = _factory.CreateClient(_options);
 
         // act:
@@ -77,7 +77,7 @@ public class ApiAccessControlTests
         const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService(unauthenticated, unauthenticated);
-        var uri = new Uri($"{CatalogDeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
+        var uri = new Uri($"{NoteDeleteUrl}?id=1&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -108,8 +108,8 @@ public class ApiAccessControlTests
     [DataRow($"{MigrationDownloadGetUrl}?filename=123")]
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
-    [DataRow($"{CreateGetTagsAuthorizedUrl}")]
-    [DataRow($"{UpdateGetNoteWithTagsUrl}?id=1")]
+    [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
+    [DataRow($"{RedNoteWithTagsForUpdateAuthGetUrl}?id=1")]
     public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
@@ -178,7 +178,7 @@ public class ApiAccessControlTests
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService();
         // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
-        var uri = new Uri($"{CatalogDeleteNoteUrl}?id=2&pg=1", UriKind.Relative);
+        var uri = new Uri($"{NoteDeleteUrl}?id=2&pg=1", UriKind.Relative);
 
         // act:
         using var response = await client.DeleteAsync(uri);
@@ -199,8 +199,8 @@ public class ApiAccessControlTests
     [DataRow($"{MigrationDownloadGetUrl}?filename=backup_9.dump")]
     [DataRow($"{AccountCheckGetUrl}")]
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
-    [DataRow($"{CreateGetTagsAuthorizedUrl}")]
-    [DataRow($"{UpdateGetNoteWithTagsUrl}?id=1")]
+    [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
+    [DataRow($"{RedNoteWithTagsForUpdateAuthGetUrl}?id=1")]
     public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
