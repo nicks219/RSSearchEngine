@@ -24,12 +24,12 @@ public class ComplianceTests
     public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
+        var loggerFactory = Substitute.For<ILoggerFactory>();
         var sp = new ServiceProviderStub<TokenizerService>();
         var repo = sp.Provider.GetRequiredService<IDataRepository>();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
 
-        var complianceController = new ComplianceSearchController(repo, tokenizer, logger);
+        var complianceController = new ComplianceSearchController(repo, tokenizer, loggerFactory);
         complianceController.AddHttpContext(sp.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена

@@ -19,9 +19,11 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CatalogController(
     IDataRepository repo,
-    ILogger<CatalogController> logger,
-    ILogger<CatalogManager> managerLogger) : ControllerBase
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<CatalogController> _logger = loggerFactory.CreateLogger<CatalogController>();
+    private readonly ILogger<CatalogManager> _managerLogger = loggerFactory.CreateLogger<CatalogManager>();
+
     /// <summary>
     /// Прочитать страницу каталога
     /// </summary>
@@ -31,12 +33,12 @@ public class CatalogController(
     {
         try
         {
-            var response = await new CatalogManager(repo, managerLogger).ReadPage(id);
+            var response = await new CatalogManager(repo, _managerLogger).ReadPage(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ReadCatalogPageError);
+            _logger.LogError(ex, ReadCatalogPageError);
             return new CatalogResponse { ErrorMessage = ReadCatalogPageError };
         }
     }
@@ -51,12 +53,12 @@ public class CatalogController(
         try
         {
             var dto = request.MapToDto();
-            var response = await new CatalogManager(repo, managerLogger).NavigateCatalog(dto);
+            var response = await new CatalogManager(repo, _managerLogger).NavigateCatalog(dto);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, NavigateCatalogError);
+            _logger.LogError(ex, NavigateCatalogError);
             return new CatalogResponse { ErrorMessage = NavigateCatalogError };
         }
     }

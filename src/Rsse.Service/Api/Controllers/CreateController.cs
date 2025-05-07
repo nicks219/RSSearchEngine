@@ -27,9 +27,11 @@ public class CreateController(
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions,
-    ILogger<CreateController> logger,
-    ILogger<CreateManager> managerLogger) : ControllerBase
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<CreateController> _logger = loggerFactory.CreateLogger<CreateController>();
+    private readonly ILogger<CreateManager> _managerLogger = loggerFactory.CreateLogger<CreateManager>();
+
     private const string BackupFileName = "db_last_dump";
     private readonly CommonBaseOptions _baseOptions = options.Value;
     private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
@@ -44,7 +46,7 @@ public class CreateController(
     {
         try
         {
-            var manager = new CreateManager(repo, managerLogger);
+            var manager = new CreateManager(repo, _managerLogger);
             var dto = request.MapToDto();
 
             await manager.CreateTagFromTitle(dto);
@@ -73,7 +75,7 @@ public class CreateController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, CreateNoteError);
+            _logger.LogError(ex, CreateNoteError);
             return new NoteResponse { CommonErrorMessageResponse = CreateNoteError };
         }
     }

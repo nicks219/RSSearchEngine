@@ -22,11 +22,13 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
-    ILogger<MigrationController> logger,
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
-    IDataRepository repo) : ControllerBase
+    IDataRepository repo,
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<MigrationController> _logger = loggerFactory.CreateLogger<MigrationController>();
+
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
@@ -44,7 +46,7 @@ public class MigrationController(
         catch (Exception exception)
         {
             const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyFromMySqlToPostgres)} error";
-            logger.LogError(exception, copyError);
+            _logger.LogError(exception, copyError);
             return BadRequest(copyError);
         }
 
@@ -69,7 +71,7 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, CreateError);
+            _logger.LogError(exception, CreateError);
             return BadRequest(CreateError);
         }
     }
@@ -94,7 +96,7 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, RestoreError);
+            _logger.LogError(exception, RestoreError);
             return BadRequest(RestoreError);
         }
     }

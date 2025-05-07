@@ -17,8 +17,10 @@ namespace SearchEngine.Api.Controllers;
 public class ComplianceSearchController(
     IDataRepository repo,
     ITokenizerService tokenizer,
-    ILogger<ComplianceSearchController> logger) : ControllerBase
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<ComplianceSearchController> _logger = loggerFactory.CreateLogger<ComplianceSearchController>();
+
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
     /// </summary>
@@ -63,7 +65,7 @@ public class ComplianceSearchController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ComplianceError);
+            _logger.LogError(ex, ComplianceError);
             return new BadRequestObjectResult(ComplianceError);
         }
     }

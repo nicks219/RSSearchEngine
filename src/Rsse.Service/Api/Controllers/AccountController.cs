@@ -25,9 +25,11 @@ namespace SearchEngine.Api.Controllers;
 public class AccountController(
     IWebHostEnvironment env,
     IDataRepository repo,
-    ILogger<AccountController> logger,
-    ILogger<AccountManager> managerLogger) : ControllerBase
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<AccountController> _logger = loggerFactory.CreateLogger<AccountController>();
+    private readonly ILogger<AccountManager> _managerLogger = loggerFactory.CreateLogger<AccountManager>();
+
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
 
@@ -98,7 +100,7 @@ public class AccountController(
     {
         try
         {
-            var identity = await new AccountManager(repo, managerLogger).TrySignInWith(credentialsRequestDto);
+            var identity = await new AccountManager(repo, _managerLogger).TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {
@@ -113,7 +115,7 @@ public class AccountController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, LoginError);
+            _logger.LogError(ex, LoginError);
             return LoginError;
         }
     }
@@ -128,7 +130,7 @@ public class AccountController(
             return;
         }
 
-        logger.LogInformation(ModifyCookieMessage);
+        _logger.LogInformation(ModifyCookieMessage);
 
         var setCookie = HttpContext.Response.Headers.SetCookie;
         var asString = setCookie.ToString();

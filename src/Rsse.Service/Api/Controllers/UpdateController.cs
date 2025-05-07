@@ -21,9 +21,11 @@ namespace SearchEngine.Api.Controllers;
 public class UpdateController(
     IDataRepository repo,
     ITokenizerService tokenizer,
-    ILogger<UpdateController> logger,
-    ILogger<UpdateManager> managerLogger) : ControllerBase
+    ILoggerFactory loggerFactory) : ControllerBase
 {
+    private readonly ILogger<UpdateController> _logger = loggerFactory.CreateLogger<UpdateController>();
+    private readonly ILogger<UpdateManager> _managerLogger = loggerFactory.CreateLogger<UpdateManager>();
+
     /// <summary>
     /// Обновить заметку
     /// </summary>
@@ -34,7 +36,7 @@ public class UpdateController(
         try
         {
             var dto = request.MapToDto();
-            var response = await new UpdateManager(repo, managerLogger).UpdateNote(dto);
+            var response = await new UpdateManager(repo, _managerLogger).UpdateNote(dto);
 
             tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
 
@@ -42,7 +44,7 @@ public class UpdateController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, UpdateNoteError);
+            _logger.LogError(ex, UpdateNoteError);
             return new NoteResponse { CommonErrorMessageResponse = UpdateNoteError };
         }
     }

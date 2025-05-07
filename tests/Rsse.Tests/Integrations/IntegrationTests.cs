@@ -288,47 +288,47 @@ public class IntegrationTests
         {
             // act:
             case Request.Get:
-            {
-                using var response = await client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
                 {
+                    using var response = await client.GetAsync(uri);
+                    response.EnsureSuccessStatusCode();
+                    if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
+                    {
+                        // assert:
+                        var res = await response.Content.ReadAsStringAsync();
+                        res.Should().Be(titleExpected);
+                        break;
+                    }
+
+                    var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
+
                     // assert:
-                    var res = await response.Content.ReadAsStringAsync();
-                    res.Should().Be(titleExpected);
+                    result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
+                    _ = double.TryParse(textExpected, out var doubleExpected);
+                    result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
                     break;
                 }
-
-                var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
-
-                // assert:
-                result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
-                _ = double.TryParse(textExpected, out var doubleExpected);
-                result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
-                break;
-            }
             case Request.Post:
-            {
-                using var response = await client.PostAsync(uri, content);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
+                {
+                    using var response = await client.PostAsync(uri, content);
+                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
 
-                // assert:
-                result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                result.EnsureNotNull().TextResponse.Should().Be(textExpected);
-                break;
-            }
+                    // assert:
+                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
+                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                    break;
+                }
             case Request.Put:
-            {
-                using var response = await client.PutAsync(uri, content);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
+                {
+                    using var response = await client.PutAsync(uri, content);
+                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
 
-                // assert:
-                result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                result.EnsureNotNull().TextResponse.Should().Be(textExpected);
-                break;
-            }
+                    // assert:
+                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
+                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                    break;
+                }
 
             default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }

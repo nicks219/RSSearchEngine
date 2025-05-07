@@ -117,12 +117,11 @@ public class CatalogTests
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var logger = Substitute.For<ILogger<CatalogController>>();
-        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        var loggerFactory = Substitute.For<ILoggerFactory>();
         var repo = Substitute.For<IDataRepository>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new DeleteController(repo, tokenizer, logger, managerLogger);
+        var catalogController = new DeleteController(repo, tokenizer, loggerFactory);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -135,16 +134,18 @@ public class CatalogTests
     public async Task CatalogController_ShouldLogError_OnUndefinedRequest()
     {
         // arrange:
+        var loggerFactory = Substitute.For<ILoggerFactory>();
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
+        loggerFactory.CreateLogger<CatalogController>().Returns(logger);
         var repo = Substitute.For<IDataRepository>();
 
-        var catalogController = new CatalogController(repo, logger, managerLogger);
+        var catalogController = new CatalogController(repo, loggerFactory);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);
 
         // assert:
+        //var logger = loggerFactory.Received().CreateLogger<CatalogController>();//
         logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
     }
 }
