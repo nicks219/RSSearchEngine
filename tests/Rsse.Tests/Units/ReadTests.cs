@@ -90,12 +90,12 @@ public class ReadTests
     {
         // arrange:
         var requestDto = new NoteRequest { TagsCheckedRequest = [ElectionTestCheckedTag] };
-        var logger = Substitute.For<ILogger<ReadController>>();
+        var loggerFactory = Substitute.For<ILoggerFactory>();
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
 
         // act:
-        var readController = new ReadController(repo, logger, managerLogger);
+        var readController = new ReadController(repo, loggerFactory);
         var responseDto = await readController.GetNextOrSpecificNote(requestDto, null);
 
         // assert:
@@ -108,10 +108,10 @@ public class ReadTests
         // arrange:
         var host = new ServiceProviderStub<ReadManager>();
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var logger = Substitute.For<ILogger<ReadController>>();
+        var loggerFactory = Substitute.For<ILoggerFactory>();
         var managerLogger = Substitute.For<ILogger<ReadManager>>();
 
-        var readController = new ReadController(repo, logger, managerLogger);
+        var readController = new ReadController(repo, loggerFactory);
         readController.AddHttpContext(host.Provider);
 
         // act:
