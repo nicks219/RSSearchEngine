@@ -43,22 +43,6 @@ public static class TestHelper
         return content;
     }
 
-    /// <summary>
-    /// Получить контент для POST запроса
-    /// </summary>
-    internal static IEnumerable<StringContent> GetEnumerableRequestContent(bool forUpdate = false)
-    {
-        var dto = new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        yield return jsonContent;
-
-        var title = forUpdate ? "[1]" : "1";
-        // todo: название заметки не очищается от скобочек, только именование тега
-        dto = new NoteRequest { TitleRequest = title, TextRequest = "раз два три четыре", TagsCheckedRequest = [1] };
-        jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        yield return jsonContent;
-    }
-
     internal static StringContent GetRequestContentWithTags()
     {
         // в TagsCheckedRequest содержатся отмеченные теги
@@ -66,26 +50,6 @@ public static class TestHelper
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
-    }
-
-    internal static NoteRequest GetNoteDto()
-    {
-        List<int> checkedTags = [1];
-        var note = new NoteRequest { TitleRequest = "тестовая запись", TextRequest = "раз два три", TagsCheckedRequest = checkedTags };
-        return note;
-    }
-
-    internal static NoteRequest GetNoteDto(List<int> tags)
-    {
-        var note = new NoteRequest { TitleRequest = "название", TextRequest = "раз два три", TagsCheckedRequest = tags };
-        return note;
-    }
-
-    internal static NoteRequest GetNoteForUpdate(string text)
-    {
-        List<int> tagsForUpdate = [4];
-        var noteForUpdate = new NoteRequest { TitleRequest = "название", TextRequest = text, TagsCheckedRequest = tagsForUpdate };
-        return noteForUpdate;
     }
 
     /// <summary>

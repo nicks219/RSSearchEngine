@@ -124,7 +124,7 @@ public class IntegrationTests
         // arrange:
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
-        if (content != null) content = content with {NoteIdExchange = _processedId};
+        if (content != null) content = content with { NoteIdExchange = _processedId };
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // act:
         using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
@@ -137,14 +137,14 @@ public class IntegrationTests
         {
             case Request.Post:
             case Request.Put:
-            {
-                _processedId = asNote.EnsureNotNull().NoteIdExchange; // 946 - 946
+                {
+                    _processedId = asNote.EnsureNotNull().NoteIdExchange; // 946 - 946
 
-                asNote.TextResponse
-                    .Should()
-                    .Be(secondExpected);
-                break;
-            }
+                    asNote.TextResponse
+                        .Should()
+                        .Be(secondExpected);
+                    break;
+                }
             case Request.Get:
                 if (uri.StartsWith(ComplianceIndicesGetUrl))
                 {
@@ -203,30 +203,30 @@ public class IntegrationTests
         switch (requestMethod)
         {
             case Request.Post:
-            {
-                var deserializedResponse = await response
-                    .Content
-                    .ReadFromJsonAsync<NoteResponse>();
-                var createdId = deserializedResponse
-                    .EnsureNotNull()
-                    .NoteIdExchange; // 1 - 2
-                var textResponse = deserializedResponse.TextResponse;
+                {
+                    var deserializedResponse = await response
+                        .Content
+                        .ReadFromJsonAsync<NoteResponse>();
+                    var createdId = deserializedResponse
+                        .EnsureNotNull()
+                        .NoteIdExchange; // 1 - 2
+                    var textResponse = deserializedResponse.TextResponse;
 
-                // assert:
-                createdId
-                    .Should()
-                    .Be(idExpected);
+                    // assert:
+                    createdId
+                        .Should()
+                        .Be(idExpected);
 
-                textResponse
-                    .Should()
-                    .BeEquivalentTo(textExpected);
-                break;
-            }
+                    textResponse
+                        .Should()
+                        .BeEquivalentTo(textExpected);
+                    break;
+                }
             case Request.Get:
-            {
-                response.EnsureSuccessStatusCode();
-                break;
-            }
+                {
+                    response.EnsureSuccessStatusCode();
+                    break;
+                }
             case Request.Delete:
             case Request.Put:
             default:
