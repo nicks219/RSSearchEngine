@@ -39,7 +39,7 @@ public class ComplianceTests
         var actionResult = complianceController.GetComplianceIndices(Text);
         var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
         var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ComplianceResponseModel>(serialized);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponseTestDto>(serialized);
 
         // assert:
         deserialized.Should().NotBeNull();

@@ -77,8 +77,10 @@ public static class HttpClientExtensions
         for (var i = 0; i < notes; i++)
         {
             var guid = Guid.NewGuid();
-            var createRequest = new NoteRequest { TitleRequest = $"название: {guid}", TextRequest = $"текст: {guid}", TagsCheckedRequest = [1] };
-            using var content = new StringContent(JsonSerializer.Serialize(createRequest), Encoding.UTF8, "application/json");
+            var createRequest = new NoteRequest
+            { TitleRequest = $"название: {guid}", TextRequest = $"текст: {guid}", TagsCheckedRequest = [1] };
+            using var content = new StringContent(JsonSerializer.Serialize(createRequest), Encoding.UTF8,
+                "application/json");
             using var _ = await client.PostAsync($"{CreateNotePostUrl}", content);
         }
     }
@@ -97,5 +99,31 @@ public static class HttpClientExtensions
                 RequestServices = serviceProvider
             }
         };
+    }
+
+    /// <summary>
+    /// Выполнить вызов на ручку для тестов, вернуть результат запроса
+    /// </summary>
+    /// <param name="client">клиент</param>
+    /// <param name="method">HTTP глагол</param>
+    /// <param name="uri">строка запроса</param>
+    /// <param name="content">содержимое запроса</param>
+    /// <param name="verify">проверять ли успешность вызова</param>
+    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Request method, Uri uri,
+        HttpContent? content = null, bool verify = true)
+    {
+        //HttpMethod httpMethod = HttpMethod.Post;
+        var response = method switch
+        {
+            Request.Get => await client.GetAsync(uri),
+            Request.Post => await client.PostAsync(uri, content),
+            Request.Put => await client.PutAsync(uri, content),
+            Request.Delete => await client.DeleteAsync(uri),
+            _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+        };
+
+        if (verify) response.EnsureSuccessStatusCode();
+
+        return response;
     }
 }

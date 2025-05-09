@@ -50,7 +50,7 @@ public class MigrationController(
             return BadRequest(copyError);
         }
 
-        return Ok("success");
+        return new OkObjectResult(new { Res = "success" });
     }
 
     /// <summary>

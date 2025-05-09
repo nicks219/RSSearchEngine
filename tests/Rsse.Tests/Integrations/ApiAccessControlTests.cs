@@ -139,10 +139,10 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow($"{MigrationUploadPostUrl}")]
-    [DataRow($"{CreateNotePostUrl}")]
-    [DataRow($"{UpdateNotePutUrl}")]
-    public async Task Api_Unauthorized_PostAndPut_ShouldReturns401(string uriString)
+    [DataRow($"{MigrationUploadPostUrl}", Request.Post)]
+    [DataRow($"{CreateNotePostUrl}", Request.Post)]
+    [DataRow($"{UpdateNotePutUrl}", Request.Put)]
+    public async Task Api_Unauthorized_PostAndPut_ShouldReturns401(string uriString, Request requestMethod)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -150,9 +150,7 @@ public class ApiAccessControlTests
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = uriString == UpdateNotePutUrl
-            ? await client.PutAsync(uri, content)
-            : await client.PostAsync(uri, content);
+        using var response = await client.SendTestRequest(requestMethod, uri, content, verify: false);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -226,10 +224,10 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow($"{MigrationUploadPostUrl}", true)]
-    [DataRow($"{CreateNotePostUrl}", false)]
-    [DataRow($"{UpdateNotePutUrl}", false)]
-    public async Task Api_Authorized_PostAndPut_ShouldReturns200(string uriString, bool appendFile)
+    [DataRow($"{MigrationUploadPostUrl}", Request.Post, true)]
+    [DataRow($"{CreateNotePostUrl}", Request.Post, false)]
+    [DataRow($"{UpdateNotePutUrl}", Request.Put, false)]
+    public async Task Api_Authorized_PostAndPut_ShouldReturns200(string uriString, Request requestMethod, bool appendFile)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -239,9 +237,10 @@ public class ApiAccessControlTests
         using var content = TestHelper.GetRequestContent(appendFile);
 
         // act:
-        using var response = uriString == UpdateNotePutUrl
+        using var response = requestMethod == Request.Put
             ? await client.PutAsync(uri, content)
             : await client.PostAsync(uri, content);
+
         HttpStatusCode statusCode = response.StatusCode;
         string reason = response.ReasonPhrase;
 

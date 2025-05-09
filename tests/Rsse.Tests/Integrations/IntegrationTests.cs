@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Domain.ApiModels;
@@ -41,7 +40,6 @@ public class IntegrationTests
             context.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
         }
 
-        // arrange:
         var sw = Stopwatch.StartNew();
         if (!isGitHubAction)
         {
@@ -86,7 +84,7 @@ public class IntegrationTests
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.GetAsync(uri);
+        using var response = await client.SendTestRequest(Request.Get, uri);
         var reason = response.ReasonPhrase;
         var statusCode = response.StatusCode;
 
@@ -103,363 +101,334 @@ public class IntegrationTests
         TestHelper.CleanUpDatabases(_factory);
     }
 
+    public static IEnumerable<object?[]> AfterCopyTestData =>
+    [
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
+        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), null, "dump files created", new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }],
+        [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), null, "раз два три четыре", new NoteRequest { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1] }],
 
-    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
-    // отрефакторенный Integration_PKSequencesAreValid_AfterDatabaseCopy
+        [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponseTestDto), null, null, null],
+        [$"{ReadTagsForCreateAuthGetUrl}", Request.Get, typeof(NoteResponse), "Авторские: 80", "1", null],
+        // [$"{DeleteNoteUrl}?id={noteId}&pg=1"]
+    ];
+    private const string TextToFind = "раз два три четыре";
+    private static int _processedId;
 
     [TestMethod]
-    [DataRow([
-        $"{MigrationRestoreGetUrl}?databaseType=MySql",
-        $"{MigrationCopyGetUrl}",
-        $"{CreateNotePostUrl}",
-        $"{UpdateNotePutUrl}"
-    ])]
-    // todo: тест и TestHelper разделить на части - практически "божественные объекты"
-    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(string[] uris)
+    [DynamicData(nameof(AfterCopyTestData))]
+    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI(
+        string uri, Request requestMethod, Type responseType, string? firstExpected, string? secondExpected, NoteRequest? content)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
-
-        using var enumerator = TestHelper
-            .GetEnumerableRequestContent(forUpdate: true)
-            .GetEnumerator();
-        enumerator.MoveNext();
-        var processedId = 0;
-
+        if (content != null) content = content with {NoteIdExchange = _processedId};
+        using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // act:
-        foreach (var uri in uris)
+        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
+        var result = await response.Content.ReadFromJsonAsync(responseType);
+        var asNote = CastTo<NoteResponse>(result.EnsureNotNull());
+        var asCompliance = CastTo<ComplianceResponseTestDto>(result.EnsureNotNull());
+
+        // assert:
+        switch (requestMethod)
         {
-            if (uri is $"{CreateNotePostUrl}" or $"{UpdateNotePutUrl}")
+            case Request.Post:
+            case Request.Put:
             {
-                // POST
-                var note = enumerator.Current;
-                enumerator.MoveNext();
-                if (uri == $"{UpdateNotePutUrl}")
+                _processedId = asNote.EnsureNotNull().NoteIdExchange; // 946 - 946
+
+                asNote.TextResponse
+                    .Should()
+                    .Be(secondExpected);
+                break;
+            }
+            case Request.Get:
+                if (uri.StartsWith(ComplianceIndicesGetUrl))
                 {
-                    // необходимо выставить id обновляемой заметки note.CommonNoteId
-                    var dto = await note.ReadFromJsonAsync<NoteRequest>();
-                    dto = dto.EnsureNotNull() with { NoteIdExchange = processedId };
-                    note = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+                    var firstKey = asCompliance.EnsureNotNull().Res!.Keys.ElementAt(0);
+                    _ = int.TryParse(firstKey, out var complianceId);
+
+                    _processedId
+                        .Should()
+                        .Be(complianceId);
                 }
 
-                using var postOrPutResponse = uri == UpdateNotePutUrl
-                    ? await client.PutAsync(uri, note)
-                    : await client.PostAsync(uri, note);
-                var deserializedPostResponse = await postOrPutResponse
-                    .EnsureSuccessStatusCode()
-                    .Content
-                    .ReadFromJsonAsync<NoteResponse>();
-                processedId = deserializedPostResponse
-                    .EnsureNotNull()
-                    .NoteIdExchange;// 946 - 946
-                note.Dispose();
-                continue;
-            }
+                if (uri.StartsWith(ReadTagsForCreateAuthGetUrl))
+                {
+                    var tags = asNote.EnsureNotNull().StructuredTagsListResponse!;
+                    // тег из дампа
+                    tags
+                        .Should()
+                        .Contain(firstExpected);
+                    // добавленный через create тег
+                    tags
+                        .Should()
+                        .Contain(secondExpected);
+                }
 
-            // GET
-            using var response = await client.GetAsync(uri);
-            response.EnsureSuccessStatusCode();
+                break;
+            case Request.Delete:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(requestMethod), requestMethod, null);
         }
-
-        // текст из update
-        const string textToFind = "раз два три четыре";
-        var complianceId = await client.GetFirstComplianceIndexFromTokenizer(textToFind);
-        var tags = await client.GetTagsFromReaderOnly();
-        await client.DeleteNoteFromService(processedId);
-
-        // assert:
-        processedId
-            .Should()
-            .Be(complianceId);
-
-        // тег из дампа
-        tags.Should().Contain("Авторские: 80");
-
-        // добавленный через create тег
-        tags.Should().Contain("1");
-
-        // clean up:
-        TestHelper.CleanUpDatabases(_factory);
     }
 
-    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
-    // отрефакторенный Integration_PKSequencesAreValid_AfterDatabaseRestore
+    public static IEnumerable<object?[]> AfterRestoreTestData =>
+    [
+        [$"{CreateNotePostUrl}", Request.Post, 1, "dump files created", new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }],
+        [$"{MigrationCreateGetUrl}?databaseType=Postgres", Request.Get, null, null, null],
+        [$"{MigrationRestoreGetUrl}?databaseType=Postgres", Request.Get, null, null, null],
+        [$"{CreateNotePostUrl}", Request.Post, 2, "dump files created", new NoteRequest { TitleRequest = "1", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }]
+    ];
 
     [TestMethod]
-    [DataRow([
-        $"{CreateNotePostUrl}",
-        $"{MigrationCreateGetUrl}?databaseType=Postgres",
-        $"{MigrationRestoreGetUrl}?databaseType=Postgres",
-        $"{CreateNotePostUrl}"
-        ])]
-    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string[] uris)
+    [DynamicData(nameof(AfterRestoreTestData))]
+    // мотивация теста: при неконсистентном состоянии ключей после миграции создание заметки упадёт на constraint
+    public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string uri, Request requestMethod,
+        int? idExpected, string? textExpected, NoteRequest? content)
     {
+        //очищаем базу на старте:
+        if (idExpected == 1) TestHelper.CleanUpDatabases(_factory);
+
         // arrange:
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
+        using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
+        // act:
+        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
 
-        using var enumerator = TestHelper
-            .GetEnumerableRequestContent()
-            .GetEnumerator();
-        enumerator.MoveNext();
-        var createdId = 0;
-        var fakePathToDump = "";
-
-        // act
-        foreach (var uri in uris)
+        switch (requestMethod)
         {
-            if (uri == $"{CreateNotePostUrl}")
+            case Request.Post:
             {
-                // POST
-                using var note = enumerator.Current;
-                enumerator.MoveNext();
-                using var postResponse = await client.PostAsync(uri, note);
-                var deserializedPostResponse = await postResponse
-                    .EnsureSuccessStatusCode()
+                var deserializedResponse = await response
                     .Content
                     .ReadFromJsonAsync<NoteResponse>();
-                createdId = deserializedPostResponse
+                var createdId = deserializedResponse
                     .EnsureNotNull()
-                    .NoteIdExchange;// 1 - 2
-                fakePathToDump = deserializedPostResponse.TextResponse;
-                continue;
+                    .NoteIdExchange; // 1 - 2
+                var textResponse = deserializedResponse.TextResponse;
+
+                // assert:
+                createdId
+                    .Should()
+                    .Be(idExpected);
+
+                textResponse
+                    .Should()
+                    .BeEquivalentTo(textExpected);
+                break;
             }
-
-            // GET
-            using var response = await client.GetAsync(uri);
-            response.EnsureSuccessStatusCode();
+            case Request.Get:
+            {
+                response.EnsureSuccessStatusCode();
+                break;
+            }
+            case Request.Delete:
+            case Request.Put:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(requestMethod), requestMethod, null);
         }
-
-        // assert:
-        // var separator = Path.DirectorySeparatorChar;
-        createdId
-            .Should()
-            .BeGreaterThan(0);
-
-        fakePathToDump
-            .Should()
-            .BeEquivalentTo("dump files created");
-        // .BeEquivalentTo($"ClientApp/build{separator}dump.zip");
-
-        // clean up:
-        TestHelper.CleanUpDatabases(_factory);
     }
-
-    // WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI:
-    // I.      название заметки при создании тега можно очищать от скобочек
-    // II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле CommonErrorMessageResponse
-    //          например исключение менеджера оверрайдится контроллером
-
-    // WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI:
-    // I.      на pg контексте: получил [CreateManager] CreateNote error: DETAIL: Key (TagId)=(1) is not present in table "Tag", тк заметка не создавалась, то и тег падал
-    //         перенес создание тега до создания заметки - надо при удачном создании тега возвращаться, не пытаясь создать заметку
-    // II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле details
-    // III.    на заметку не создаётся zip (только файлы) - а возвращается dump.zip
-    // IV.     postgres: как ресториться из "последних" файлов? рестор сделан только из *.zip
 
     private const string ReadNoteTestText = "рас дваа три";
     public static IEnumerable<object[]> ReadNoteTestData =>
     [
-        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
-        [$"{MigrationCopyGetUrl}", Request.Get, "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), "backup_9.dump", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), "success", "", TestHelper.Empty],
 
-        [$"{CreateNotePostUrl}", Request.Post, "[OK]", "dump files created", TestHelper.CreateContent],
-        [$"{CreateNotePostUrl}", Request.Post, "[Already Exist]", "", TestHelper.CreateContent],
-        [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
-        [$"{UpdateNotePutUrl}", Request.Put, "[1]", "раз два три четыре", TestHelper.UpdateContent],
+        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
+        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[Already Exist]", "", TestHelper.CreateContent],
+        [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
+        [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), "[1]", "раз два три четыре", TestHelper.UpdateContent],
 
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, "946", "0.5", TestHelper.Empty],
-        [$"{ReadNotePostUrl}?id=946", Request.Post, "[1]", "раз два три четыре", TestHelper.ReadContent]
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, typeof(ComplianceResponseTestDto), "946", "0.5", TestHelper.Empty],
+        [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "раз два три четыре", TestHelper.ReadContent]
     ];
 
     [TestMethod]
     [DynamicData(nameof(ReadNoteTestData))]
     // мотивация теста: рефакторинг Tuple<string, string> в ответе с заметкой
-
-    public async Task Api_ReadNoteTextAndTitle_ShouldCompleteSuccessful(string uriString, Request type, string? titleExpected, string? textExpected, StringContent content)
+    public async Task Api_ReadNoteTextAndTitleSequence_ShouldCompleteSuccessful(string uriString, Request requestMethod, Type responseType,
+        string? firstExpected, string? secondExpected, StringContent requestContent)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
+        // act:
+        using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
+        var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
+        var asCompliance = CastTo<ComplianceResponseTestDto>(result);
+        var asMigration = CastTo<MigrationResponseTestDto>(result);
+        var asNote = CastTo<NoteResponse>(result);
 
-        switch (type)
+        // assert:
+        switch (requestMethod)
         {
-            // act:
             case Request.Get:
                 {
-                    using var response = await client.GetAsync(uri);
-                    response.EnsureSuccessStatusCode();
-                    if (uriString.StartsWith(MigrationRestoreGetUrl) || uriString.StartsWith(MigrationCopyGetUrl))
+                    if (responseType == typeof(MigrationResponseTestDto))
                     {
-                        // assert:
-                        var res = await response.Content.ReadAsStringAsync();
-                        res.Should().Be(titleExpected);
+                        asMigration.EnsureNotNull().Res.Should().Be(firstExpected);
                         break;
                     }
 
-                    var result = await response.Content.ReadFromJsonAsync<ComplianceResponseModel>();
-
-                    // assert:
-                    result.EnsureNotNull().Res.Keys.First().Should().Be(titleExpected);
-                    _ = double.TryParse(textExpected, out var doubleExpected);
-                    result.EnsureNotNull().Res.Values.First().Should().Be(doubleExpected);
+                    asCompliance.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(firstExpected);
+                    _ = double.TryParse(secondExpected, out var doubleExpected);
+                    asCompliance.EnsureNotNull().Res.EnsureNotNull().Values.First().Should().Be(doubleExpected);
                     break;
                 }
             case Request.Post:
-                {
-                    using var response = await client.PostAsync(uri, content);
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
-
-                    // assert:
-                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
-                    break;
-                }
             case Request.Put:
                 {
-                    using var response = await client.PutAsync(uri, content);
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync<NoteResponse>();
-
-                    // assert:
-                    result.EnsureNotNull().TitleResponse.Should().Be(titleExpected);
-                    result.EnsureNotNull().TextResponse.Should().Be(textExpected);
+                    asNote.EnsureNotNull().TitleResponse.Should().Be(firstExpected);
+                    asNote.EnsureNotNull().TextResponse.Should().Be(secondExpected);
                     break;
                 }
 
-            default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            case Request.Delete:
+            default: throw new ArgumentOutOfRangeException(nameof(requestMethod), requestMethod, null);
         }
 
-        content.Dispose();
+        // clean up:
+        requestContent.Dispose();
     }
 
-    // todo: переименуй магические числа
+    // todo: дать имя магическим числам
     private const string ReadCatalogPageTestText = "пасчитаим читырех";
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
     public static IEnumerable<object[]> ReadCatalogTestData =>
     [
-        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(OkObjectResult), "{\"res\":\"backup_9.dump\"}", "", TestHelper.Empty],
-        [$"{MigrationCopyGetUrl}", Request.Get, typeof(OkObjectResult), "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), "backup_9.dump", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), "success", "", TestHelper.Empty],
 
         [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
         [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "930", TestHelper.Empty],
         // навигация "вперёд" по каталогу
         [$"{CatalogNavigatePostUrl}", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],
         // проверим наличие заметки 1
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "1", "1.2", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseTestDto), "1", "1.2", TestHelper.Empty],
         [$"{DeleteNoteUrl}?id=1&pg=2", Request.Delete, typeof(CatalogResponse), "2", "929", TestHelper.Empty],
         [$"{DeleteNoteUrl}?id=2&pg=1", Request.Delete, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
         // проверим наличие заметки 946
         [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponseModel), "946", "6.67", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponseTestDto), "946", "6.67", TestHelper.Empty],
         [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
         // проверим отсутствие заметки 1
         [$"{ReadNotePostUrl}?id=1", Request.Post, typeof(NoteResponse), "", "", TestHelper.ReadContent],
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseModel), "{}", "", TestHelper.Empty]
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseTestDto), "{}", "", TestHelper.Empty]
     ];
 
     [TestMethod]
     [DynamicData(nameof(ReadCatalogTestData))]
-    // todo: ComplianceResponseModel используется только для тестов, но не в самом коде - примени
-    // мотивация теста: рефакторинг Tuple<string, int> в ответе со страницей каталога
-
-    public async Task Api_ReadCatalogPage_ShouldCompleteSuccessful(
-        string uriString,
-        Request type, Type responseType, string firstExpected, string secondExpected, StringContent content)
+    // мотивация теста: рефакторинг Tuple<string, int> в ответе каталога
+    // todo: задействовать в контроллерах модельки для тестов - ComplianceResponseModel, MigrationResponseModel
+    public async Task Api_ReadCatalogPageSequence_ShouldCompleteSuccessful(
+        string uriString, Request requestMethod, Type responseType, string firstExpected, string secondExpected,
+        StringContent requestContent)
     {
         // arrange:
-        // todo: тест новый хост каждый раз поднимает - перенеси в IntegrationTestsSetup
         using var client = _factory.CreateClient(_options);
         await client.TryAuthorizeToService("1@2", "12");
-
         var uri = new Uri(uriString, UriKind.Relative);
-        switch (type)
+        // act:
+        using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
+        var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
+
+        var asCompliance = CastTo<ComplianceResponseTestDto>(result);
+        var asMigration = CastTo<MigrationResponseTestDto>(result);
+        var asCatalog = CastTo<CatalogResponse>(result);
+        var asNote = CastTo<NoteResponse>(result);
+
+        // assert:
+        switch (requestMethod)
         {
-            // act:
             case Request.Get:
                 {
-                    using var response = await client.GetAsync(uri);
-                    response.EnsureSuccessStatusCode();
-                    if (responseType == typeof(ComplianceResponseModel))
+                    if (responseType == typeof(ComplianceResponseTestDto))
                     {
-                        var asString = (await response.Content.ReadFromJsonAsync(typeof(object))).EnsureNotNull().ToString();
-                        if (asString.EnsureNotNull() == firstExpected)
+                        if (asCompliance.EnsureNotNull().Res == null && firstExpected == "{}")
                         {
                             break;
                         }
 
-                        var deserialized = JsonSerializer.Deserialize<SearchEngine.Tests.Integrations.Dto.ComplianceResponseModel>(asString);
-                        // assert:
-                        deserialized.EnsureNotNull().res.Keys.First().Should().Be(firstExpected);
-                        var value = Math.Round(deserialized.EnsureNotNull().res.Values.First(), 2);
+                        asCompliance.Res.EnsureNotNull().Keys.First().Should().Be(firstExpected);
+                        var value = Math.Round(asCompliance.Res.EnsureNotNull().Values.First(), 2);
                         value.Should().Be(double.Parse(secondExpected));
                         break;
                     }
 
-                    if (responseType == typeof(OkObjectResult))
+                    if (responseType == typeof(MigrationResponseTestDto))
                     {
-                        // assert: для миграций
-                        var res = await response.Content.ReadAsStringAsync();
-                        res.Should().Be(firstExpected);
+                        asMigration.EnsureNotNull().Res.Should().Be(firstExpected);
                         break;
                     }
 
-                    var result = await response.Content.ReadFromJsonAsync(responseType);
                     if (responseType == typeof(CatalogResponse))
                     {
-                        // assert:
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should().Be(" Ветлицкая Наталья - Непогода");
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().NoteId.Should().Be(238);
-
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10); // 1я страница
-                        (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                        (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                        asCatalog.EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should()
+                            .Be(" Ветлицкая Наталья - Непогода");
+                        asCatalog.CatalogPage.EnsureNotNull().First().NoteId.Should().Be(238);
+                        // 1я страница
+                        asCatalog.CatalogPage.EnsureNotNull().Count.Should().Be(10);
+                        asCatalog.PageNumber.Should().Be(int.Parse(firstExpected));
+                        asCatalog.NotesCount.Should().Be(int.Parse(secondExpected));
                     }
 
                     break;
                 }
             case Request.Post:
                 {
-                    using var response = await client.PostAsync(uri, content);
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync(responseType);
                     if (responseType == typeof(CatalogResponse))
                     {
-                        // assert:
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should().Be("Агата Кристи - Вольно");
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().First().NoteId.Should().Be(280);
-
-                        (result as CatalogResponse).EnsureNotNull().CatalogPage.EnsureNotNull().Count.Should().Be(10);// 2я страница
-                        (result as CatalogResponse).EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                        (result as CatalogResponse).EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                        asCatalog.EnsureNotNull().CatalogPage.EnsureNotNull().First().Title.Should()
+                            .Be("Агата Кристи - Вольно");
+                        asCatalog.CatalogPage.EnsureNotNull().First().NoteId.Should().Be(280);
+                        // 2я страница
+                        asCatalog.CatalogPage.EnsureNotNull().Count.Should().Be(10);
+                        asCatalog.PageNumber.Should().Be(int.Parse(firstExpected));
+                        asCatalog.NotesCount.Should().Be(int.Parse(secondExpected));
                     }
+
                     if (responseType == typeof(NoteResponse))
                     {
-                        // assert:
-                        (result as NoteResponse).EnsureNotNull().TitleResponse.Should().Be(firstExpected);
-                        (result as NoteResponse).EnsureNotNull().TextResponse.Should().Be(secondExpected);
+                        asNote.EnsureNotNull().TitleResponse.Should().Be(firstExpected);
+                        asNote.TextResponse.Should().Be(secondExpected);
                     }
 
                     break;
                 }
             case Request.Delete:
                 {
-                    using var response = await client.DeleteAsync(uri);
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync<CatalogResponse>();
-
-                    // assert:
-                    result.EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
-                    result.EnsureNotNull().NotesCount.Should().Be(int.Parse(secondExpected));
+                    asCatalog.EnsureNotNull().PageNumber.Should().Be(int.Parse(firstExpected));
+                    asCatalog.NotesCount.Should().Be(int.Parse(secondExpected));
                     break;
                 }
 
-            default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            case Request.Put:
+            default: throw new ArgumentOutOfRangeException(nameof(requestMethod), requestMethod, null);
         }
 
-        content.Dispose();
+        // clean up:
+        requestContent.Dispose();
     }
+
+    // выполнить каст
+    private static T? CastTo<T>(object value) where T : class => value as T;
 }
+
+// WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI:
+// I.      название заметки при создании тега можно очищать от скобочек
+// II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле CommonErrorMessageResponse
+//          например исключение менеджера оверрайдится контроллером
+
+// WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI:
+// I.      на pg контексте: получил [CreateManager] CreateNote error: DETAIL: Key (TagId)=(1) is not present in table "Tag", тк заметка не создавалась, то и тег падал
+//         перенес создание тега до создания заметки - надо при удачном создании тега возвращаться, не пытаясь создать заметку
+// II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле details
+// III.    на заметку не создаётся zip (только файлы) - а возвращается dump.zip
+// IV.     postgres: как ресториться из "последних" файлов? рестор сделан только из *.zip
