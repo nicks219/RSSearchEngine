@@ -30,7 +30,7 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
         {
             var notesCount = await repo.ReadNotesCount();
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
@@ -59,7 +59,7 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
 
             pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }

@@ -37,8 +37,7 @@ public class CatalogTests
         CatalogManager = new CatalogManager(repo, managerLogger);
         Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
-        var notes = await Repo.ReadAllNotes().ToListAsync();
-        _notesCount = notes.Count;
+        _notesCount = await Repo.ReadNotesCount();
     }
 
     [TestMethod]
@@ -76,16 +75,6 @@ public class CatalogTests
             .Be(currentPage + 1);
     }
 
-    /*[TestMethod]
-    public async Task CatalogManager_ShouldLogError_OnUndefinedRequest()
-    {
-        // arrange & act:
-        _ = await CatalogManager.NavigateCatalog(null!);
-
-        // assert:
-        Assert.AreEqual(ErrorMessages.NavigateCatalogError, _logger?.Message);
-    }*/
-
     [TestMethod]
     public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
     {
@@ -97,7 +86,7 @@ public class CatalogTests
         var responseDto = await CatalogManager.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(responseDto.ErrorMessage, ErrorMessages.NavigateCatalogError);
+        Assert.AreEqual(ErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
     }
 
     [TestMethod]

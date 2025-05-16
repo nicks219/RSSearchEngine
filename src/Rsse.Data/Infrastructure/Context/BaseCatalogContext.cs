@@ -36,11 +36,9 @@ public abstract class BaseCatalogContext(DbContextOptions options) : DbContext(o
         modelBuilder.Entity<UserEntity>().HasKey(x => x.Id);
 
         modelBuilder.Entity<NoteEntity>().HasKey(noteEntity => noteEntity.NoteId);
-        // CONSTRAINT: UNIQUE NONCLUSTERED
         modelBuilder.Entity<NoteEntity>().HasAlternateKey(noteEntity => noteEntity.Title);
 
         modelBuilder.Entity<TagEntity>().HasKey(tagsEntity => tagsEntity.TagId);
-        // CONSTRAINT: UNIQUE NONCLUSTERED
         modelBuilder.Entity<TagEntity>().HasAlternateKey(tagsEntity => tagsEntity.Tag);
 
         modelBuilder.Entity<TagsToNotesEntity>()

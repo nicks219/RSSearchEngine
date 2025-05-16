@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
@@ -32,7 +31,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="noteId">идентификатор заметки</param>
     /// <returns>кортеж с текстом и названием заметки</returns>
-    IQueryable<TextResult> ReadNote(int noteId);
+    Task<TextResult?> ReadNote(int noteId);
 
     /// <summary>
     /// Изменить заметку
@@ -75,32 +74,25 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     IAsyncEnumerable<NoteEntity> ReadAllNotes();
 
     /// <summary>
-    /// Получить идентификаторы отмеченных заметок
+    /// Получить идентификаторы отмеченных тегами заметок
     /// </summary>
     /// <param name="checkedTags">идентификаторы отмеченных тегов</param>
     /// <returns>идентификаторы заметок</returns>
-    IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags);
+    Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags);
 
     /// <summary>
     /// Получить название заметки
     /// </summary>
     /// <param name="noteId">идентификатор заметки</param>
     /// <returns>название заметки</returns>
-    string ReadNoteTitle(int noteId);
+    Task<string?> ReadNoteTitle(int noteId);
 
     /// <summary>
-    /// Получить идентификатор заметки
-    /// </summary>
-    /// <param name="noteTitle">название заметки</param>
-    /// <returns>идентификатор заметки</returns>
-    int ReadNoteId(string noteTitle);
-
-    /// <summary>
-    /// Получить теги заметки
+    /// Получить идентификаторы тегов заметки
     /// </summary>
     /// <param name="noteId">идентификатор заметки</param>
     /// <returns>идентификаторы тегов</returns>
-    IQueryable<int> ReadNoteTags(int noteId);
+    Task<List<int>> ReadNoteTagIds(int noteId);
 
     // additional:
 
@@ -110,7 +102,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// <param name="pageNumber">номер страницы</param>
     /// <param name="pageSize">размер страницы</param>
     /// <returns></returns>
-    IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize);
+    Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize);
 
     /// <summary>
     /// Получить сущность с авторизованным пользователем

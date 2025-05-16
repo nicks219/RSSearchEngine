@@ -27,10 +27,9 @@ public class ComplianceTests
         // arrange:
         var loggerFactory = Substitute.For<ILoggerFactory>();
         var sp = new ServiceProviderStub<TokenizerService>();
-        var repo = sp.Provider.GetRequiredService<IDataRepository>();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
 
-        var complianceController = new ComplianceSearchController(repo, tokenizer, loggerFactory);
+        var complianceController = new ComplianceSearchController(tokenizer, loggerFactory);
         complianceController.AddHttpContext(sp.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена

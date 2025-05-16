@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -32,8 +31,7 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
             }
 
             var initialNoteTags = await repo
-                .ReadNoteTags(updatedNoteRequest.NoteIdExchange)
-                .ToListAsync();
+                .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange);
 
             await repo.UpdateNote(initialNoteTags, updatedNoteRequest);
 
@@ -59,16 +57,13 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
             string text;
             var title = string.Empty;
 
-            var notes = await repo
-                .ReadNote(originalNoteId)
-                .ToListAsync();
+            var note = await repo.ReadNote(originalNoteId);
 
-            if (notes.Count > 0)
+            if (note != null)
             {
-                // сначала текст потом название
-                text = notes[0].Text;
+                text = note.Text;
 
-                title = notes[0].Title;
+                title = note.Title;
             }
             else
             {
@@ -77,9 +72,7 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
 
             var tagList = await repo.ReadStructuredTagList();
 
-            var noteTags = await repo
-                .ReadNoteTags(originalNoteId)
-                .ToListAsync();
+            var noteTags = await repo.ReadNoteTagIds(originalNoteId);
 
             var checkboxes = new List<string>();
 

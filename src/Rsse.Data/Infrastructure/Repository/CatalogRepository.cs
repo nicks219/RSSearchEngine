@@ -16,6 +16,9 @@ namespace SearchEngine.Infrastructure.Repository;
 /// </summary>
 public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
+    /// <summary/> Контейнер для метода
+    private record struct StructuredTagList(string Tag, int RelationEntityReferenceCount);
+
     // todo: MySQL WORK. DELETE
     public BaseCatalogContext GetReaderContext() => context;
     public BaseCatalogContext GetPrimaryWriterContext() => context;
@@ -36,8 +39,10 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
             return;
         }
 
-        var tags = await context.Tags.Select(tagEntity => tagEntity.TagId).ToListAsync();
-        var maxId = tags.Count > 0 ? tags.Max(tagEntity => tagEntity) : 0;
+        var maxId = await context.Tags
+            .Select(tagEntity => tagEntity.TagId)
+            .DefaultIfEmpty()
+            .MaxAsync();
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
@@ -49,8 +54,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
-        var notes =
-            context.Notes
+        var notes = context.Notes
             .AsNoTracking()
             .AsAsyncEnumerable();
 
@@ -58,78 +62,72 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public string ReadNoteTitle(int noteId)
+    public async Task<string?> ReadNoteTitle(int noteId)
     {
-        var note =
-            context.Notes
-            .First(noteEntity => noteEntity.NoteId == noteId);
+        var title = await context.Notes
+            .Where(noteEntity => noteEntity.NoteId == noteId)
+            .Select(noteEntity => noteEntity.Title)
+            .FirstOrDefaultAsync();
 
-        return note.Title!;
+        return title;
     }
 
     /// <inheritdoc/>
-    public int ReadNoteId(string noteTitle)
-    {
-        var note =
-            context.Notes
-            .First(noteEntity => noteEntity.Title == noteTitle);
-
-        return note.NoteId;
-    }
-
-    /// <inheritdoc/>
-    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
+    public async Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
         // TODO: определить какой метод лучше
         // IQueryable<int> songsCollection = database.GenreText//
         //    .Where(s => chosenOnes.Contains(s.GenreInGenreText.GenreID))
         //    .Select(s => s.TextInGenreText.TextID);
 
-        var notesForElection = context.Notes
+        var noteIds = await context.Notes
             .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
-            .Select(note => note.NoteId);
+            .Select(note => note.NoteId)
+            .ToListAsync();
 
-        return notesForElection;
+        return noteIds;
     }
 
     /// <inheritdoc/>
-    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
+    public async Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize)
     {
-        var titleAndIdList = context.Notes
+        var catalogPages = await context.Notes
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(note => new CatalogItemDto { Title = note.Title!, NoteId = note.NoteId })
-            .AsNoTracking();
+            .ToListAsync();
 
-        return titleAndIdList;
+        return catalogPages;
     }
 
     /// <inheritdoc/>
-    public IQueryable<TextResult> ReadNote(int noteId)
+    public async Task<TextResult?> ReadNote(int noteId)
     {
-        var titleAndText = context.Notes
+        var note = await context.Notes
             .Where(note => note.NoteId == noteId)
             .Select(note => new TextResult { Text = note.Text!, Title = note.Title! })
-            .AsNoTracking();
+            .FirstOrDefaultAsync();
 
-        return titleAndText;
+        return note;
     }
 
     /// <inheritdoc/>
-    public IQueryable<int> ReadNoteTags(int noteId)
+    public async Task<List<int>> ReadNoteTagIds(int noteId)
     {
-        var songGenres = context.TagsToNotesRelation
+        var tagIds = await context.TagsToNotesRelation
             .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
-            .Select(relation => relation.TagId);
+            .Select(relation => relation.TagId)
+            .ToListAsync();
 
-        return songGenres;
+        return tagIds;
     }
 
     /// <inheritdoc/>
     public async Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest)
     {
-        return await context.Users.FirstOrDefaultAsync(user => user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password);
+        return await context.Users.FirstOrDefaultAsync(user =>
+            user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password);
     }
 
     /// <inheritdoc/>
@@ -142,15 +140,15 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     public async Task<List<string>> ReadStructuredTagList()
     {
         var tagList = await context.Tags
-            // TODO заменить сортировку на корректный индекс в бд
+            // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new Tuple<string, int>(tag.Tag!, tag.RelationEntityReference!.Count))
+            .Select(tag => new StructuredTagList(tag.Tag!, tag.RelationEntityReference!.Count))
             .ToListAsync();
 
         return tagList.Select(tagAndAmount =>
-                tagAndAmount.Item2 > 0
-                    ? tagAndAmount.Item1 + ": " + tagAndAmount.Item2
-                    : tagAndAmount.Item1)
+                tagAndAmount.RelationEntityReferenceCount > 0
+                    ? tagAndAmount.Tag + ": " + tagAndAmount.RelationEntityReferenceCount
+                    : tagAndAmount.Tag)
             .ToList();
     }
 

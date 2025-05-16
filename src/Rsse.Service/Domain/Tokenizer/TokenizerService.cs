@@ -53,7 +53,6 @@ public class TokenizerService : ITokenizerService, IDisposable
         if (!_isEnabled) return;
 
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync();
-
         var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
 
         var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
@@ -70,7 +69,6 @@ public class TokenizerService : ITokenizerService, IDisposable
         if (!_isEnabled) return;
 
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
-
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
@@ -92,7 +90,6 @@ public class TokenizerService : ITokenizerService, IDisposable
         if (!_isEnabled) return;
 
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
-
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
         var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);

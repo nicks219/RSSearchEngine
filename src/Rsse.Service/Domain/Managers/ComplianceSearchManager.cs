@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SearchEngine.Domain.Contracts;
 
 namespace SearchEngine.Domain.Managers;
@@ -6,15 +7,8 @@ namespace SearchEngine.Domain.Managers;
 /// <summary>
 /// Функционал поиска заметок
 /// </summary>
-public class ComplianceSearchManager(IDataRepository repo, ITokenizerService tokenizer)
+public class ComplianceSearchManager(ITokenizerService tokenizer)
 {
-    /// <summary>
-    /// Найти идентификатор заметки по её имени, требуется только для тестов
-    /// </summary>
-    /// <param name="name">имя заметки</param>
-    /// <returns>идентификатор заметки</returns>
-    public int FindNoteId(string name) => repo.ReadNoteId(name);
-
     /// <summary>
     /// Вычислить индексы соответствия хранимых заметок поисковому запросу
     /// </summary>

@@ -15,7 +15,6 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ComplianceSearchController(
-    IDataRepository repo,
     ITokenizerService tokenizer,
     ILoggerFactory loggerFactory) : ControllerBase
 {
@@ -38,7 +37,7 @@ public class ComplianceSearchController(
 
         try
         {
-            var manager = new ComplianceSearchManager(repo, tokenizer);
+            var manager = new ComplianceSearchManager(tokenizer);
             Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
 

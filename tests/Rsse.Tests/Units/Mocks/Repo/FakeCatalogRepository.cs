@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using EntityFrameworkCore.Testing.Common;
-using Moq;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
@@ -72,19 +69,20 @@ public class FakeCatalogRepository : IDataRepository
         return new FakeDbSet<NoteEntity>(notes);
     }
 
-    public string ReadNoteTitle(int noteId)
+    public Task<string?> ReadNoteTitle(int noteId)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
         foreach (var keyValue in _notes.Where(keyValue => keyValue.Key == noteId))
         {
-            return keyValue.Value.Title;
+            return Task.FromResult<string?>(keyValue.Value.Title);
         }
 
-        throw new NotImplementedException($"Note with id `{noteId}` not found");
+        return Task.FromResult<string?>(null);
     }
 
-    public int ReadNoteId(string noteTitle)
+    /// <summary/> Метод для тестового мока, отсутствует в основном контракте
+    public int? ReadNoteId(string noteTitle)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -93,7 +91,7 @@ public class FakeCatalogRepository : IDataRepository
             return keyValue.Key;
         }
 
-        throw new NotImplementedException($"Note `{noteTitle}` not found");
+        return null;
     }
 
     public Task<int> CreateNote(NoteRequestDto noteRequest)
@@ -127,7 +125,7 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(user);
     }
 
-    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
+    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -138,7 +136,7 @@ public class FakeCatalogRepository : IDataRepository
                 .Select<int, CatalogItemDto>(x => new CatalogItemDto { Title = _notes[x].Title, NoteId = x })
                 .ToList();
 
-        return new FakeDbSet<CatalogItemDto>(titlesList);
+        return Task.FromResult(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()
@@ -147,10 +145,10 @@ public class FakeCatalogRepository : IDataRepository
         return result;
     }
 
-    public IQueryable<int> ReadNoteTags(int noteId)
+    public Task<List<int>> ReadNoteTagIds(int noteId)
     {
         var tagList = new List<int> { 1, 2 };
-        return new FakeDbSet<int>(tagList);
+        return Task.FromResult(tagList);
     }
 
     public Task<int> ReadNotesCount()
@@ -160,15 +158,15 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_notes.Count);
     }
 
-    public IQueryable<TextResult> ReadNote(int noteId)
+    public Task<TextResult?> ReadNote(int noteId)
     {
-        var note = new List<TextResult> { _notes[noteId] };
-        return new FakeDbSet<TextResult>(note);
+        var note = _notes[noteId];
+        return Task.FromResult<TextResult?>(note);
     }
 
-    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
-        var ids = checkedTags as int[] ?? checkedTags.ToArray();
+        var ids = checkedTags as List<int> ?? checkedTags.ToList();
         if (ids.First() == ReadTests.ElectionTestCheckedTag)
         {
             // признак теста ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest
@@ -176,21 +174,21 @@ public class FakeCatalogRepository : IDataRepository
             ids = [TestNoteId];
         }
 
-        if (ids.Length == ReadTests.ElectionTestTagsCount)
+        if (ids.Count == ReadTests.ElectionTestTagsCount)
         {
             // признак теста ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests
             // отдаём ElectionTestNotesCount заметок - пусть выбирает
-            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
+            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToList();
         }
 
-        // выглядит как архитектурная проблема: IAsyncQueryProvider используется вне слоя репозитория в ElectNextNoteAsync
-        var queryable = new List<NoteEntity>().AsQueryable();
-        var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
-        var asyncQueryProvider = mock.Object;
+        // todo: сейчас нет необходимости мокать AsyncQueryProvider
+        // var queryable = new List<NoteEntity>().AsQueryable();
+        // var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
+        // var asyncQueryProvider = mock.Object;
 
-        var result = new FakeDbSet<int>(ids, asyncQueryProvider);
+        // var result = new FakeDbSet<int>(ids, asyncQueryProvider);
 
-        return result;
+        return Task.FromResult(ids);
     }
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)

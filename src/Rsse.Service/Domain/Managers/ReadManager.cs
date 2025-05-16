@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -19,11 +18,11 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
     /// <returns>название заметки</returns>
-    public string? ReadTitleByNoteId(int id)
+    public async Task<string?> ReadTitleByNoteId(int id)
     {
         try
         {
-            var res = repo.ReadNoteTitle(id);
+            var res = await repo.ReadNoteTitle(id);
 
             return res;
         }
@@ -75,21 +74,20 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
                 if (IsSpecific() == false)
                 {
                     var checkedTags = request.TagsCheckedRequest;
-                    var electableNoteIds = repo.ReadTaggedNotesIds(checkedTags);
-                    noteId = await NoteElector.ElectNextNoteAsync(electableNoteIds, randomElectionEnabled);
+                    // todo: вычитывается весь список
+                    var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags);
+                    noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
                 }
 
                 if (noteId != 0)
                 {
-                    var notes = await repo
-                        .ReadNote(noteId)
-                        .ToListAsync();
+                    var note = await repo.ReadNote(noteId);
 
-                    if (notes.Count > 0)
+                    if (note != null)
                     {
-                        text = notes[0].Text;
+                        text = note.Text;
 
-                        title = notes[0].Title;
+                        title = note.Title;
                     }
                 }
             }

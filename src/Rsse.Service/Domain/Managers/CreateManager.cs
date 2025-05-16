@@ -14,6 +14,9 @@ namespace SearchEngine.Domain.Managers;
 /// </summary>
 public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
 {
+    // \[([^\[\]]+)\]
+    private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
+
     /// <summary>
     /// Создать заметку
     /// </summary>
@@ -86,27 +89,27 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
         }
     }
 
-    // \[([^\[\]]+)\]
-    private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
-
     /// <summary>
     /// Создать новый тег из размеченного квадратными скобками заголовка
     /// </summary>
     /// <param name="noteDto">данные для создания тега</param>
-    internal Task CreateTagFromTitle(NoteRequestDto? noteDto)
+    internal async Task CreateTagFromTitle(NoteRequestDto? noteDto)
     {
         const string tagPattern = "[]";
 
         if (noteDto?.TitleRequest == null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var tag = TitlePattern.Match(noteDto.TitleRequest).Value.Trim(tagPattern.ToCharArray());
 
-        return !string.IsNullOrEmpty(tag)
-            ? repo.CreateTagIfNotExists(tag)
-            : Task.CompletedTask;
+        if (string.IsNullOrEmpty(tag))
+        {
+            return;
+        }
+
+        await repo.CreateTagIfNotExists(tag);
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
 using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -18,7 +19,7 @@ public class UpdateTests
 
     private const string Title = "0: key";
     private const string Text = "test text text";
-    private int _testNoteId;
+    private int? _testNoteId;
 
     [TestInitialize]
     public void Initialize()
@@ -26,12 +27,10 @@ public class UpdateTests
         var host = new ServiceProviderStub<TokenizerService>();
         var secondHost = new ServiceProviderStub<UpdateManager>();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
-        var manager = new ComplianceSearchManager(repo, tokenizer);
         var managerLogger = secondHost.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
         repo.CreateStubData(10);
-        _testNoteId = manager.FindNoteId(Title);
+        _testNoteId = repo.ReadNoteId(Title);
 
         UpdateManager = new UpdateManager(repo, managerLogger);
     }
@@ -55,7 +54,7 @@ public class UpdateTests
             TitleRequest = Title,
             TextRequest = Text,
             TagsCheckedRequest = [1, 2, 3, 11],
-            NoteIdExchange = _testNoteId
+            NoteIdExchange = _testNoteId.EnsureNotNull().Value
         };
 
         // act:

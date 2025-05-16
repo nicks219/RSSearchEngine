@@ -42,11 +42,11 @@ public class ReadController(
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
-    public ActionResult ReadTitleByNoteId(string id)
+    public async Task<ActionResult> ReadTitleByNoteId(string id)
     {
         try
         {
-            var res = new ReadManager(repo, _readManagerLogger).ReadTitleByNoteId(int.Parse(id));
+            var res = await new ReadManager(repo, _readManagerLogger).ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
