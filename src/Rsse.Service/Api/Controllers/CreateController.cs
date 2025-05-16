@@ -65,7 +65,7 @@ public class CreateController(
                 };
             }
 
-            tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            await tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
 
             var path = CreateDumpAndGetFilePath();
 

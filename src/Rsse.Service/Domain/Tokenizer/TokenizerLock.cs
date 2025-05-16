@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SearchEngine.Domain.Tokenizer;
 
@@ -8,39 +9,31 @@ namespace SearchEngine.Domain.Tokenizer;
 /// </summary>
 public class TokenizerLock : IDisposable
 {
-    private readonly ReaderWriterLockSlim _lock = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    /// <summary/> Разделяемая блокировка
-    public ReadLockToken AcquireSharedLock() => new(_lock);
-
-    /// <summary/> Эксклюзивная блокировку
-    public WriteLockToken AcquireExclusiveLock() => new(_lock);
-
-    public readonly struct WriteLockToken : IDisposable
+    /// <summary/> Эксклюзивная блокировка
+    public async Task<ExclusiveLockToken> AcquireExclusiveLockAsync()
     {
-        private readonly ReaderWriterLockSlim _lock;
-        public WriteLockToken(ReaderWriterLockSlim rwLock)
-        {
-            _lock = rwLock;
-            rwLock.EnterWriteLock();
-        }
-        public void Dispose() => _lock.ExitWriteLock();
+        await _semaphore.WaitAsync();
+        return new ExclusiveLockToken(_semaphore);
     }
 
-    public readonly struct ReadLockToken : IDisposable
+    /// <summary/> Дождаться блокировку и сразу отдать её
+    public async Task SyncOnLockAsync()
     {
-        private readonly ReaderWriterLockSlim _lock;
-        public ReadLockToken(ReaderWriterLockSlim rwLock)
-        {
-            _lock = rwLock;
-            _lock.EnterReadLock();
-        }
-        public void Dispose() => _lock.ExitReadLock();
+        await _semaphore.WaitAsync().ConfigureAwait(false);
+        _semaphore.Release();
+    }
+
+    /// <summary/> Получить блокировку в disposable-обёртке
+    public readonly struct ExclusiveLockToken(SemaphoreSlim semaphore) : IDisposable
+    {
+        public void Dispose() => semaphore.Release();
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _lock.Dispose();
+        _semaphore.Dispose();
     }
 }

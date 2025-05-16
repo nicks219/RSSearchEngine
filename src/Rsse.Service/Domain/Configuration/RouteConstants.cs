@@ -46,6 +46,7 @@ public abstract class RouteConstants
 
     // system controller [k3s пробы]
     public const string SystemVersionGetUrl = "/system/version";
+    public const string SystemWaitWarmUpGetUrl = "/system/warmup/wait";
 
     // update controller | recovery не учитывает HTTP глаголы
     public const string UpdateNotePutUrl = $"/{Version}/note/update";

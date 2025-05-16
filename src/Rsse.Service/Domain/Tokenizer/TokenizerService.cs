@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -47,11 +48,11 @@ public class TokenizerService : ITokenizerService, IDisposable
     internal ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
 
     /// <inheritdoc/>
-    public void Delete(int id)
+    public async Task Delete(int id)
     {
         if (!_isEnabled) return;
 
-        using var __ = TokenizerLock.AcquireSharedLock();
+        using var __ = await TokenizerLock.AcquireExclusiveLockAsync();
 
         var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
 
@@ -64,11 +65,11 @@ public class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Create(int id, NoteEntity note)
+    public async Task Create(int id, NoteEntity note)
     {
         if (!_isEnabled) return;
 
-        using var _ = TokenizerLock.AcquireSharedLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
@@ -86,11 +87,11 @@ public class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Update(int id, NoteEntity note)
+    public async Task Update(int id, NoteEntity note)
     {
         if (!_isEnabled) return;
 
-        using var _ = TokenizerLock.AcquireSharedLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
@@ -122,15 +123,15 @@ public class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Initialize()
+    public async Task Initialize()
     {
         if (!_isEnabled) return;
 
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
-        using var _ = TokenizerLock.AcquireExclusiveLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
         // Не закрываем контекст в корневом scope провайдера.
-        using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
+        await using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
 
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
@@ -144,29 +145,39 @@ public class TokenizerService : ITokenizerService, IDisposable
             var texts = repo.ReadAllNotes();
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
-            foreach (var text in texts)
+            await foreach (var text in texts)
             {
                 var (extendedLine, reducedLine, id) = CreateTokensLine(processor, text);
 
                 if (!_extendedTokenLines.TryAdd(id, extendedLine))
                 {
-                    throw new MethodAccessException($"[{nameof(TokenizerService)}] extended vectors initialization error");
+                    throw new MethodAccessException(
+                        $"[{nameof(TokenizerService)}] extended vectors initialization error");
                 }
 
                 if (!_reducedTokenLines.TryAdd(id, reducedLine))
                 {
-                    throw new MethodAccessException($"[{nameof(TokenizerService)}] reduced vectors initialization error");
+                    throw new MethodAccessException(
+                        $"[{nameof(TokenizerService)}] reduced vectors initialization error");
                 }
             }
-
-            GC.Collect();
         }
         catch (Exception ex)
         {
-            _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'", nameof(TokenizerService), ex.Source, ex.Message);
+            _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'",
+                nameof(TokenizerService), ex.Source, ex.Message);
         }
 
-        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'", nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
+        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'",
+            nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
+    }
+
+    /// <inheritdoc/>
+    public async Task WaitWarmUp()
+    {
+        if (!_isEnabled) return;
+
+        await TokenizerLock.SyncOnLockAsync();
     }
 
     /// <inheritdoc/>
@@ -286,7 +297,6 @@ public class TokenizerService : ITokenizerService, IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         TokenizerLock.Dispose();
     }
 }

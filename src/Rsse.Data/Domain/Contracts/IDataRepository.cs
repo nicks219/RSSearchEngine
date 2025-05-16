@@ -72,7 +72,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// Прочитать все заметки
     /// </summary>
     /// <returns>список заметок</returns>
-    IQueryable<NoteEntity> ReadAllNotes();
+    IAsyncEnumerable<NoteEntity> ReadAllNotes();
 
     /// <summary>
     /// Получить идентификаторы отмеченных заметок

@@ -20,5 +20,6 @@ export const RouteConstants = {
   migrationUploadPostUrl: "/migration/upload",
   migrationDownloadGetUrl: "/migration/download",
   systemVersionGetUrl: "/system/version",
+  systemWaitWarmUpGetUrl: "/system/warmup/wait",
   updateNotePutUrl: "/v6/note/update"
 } as const;

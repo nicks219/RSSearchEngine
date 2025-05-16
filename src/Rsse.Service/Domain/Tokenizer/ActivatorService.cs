@@ -40,7 +40,7 @@ internal class ActivatorService(
 
                 _count++;
 
-                tokenizer.Initialize();
+                await tokenizer.Initialize();
 
                 logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 

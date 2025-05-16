@@ -118,7 +118,7 @@
       * сделать все методы асинхронными
       * избавиться от IQueryable
       * перенести методы подсчёта непосредственно в контракт
-      * использовать IAsyncEnumerable в перечислении по ReadAllNotes 
+      * [x] использовать **IAsyncEnumerable** в перечислении по **ReadAllNotes** 
     * [ ] code-style и небольшой рефакторинг: 
       * нейминг: managers -> services, убрать request/response из dto 
       * распилить dto CatalogItem по слоям

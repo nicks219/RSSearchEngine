@@ -41,7 +41,7 @@ public class MigrationController(
         try
         {
             await repo.CopyDbFromMysqlToNpgsql();
-            tokenizer.Initialize();
+            await tokenizer.Initialize();
         }
         catch (Exception exception)
         {
@@ -83,14 +83,14 @@ public class MigrationController(
     /// <param name="databaseType">тип мигратора</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public IActionResult RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public async Task<IActionResult> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
             var result = migrator.Restore(fileName);
-            tokenizer.Initialize();
+            await tokenizer.Initialize();
 
             return new OkObjectResult(new { Res = Path.GetFileName(result) });
         }

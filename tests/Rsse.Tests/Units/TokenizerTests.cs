@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -51,13 +52,13 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldInit_ExtendedAndReducedLines()
+    public async Task Tokenizer_ShouldInit_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
-        CreateTestNote(tokenizer);
+        await CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
 
@@ -80,16 +81,16 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldUpdate_ExtendedAndReducedLines()
+    public async Task Tokenizer_ShouldUpdate_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
-        CreateTestNote(tokenizer);
+        await CreateTestNote(tokenizer);
 
         // act:
-        tokenizer.Update(1,
+        await tokenizer.Update(1,
             new NoteEntity
             { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         var extended = tokenizer.GetExtendedLines();
@@ -108,7 +109,7 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldCreate_ExtendedAndReducedLines()
+    public async Task Tokenizer_ShouldCreate_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
@@ -118,7 +119,7 @@ public class TokenizerTests
         var reduced = tokenizer.GetReducedLines();
 
         // act:
-        tokenizer.Create(2, new NoteEntity
+        await tokenizer.Create(2, new NoteEntity
         {
             Title = FakeCatalogRepository.SecondNoteTitle,
             Text = FakeCatalogRepository.SecondNoteText
@@ -137,20 +138,20 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldDelete_ExtendedAndReducedLines()
+    public async Task Tokenizer_ShouldDelete_ExtendedAndReducedLines()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
-        CreateTestNote(tokenizer);
+        await CreateTestNote(tokenizer);
         var extended = tokenizer.GetExtendedLines();
         var reduced = tokenizer.GetReducedLines();
         var extendedCountBefore = extended.Count;
         var reducedCountBefore = reduced.Count;
 
         // act:
-        tokenizer.Delete(1);
+        await tokenizer.Delete(1);
 
         // assert:
         extendedCountBefore.Should().Be(1);
@@ -160,7 +161,7 @@ public class TokenizerTests
     }
 
     [TestMethod]
-    public void Tokenizer_ShouldDoNothing_WhenDisabled()
+    public async Task Tokenizer_ShouldDoNothing_WhenDisabled()
     {
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
@@ -173,19 +174,19 @@ public class TokenizerTests
         VectorsShouldBeEmpty();
 
         // create act & asserts:
-        tokenizer.Create(2,
+        await tokenizer.Create(2,
             new NoteEntity
             { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // update act & asserts:
-        tokenizer.Update(2,
+        await tokenizer.Update(2,
             new NoteEntity
             { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
-        tokenizer.Delete(1);
+        await tokenizer.Delete(1);
         VectorsShouldBeEmpty();
 
         return;
@@ -199,8 +200,8 @@ public class TokenizerTests
         }
     }
 
-    private static void CreateTestNote(TokenizerService tokenizerService) =>
-        tokenizerService.Create(id: 1, new NoteEntity
+    private static async Task CreateTestNote(TokenizerService tokenizerService) =>
+        await tokenizerService.Create(id: 1, new NoteEntity
         {
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText

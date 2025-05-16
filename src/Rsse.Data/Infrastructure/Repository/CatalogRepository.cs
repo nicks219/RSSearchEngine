@@ -47,12 +47,12 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public IQueryable<NoteEntity> ReadAllNotes()
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
         var notes =
             context.Notes
-            .Select(note => note)
-            .AsNoTracking();
+            .AsNoTracking()
+            .AsAsyncEnumerable();
 
         return notes;
     }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SearchEngine.Domain.Entities;
 
 namespace SearchEngine.Domain.Contracts;
@@ -13,7 +14,7 @@ public interface ITokenizerService
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
     /// <param name="note">заметка</param>
-    public void Create(int id, NoteEntity note);
+    public Task Create(int id, NoteEntity note);
 
     /// <summary>
     /// Вычислить индексы соответствия хранимых заметок поисковому запросу
@@ -27,16 +28,21 @@ public interface ITokenizerService
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
     /// <param name="note">заметка</param>
-    public void Update(int id, NoteEntity note);
+    public Task Update(int id, NoteEntity note);
 
     /// <summary>
     /// Удалить вектор для заметки
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
-    public void Delete(int id);
+    public Task Delete(int id);
 
     /// <summary>
     /// Инициализация функционала токенизации
     /// </summary>
-    public void Initialize();
+    public Task Initialize();
+
+    /// <summary>
+    /// Дождаться инициализации токенизатора
+    /// </summary>
+    public Task WaitWarmUp();
 }

@@ -37,9 +37,8 @@ public class DeleteController(
     {
         try
         {
-            tokenizer.Delete(id);
-
             var response = await new CatalogManager(repo, _managerLogger).DeleteNote(id, pg);
+            await tokenizer.Delete(id);
             return response.MapFromDto();
         }
         catch (Exception ex)

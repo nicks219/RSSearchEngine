@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ public class ComplianceTests
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
+    public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
         var loggerFactory = Substitute.For<ILoggerFactory>();
@@ -33,7 +34,7 @@ public class ComplianceTests
         complianceController.AddHttpContext(sp.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        tokenizer.Initialize();
+        await tokenizer.Initialize();
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);

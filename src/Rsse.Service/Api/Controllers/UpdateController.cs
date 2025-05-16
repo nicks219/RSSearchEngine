@@ -37,8 +37,9 @@ public class UpdateController(
         {
             var dto = request.MapToDto();
             var response = await new UpdateManager(repo, _managerLogger).UpdateNote(dto);
+            var entity = new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest };
 
-            tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            await tokenizer.Update(dto.NoteIdExchange, entity);
 
             return response.MapFromDto();
         }

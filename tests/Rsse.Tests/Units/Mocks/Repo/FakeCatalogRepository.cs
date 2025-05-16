@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EntityFrameworkCore.Testing.Common;
 using Moq;
@@ -57,7 +58,7 @@ public class FakeCatalogRepository : IDataRepository
         }
     }
 
-    public IQueryable<NoteEntity> ReadAllNotes()
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
         var notes = _notes
             .Select(keyValue => new NoteEntity
@@ -68,7 +69,7 @@ public class FakeCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return notes.AsQueryable();
+        return new FakeDbSet<NoteEntity>(notes);
     }
 
     public string ReadNoteTitle(int noteId)

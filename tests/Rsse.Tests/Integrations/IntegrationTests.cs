@@ -123,6 +123,7 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         if (content != null) content = content with { NoteIdExchange = _processedId };
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
@@ -195,6 +196,7 @@ public class IntegrationTests
 
         // arrange:
         using var client = _factory.CreateClient(_options);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // act:
@@ -257,6 +259,7 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
         // act:
@@ -333,6 +336,7 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
         // act:

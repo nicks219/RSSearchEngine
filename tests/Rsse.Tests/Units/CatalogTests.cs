@@ -28,7 +28,7 @@ public class CatalogTests
     private int _notesCount;
 
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
         var host = new ServiceProviderStub<CatalogManager>();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
@@ -37,7 +37,8 @@ public class CatalogTests
         CatalogManager = new CatalogManager(repo, managerLogger);
         Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
-        _notesCount = Repo.ReadAllNotes().Count();
+        var notes = await Repo.ReadAllNotes().ToListAsync();
+        _notesCount = notes.Count;
     }
 
     [TestMethod]
