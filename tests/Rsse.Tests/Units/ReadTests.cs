@@ -109,7 +109,6 @@ public class ReadTests
         var host = new ServiceProviderStub<ReadManager>();
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var loggerFactory = Substitute.For<ILoggerFactory>();
-        var managerLogger = Substitute.For<ILogger<ReadManager>>();
 
         var readController = new ReadController(repo, loggerFactory);
         readController.AddHttpContext(host.Provider);

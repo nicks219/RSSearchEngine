@@ -29,19 +29,19 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     {
         tag = tag.ToUpper();
 
-        var exists = await context.Tags!.AnyAsync(tagEntity => tagEntity.Tag == tag);
+        var exists = await context.Tags.AnyAsync(tagEntity => tagEntity.Tag == tag);
 
         if (exists)
         {
             return;
         }
 
-        var tags = await context.Tags!.Select(tagEntity => tagEntity.TagId).ToListAsync();
+        var tags = await context.Tags.Select(tagEntity => tagEntity.TagId).ToListAsync();
         var maxId = tags.Count > 0 ? tags.Max(tagEntity => tagEntity) : 0;
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
-        await context.Tags!.AddAsync(newTag);
+        await context.Tags.AddAsync(newTag);
 
         await context.SaveChangesAsync();
     }
@@ -50,7 +50,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     public IQueryable<NoteEntity> ReadAllNotes()
     {
         var notes =
-            context.Notes!
+            context.Notes
             .Select(note => note)
             .AsNoTracking();
 
@@ -61,7 +61,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     public string ReadNoteTitle(int noteId)
     {
         var note =
-            context.Notes!
+            context.Notes
             .First(noteEntity => noteEntity.NoteId == noteId);
 
         return note.Title!;
@@ -71,7 +71,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     public int ReadNoteId(string noteTitle)
     {
         var note =
-            context.Notes!
+            context.Notes
             .First(noteEntity => noteEntity.Title == noteTitle);
 
         return note.NoteId;
@@ -85,7 +85,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         //    .Where(s => chosenOnes.Contains(s.GenreInGenreText.GenreID))
         //    .Select(s => s.TextInGenreText.TextID);
 
-        var notesForElection = context.Notes!
+        var notesForElection = context.Notes
             .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
             .Select(note => note.NoteId);
 
@@ -95,7 +95,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
     {
-        var titleAndIdList = context.Notes!
+        var titleAndIdList = context.Notes
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -108,7 +108,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public IQueryable<TextResult> ReadNote(int noteId)
     {
-        var titleAndText = context.Notes!
+        var titleAndText = context.Notes
             .Where(note => note.NoteId == noteId)
             .Select(note => new TextResult { Text = note.Text!, Title = note.Title! })
             .AsNoTracking();
@@ -119,7 +119,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public IQueryable<int> ReadNoteTags(int noteId)
     {
-        var songGenres = context.TagsToNotesRelation!
+        var songGenres = context.TagsToNotesRelation
             .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
             .Select(relation => relation.TagId);
 
@@ -135,13 +135,13 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public async Task<int> ReadNotesCount()
     {
-        return await context.Notes!.CountAsync();
+        return await context.Notes.CountAsync();
     }
 
     /// <inheritdoc/>
     public async Task<List<string>> ReadStructuredTagList()
     {
-        var tagList = await context.Tags!
+        var tagList = await context.Tags
             // TODO заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
             .Select(tag => new Tuple<string, int>(tag.Tag!, tag.RelationEntityReference!.Count))
@@ -174,7 +174,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
             try
             {
-                var processedNote = await context.Notes!.FindAsync(noteRequest.NoteIdExchange);
+                var processedNote = await context.Notes.FindAsync(noteRequest.NoteIdExchange);
 
                 if (processedNote == null)
                 {
@@ -187,7 +187,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
                 context.Notes.Update(processedNote);
 
-                context.TagsToNotesRelation!
+                context.TagsToNotesRelation
                     .RemoveRange(context.TagsToNotesRelation
                         .Where(relation =>
                             relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
@@ -254,11 +254,11 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         {
             var forAddition = new NoteEntity { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest };
 
-            await context.Notes!.AddAsync(forAddition);
+            await context.Notes.AddAsync(forAddition);
 
             await context.SaveChangesAsync();
 
-            await context.TagsToNotesRelation!
+            await context.TagsToNotesRelation
                 .AddRangeAsync(noteRequest.TagsCheckedRequest!
                     .Select(id =>
                         new TagsToNotesEntity
@@ -300,7 +300,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         {
             var deletedEntries = 0;
 
-            var processedNote = await context.Notes!.FindAsync(noteId);
+            var processedNote = await context.Notes.FindAsync(noteId);
 
             if (processedNote == null)
             {
@@ -325,7 +325,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
     private async Task<bool> VerifyTitleNotExists(string title)
     {
-        return !await context.Notes!.AnyAsync(entity => entity.Title == title);
+        return !await context.Notes.AnyAsync(entity => entity.Title == title);
     }
 
     private async Task<bool> VerifyTagNotExists(int noteId, IReadOnlyCollection<int> forAddition)
@@ -335,7 +335,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
             return true;
         }
 
-        if (await context.TagsToNotesRelation!.AnyAsync(relation =>
+        if (await context.TagsToNotesRelation.AnyAsync(relation =>
                 relation.NoteId == noteId && relation.TagId == forAddition.First()))
         {
             throw new DataExistsException("[PANIC] tags exists error");

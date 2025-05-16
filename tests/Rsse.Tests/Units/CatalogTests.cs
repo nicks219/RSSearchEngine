@@ -127,7 +127,7 @@ public class CatalogTests
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
 
         // assert:
-        Assert.AreEqual(null, responseDto.EnsureNotNull().CatalogPage);
+        Assert.IsNull(responseDto.EnsureNotNull().CatalogPage);
     }
 
     [TestMethod]

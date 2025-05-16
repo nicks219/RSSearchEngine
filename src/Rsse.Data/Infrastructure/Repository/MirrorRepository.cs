@@ -66,9 +66,9 @@ public class MirrorRepository(
         await npgsqlCatalogContext.Database.EnsureCreatedAsync();
 
         // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
-        var notes = mysqlCatalogContext.Notes!.Select(note => note).ToList();
-        var tags = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
-        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation!.Select(relation => relation).ToList();
+        var notes = mysqlCatalogContext.Notes.Select(note => note).ToList();
+        var tags = mysqlCatalogContext.Tags.Select(tag => tag).ToList();
+        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation.Select(relation => relation).ToList();
 
         var users = mysqlCatalogContext.Users.Select(user => user).ToList();
 
@@ -77,9 +77,9 @@ public class MirrorRepository(
         try
         {
             // notes, tags, relations:
-            await npgsqlCatalogContext.Notes!.AddRangeAsync(notes);
-            await npgsqlCatalogContext.Tags!.AddRangeAsync(tags);
-            await npgsqlCatalogContext.TagsToNotesRelation!.AddRangeAsync(tagsToNotes);
+            await npgsqlCatalogContext.Notes.AddRangeAsync(notes);
+            await npgsqlCatalogContext.Tags.AddRangeAsync(tags);
+            await npgsqlCatalogContext.TagsToNotesRelation.AddRangeAsync(tagsToNotes);
 
             // users:
             await npgsqlCatalogContext.Users.ExecuteDeleteAsync();
