@@ -30,7 +30,7 @@ public class CreateTests
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await CreateManager.ReadStructuredTagList();
+        var resultDto = (NoteResultDto)await CreateManager.ReadStructuredTagList();
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.StructuredTagsListResponse?.Count);
@@ -49,16 +49,15 @@ public class CreateTests
         );
 
         // act:
-        var responseBase = await CreateManager.CreateNote(requestDto);
-        var responseDto = (NoteResultDto)responseBase;
+        var resultDto = (NoteResultDto)await CreateManager.CreateNote(requestDto);
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
-        var actualDto = await new UpdateManager(repo, managerLogger).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateManager(repo, managerLogger).GetNoteWithTagsForUpdate(resultDto.NoteIdExchange);
 
         // assert:
-        responseDto.CommonErrorMessageResponse.Should().BeNull();
-        responseDto.TitleResponse.Should().Be("[OK]");
+        resultDto.CommonErrorMessageResponse.Should().BeNull();
+        resultDto.TitleResponse.Should().Be("[OK]");
         // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
         Assert.AreEqual(requestDto.TitleRequest, actualDto.TitleResponse);
     }

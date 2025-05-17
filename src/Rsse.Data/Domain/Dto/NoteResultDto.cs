@@ -35,6 +35,7 @@ public record NoteResultDto : NoteBaseResultDto
     /// <summary>
     /// Сообщение об ошибке
     /// </summary>
+    // todo: удалить
     public string? CommonErrorMessageResponse { get; init; }
 
 

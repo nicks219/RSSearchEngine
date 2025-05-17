@@ -36,10 +36,10 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
 
                 var errorDtoWithTags = new NoteErrorResultDto
                 {
-                        StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
-                        CommonErrorMessageResponse = CreateNoteEmptyDataError,
-                        TitleResponse = "",
-                        TextResponse = ""
+                    StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
+                    CommonErrorMessageResponse = CreateNoteEmptyDataError,
+                    TitleResponse = "",
+                    TextResponse = ""
                 };
 
                 if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
@@ -101,7 +101,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
             logger.LogError(ex, CreateNoteError);
 
             // системная ошибка
-            return new NoteResultDto { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteErrorResultDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }
 
@@ -134,17 +134,8 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
     /// <returns>шаблон с ответом</returns>
     internal async Task<NoteResultDto> ReadStructuredTagList()
     {
-        try
-        {
-            var tagList = await repo.ReadStructuredTagList();
+        var tagList = await repo.ReadStructuredTagList();
 
-            return new NoteResultDto(tagList);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, CreateManagerReadTagListError);
-            return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
-        }
+        return new NoteResultDto(tagList);
     }
-
 }

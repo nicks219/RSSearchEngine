@@ -12,7 +12,6 @@ internal abstract class ErrorMessages
 
     internal const string DeleteNoteError = $"[{nameof(DeleteManager)}] {nameof(DeleteManager.DeleteNote)} error";
 
-    internal const string CreateManagerReadTagListError = $"[{nameof(CreateManager)}] {nameof(CreateManager.ReadStructuredTagList)} error";
     internal const string CreateNoteError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error";
     internal const string CreateNoteUnsuccessfulError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error: create unsuccessful";
     internal const string CreateNoteEmptyDataError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error: empty data";
