@@ -37,7 +37,9 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 var errorDtoWithTags = new NoteErrorResultDto
                 {
                         StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
-                        CommonErrorMessageResponse = CreateNoteEmptyDataError
+                        CommonErrorMessageResponse = CreateNoteEmptyDataError,
+                        TitleResponse = "",
+                        TextResponse = ""
                 };
 
                 if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
@@ -69,7 +71,8 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 {
                     StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
                     CommonErrorMessageResponse = CreateNoteUnsuccessfulError,
-                    TitleResponse = "[Already Exist]"
+                    TitleResponse = "[Already Exist]",
+                    TextResponse = ""
                 };
 
                 return errorDtoWithTags;
