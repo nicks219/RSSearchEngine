@@ -246,6 +246,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
             return noteRequest.NoteIdExchange;
         }
 
+        var createdId = 0;
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
@@ -269,24 +270,20 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
             await transaction.CommitAsync();
 
-            noteRequest.NoteIdExchange = forAddition.NoteId;
+            createdId = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
             await transaction.RollbackAsync();
-
-            noteRequest.NoteIdExchange = 0;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
 
-            noteRequest.NoteIdExchange = 0;
-
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
 
-        return noteRequest.NoteIdExchange;
+        return createdId;
     }
 
     /// <inheritdoc/>

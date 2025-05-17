@@ -125,10 +125,11 @@
     * [ ] code-style и небольшой рефакторинг: 
       * нейминг: managers -> services, убрать request/response из dto 
       * распилить dto CatalogItem по слоям
-      * сделать dto иммутабельными (init only)
+      * [.] сделать dto неизменяемыми (init-only либо primary-конструктор)
       * перенести в маппинг trim из CreateManager, checked/unchecked сделать bool
       * единообразно отсортировать методы
-    * [x] tokenizer service: сделать обертку с двумя векторами для каждой заметки 
+    * [x] tokenizer service: сделать обертку с двумя векторами для каждой заметки
+    * [ ] сделать фабоику для tokenizer processor
 
 
 # Запланированные изменения:

@@ -58,12 +58,12 @@ public static class Mapper
     public static NoteRequestDto MapToDto(this NoteRequest request)
     {
         var response = new NoteRequestDto
-        {
-            TagsCheckedRequest = request.TagsCheckedRequest,
-            TitleRequest = request.TitleRequest,
-            TextRequest = request.TextRequest,
-            NoteIdExchange = request.NoteIdExchange,
-        };
+        (
+            TagsCheckedRequest: request.TagsCheckedRequest,
+            TitleRequest: request.TitleRequest,
+            TextRequest: request.TextRequest,
+            NoteIdExchange: request.NoteIdExchange
+        );
 
         return response;
     }

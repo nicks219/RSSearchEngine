@@ -26,50 +26,53 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
     {
         try
         {
+            var dtoWithInitialTags = await ReadStructuredTagList();
+
             if (noteRequestDto.TagsCheckedRequest == null ||
                 string.IsNullOrEmpty(noteRequestDto.TextRequest) ||
                 string.IsNullOrEmpty(noteRequestDto.TitleRequest) ||
                 noteRequestDto.TagsCheckedRequest.Count == 0)
             {
-                var errorDtoWithTags = await ReadStructuredTagList();
-
-                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteEmptyDataError;
-
+                // пользовательская ошибка: невалидные данные
                 if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
                 {
-                    return errorDtoWithTags;
+                    return dtoWithInitialTags with { CommonErrorMessageResponse = CreateNoteEmptyDataError };
                 }
 
-                errorDtoWithTags.TextResponse = noteRequestDto.TextRequest;
-                errorDtoWithTags.TitleResponse = noteRequestDto.TitleRequest;
+                dtoWithInitialTags = dtoWithInitialTags with
+                {
+                    CommonErrorMessageResponse = CreateNoteEmptyDataError,
+                    TextResponse = noteRequestDto.TextRequest,
+                    TitleResponse = noteRequestDto.TitleRequest
+                };
 
-                return errorDtoWithTags;
+                return dtoWithInitialTags;
             }
 
-            // createdNote.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdNote.Text)).ToString();
-
-            noteRequestDto.TitleRequest = noteRequestDto.TitleRequest.Trim();
+            // todo: перенести в маппер
+            noteRequestDto = noteRequestDto with { TitleRequest = noteRequestDto.TitleRequest.Trim() };
 
             var newNoteId = await repo.CreateNote(noteRequestDto);
 
             if (newNoteId == 0)
             {
-                var errorDtoWithTags = await ReadStructuredTagList();
+                // пользовательская ошибка: не создалась заметка
+                dtoWithInitialTags = dtoWithInitialTags with
+                {
+                    CommonErrorMessageResponse = CreateNoteUnsuccessfulError,
+                    TitleResponse = "[Already Exist]"
+                };
 
-                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteUnsuccessfulError;
-
-                errorDtoWithTags.TitleResponse = "[Already Exist]";
-
-                return errorDtoWithTags;
+                return dtoWithInitialTags;
             }
 
-            var updatedDto = await ReadStructuredTagList();
+            var dtoWithTagsAfterSuccessfulCreate = await ReadStructuredTagList();
 
-            var updatedTagList = updatedDto.StructuredTagsListResponse!;
+            var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.StructuredTagsListResponse;
 
             var checkboxes = new List<string>();
 
-            for (var i = 0; i < updatedTagList.Count; i++)
+            for (var i = 0; i < tagsAfterCreate!.Count; i++)
             {
                 checkboxes.Add("unchecked");
             }
@@ -79,7 +82,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 checkboxes[i - 1] = "checked";
             }
 
-            return new NoteResultDto(updatedTagList, newNoteId, "", "[OK]", checkboxes);
+            return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
         }
         catch (Exception ex)
         {

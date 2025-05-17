@@ -64,14 +64,15 @@ public class ReadController(
     {
         try
         {
-            var dto = request?.MapToDto();
-            if (dto?.TagsCheckedRequest?.Count == 0)
+            var noteRequestDto = request?.MapToDto();
+            if (noteRequestDto?.TagsCheckedRequest?.Count == 0)
             {
                 // для пустого запроса считаем все теги отмеченными
-                dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
+                // todo: перенести в маппер
+                noteRequestDto = noteRequestDto with { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
             }
 
-            var response = await readManager.GetNextOrSpecificNote(dto, id, _randomElection);
+            var response = await readManager.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
             return response.MapFromDto();
         }
         catch (Exception ex)

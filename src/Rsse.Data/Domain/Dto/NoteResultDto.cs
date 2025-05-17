@@ -3,50 +3,45 @@ using System.Collections.Generic;
 namespace SearchEngine.Domain.Dto;
 
 /// <summary>
-/// Шаблон передачи данных для заметки
+/// Контейнер для ответа с заметкой.
 /// </summary>
 public record NoteResultDto
 {
     /// <summary>
     /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
     /// </summary>
-    public List<string>? TagsCheckedUncheckedResponse { get; init; }
+    public List<string>? TagsCheckedUncheckedResponse { get; }
 
     /// <summary>
     /// Именование заметки в ответе
     /// </summary>
-    public string? TitleResponse { get; set; }
+    public string? TitleResponse { get; init; }
 
     /// <summary>
     /// Текст заметки в ответе
     /// </summary>
-    public string? TextResponse { get; set; }
+    public string? TextResponse { get; init; }
 
     /// <summary>
     /// Список тегов в формате "имя : количество записей"
     /// </summary>
-    public List<string>? StructuredTagsListResponse { get; init; }
+    public List<string>? StructuredTagsListResponse { get; }
 
     /// <summary>
     /// Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны
     /// </summary>
-    public int NoteIdExchange { get; set; }
+    public int NoteIdExchange { get; }
 
     /// <summary>
     /// Сообщение об ошибке
     /// </summary>
-    public string? CommonErrorMessageResponse { get; set; }
+    public string? CommonErrorMessageResponse { get; init; }
 
 
-    /// <summary>
-    /// Создать незаполненный шаблон передачи данных для заметки
-    /// </summary>
+    /// <summary/> Создать незаполненный контейнер для заметки.
     public NoteResultDto() { }
 
-    /// <summary>
-    /// Создать шаблон передачи данных для заметки
-    /// </summary>
-    // todo: это response
+    /// <summary/> Создать заполненный контейнер для заметки.
     public NoteResultDto(
         List<string> structuredTagsListResponse,
         int noteIdExchange = 0,

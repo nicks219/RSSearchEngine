@@ -44,31 +44,39 @@ public class CreateController(
     {
         try
         {
-            var dto = request.MapToDto();
+            var noteRequestDto = request.MapToDto();
 
-            await manager.CreateTagFromTitle(dto);
-            var response = await manager.CreateNote(dto);
+            await manager.CreateTagFromTitle(noteRequestDto);
+            var noteResultDto = await manager.CreateNote(noteRequestDto);
 
-            if (!string.IsNullOrEmpty(response.CommonErrorMessageResponse))
+            if (!string.IsNullOrEmpty(noteResultDto.CommonErrorMessageResponse))
             {
-                // теги structuredTagsListResponse - ошибка - титл - текст
                 return new NoteResponse
                 {
-                    // NoteExchangeId ??
-                    TitleResponse = response.TitleResponse,
-                    TextResponse = response.TextResponse,
-                    StructuredTagsListResponse = response.StructuredTagsListResponse,
-                    CommonErrorMessageResponse = response.CommonErrorMessageResponse
+                    TitleResponse = noteResultDto.TitleResponse,
+                    TextResponse = noteResultDto.TextResponse,
+                    StructuredTagsListResponse = noteResultDto.StructuredTagsListResponse,
+                    CommonErrorMessageResponse = noteResultDto.CommonErrorMessageResponse
                 };
             }
 
-            await tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            await tokenizer.Create(
+                noteResultDto.NoteIdExchange,
+                new NoteEntity
+                {
+                    Title = request.TitleRequest,
+                    Text = request.TextRequest
+                });
 
             var path = CreateDumpAndGetFilePath();
 
-            response.TextResponse = path ?? string.Empty;
+            // todo: можно добавить в маппер
+            noteResultDto = noteResultDto with
+            {
+                TextResponse = path ?? string.Empty
+            };
 
-            return response.MapFromDto();
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {
