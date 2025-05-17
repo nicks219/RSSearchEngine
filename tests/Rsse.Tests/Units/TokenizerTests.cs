@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,23 +60,22 @@ public class TokenizerTests
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
+        var tokenLines = tokenizer.GetTokenLines();
 
         // act:
-        extended.Should().NotBeNull();
-        reduced.Should().NotBeNull();
-        extended.Count.Should().Be(1);
-        reduced.Count.Should().Be(1);
+        tokenLines.Should().NotBeNull();
+        tokenLines.Count.Should().Be(1);
 
         // assert:
-        extended.ElementAt(0)
+        tokenLines.ElementAt(0)
             .Value
+            .Extended
             .Should()
             .BeEquivalentTo(_extendedFirst);
 
-        reduced.ElementAt(0)
+        tokenLines.ElementAt(0)
             .Value
+            .Reduced
             .Should()
             .BeEquivalentTo(_reducedFirst);
     }
@@ -93,17 +93,18 @@ public class TokenizerTests
         await tokenizer.Update(1,
             new NoteEntity
             { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
+        var tokenLines = tokenizer.GetTokenLines();
 
         // assert:
-        extended.First()
+        tokenLines.First()
             .Value
+            .Extended
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
-        reduced.First()
+        tokenLines.First()
             .Value
+            .Reduced
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
@@ -115,8 +116,7 @@ public class TokenizerTests
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
+        var tokenLines = tokenizer.GetTokenLines();
 
         // act:
         await tokenizer.Create(2, new NoteEntity
@@ -126,13 +126,15 @@ public class TokenizerTests
         });
 
         // assert:
-        extended.Last()
+        tokenLines.Last()
             .Value
+            .Extended
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
-        reduced.Last()
+        tokenLines.Last()
             .Value
+            .Reduced
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
@@ -145,19 +147,16 @@ public class TokenizerTests
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
-        var extendedCountBefore = extended.Count;
-        var reducedCountBefore = reduced.Count;
+        var tokenLines = tokenizer.GetTokenLines();
+        var countBefore = tokenLines.Count;
 
         // act:
         await tokenizer.Delete(1);
+        var countAfter = tokenLines.Count;
 
         // assert:
-        extendedCountBefore.Should().Be(1);
-        reducedCountBefore.Should().Be(1);
-        extended.Count.Should().Be(0);
-        reduced.Count.Should().Be(0);
+        countBefore.Should().Be(1);
+        countAfter.Should().Be(0);
     }
 
     [TestMethod]
@@ -167,8 +166,7 @@ public class TokenizerTests
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
         var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
-        var extended = tokenizer.GetExtendedLines();
-        var reduced = tokenizer.GetReducedLines();
+        var tokenLines = tokenizer.GetTokenLines();
 
         // init asserts:
         VectorsShouldBeEmpty();
@@ -193,10 +191,8 @@ public class TokenizerTests
 
         void VectorsShouldBeEmpty()
         {
-            extended.Should().NotBeNull();
-            reduced.Should().NotBeNull();
-            extended.Count.Should().Be(0);
-            reduced.Count.Should().Be(0);
+            tokenLines.Should().NotBeNull();
+            tokenLines.Count.Should().Be(0);
         }
     }
 

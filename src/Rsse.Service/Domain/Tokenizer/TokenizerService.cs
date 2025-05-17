@@ -18,9 +18,7 @@ namespace SearchEngine.Domain.Tokenizer;
 public class TokenizerService : ITokenizerService, IDisposable
 {
     private TokenizerLock TokenizerLock { get; } = new();
-
-    private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
-    private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
+    private readonly ConcurrentDictionary<int, TokenLine> _tokenLines;
 
     private readonly IServiceProvider _provider;
     private readonly ILogger<TokenizerService> _logger;
@@ -35,17 +33,13 @@ public class TokenizerService : ITokenizerService, IDisposable
     public TokenizerService(IServiceProvider provider, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
     {
         _provider = provider;
-        _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
-        _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _tokenLines = new ConcurrentDictionary<int, TokenLine>();
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
     }
 
     // используется для тестов
-    internal ConcurrentDictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
-
-    // используется для тестов
-    internal ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
+    internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _tokenLines;
 
     /// <inheritdoc/>
     public async Task Delete(int id)
@@ -53,11 +47,9 @@ public class TokenizerService : ITokenizerService, IDisposable
         if (!_isEnabled) return;
 
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync();
-        var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
+        var isRemoved = _tokenLines.TryRemove(id, out _);
 
-        var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
-
-        if (!(isReducedRemoved && isExtendedRemoved))
+        if (!isRemoved)
         {
             _logger.LogError($"[{nameof(TokenizerService)}] delete error");
         }
@@ -71,16 +63,11 @@ public class TokenizerService : ITokenizerService, IDisposable
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
+        var createdTokenLine = CreateTokensLine(processor, note);
 
-        if (!_extendedTokenLines.TryAdd(id, extendedLine))
+        if (!_tokenLines.TryAdd(id, createdTokenLine))
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] extended vectors create error");
-        }
-
-        if (!_reducedTokenLines.TryAdd(id, reducedLine))
-        {
-            _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors create error");
+            _logger.LogError($"[{nameof(TokenizerService)}] vectors create error");
         }
     }
 
@@ -92,30 +79,18 @@ public class TokenizerService : ITokenizerService, IDisposable
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
         using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
+        var updatedTokenLine = CreateTokensLine(processor, note);
 
-        if (_extendedTokenLines.TryGetValue(id, out var existedLine))
+        if (_tokenLines.TryGetValue(id, out var existedLine))
         {
-            if (!_extendedTokenLines.TryUpdate(id, extendedLine, existedLine))
+            if (!_tokenLines.TryUpdate(id, updatedTokenLine, existedLine))
             {
-                _logger.LogError($"[{nameof(TokenizerService)}] extended vectors concurrent update error");
+                _logger.LogError($"[{nameof(TokenizerService)}] vectors concurrent update error");
             }
         }
         else
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] extended vectors has not been updated");
-        }
-
-        if (_reducedTokenLines.TryGetValue(id, out existedLine))
-        {
-            if (!_reducedTokenLines.TryUpdate(id, reducedLine, existedLine))
-            {
-                _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors concurrent update error");
-            }
-        }
-        else
-        {
-            _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors has not been updated");
+            _logger.LogError($"[{nameof(TokenizerService)}] vectors has not been updated");
         }
     }
 
@@ -134,28 +109,19 @@ public class TokenizerService : ITokenizerService, IDisposable
 
         try
         {
-            _reducedTokenLines.Clear();
-
-            _extendedTokenLines.Clear();
+            _tokenLines.Clear();
 
             // todo: избавиться от загрузки всех записей из таблицы:
-            var texts = repo.ReadAllNotes();
+            var notes = repo.ReadAllNotes();
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
-            await foreach (var text in texts)
+            await foreach (var note in notes)
             {
-                var (extendedLine, reducedLine, id) = CreateTokensLine(processor, text);
+                var newTokenLine = CreateTokensLine(processor, note);
 
-                if (!_extendedTokenLines.TryAdd(id, extendedLine))
+                if (!_tokenLines.TryAdd(note.NoteId, newTokenLine))
                 {
-                    throw new MethodAccessException(
-                        $"[{nameof(TokenizerService)}] extended vectors initialization error");
-                }
-
-                if (!_reducedTokenLines.TryAdd(id, reducedLine))
-                {
-                    throw new MethodAccessException(
-                        $"[{nameof(TokenizerService)}] reduced vectors initialization error");
+                    throw new MethodAccessException($"[{nameof(TokenizerService)}] vectors initialization error");
                 }
             }
         }
@@ -165,8 +131,8 @@ public class TokenizerService : ITokenizerService, IDisposable
                 nameof(TokenizerService), ex.Source, ex.Message);
         }
 
-        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'",
-            nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
+        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
+            nameof(TokenizerService), _tokenLines.Count);
     }
 
     /// <inheritdoc/>
@@ -205,15 +171,17 @@ public class TokenizerService : ITokenizerService, IDisposable
 
         var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, cachedTokensLine) in _extendedTokenLines)
+        // поиск в векторе extended
+        foreach (var (key, tokensLine) in _tokenLines)
         {
-            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+            var extendedTokensLine = tokensLine.Extended;
+            var metric = processor.ComputeComparisionMetric(extendedTokensLine, newTokensLine);
 
             // I. 100% совпадение по extended последовательности, по reduced можно не искать
             if (metric == newTokensLine.Count)
             {
                 reducedChainSearch = false;
-                result.Add(key, metric * (1000D / cachedTokensLine.Count)); // было int
+                result.Add(key, metric * (1000D / extendedTokensLine.Count)); // было int
                 continue;
             }
 
@@ -222,7 +190,7 @@ public class TokenizerService : ITokenizerService, IDisposable
             {
                 // [TODO] можно так оценить
                 // reducedChainSearch = false;
-                result.Add(key, metric * (100D / cachedTokensLine.Count)); // было int
+                result.Add(key, metric * (100D / extendedTokensLine.Count)); // было int
             }
         }
 
@@ -246,21 +214,23 @@ public class TokenizerService : ITokenizerService, IDisposable
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         newTokensLine = newTokensLine.ToHashSet().ToList();
 
-        foreach (var (key, cachedTokensLine) in _reducedTokenLines)
+        // поиск в векторе reduced
+        foreach (var (key, tokensLine) in _tokenLines)
         {
-            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+            var reducedTokensLine = tokensLine.Reduced;
+            var metric = processor.ComputeComparisionMetric(reducedTokensLine, newTokensLine);
 
             // III. 100% совпадение по reduced
             if (metric == newTokensLine.Count)
             {
-                result.TryAdd(key, metric * (10D / cachedTokensLine.Count)); // было int
+                result.TryAdd(key, metric * (10D / reducedTokensLine.Count)); // было int
                 continue;
             }
 
             // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
             if (metric >= newTokensLine.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / cachedTokensLine.Count)); // было int
+                result.TryAdd(key, metric * (1D / reducedTokensLine.Count)); // было int
             }
         }
 
@@ -273,7 +243,7 @@ public class TokenizerService : ITokenizerService, IDisposable
     /// <param name="processor">токенайзер</param>
     /// <param name="note">заметка</param>
     /// <returns>векторы на базе двух разных эталонных наборов</returns>
-    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
+    private static TokenLine CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
     {
         // расширенная эталонная последовательность:
         processor.SetupChain(ConsonantChain.Extended);
@@ -289,7 +259,7 @@ public class TokenizerService : ITokenizerService, IDisposable
 
         var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
-        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
+        return new TokenLine(Extended: extendedTokensLine, Reduced: reducedTokensLine);
     }
 
     public void Dispose()
