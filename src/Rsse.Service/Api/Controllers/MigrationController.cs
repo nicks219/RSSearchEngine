@@ -24,11 +24,8 @@ namespace SearchEngine.Api.Controllers;
 public class MigrationController(
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizer,
-    IDataRepository repo,
-    ILoggerFactory loggerFactory) : ControllerBase
+    ILogger<MigrationController> logger) : ControllerBase
 {
-    private readonly ILogger<MigrationController> _logger = loggerFactory.CreateLogger<MigrationController>();
-
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
@@ -40,13 +37,14 @@ public class MigrationController(
     {
         try
         {
-            await repo.CopyDbFromMysqlToNpgsql();
+            var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
+            await mySqlMigrator.CopyDbFromMysqlToNpgsql();
             await tokenizer.Initialize();
         }
         catch (Exception exception)
         {
             const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyFromMySqlToPostgres)} error";
-            _logger.LogError(exception, copyError);
+            logger.LogError(exception, copyError);
             return BadRequest(copyError);
         }
 
@@ -71,7 +69,7 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, CreateError);
+            logger.LogError(exception, CreateError);
             return BadRequest(CreateError);
         }
     }
@@ -96,7 +94,7 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, RestoreError);
+            logger.LogError(exception, RestoreError);
             return BadRequest(RestoreError);
         }
     }

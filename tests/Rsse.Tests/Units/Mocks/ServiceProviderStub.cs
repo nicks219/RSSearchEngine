@@ -1,9 +1,8 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Managers;
 using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -22,12 +21,12 @@ public class ServiceProviderStub<TService> where TService : class
         services.AddSingleton<IDataRepository, FakeCatalogRepository>();// один набор данных для группы тестов
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
-        services.AddSingleton<ILogger<TService>, NoopLogger<TService>>();
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddSingleton<ITokenizerService, TokenizerService>();
 
         // для тестов create
-        services.AddSingleton<ILogger<UpdateManager>, NoopLogger<UpdateManager>>();
+        services.AddDomainLayerDependencies();
+        services.AddNoopDomainLayerLoggers();
 
         var serviceProvider = services.BuildServiceProvider();
         Provider = serviceProvider;

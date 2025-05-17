@@ -102,7 +102,7 @@ public static class TestHelper
     private static readonly NoteRequest CreateRequest = new() { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
     private static readonly NoteRequest UpdateRequest = new() { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1], NoteIdExchange = 946 };
     private static readonly NoteRequest ReadRequest = new() { TagsCheckedRequest = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [CatalogManager.Forward]);
+    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogManager.Direction.Forward]);
     public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
     public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
     public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");

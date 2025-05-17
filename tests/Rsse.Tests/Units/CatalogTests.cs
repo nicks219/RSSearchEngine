@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +21,7 @@ namespace SearchEngine.Tests.Units;
 public class CatalogTests
 {
     public required CatalogManager CatalogManager;
+    public required DeleteManager DeleteManager;
     public required FakeCatalogRepository Repo;
 
     private const int NotesPerPage = 10;
@@ -32,9 +32,11 @@ public class CatalogTests
     {
         var host = new ServiceProviderStub<CatalogManager>();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+        var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+        var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteManager>>();
 
-        CatalogManager = new CatalogManager(repo, managerLogger);
+        CatalogManager = new CatalogManager(repo, catalogManagerLogger);
+        DeleteManager = new DeleteManager(repo, CatalogManager, deleteManagerLogger);
         Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = await Repo.ReadNotesCount();
@@ -95,7 +97,7 @@ public class CatalogTests
         // arrange & act:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var responseDto = await CatalogManager.DeleteNote(invalidPageId, invalidPageNumber);
+        var responseDto = await DeleteManager.DeleteNote(invalidPageId, invalidPageNumber);
 
         // assert:
         Assert.AreEqual(0, responseDto.NotesCount);
@@ -107,11 +109,10 @@ public class CatalogTests
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var loggerFactory = Substitute.For<ILoggerFactory>();
-        var repo = Substitute.For<IDataRepository>();
+        var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new DeleteController(repo, tokenizer, loggerFactory);
+        var catalogController = new DeleteController(tokenizer, DeleteManager, logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -124,12 +125,9 @@ public class CatalogTests
     public async Task CatalogController_ShouldLogError_OnUndefinedRequest()
     {
         // arrange:
-        var loggerFactory = Substitute.For<ILoggerFactory>();
         var logger = Substitute.For<ILogger<CatalogController>>();
-        loggerFactory.CreateLogger<CatalogController>().Returns(logger);
-        var repo = Substitute.For<IDataRepository>();
 
-        var catalogController = new CatalogController(repo, loggerFactory);
+        var catalogController = new CatalogController(CatalogManager, logger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

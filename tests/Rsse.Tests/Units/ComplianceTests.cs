@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Managers;
 using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Dto;
@@ -25,11 +26,12 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
         var sp = new ServiceProviderStub<TokenizerService>();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
+        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchManager>();
 
-        var complianceController = new ComplianceSearchController(tokenizer, loggerFactory);
+        var complianceController = new ComplianceSearchController(complianceManager, logger);
         complianceController.AddHttpContext(sp.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена

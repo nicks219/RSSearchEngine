@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Tokenizer;
@@ -29,6 +30,8 @@ internal class SqliteStartup(IConfiguration configuration)
         services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
+
+        services.AddDomainLayerDependencies();
     }
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

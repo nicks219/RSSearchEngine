@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -19,12 +18,10 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
-    IDataRepository repo,
-    ILoggerFactory loggerFactory) : ControllerBase
+    ReadManager readManager,
+    UpdateManager updateManager,
+    ILogger<ReadController> logger) : ControllerBase
 {
-    private readonly ILogger<ReadController> _logger = loggerFactory.CreateLogger<ReadController>();
-    private readonly ILogger<ReadManager> _readManagerLogger = loggerFactory.CreateLogger<ReadManager>();
-
     private static bool _randomElection = true;
 
     /// <summary>
@@ -46,12 +43,12 @@ public class ReadController(
     {
         try
         {
-            var res = await new ReadManager(repo, _readManagerLogger).ReadTitleByNoteId(int.Parse(id));
+            var res = await readManager.ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadTitleByNoteIdError);
+            logger.LogError(ex, ReadTitleByNoteIdError);
             return BadRequest(ReadTitleByNoteIdError);
         }
     }
@@ -74,13 +71,13 @@ public class ReadController(
                 dto.TagsCheckedRequest = Enumerable.Range(1, 44).ToList();
             }
 
-            var response = await new ReadManager(repo, _readManagerLogger).GetNextOrSpecificNote(dto, id, _randomElection);
+            var response = await readManager.GetNextOrSpecificNote(dto, id, _randomElection);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            _logger.LogError(ex, ElectNoteError);
+            logger.LogError(ex, ElectNoteError);
             return new NoteResponse { CommonErrorMessageResponse = ElectNoteError };
         }
     }
@@ -93,12 +90,12 @@ public class ReadController(
     {
         try
         {
-            var response = await new ReadManager(repo, _readManagerLogger).ReadTagList();
+            var response = await readManager.ReadTagList();
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ReadTagListError);
+            logger.LogError(ex, ReadTagListError);
             return new NoteResponse { CommonErrorMessageResponse = ReadTagListError };
         }
     }
@@ -118,7 +115,6 @@ public class ReadController(
         }
         catch (Exception ex)
         {
-            var logger = loggerFactory.CreateLogger<CreateManager>();
             logger.LogError(ex, GetTagListForCreateError);
             return new NoteResponse { CommonErrorMessageResponse = GetTagListForCreateError };
         }
@@ -132,15 +128,14 @@ public class ReadController(
     // todo: неудачный рефакторинг, исправить
     public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)
     {
-        var logger = loggerFactory.CreateLogger<UpdateManager>();
         try
         {
-            var response = await new UpdateManager(repo, logger).GetNoteWithTagsForUpdate(id);
+            var response = await updateManager.GetNoteWithTagsForUpdate(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, GetNoteWithTagsForUpdateError);
+            logger.LogError(ex, GetNoteWithTagsForUpdateError);
             return new NoteResponse { CommonErrorMessageResponse = GetNoteWithTagsForUpdateError };
         }
     }

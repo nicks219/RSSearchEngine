@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -14,12 +13,8 @@ namespace SearchEngine.Api.Controllers;
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ComplianceSearchController(
-    ITokenizerService tokenizer,
-    ILoggerFactory loggerFactory) : ControllerBase
+public class ComplianceSearchController(ComplianceSearchManager manager, ILogger<ComplianceSearchController> logger) : ControllerBase
 {
-    private readonly ILogger<ComplianceSearchController> _logger = loggerFactory.CreateLogger<ComplianceSearchController>();
-
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
     /// </summary>
@@ -37,9 +32,8 @@ public class ComplianceSearchController(
 
         try
         {
-            var manager = new ComplianceSearchManager(tokenizer);
-            Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
+            Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
 
             switch (searchIndexes.Count)
             {
@@ -54,6 +48,7 @@ public class ComplianceSearchController(
                     break;
             }
 
+            // todo: поведение не гарантировано, лучше использовать список
             searchIndexes = searchIndexes
                 .OrderByDescending(x => x.Value)
                 .ToDictionary(x => x.Key, x => x.Value);
@@ -64,7 +59,7 @@ public class ComplianceSearchController(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ComplianceError);
+            logger.LogError(ex, ComplianceError);
             return new BadRequestObjectResult(ComplianceError);
         }
     }

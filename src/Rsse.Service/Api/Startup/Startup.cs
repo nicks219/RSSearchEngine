@@ -97,6 +97,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddControllers();
+        services.AddDomainLayerDependencies();
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

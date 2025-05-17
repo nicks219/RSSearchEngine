@@ -18,13 +18,10 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
-    IDataRepository repo,
     ITokenizerService tokenizer,
-    ILoggerFactory loggerFactory) : ControllerBase
+    DeleteManager manager,
+    ILogger<DeleteController> logger) : ControllerBase
 {
-    private readonly ILogger<DeleteController> _logger = loggerFactory.CreateLogger<DeleteController>();
-    private readonly ILogger<CatalogManager> _managerLogger = loggerFactory.CreateLogger<CatalogManager>();
-
     /// <summary>
     /// Удалить заметку
     /// </summary>
@@ -37,13 +34,13 @@ public class DeleteController(
     {
         try
         {
-            var response = await new CatalogManager(repo, _managerLogger).DeleteNote(id, pg);
+            var response = await manager.DeleteNote(id, pg);
             await tokenizer.Delete(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, DeleteNoteError);
+            logger.LogError(ex, DeleteNoteError);
             return new CatalogResponse { ErrorMessage = DeleteNoteError };
         }
     }

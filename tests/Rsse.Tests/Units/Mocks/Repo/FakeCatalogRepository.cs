@@ -66,7 +66,7 @@ public class FakeCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return new FakeDbSet<NoteEntity>(notes);
+        return notes.ToAsyncEnumerable();
     }
 
     public Task<string?> ReadNoteTitle(int noteId)

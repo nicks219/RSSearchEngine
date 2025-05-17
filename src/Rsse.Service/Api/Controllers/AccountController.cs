@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Managers;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
@@ -24,12 +23,9 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 public class AccountController(
     IWebHostEnvironment env,
-    IDataRepository repo,
-    ILoggerFactory loggerFactory) : ControllerBase
+    AccountManager manager,
+    ILogger<AccountController> logger) : ControllerBase
 {
-    private readonly ILogger<AccountController> _logger = loggerFactory.CreateLogger<AccountController>();
-    private readonly ILogger<AccountManager> _managerLogger = loggerFactory.CreateLogger<AccountManager>();
-
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
 
@@ -83,11 +79,12 @@ public class AccountController(
     }
 
     /// <summary/> Обновить логин и пароль
+    // todo: перенести в domain
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var credosForUpdate = credentials.MapToDto();
-        await repo.UpdateCredos(credosForUpdate);
+        await manager.UpdateCredos(credosForUpdate);
         await Logout();
         return Ok("updated");
     }
@@ -100,7 +97,7 @@ public class AccountController(
     {
         try
         {
-            var identity = await new AccountManager(repo, _managerLogger).TrySignInWith(credentialsRequestDto);
+            var identity = await manager.TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {
@@ -115,7 +112,7 @@ public class AccountController(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, LoginError);
+            logger.LogError(ex, LoginError);
             return LoginError;
         }
     }
@@ -130,7 +127,7 @@ public class AccountController(
             return;
         }
 
-        _logger.LogInformation(ModifyCookieMessage);
+        logger.LogInformation(ModifyCookieMessage);
 
         var setCookie = HttpContext.Response.Headers.SetCookie;
         var asString = setCookie.ToString();

@@ -9,7 +9,8 @@ internal abstract class ErrorMessages
 {
     internal const string NavigateCatalogError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.ReadPage)} error";
-    internal const string DeleteNoteError = $"[{nameof(CatalogManager)}] {nameof(CatalogManager.DeleteNote)} error";
+
+    internal const string DeleteNoteError = $"[{nameof(DeleteManager)}] {nameof(DeleteManager.DeleteNote)} error";
 
     internal const string CreateManagerReadTagListError = $"[{nameof(CreateManager)}] {nameof(CreateManager.ReadStructuredTagList)} error";
     internal const string CreateNoteError = $"[{nameof(CreateManager)}] {nameof(CreateManager.CreateNote)} error";

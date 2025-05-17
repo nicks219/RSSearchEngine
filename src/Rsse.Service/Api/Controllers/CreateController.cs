@@ -22,15 +22,13 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
-    IDataRepository repo,
     ITokenizerService tokenizer,
+    CreateManager manager,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions,
-    ILoggerFactory loggerFactory) : ControllerBase
+    ILogger<CreateController> logger) : ControllerBase
 {
-    private readonly ILogger<CreateController> _logger = loggerFactory.CreateLogger<CreateController>();
-    private readonly ILogger<CreateManager> _managerLogger = loggerFactory.CreateLogger<CreateManager>();
 
     private const string BackupFileName = "db_last_dump";
     private readonly CommonBaseOptions _baseOptions = options.Value;
@@ -46,7 +44,6 @@ public class CreateController(
     {
         try
         {
-            var manager = new CreateManager(repo, _managerLogger);
             var dto = request.MapToDto();
 
             await manager.CreateTagFromTitle(dto);
@@ -75,7 +72,7 @@ public class CreateController(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, CreateNoteError);
+            logger.LogError(ex, CreateNoteError);
             return new NoteResponse { CommonErrorMessageResponse = CreateNoteError };
         }
     }

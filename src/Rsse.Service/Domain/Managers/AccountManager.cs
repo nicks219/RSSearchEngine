@@ -56,4 +56,10 @@ public class AccountManager(IDataRepository repo, ILogger<AccountManager> logger
             return null;
         }
     }
+
+    /// <summary/> Обновить логин и пароль
+    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate)
+    {
+        await repo.UpdateCredos(credosForUpdate);
+    }
 }

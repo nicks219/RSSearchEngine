@@ -1,8 +1,10 @@
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using SearchEngine.Api.Startup;
 using SearchEngine.Domain.Configuration;
+using SearchEngine.Domain.Contracts;
 using SearchEngine.Tooling.Contracts;
 using Serilog;
 
@@ -11,7 +13,7 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// <summary>
 /// Функционал работы с миграциями MySql
 /// </summary>
-internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
+internal class MySqlDbMigrator(IConfiguration configuration, IDataRepository repo) : IDbMigrator
 {
 
     private const int MaxVersion = 10;
@@ -88,6 +90,9 @@ internal class MySqlDbMigrator(IConfiguration configuration) : IDbMigrator
 
         return fileWithPath;
     }
+
+    /// <inheritdoc/>
+    public async Task CopyDbFromMysqlToNpgsql() => await repo.CopyDbFromMysqlToNpgsql();
 }
 
 // TODO: миграции можно реализовать средствами какой-либо утилиты, например:

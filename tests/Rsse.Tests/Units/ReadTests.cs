@@ -90,12 +90,12 @@ public class ReadTests
     {
         // arrange:
         var requestDto = new NoteRequest { TagsCheckedRequest = [ElectionTestCheckedTag] };
-        var loggerFactory = Substitute.For<ILoggerFactory>();
-        var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+        var logger = Substitute.For<ILogger<ReadController>>();
+        var readManager = Host.Provider.GetRequiredService<ReadManager>();
+        var updateManager = Host.Provider.GetRequiredService<UpdateManager>();
 
         // act:
-        var readController = new ReadController(repo, loggerFactory);
+        var readController = new ReadController(readManager, updateManager, logger);
         var responseDto = await readController.GetNextOrSpecificNote(requestDto, null);
 
         // assert:
@@ -107,10 +107,11 @@ public class ReadTests
     {
         // arrange:
         var host = new ServiceProviderStub<ReadManager>();
-        var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var readManager = Host.Provider.GetRequiredService<ReadManager>();
+        var updateManager = Host.Provider.GetRequiredService<UpdateManager>();
+        var logger = Substitute.For<ILogger<ReadController>>();
 
-        var readController = new ReadController(repo, loggerFactory);
+        var readController = new ReadController(readManager, updateManager, logger);
         readController.AddHttpContext(host.Provider);
 
         // act:
@@ -153,7 +154,7 @@ public class ReadTests
 
         var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var requestDto = new NoteRequestDto { TagsCheckedRequest = new List<int>() };
+        var requestDto = new NoteRequestDto { TagsCheckedRequest = [] };
 
         requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
 
