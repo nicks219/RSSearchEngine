@@ -41,7 +41,7 @@ public class DeleteController(
         catch (Exception ex)
         {
             logger.LogError(ex, DeleteNoteError);
-            return new CatalogBaseResponse { ErrorMessage = DeleteNoteError };
+            return new CatalogErrorResponse { ErrorMessage = DeleteNoteError };
         }
     }
 }

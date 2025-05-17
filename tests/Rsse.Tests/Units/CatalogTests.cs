@@ -132,14 +132,12 @@ public class CatalogTests
 
         // act:
         var responseDto = await catalogController.NavigateCatalog(null!);
+        var errorMessage = ((CatalogErrorResponse)responseDto.Value.EnsureNotNull()).ErrorMessage;
 
         // assert:
         logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
 
-        responseDto.EnsureNotNull()
-            .Value
-            .EnsureNotNull()
-            .ErrorMessage
+        errorMessage
             .Should()
             .Be(ControllerMessages.NavigateCatalogError);
     }

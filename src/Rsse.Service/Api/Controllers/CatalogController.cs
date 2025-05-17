@@ -32,7 +32,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
         catch (Exception ex)
         {
             logger.LogError(ex, ReadCatalogPageError);
-            return new CatalogBaseResponse { ErrorMessage = ReadCatalogPageError };
+            return new CatalogErrorResponse { ErrorMessage = ReadCatalogPageError };
         }
     }
 
@@ -52,7 +52,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
         catch (Exception ex)
         {
             logger.LogError(ex, NavigateCatalogError);
-            return new CatalogBaseResponse { ErrorMessage = NavigateCatalogError };
+            return new CatalogErrorResponse { ErrorMessage = NavigateCatalogError };
         }
     }
 }
