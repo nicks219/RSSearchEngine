@@ -22,7 +22,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
     /// </summary>
     /// <param name="noteRequestDto">данные для создания заметки</param>
     /// <returns>созданная заметка</returns>
-    public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto)
+    public async Task<NoteBaseResultDto> CreateNote(NoteRequestDto noteRequestDto)
     {
         try
         {
@@ -31,34 +31,46 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 string.IsNullOrEmpty(noteRequestDto.TitleRequest) ||
                 noteRequestDto.TagsCheckedRequest.Count == 0)
             {
-                var errorDtoWithTags = await ReadStructuredTagList();
+                // невалидные данные из запроса
+                var dtoWithTags = await ReadStructuredTagList();
 
-                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteEmptyDataError;
+                var errorDtoWithTags = new NoteErrorResultDto
+                {
+                        StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
+                        CommonErrorMessageResponse = CreateNoteEmptyDataError
+                };
 
                 if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
                 {
                     return errorDtoWithTags;
                 }
 
-                errorDtoWithTags.TextResponse = noteRequestDto.TextRequest;
-                errorDtoWithTags.TitleResponse = noteRequestDto.TitleRequest;
+                errorDtoWithTags = errorDtoWithTags with
+                {
+                    TextResponse = noteRequestDto.TextRequest,
+                    TitleResponse = noteRequestDto.TitleRequest
+                };
 
                 return errorDtoWithTags;
             }
 
             // createdNote.Text =  Encoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(createdNote.Text)).ToString();
 
-            noteRequestDto.TitleRequest = noteRequestDto.TitleRequest.Trim();
+            noteRequestDto = noteRequestDto with { TitleRequest = noteRequestDto.TitleRequest.Trim() };
 
             var newNoteId = await repo.CreateNote(noteRequestDto);
 
             if (newNoteId == 0)
             {
-                var errorDtoWithTags = await ReadStructuredTagList();
+                // не создалась заметка
+                var dtoWithTags = await ReadStructuredTagList();
 
-                errorDtoWithTags.CommonErrorMessageResponse = CreateNoteUnsuccessfulError;
-
-                errorDtoWithTags.TitleResponse = "[Already Exist]";
+                var errorDtoWithTags = new NoteErrorResultDto
+                {
+                    StructuredTagsListResponse = dtoWithTags.StructuredTagsListResponse,
+                    CommonErrorMessageResponse = CreateNoteUnsuccessfulError,
+                    TitleResponse = "[Already Exist]"
+                };
 
                 return errorDtoWithTags;
             }
@@ -85,6 +97,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
         {
             logger.LogError(ex, CreateNoteError);
 
+            // системная ошибка
             return new NoteResultDto { CommonErrorMessageResponse = CreateNoteError };
         }
     }

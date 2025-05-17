@@ -9,6 +9,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 using SearchEngine.Domain.Managers;
 using SearchEngine.Tooling.Contracts;
@@ -49,26 +50,31 @@ public class CreateController(
             await manager.CreateTagFromTitle(dto);
             var response = await manager.CreateNote(dto);
 
-            if (!string.IsNullOrEmpty(response.CommonErrorMessageResponse))
+            if (response is NoteErrorResultDto errorResponse)
             {
-                // теги structuredTagsListResponse - ошибка - титл - текст
+                // пользовательская ошибка: теги structuredTagsListResponse - ошибка - титл - текст
                 return new NoteResponse
                 {
                     // NoteExchangeId ??
-                    TitleResponse = response.TitleResponse,
-                    TextResponse = response.TextResponse,
-                    StructuredTagsListResponse = response.StructuredTagsListResponse,
-                    CommonErrorMessageResponse = response.CommonErrorMessageResponse
+                    TitleResponse = errorResponse.TitleResponse,
+                    TextResponse = errorResponse.TextResponse,
+                    StructuredTagsListResponse = errorResponse.StructuredTagsListResponse,
+                    CommonErrorMessageResponse = errorResponse.CommonErrorMessageResponse
                 };
             }
 
-            await tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            var noteResult = (NoteResultDto)response;
+            await tokenizer.Create(noteResult.NoteIdExchange, new NoteEntity
+            {
+                Title = request.TitleRequest,
+                Text = request.TextRequest
+            });
 
             var path = CreateDumpAndGetFilePath();
 
-            response.TextResponse = path ?? string.Empty;
+            noteResult.TextResponse = path ?? string.Empty;
 
-            return response.MapFromDto();
+            return noteResult.MapFromDto();
         }
         catch (Exception ex)
         {

@@ -11,77 +11,77 @@ public static class Mapper
     /// <summary>
     /// Маппинг из request model в request dto
     /// </summary>
-    public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest request)
+    public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest updateRequest)
     {
-        var response = new UpdateCredosRequestDto
+        var updateCredosRequestDto = new UpdateCredosRequestDto
         {
-            NewCredos = new CredentialsRequestDto { Email = request.NewCredos.Email, Password = request.NewCredos.Password },
-            OldCredos = new CredentialsRequestDto { Email = request.OldCredos.Email, Password = request.OldCredos.Password }
+            NewCredos = new CredentialsRequestDto { Email = updateRequest.NewCredos.Email, Password = updateRequest.NewCredos.Password },
+            OldCredos = new CredentialsRequestDto { Email = updateRequest.OldCredos.Email, Password = updateRequest.OldCredos.Password }
         };
 
-        return response;
+        return updateCredosRequestDto;
     }
 
     /// <summary>
     /// Маппинг из request model в request dto
     /// </summary>
-    public static CatalogRequestDto MapToDto(this CatalogRequest request)
+    public static CatalogRequestDto MapToDto(this CatalogRequest catalogRequest)
     {
-        var response = new CatalogRequestDto
+        var catalogRequestDto = new CatalogRequestDto
         {
-            PageNumber = request.PageNumber,
-            Direction = request.Direction
+            PageNumber = catalogRequest.PageNumber,
+            Direction = catalogRequest.Direction
         };
 
-        return response;
+        return catalogRequestDto;
     }
 
     /// <summary>
     /// Маппинг из result dto в response model
     /// </summary>
-    public static CatalogResponse MapFromDto(this CatalogResultDto dto)
+    public static CatalogResponse MapFromDto(this CatalogResultDto catalogResultDto)
     {
-        var response = new CatalogResponse
+        var catalogResponseDto = new CatalogResponse
         (
-            CatalogPage: dto.CatalogPage,
-            NotesCount: dto.NotesCount,
-            PageNumber: dto.PageNumber
+            CatalogPage: catalogResultDto.CatalogPage,
+            NotesCount: catalogResultDto.NotesCount,
+            PageNumber: catalogResultDto.PageNumber
         );
 
-        return response;
+        return catalogResponseDto;
     }
 
     /// <summary>
     /// Маппинг из request dto в request model
     /// </summary>
-    public static NoteRequestDto MapToDto(this NoteRequest request)
+    public static NoteRequestDto MapToDto(this NoteRequest noteRequest)
     {
-        var response = new NoteRequestDto
+        var noteRequestDto = new NoteRequestDto
         (
-            TagsCheckedRequest: request.TagsCheckedRequest,
-            TitleRequest: request.TitleRequest,
-            TextRequest: request.TextRequest,
-            NoteIdExchange: request.NoteIdExchange
+            TagsCheckedRequest: noteRequest.TagsCheckedRequest,
+            TitleRequest: noteRequest.TitleRequest,
+            TextRequest: noteRequest.TextRequest,
+            NoteIdExchange: noteRequest.NoteIdExchange
         );
 
-        return response;
+        return noteRequestDto;
     }
 
     /// <summary>
     /// Маппинг из result dto в response model
     /// </summary>
-    public static NoteResponse MapFromDto(this NoteResultDto requestDto)
+    public static NoteResponse MapFromDto(this NoteResultDto noteResultDto)
     {
-        var response = new NoteResponse
+        var noteResponse = new NoteResponse
         {
-            TagsCheckedUncheckedResponse = requestDto.TagsCheckedUncheckedResponse,
-            TitleResponse = requestDto.TitleResponse,
-            TextResponse = requestDto.TextResponse,
-            StructuredTagsListResponse = requestDto.StructuredTagsListResponse,
-            NoteIdExchange = requestDto.NoteIdExchange,
-            CommonErrorMessageResponse = requestDto.CommonErrorMessageResponse,
+            TagsCheckedUncheckedResponse = noteResultDto.TagsCheckedUncheckedResponse,
+            TitleResponse = noteResultDto.TitleResponse,
+            TextResponse = noteResultDto.TextResponse,
+            StructuredTagsListResponse = noteResultDto.StructuredTagsListResponse,
+            NoteIdExchange = noteResultDto.NoteIdExchange,
+            CommonErrorMessageResponse = noteResultDto.CommonErrorMessageResponse,
         };
 
-        return response;
+        return noteResponse;
     }
 }

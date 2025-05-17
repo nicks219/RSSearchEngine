@@ -16,7 +16,6 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// </summary>
 internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactory factory) : IDbMigrator
 {
-
     private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;

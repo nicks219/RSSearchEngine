@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace SearchEngine.Domain.Dto;
 
 /// <summary>
-/// Шаблон передачи данных для заметки
+/// Контейнер с заметкой для ответа.
 /// </summary>
-public record NoteResultDto
+public record NoteResultDto : NoteBaseResultDto
 {
     /// <summary>
     /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
@@ -35,7 +35,7 @@ public record NoteResultDto
     /// <summary>
     /// Сообщение об ошибке
     /// </summary>
-    public string? CommonErrorMessageResponse { get; set; }
+    public string? CommonErrorMessageResponse { get; init; }
 
 
     /// <summary>
@@ -61,3 +61,23 @@ public record NoteResultDto
         NoteIdExchange = noteIdExchange;
     }
 }
+
+/// <summary>
+/// Контейнер с заметкой в случае ошибочного ответа.
+/// </summary>
+public record NoteErrorResultDto : NoteBaseResultDto
+{
+    /// <summary/> Именование заметки в ответе
+    public string? TitleResponse { get; init; }
+    /// <summary/> Текст заметки в ответе
+    public string? TextResponse { get; init; }
+    /// <summary/> Список тегов в формате "имя : количество записей"
+    public List<string>? StructuredTagsListResponse { get; init; }
+    /// <summary/> Сообщение об ошибке
+    public string? CommonErrorMessageResponse { get; init; }
+}
+
+/// <summary>
+/// Маркер контейнера с заметкой для ответа.
+/// </summary>
+public record NoteBaseResultDto;

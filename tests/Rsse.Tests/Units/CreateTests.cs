@@ -49,7 +49,8 @@ public class CreateTests
         );
 
         // act:
-        var responseDto = await CreateManager.CreateNote(requestDto);
+        var responseBase = await CreateManager.CreateNote(requestDto);
+        var responseDto = (NoteResultDto)responseBase;
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateManager>>();
 
