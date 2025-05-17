@@ -30,7 +30,7 @@ public class DeleteController(
     /// <returns>актуальная страница каталога</returns>
     [Authorize, HttpDelete(RouteConstants.DeleteNoteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
+    public async Task<ActionResult<CatalogBaseResponse>> DeleteNote(int id, int pg)
     {
         try
         {
@@ -41,7 +41,7 @@ public class DeleteController(
         catch (Exception ex)
         {
             logger.LogError(ex, DeleteNoteError);
-            return new CatalogResponse { ErrorMessage = DeleteNoteError };
+            return new CatalogBaseResponse { ErrorMessage = DeleteNoteError };
         }
     }
 }

@@ -42,12 +42,11 @@ public static class Mapper
     public static CatalogResponse MapFromDto(this CatalogResultDto dto)
     {
         var response = new CatalogResponse
-        {
-            CatalogPage = dto.CatalogPage,
-            NotesCount = dto.NotesCount,
-            PageNumber = dto.PageNumber,
-            ErrorMessage = dto.ErrorMessage
-        };
+        (
+            CatalogPage: dto.CatalogPage,
+            NotesCount: dto.NotesCount,
+            PageNumber: dto.PageNumber
+        );
 
         return response;
     }

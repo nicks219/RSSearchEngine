@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
+using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
@@ -118,7 +119,7 @@ public class CatalogTests
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
 
         // assert:
-        Assert.IsNull(responseDto.EnsureNotNull().CatalogPage);
+        Assert.IsNull(((CatalogResponse)responseDto.EnsureNotNull()).CatalogPage);
     }
 
     [TestMethod]
@@ -130,10 +131,16 @@ public class CatalogTests
         var catalogController = new CatalogController(CatalogManager, logger);
 
         // act:
-        _ = await catalogController.NavigateCatalog(null!);
+        var responseDto = await catalogController.NavigateCatalog(null!);
 
         // assert:
-        //var logger = loggerFactory.Received().CreateLogger<CatalogController>();//
         logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
+
+        responseDto.EnsureNotNull()
+            .Value
+            .EnsureNotNull()
+            .ErrorMessage
+            .Should()
+            .Be(ControllerMessages.NavigateCatalogError);
     }
 }

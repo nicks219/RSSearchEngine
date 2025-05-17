@@ -22,7 +22,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
     /// </summary>
     /// <param name="id">номер страницы</param>
     [HttpGet(RouteConstants.CatalogPageGetUrl)]
-    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
+    public async Task<ActionResult<CatalogBaseResponse>> ReadCatalogPage(int id)
     {
         try
         {
@@ -32,7 +32,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
         catch (Exception ex)
         {
             logger.LogError(ex, ReadCatalogPageError);
-            return new CatalogResponse { ErrorMessage = ReadCatalogPageError };
+            return new CatalogBaseResponse { ErrorMessage = ReadCatalogPageError };
         }
     }
 
@@ -41,7 +41,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
     /// </summary>
     /// <param name="request">шаблон с информацией для навигации</param>
     [HttpPost(RouteConstants.CatalogNavigatePostUrl)]
-    public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
+    public async Task<ActionResult<CatalogBaseResponse>> NavigateCatalog([FromBody] CatalogRequest request)
     {
         try
         {
@@ -52,7 +52,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
         catch (Exception ex)
         {
             logger.LogError(ex, NavigateCatalogError);
-            return new CatalogResponse { ErrorMessage = NavigateCatalogError };
+            return new CatalogBaseResponse { ErrorMessage = NavigateCatalogError };
         }
     }
 }
