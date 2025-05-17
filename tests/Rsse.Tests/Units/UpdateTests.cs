@@ -50,12 +50,12 @@ public class UpdateTests
     {
         // arrange:
         var requestDto = new NoteRequestDto
-        {
-            TitleRequest = Title,
-            TextRequest = Text,
-            TagsCheckedRequest = [1, 2, 3, 11],
-            NoteIdExchange = _testNoteId.EnsureNotNull().Value
-        };
+        (
+            TagsCheckedRequest: [1, 2, 3, 11],
+            TitleRequest: Title,
+            TextRequest: Text,
+            NoteIdExchange: _testNoteId.EnsureNotNull().Value
+        );
 
         // act:
         var responseDto = await UpdateManager.UpdateNote(requestDto);

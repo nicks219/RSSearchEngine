@@ -58,7 +58,13 @@ public class ReadTests
     public async Task ReadManager_ShouldReturnErrorMessage_OnInvalidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteRequestDto { TagsCheckedRequest = [25000] };
+        var requestDto = new NoteRequestDto
+        (
+            TagsCheckedRequest: [25000],
+            TitleRequest: default,
+            TextRequest: default,
+            NoteIdExchange: default
+        );
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto).ConfigureAwait(false);
@@ -128,7 +134,13 @@ public class ReadTests
     public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
     {
         // arrange:
-        var requestDto = new NoteRequestDto { TagsCheckedRequest = [ElectionTestCheckedTag] };
+        var requestDto = new NoteRequestDto
+        (
+            TagsCheckedRequest: [ElectionTestCheckedTag],
+            TitleRequest: default,
+            TextRequest: default,
+            NoteIdExchange: default
+        );
 
         // act:
         var responseDto = await ReadManager.GetNextOrSpecificNote(requestDto, null, false);
@@ -154,9 +166,15 @@ public class ReadTests
 
         var expectedNotesCount = Math.Min(ElectionTestNotesCount, requestCount) * expectedCoefficient;
 
-        var requestDto = new NoteRequestDto { TagsCheckedRequest = [] };
+        var requestDto = new NoteRequestDto
+        (
+            TagsCheckedRequest: [],
+            TitleRequest: default,
+            TextRequest: default,
+            NoteIdExchange: default
+        );
 
-        requestDto.TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList();
+        requestDto = requestDto with {TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList()};
 
         var idStorage = new Dictionary<int, int>();
 

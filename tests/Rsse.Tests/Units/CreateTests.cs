@@ -41,11 +41,12 @@ public class CreateTests
     {
         // arrange:
         var requestDto = new NoteRequestDto
-        {
-            TitleRequest = "test: title",
-            TextRequest = "test: text",
-            TagsCheckedRequest = [1, 2, 3]
-        };
+        (
+            TagsCheckedRequest: [1, 2, 3],
+            TitleRequest: "test: title",
+            TextRequest: "test: text",
+            NoteIdExchange: default
+        );
 
         // act:
         var responseDto = await CreateManager.CreateNote(requestDto);
