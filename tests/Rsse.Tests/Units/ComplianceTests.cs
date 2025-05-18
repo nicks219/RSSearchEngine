@@ -27,7 +27,7 @@ public class ComplianceTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceSearchController>>();
-        var sp = new ServiceProviderStub<TokenizerService>();
+        var sp = new ServiceProviderStub();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
         var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchService>();
 

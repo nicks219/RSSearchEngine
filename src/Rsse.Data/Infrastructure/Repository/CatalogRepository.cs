@@ -223,7 +223,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
         try
         {
             var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
-                userEntity.Email == credosRequest.OldCredos.Email && userEntity.Password == credosRequest.NewCredos.Password);
+                userEntity.Email == credosRequest.OldCredos.Email && userEntity.Password == credosRequest.OldCredos.Password);
             if (processed == null) throw new InvalidDataException($"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
             processed.Email = credosRequest.NewCredos.Email;
             processed.Password = credosRequest.NewCredos.Password;

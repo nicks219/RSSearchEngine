@@ -61,14 +61,14 @@ public static class Mapper
 
         return catalogResponse;
 
-        List<CatalogItemResponse>? MapPage(List<CatalogItemDto>? dtoItems)
+        List<CatalogItemResponse>? MapPage(List<CatalogItemDto>? catalogItems)
         {
-            return dtoItems
+            return catalogItems
                 ?.Select(dtoItem => new CatalogItemResponse
-                {
-                    Title = dtoItem.Title,
-                    NoteId = dtoItem.NoteId
-                }).ToList();
+                (
+                    Title: dtoItem.Title,
+                    NoteId: dtoItem.NoteId
+                )).ToList();
         }
     }
 
@@ -82,7 +82,7 @@ public static class Mapper
             CheckedTags: noteRequest.CheckedTags,
             Title: noteRequest.Title,
             Text: noteRequest.Text,
-            NoteIdExchange: noteRequest.NoteIdExchange
+            NoteIdExchange: noteRequest.NoteIdExchange ?? 0
         );
 
         return noteRequestDto;

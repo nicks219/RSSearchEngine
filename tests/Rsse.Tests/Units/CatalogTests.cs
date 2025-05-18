@@ -30,7 +30,7 @@ public class CatalogTests
     [TestInitialize]
     public async Task Initialize()
     {
-        var host = new ServiceProviderStub<CatalogService>();
+        var host = new ServiceProviderStub();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
         var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();

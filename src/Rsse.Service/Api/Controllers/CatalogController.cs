@@ -52,7 +52,7 @@ public class CatalogController(CatalogService catalogService, ILogger<CatalogCon
         catch (Exception ex)
         {
             logger.LogError(ex, NavigateCatalogError);
-            return new CatalogResponse { ErrorMessage = NavigateCatalogError };
+            return new CatalogResponse(ErrorMessage: NavigateCatalogError);
         }
     }
 }

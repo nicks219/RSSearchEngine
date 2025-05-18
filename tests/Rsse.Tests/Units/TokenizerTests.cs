@@ -46,7 +46,7 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<TokenizerService>();
+        var host = new ServiceProviderStub();
         Factory = host.Provider;
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);

@@ -9,7 +9,7 @@ using SearchEngine.Tests.Units.Mocks.Repo;
 namespace SearchEngine.Tests.Units.Mocks;
 
 /// <summary/> Для тестов, с двумя логгерами.
-public class ServiceProviderStub<TService> where TService : class
+public class ServiceProviderStub
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;

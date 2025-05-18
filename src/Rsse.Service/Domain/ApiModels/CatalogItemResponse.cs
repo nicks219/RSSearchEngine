@@ -5,9 +5,10 @@ namespace SearchEngine.Domain.ApiModels;
 /// <summary>
 /// Контейнер с записью в странице каталога для контракта ответа со страницей каталога.
 /// </summary>
-// ReSharper disable once ClassNeverInstantiated.Global
+/// <param name="Title">Именование заметки.</param>
+/// <param name="NoteId">Идентификатор заметки.</param>
 public record CatalogItemResponse
-{
-    [JsonPropertyName("item1")] public required string Title { get; init; }
-    [JsonPropertyName("item2")] public required int NoteId { get; init; }
-}
+(
+    [property: JsonPropertyName("item1")] string Title,
+    [property: JsonPropertyName("item2")] int NoteId
+);

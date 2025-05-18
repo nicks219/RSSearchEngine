@@ -139,7 +139,7 @@ public class IntegrationTests
             case Request.Post:
             case Request.Put:
                 {
-                    _processedId = asNote.EnsureNotNull().NoteIdExchange; // 946 - 946
+                    _processedId = asNote.EnsureNotNull().NoteIdExchange.EnsureNotNull().Value; // 946 - 946
 
                     asNote.Text
                         .Should()

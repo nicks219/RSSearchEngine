@@ -28,7 +28,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadService ReadService;
-    public required ServiceProviderStub<ReadService> Host;
+    public required ServiceProviderStub Host;
     public required NoopLogger<ReadService> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -36,7 +36,7 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServiceProviderStub<ReadService>();
+        Host = new ServiceProviderStub();
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadService>>();
 
@@ -112,7 +112,7 @@ public class ReadTests
     public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
-        var host = new ServiceProviderStub<ReadService>();
+        var host = new ServiceProviderStub();
         var readManager = Host.Provider.GetRequiredService<ReadService>();
         var updateManager = Host.Provider.GetRequiredService<UpdateService>();
         var logger = Substitute.For<ILogger<ReadController>>();

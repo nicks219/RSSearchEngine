@@ -8,10 +8,10 @@ namespace SearchEngine.Domain.ApiModels;
 /// <summary>
 /// Контракт запроса страницы каталога.
 /// </summary>
+/// <param name="PageNumber">Номер страницы каталога.</param>
+/// <param name="Direction">Направление перемещения по каталогу.</param>
 public record CatalogRequest
 (
-    // <summary/> Номер страницы каталога
     [property: JsonPropertyName("pageNumber")] int PageNumber,
-    // <summary/> Направление перемещения по каталогу
     [property: JsonPropertyName("direction")] List<int> Direction
 );

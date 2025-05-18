@@ -5,22 +5,16 @@ using System.Text.Json.Serialization;
 
 namespace SearchEngine.Domain.ApiModels;
 
-// todo: выделить ErrorResponse
-
 /// <summary>
-/// Контракт ответа со страницей каталога.
+/// Контракт ответа для страницы каталога.
 /// </summary>
-public record CatalogResponse
-{
-    // <summary/> Названия заметок и соответствующие им Id
-    [JsonPropertyName("catalogPage")] public List<CatalogItemResponse>? CatalogPage { get; init; }
-
-    // <summary/> Количество заметок
-    [JsonPropertyName("notesCount")] public int NotesCount { get; init; }
-
-    // <summary/> Номер страницы каталога
-    [JsonPropertyName("pageNumber")] public int PageNumber { get; init; }
-
-    // <summary/> Сообщение об ошибке, если потребуется
-    [JsonPropertyName("errorMessage")] public string? ErrorMessage { get; init; }
-}
+/// <param name="ErrorMessage">Сообщение об ошибке, если потребуется.</param>
+/// <param name="CatalogPage">Названия заметок и соответствующие им Id.</param>
+/// <param name="NotesCount">Количество заметок.</param>
+/// <param name="PageNumber">Номер страницы каталога.</param>
+public record CatalogResponse(
+    [property: JsonPropertyName("errorMessage")] string? ErrorMessage = null,
+    [property: JsonPropertyName("catalogPage")] List<CatalogItemResponse>? CatalogPage = null,
+    [property: JsonPropertyName("notesCount")] int? NotesCount = null,
+    [property: JsonPropertyName("pageNumber")] int? PageNumber = null
+);

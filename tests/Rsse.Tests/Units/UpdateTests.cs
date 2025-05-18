@@ -24,10 +24,9 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<TokenizerService>();
-        var secondHost = new ServiceProviderStub<UpdateService>();
+        var host = new ServiceProviderStub();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = secondHost.Provider.GetRequiredService<ILogger<UpdateService>>();
+        var managerLogger = host.Provider.GetRequiredService<ILogger<UpdateService>>();
 
         repo.CreateStubData(10);
         _testNoteId = repo.ReadNoteId(Title);

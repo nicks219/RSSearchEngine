@@ -5,8 +5,10 @@ using System.Text.Json.Serialization;
 namespace SearchEngine.Domain.ApiModels;
 
 /// <summary>
-/// Контракт запроса авторизации.
+/// Контракт запроса данных авторизации.
 /// </summary>
+/// <param name="Email">Электронная почта.</param>
+/// <param name="Password">Пароль.</param>
 public record CredentialsRequest
 (
     [property: JsonPropertyName("email")] string Email,
