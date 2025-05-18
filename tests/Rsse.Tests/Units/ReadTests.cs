@@ -13,7 +13,7 @@ using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -27,31 +27,31 @@ public class ReadTests
     public const int ElectionTestTagsCount = 44;
     public const int ElectionTestCheckedTag = 2;
 
-    public required ReadManager ReadManager;
-    public required ServiceProviderStub<ReadManager> Host;
-    public required NoopLogger<ReadManager> Logger;
+    public required ReadService ReadService;
+    public required ServiceProviderStub<ReadService> Host;
+    public required NoopLogger<ReadService> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
 
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServiceProviderStub<ReadManager>();
+        Host = new ServiceProviderStub<ReadService>();
         var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+        var managerLogger = Host.Provider.GetRequiredService<ILogger<ReadService>>();
 
-        ReadManager = new ReadManager(repo, managerLogger);
-        Logger = (NoopLogger<ReadManager>)Host.Provider.GetRequiredService<ILogger<ReadManager>>();
+        ReadService = new ReadService(repo, managerLogger);
+        Logger = (NoopLogger<ReadService>)Host.Provider.GetRequiredService<ILogger<ReadService>>();
     }
 
     [TestMethod]
     public async Task ReadManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var noteResultDto = await ReadManager.ReadTagList();
+        var noteResultDto = await ReadService.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_tagsCount, noteResultDto.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(_tagsCount, noteResultDto.StructuredTags?.Count);
     }
 
     [TestMethod]
@@ -60,14 +60,14 @@ public class ReadTests
         // arrange:
         var noteRequestDto = new NoteRequestDto
         (
-            TagsCheckedRequest: [25000],
-            TitleRequest: default,
-            TextRequest: default,
+            CheckedTags: [25000],
+            Title: default,
+            Text: default,
             NoteIdExchange: default
         );
 
         // act:
-        var noteResultDto = await ReadManager.GetNextOrSpecificNote(noteRequestDto).ConfigureAwait(false);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto).ConfigureAwait(false);
         // ждём тестовый логер:
         var count = 20;
         while (count-- > 0 && !Logger.Reported)
@@ -76,7 +76,7 @@ public class ReadTests
         }
 
         // asserts:
-        Assert.AreEqual(ErrorMessages.ElectNoteError, noteResultDto.CommonErrorMessageResponse);
+        Assert.AreEqual(ErrorMessages.ElectNoteError, noteResultDto.ErrorMessage);
         Assert.AreEqual(ErrorMessages.ElectNoteError, Logger.Message);
     }
 
@@ -84,10 +84,10 @@ public class ReadTests
     public async Task ReadManager_ShouldProduceEmptyLogAndResponse_OnNullElectionRequest()
     {
         // arrange & act:
-        var noteResultDto = await ReadManager.GetNextOrSpecificNote(null);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(null);
 
         // asserts:
-        Assert.AreEqual(string.Empty, noteResultDto.TitleResponse);
+        Assert.AreEqual(string.Empty, noteResultDto.Title);
         Assert.AreEqual(string.Empty, Logger.Message);
     }
 
@@ -95,26 +95,26 @@ public class ReadTests
     public async Task ReadController_ShouldReturnNextNote_OnValidElectionRequestWithTags()
     {
         // arrange:
-        var noteRequest = new NoteRequest { TagsCheckedRequest = [ElectionTestCheckedTag] };
+        var noteRequest = new NoteRequest { CheckedTags = [ElectionTestCheckedTag] };
         var logger = Substitute.For<ILogger<ReadController>>();
-        var readManager = Host.Provider.GetRequiredService<ReadManager>();
-        var updateManager = Host.Provider.GetRequiredService<UpdateManager>();
+        var readManager = Host.Provider.GetRequiredService<ReadService>();
+        var updateManager = Host.Provider.GetRequiredService<UpdateService>();
 
         // act:
         var readController = new ReadController(readManager, updateManager, logger);
         var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, noteResponse.Value.EnsureNotNull().TitleResponse);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, noteResponse.Value.EnsureNotNull().Title);
     }
 
     [TestMethod]
     public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
-        var host = new ServiceProviderStub<ReadManager>();
-        var readManager = Host.Provider.GetRequiredService<ReadManager>();
-        var updateManager = Host.Provider.GetRequiredService<UpdateManager>();
+        var host = new ServiceProviderStub<ReadService>();
+        var readManager = Host.Provider.GetRequiredService<ReadService>();
+        var updateManager = Host.Provider.GetRequiredService<UpdateService>();
         var logger = Substitute.For<ILogger<ReadController>>();
 
         var readController = new ReadController(readManager, updateManager, logger);
@@ -126,8 +126,8 @@ public class ReadTests
             .EnsureNotNull();
 
         // assert:
-        Assert.AreEqual(string.Empty, noteResponse.TitleResponse);
-        Assert.AreEqual(string.Empty, noteResponse.TextResponse);
+        Assert.AreEqual(string.Empty, noteResponse.Title);
+        Assert.AreEqual(string.Empty, noteResponse.Text);
     }
 
     [TestMethod]
@@ -136,18 +136,18 @@ public class ReadTests
         // arrange:
         var noteRequestDto = new NoteRequestDto
         (
-            TagsCheckedRequest: [ElectionTestCheckedTag],
-            TitleRequest: default,
-            TextRequest: default,
+            CheckedTags: [ElectionTestCheckedTag],
+            Title: default,
+            Text: default,
             NoteIdExchange: default
         );
 
         // act:
-        var noteResultDto = await ReadManager.GetNextOrSpecificNote(noteRequestDto, null, false);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, false);
 
         // assert:
         Assert.AreEqual(Logger.Message, string.Empty);
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, noteResultDto.TextResponse);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteText, noteResultDto.Text);
     }
 
     [TestMethod]
@@ -168,19 +168,19 @@ public class ReadTests
 
         var noteRequestDto = new NoteRequestDto
         (
-            TagsCheckedRequest: [],
-            TitleRequest: default,
-            TextRequest: default,
+            CheckedTags: [],
+            Title: default,
+            Text: default,
             NoteIdExchange: default
         );
 
-        noteRequestDto = noteRequestDto with { TagsCheckedRequest = Enumerable.Range(1, ElectionTestTagsCount).ToList() };
+        noteRequestDto = noteRequestDto with { CheckedTags = Enumerable.Range(1, ElectionTestTagsCount).ToList() };
 
         var idStorage = new Dictionary<int, int>();
 
         while (requestCount-- > 0)
         {
-            var noteResultDto = await ReadManager.GetNextOrSpecificNote(noteRequestDto);
+            var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto);
 
             var id = noteResultDto.NoteIdExchange;
 

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 
 namespace SearchEngine.Api.Startup;
 
@@ -13,12 +13,12 @@ public static class DomainLayerRegistrar
     /// </summary>
     public static void AddDomainLayerDependencies(this IServiceCollection services)
     {
-        services.AddScoped<DeleteManager>();
-        services.AddScoped<AccountManager>();
-        services.AddScoped<CatalogManager>();
-        services.AddScoped<ComplianceSearchManager>();
-        services.AddScoped<CreateManager>();
-        services.AddScoped<ReadManager>();
-        services.AddScoped<UpdateManager>();
+        services.AddScoped<DeleteService>();
+        services.AddScoped<AccountService>();
+        services.AddScoped<CatalogService>();
+        services.AddScoped<ComplianceSearchService>();
+        services.AddScoped<CreateService>();
+        services.AddScoped<ReadService>();
+        services.AddScoped<UpdateService>();
     }
 }

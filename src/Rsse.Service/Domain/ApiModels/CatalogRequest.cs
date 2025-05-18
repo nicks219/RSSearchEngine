@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace SearchEngine.Domain.ApiModels;
 
 /// <summary>
-/// Шаблон передачи данных каталога
+/// Контракт запроса страницы каталога.
 /// </summary>
 public record CatalogRequest
 (

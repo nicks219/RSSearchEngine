@@ -96,13 +96,13 @@ public class FakeCatalogRepository : IDataRepository
 
     public Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
+        if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
         _lastId++;
-        _notes.Add(_lastId, new TextResult { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest });
+        _notes.Add(_lastId, new TextResult { Title = noteRequest.Title, Text = noteRequest.Text });
 
         return Task.FromResult(_lastId);
     }
@@ -193,12 +193,12 @@ public class FakeCatalogRepository : IDataRepository
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
-        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
+        if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[noteRequest.NoteIdExchange] = new TextResult { Text = noteRequest.TextRequest, Title = noteRequest.TitleRequest };
+        _notes[noteRequest.NoteIdExchange] = new TextResult { Text = noteRequest.Text, Title = noteRequest.Title };
 
         return Task.CompletedTask;
     }

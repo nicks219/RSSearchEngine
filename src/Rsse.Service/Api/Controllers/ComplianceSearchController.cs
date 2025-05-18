@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -13,7 +13,9 @@ namespace SearchEngine.Api.Controllers;
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class ComplianceSearchController(ComplianceSearchManager manager, ILogger<ComplianceSearchController> logger) : ControllerBase
+public class ComplianceSearchController(
+    ComplianceSearchService complianceService,
+    ILogger<ComplianceSearchController> logger) : ControllerBase
 {
     /// <summary>
     /// Получить индексы соответсвия хранимых заметок поисковому запросу
@@ -33,7 +35,7 @@ public class ComplianceSearchController(ComplianceSearchManager manager, ILogger
         try
         {
             const double threshold = 0.1D;
-            Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
+            Dictionary<int, double> searchIndexes = complianceService.ComputeComplianceIndices(text);
 
             switch (searchIndexes.Count)
             {

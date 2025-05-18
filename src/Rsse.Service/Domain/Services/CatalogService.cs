@@ -7,12 +7,12 @@ using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger)
+public class CatalogService(IDataRepository repo, ILogger<CatalogService> logger)
 {
     /// <summary/> Направление навигации по каталогу.
     public enum Direction

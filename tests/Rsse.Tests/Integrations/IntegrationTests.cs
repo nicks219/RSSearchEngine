@@ -105,8 +105,8 @@ public class IntegrationTests
     [
         [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
         [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
-        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), null, "dump files created", new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }],
-        [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), null, "раз два три четыре", new NoteRequest { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1] }],
+        [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), null, "dump files created", new NoteRequest { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] }],
+        [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), null, "раз два три четыре", new NoteRequest { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1] }],
 
         [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponseTestDto), null, null, null],
         [$"{ReadTagsForCreateAuthGetUrl}", Request.Get, typeof(NoteResponse), "Авторские: 80", "1", null],
@@ -141,7 +141,7 @@ public class IntegrationTests
                 {
                     _processedId = asNote.EnsureNotNull().NoteIdExchange; // 946 - 946
 
-                    asNote.TextResponse
+                    asNote.Text
                         .Should()
                         .Be(secondExpected);
                     break;
@@ -159,7 +159,7 @@ public class IntegrationTests
 
                 if (uri.StartsWith(ReadTagsForCreateAuthGetUrl))
                 {
-                    var tags = asNote.EnsureNotNull().StructuredTagsListResponse!;
+                    var tags = asNote.EnsureNotNull().StructuredTags!;
                     // тег из дампа
                     tags
                         .Should()
@@ -179,10 +179,10 @@ public class IntegrationTests
 
     public static IEnumerable<object?[]> AfterRestoreTestData =>
     [
-        [$"{CreateNotePostUrl}", Request.Post, 1, "dump files created", new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }],
+        [$"{CreateNotePostUrl}", Request.Post, 1, "dump files created", new NoteRequest { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] }],
         [$"{MigrationCreateGetUrl}?databaseType=Postgres", Request.Get, null, null, null],
         [$"{MigrationRestoreGetUrl}?databaseType=Postgres", Request.Get, null, null, null],
-        [$"{CreateNotePostUrl}", Request.Post, 2, "dump files created", new NoteRequest { TitleRequest = "1", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] }]
+        [$"{CreateNotePostUrl}", Request.Post, 2, "dump files created", new NoteRequest { Title = "1", Text = "посчитаем до четырёх", CheckedTags = [1] }]
     ];
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class IntegrationTests
                     var createdId = deserializedResponse
                         .EnsureNotNull()
                         .NoteIdExchange; // 1 - 2
-                    var textResponse = deserializedResponse.TextResponse;
+                    var textResponse = deserializedResponse.Text;
 
                     // assert:
                     createdId
@@ -288,8 +288,8 @@ public class IntegrationTests
             case Request.Post:
             case Request.Put:
                 {
-                    asNote.EnsureNotNull().TitleResponse.Should().Be(firstExpected);
-                    asNote.EnsureNotNull().TextResponse.Should().Be(secondExpected);
+                    asNote.EnsureNotNull().Title.Should().Be(firstExpected);
+                    asNote.EnsureNotNull().Text.Should().Be(secondExpected);
                     break;
                 }
 
@@ -400,8 +400,8 @@ public class IntegrationTests
 
                     if (responseType == typeof(NoteResponse))
                     {
-                        asNote.EnsureNotNull().TitleResponse.Should().Be(firstExpected);
-                        asNote.TextResponse.Should().Be(secondExpected);
+                        asNote.EnsureNotNull().Title.Should().Be(firstExpected);
+                        asNote.Text.Should().Be(secondExpected);
                     }
 
                     break;

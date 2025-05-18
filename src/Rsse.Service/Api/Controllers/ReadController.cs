@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -18,8 +18,8 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
-    ReadManager readManager,
-    UpdateManager updateManager,
+    ReadService readService,
+    UpdateService updateService,
     ILogger<ReadController> logger) : ControllerBase
 {
     private static bool _randomElection = true;
@@ -43,7 +43,7 @@ public class ReadController(
     {
         try
         {
-            var res = await readManager.ReadTitleByNoteId(int.Parse(id));
+            var res = await readService.ReadTitleByNoteId(int.Parse(id));
             return Ok(new { res });
         }
         catch (Exception ex)
@@ -65,21 +65,21 @@ public class ReadController(
         try
         {
             var noteRequestDto = request?.MapToDto();
-            if (noteRequestDto?.TagsCheckedRequest?.Count == 0)
+            if (noteRequestDto?.CheckedTags?.Count == 0)
             {
                 // для пустого запроса считаем все теги отмеченными
                 // todo: перенести в маппер
-                noteRequestDto = noteRequestDto with { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
+                noteRequestDto = noteRequestDto with { CheckedTags = Enumerable.Range(1, 44).ToList() };
             }
 
-            var response = await readManager.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
+            var response = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             logger.LogError(ex, ElectNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = ElectNoteError };
+            return new NoteResponse { ErrorMessage = ElectNoteError };
         }
     }
 
@@ -91,13 +91,13 @@ public class ReadController(
     {
         try
         {
-            var response = await readManager.ReadTagList();
+            var response = await readService.ReadTagList();
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, ReadTagListError);
-            return new NoteResponse { CommonErrorMessageResponse = ReadTagListError };
+            return new NoteResponse { ErrorMessage = ReadTagListError };
         }
     }
 
@@ -117,7 +117,7 @@ public class ReadController(
         catch (Exception ex)
         {
             logger.LogError(ex, GetTagListForCreateError);
-            return new NoteResponse { CommonErrorMessageResponse = GetTagListForCreateError };
+            return new NoteResponse { ErrorMessage = GetTagListForCreateError };
         }
     }
 
@@ -131,13 +131,13 @@ public class ReadController(
     {
         try
         {
-            var response = await updateManager.GetNoteWithTagsForUpdate(id);
+            var response = await updateService.GetNoteWithTagsForUpdate(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, GetNoteWithTagsForUpdateError);
-            return new NoteResponse { CommonErrorMessageResponse = GetNoteWithTagsForUpdateError };
+            return new NoteResponse { ErrorMessage = GetNoteWithTagsForUpdateError };
         }
     }
 }

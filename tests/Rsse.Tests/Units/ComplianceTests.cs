@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Dto;
@@ -29,7 +29,7 @@ public class ComplianceTests
         var logger = Substitute.For<ILogger<ComplianceSearchController>>();
         var sp = new ServiceProviderStub<TokenizerService>();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
-        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchManager>();
+        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchService>();
 
         var complianceController = new ComplianceSearchController(complianceManager, logger);
         complianceController.AddHttpContext(sp.Provider);

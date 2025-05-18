@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using SearchEngine.Domain.Contracts;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал поиска заметок
 /// </summary>
-public class ComplianceSearchManager(ITokenizerService tokenizer)
+public class ComplianceSearchService(ITokenizerService tokenizer)
 {
     /// <summary>
     /// Вычислить индексы соответствия хранимых заметок поисковому запросу

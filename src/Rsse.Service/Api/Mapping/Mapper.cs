@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Dto;
 
@@ -11,78 +13,96 @@ public static class Mapper
     /// <summary>
     /// Маппинг из request model в request dto
     /// </summary>
-    public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest request)
+    public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest updateCredosRequest)
     {
-        var response = new UpdateCredosRequestDto
+        var updateCredosRequestDto = new UpdateCredosRequestDto
         {
-            NewCredos = new CredentialsRequestDto { Email = request.NewCredos.Email, Password = request.NewCredos.Password },
-            OldCredos = new CredentialsRequestDto { Email = request.OldCredos.Email, Password = request.OldCredos.Password }
+            NewCredos = new CredentialsRequestDto
+            {
+                Email = updateCredosRequest.NewCredos.Email,
+                Password = updateCredosRequest.NewCredos.Password
+            },
+            OldCredos = new CredentialsRequestDto
+            {
+                Email = updateCredosRequest.OldCredos.Email,
+                Password = updateCredosRequest.OldCredos.Password
+            }
         };
 
-        return response;
+        return updateCredosRequestDto;
     }
 
     /// <summary>
     /// Маппинг из request model в request dto
     /// </summary>
-    public static CatalogRequestDto MapToDto(this CatalogRequest request)
+    public static CatalogRequestDto MapToDto(this CatalogRequest catalogRequest)
     {
-        var response = new CatalogRequestDto
+        var catalogRequestDto = new CatalogRequestDto
         {
-            PageNumber = request.PageNumber,
-            Direction = request.Direction
+            PageNumber = catalogRequest.PageNumber,
+            Direction = catalogRequest.Direction
         };
 
-        return response;
+        return catalogRequestDto;
     }
 
     /// <summary>
     /// Маппинг из result dto в response model
     /// </summary>
-    public static CatalogResponse MapFromDto(this CatalogResultDto dto)
+    public static CatalogResponse MapFromDto(this CatalogResultDto catalogResultDto)
     {
-        var response = new CatalogResponse
+        var catalogResponse = new CatalogResponse
         {
-            CatalogPage = dto.CatalogPage,
-            NotesCount = dto.NotesCount,
-            PageNumber = dto.PageNumber,
-            ErrorMessage = dto.ErrorMessage
+            CatalogPage = MapPage(catalogResultDto.CatalogPage),
+            NotesCount = catalogResultDto.NotesCount,
+            PageNumber = catalogResultDto.PageNumber,
+            ErrorMessage = catalogResultDto.ErrorMessage
         };
 
-        return response;
+        return catalogResponse;
+
+        List<CatalogItemResponse>? MapPage(List<CatalogItemDto>? dtoItems)
+        {
+            return dtoItems
+                ?.Select(dtoItem => new CatalogItemResponse
+                {
+                    Title = dtoItem.Title,
+                    NoteId = dtoItem.NoteId
+                }).ToList();
+        }
     }
 
     /// <summary>
     /// Маппинг из request dto в request model
     /// </summary>
-    public static NoteRequestDto MapToDto(this NoteRequest request)
+    public static NoteRequestDto MapToDto(this NoteRequest noteRequest)
     {
-        var response = new NoteRequestDto
+        var noteRequestDto = new NoteRequestDto
         (
-            TagsCheckedRequest: request.TagsCheckedRequest,
-            TitleRequest: request.TitleRequest,
-            TextRequest: request.TextRequest,
-            NoteIdExchange: request.NoteIdExchange
+            CheckedTags: noteRequest.CheckedTags,
+            Title: noteRequest.Title,
+            Text: noteRequest.Text,
+            NoteIdExchange: noteRequest.NoteIdExchange
         );
 
-        return response;
+        return noteRequestDto;
     }
 
     /// <summary>
     /// Маппинг из result dto в response model
     /// </summary>
-    public static NoteResponse MapFromDto(this NoteResultDto requestDto)
+    public static NoteResponse MapFromDto(this NoteResultDto noteResultDto)
     {
-        var response = new NoteResponse
+        var noteResponse = new NoteResponse
         {
-            TagsCheckedUncheckedResponse = requestDto.TagsCheckedUncheckedResponse,
-            TitleResponse = requestDto.TitleResponse,
-            TextResponse = requestDto.TextResponse,
-            StructuredTagsListResponse = requestDto.StructuredTagsListResponse,
-            NoteIdExchange = requestDto.NoteIdExchange,
-            CommonErrorMessageResponse = requestDto.CommonErrorMessageResponse,
+            CheckedUncheckedTags = noteResultDto.CheckedUncheckedTags,
+            Title = noteResultDto.Title,
+            Text = noteResultDto.Text,
+            StructuredTags = noteResultDto.StructuredTags,
+            NoteIdExchange = noteResultDto.NoteIdExchange,
+            ErrorMessage = noteResultDto.ErrorMessage,
         };
 
-        return response;
+        return noteResponse;
     }
 }

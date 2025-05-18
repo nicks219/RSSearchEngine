@@ -12,7 +12,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -23,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 public class AccountController(
     IWebHostEnvironment env,
-    AccountManager manager,
+    AccountService accountService,
     ILogger<AccountController> logger) : ControllerBase
 {
     private const string SameSiteLax = "samesite=lax";
@@ -84,7 +84,7 @@ public class AccountController(
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var credosForUpdate = credentials.MapToDto();
-        await manager.UpdateCredos(credosForUpdate);
+        await accountService.UpdateCredos(credosForUpdate);
         await Logout();
         return Ok("updated");
     }
@@ -97,7 +97,7 @@ public class AccountController(
     {
         try
         {
-            var identity = await manager.TrySignInWith(credentialsRequestDto);
+            var identity = await accountService.TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {

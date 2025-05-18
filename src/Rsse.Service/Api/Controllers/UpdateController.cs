@@ -8,7 +8,7 @@ using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Entities;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -18,7 +18,10 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class UpdateController(ITokenizerService tokenizer, UpdateManager manager, ILogger<UpdateController> logger) : ControllerBase
+public class UpdateController(
+    ITokenizerService tokenizer,
+    UpdateService updateService,
+    ILogger<UpdateController> logger) : ControllerBase
 {
     /// <summary>
     /// Обновить заметку
@@ -30,8 +33,8 @@ public class UpdateController(ITokenizerService tokenizer, UpdateManager manager
         try
         {
             var dto = request.MapToDto();
-            var response = await manager.UpdateNote(dto);
-            var entity = new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest };
+            var response = await updateService.UpdateNote(dto);
+            var entity = new NoteEntity { Title = dto.Title, Text = dto.Text };
 
             await tokenizer.Update(dto.NoteIdExchange, entity);
 
@@ -40,7 +43,7 @@ public class UpdateController(ITokenizerService tokenizer, UpdateManager manager
         catch (Exception ex)
         {
             logger.LogError(ex, UpdateNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = UpdateNoteError };
+            return new NoteResponse { ErrorMessage = UpdateNoteError };
         }
     }
 }

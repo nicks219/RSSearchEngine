@@ -10,7 +10,7 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -20,8 +20,8 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class CatalogTests
 {
-    public required CatalogManager CatalogManager;
-    public required DeleteManager DeleteManager;
+    public required CatalogService CatalogService;
+    public required DeleteService DeleteService;
     public required FakeCatalogRepository Repo;
 
     private const int NotesPerPage = 10;
@@ -30,13 +30,13 @@ public class CatalogTests
     [TestInitialize]
     public async Task Initialize()
     {
-        var host = new ServiceProviderStub<CatalogManager>();
+        var host = new ServiceProviderStub<CatalogService>();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
-        var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteManager>>();
+        var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
+        var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();
 
-        CatalogManager = new CatalogManager(repo, catalogManagerLogger);
-        DeleteManager = new DeleteManager(repo, CatalogManager, deleteManagerLogger);
+        CatalogService = new CatalogService(repo, catalogManagerLogger);
+        DeleteService = new DeleteService(repo, CatalogService, deleteManagerLogger);
         Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = await Repo.ReadNotesCount();
@@ -51,7 +51,7 @@ public class CatalogTests
         Repo.CreateStubData(totalPages);
 
         // act:
-        var responseDto = await CatalogManager.ReadPage(existingPage);
+        var responseDto = await CatalogService.ReadPage(existingPage);
 
         // asserts:
         Assert.AreEqual(NotesPerPage, responseDto.CatalogPage?.Count);
@@ -69,7 +69,7 @@ public class CatalogTests
         var request = new CatalogRequestDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
-        var responseDto = await CatalogManager.NavigateCatalog(request);
+        var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
         responseDto.PageNumber
@@ -85,7 +85,7 @@ public class CatalogTests
         var request = new CatalogRequestDto { Direction = invalidData };
 
         // act:
-        var responseDto = await CatalogManager.NavigateCatalog(request);
+        var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
         Assert.AreEqual(ErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
@@ -97,7 +97,7 @@ public class CatalogTests
         // arrange & act:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var responseDto = await DeleteManager.DeleteNote(invalidPageId, invalidPageNumber);
+        var responseDto = await DeleteService.DeleteNote(invalidPageId, invalidPageNumber);
 
         // assert:
         Assert.AreEqual(0, responseDto.NotesCount);
@@ -112,7 +112,7 @@ public class CatalogTests
         var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new DeleteController(tokenizer, DeleteManager, logger);
+        var catalogController = new DeleteController(tokenizer, DeleteService, logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -127,7 +127,7 @@ public class CatalogTests
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
 
-        var catalogController = new CatalogController(CatalogManager, logger);
+        var catalogController = new CatalogController(CatalogService, logger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);

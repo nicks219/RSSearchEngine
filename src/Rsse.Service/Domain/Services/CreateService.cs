@@ -7,12 +7,12 @@ using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал создания заметок
 /// </summary>
-public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
+public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
 {
     // \[([^\[\]]+)\]
     private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
@@ -28,29 +28,29 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
         {
             var dtoWithInitialTags = await ReadStructuredTagList();
 
-            if (noteRequestDto.TagsCheckedRequest == null ||
-                string.IsNullOrEmpty(noteRequestDto.TextRequest) ||
-                string.IsNullOrEmpty(noteRequestDto.TitleRequest) ||
-                noteRequestDto.TagsCheckedRequest.Count == 0)
+            if (noteRequestDto.CheckedTags == null ||
+                string.IsNullOrEmpty(noteRequestDto.Text) ||
+                string.IsNullOrEmpty(noteRequestDto.Title) ||
+                noteRequestDto.CheckedTags.Count == 0)
             {
                 // пользовательская ошибка: невалидные данные
-                if (string.IsNullOrEmpty(noteRequestDto.TextRequest))
+                if (string.IsNullOrEmpty(noteRequestDto.Text))
                 {
-                    return dtoWithInitialTags with { CommonErrorMessageResponse = CreateNoteEmptyDataError };
+                    return dtoWithInitialTags with { ErrorMessage = CreateNoteEmptyDataError };
                 }
 
                 dtoWithInitialTags = dtoWithInitialTags with
                 {
-                    CommonErrorMessageResponse = CreateNoteEmptyDataError,
-                    TextResponse = noteRequestDto.TextRequest,
-                    TitleResponse = noteRequestDto.TitleRequest
+                    ErrorMessage = CreateNoteEmptyDataError,
+                    Text = noteRequestDto.Text,
+                    Title = noteRequestDto.Title
                 };
 
                 return dtoWithInitialTags;
             }
 
             // todo: перенести в маппер
-            noteRequestDto = noteRequestDto with { TitleRequest = noteRequestDto.TitleRequest.Trim() };
+            noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title.Trim() };
 
             var newNoteId = await repo.CreateNote(noteRequestDto);
 
@@ -59,8 +59,8 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 // пользовательская ошибка: не создалась заметка
                 dtoWithInitialTags = dtoWithInitialTags with
                 {
-                    CommonErrorMessageResponse = CreateNoteUnsuccessfulError,
-                    TitleResponse = "[Already Exist]"
+                    ErrorMessage = CreateNoteUnsuccessfulError,
+                    Title = "[Already Exist]"
                 };
 
                 return dtoWithInitialTags;
@@ -68,7 +68,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
 
             var dtoWithTagsAfterSuccessfulCreate = await ReadStructuredTagList();
 
-            var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.StructuredTagsListResponse;
+            var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.StructuredTags;
 
             var checkboxes = new List<string>();
 
@@ -77,7 +77,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
                 checkboxes.Add("unchecked");
             }
 
-            foreach (var i in noteRequestDto.TagsCheckedRequest)
+            foreach (var i in noteRequestDto.CheckedTags)
             {
                 checkboxes[i - 1] = "checked";
             }
@@ -88,7 +88,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
         {
             logger.LogError(ex, CreateNoteError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteResultDto { ErrorMessage = CreateNoteError };
         }
     }
 
@@ -100,12 +100,12 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
     {
         const string tagPattern = "[]";
 
-        if (noteDto?.TitleRequest == null)
+        if (noteDto?.Title == null)
         {
             return;
         }
 
-        var tag = TitlePattern.Match(noteDto.TitleRequest).Value.Trim(tagPattern.ToCharArray());
+        var tag = TitlePattern.Match(noteDto.Title).Value.Trim(tagPattern.ToCharArray());
 
         if (string.IsNullOrEmpty(tag))
         {
@@ -130,7 +130,7 @@ public class CreateManager(IDataRepository repo, ILogger<CreateManager> logger)
         catch (Exception ex)
         {
             logger.LogError(ex, CreateManagerReadTagListError);
-            return new NoteResultDto { CommonErrorMessageResponse = CreateManagerReadTagListError };
+            return new NoteResultDto { ErrorMessage = CreateManagerReadTagListError };
         }
     }
 

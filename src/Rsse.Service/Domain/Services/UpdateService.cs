@@ -6,12 +6,12 @@ using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал обновления заметок
 /// </summary>
-public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
+public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
 {
     /// <summary>
     /// Обновить заметку
@@ -22,10 +22,10 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
     {
         try
         {
-            if (updatedNoteRequest.TagsCheckedRequest == null
-                || string.IsNullOrEmpty(updatedNoteRequest.TextRequest)
-                || string.IsNullOrEmpty(updatedNoteRequest.TitleRequest)
-                || updatedNoteRequest.TagsCheckedRequest.Count == 0)
+            if (updatedNoteRequest.CheckedTags == null
+                || string.IsNullOrEmpty(updatedNoteRequest.Text)
+                || string.IsNullOrEmpty(updatedNoteRequest.Title)
+                || updatedNoteRequest.CheckedTags.Count == 0)
             {
                 return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange);
             }
@@ -41,7 +41,7 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
         {
             logger.LogError(ex, UpdateNoteError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = UpdateNoteError };
+            return new NoteResultDto { ErrorMessage = UpdateNoteError };
         }
     }
 
@@ -91,7 +91,7 @@ public class UpdateManager(IDataRepository repo, ILogger<UpdateManager> logger)
         catch (Exception ex)
         {
             logger.LogError(ex, GetOriginalNoteError);
-            return new NoteResultDto { CommonErrorMessageResponse = GetOriginalNoteError };
+            return new NoteResultDto { ErrorMessage = GetOriginalNoteError };
         }
     }
 }

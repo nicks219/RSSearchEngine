@@ -7,7 +7,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
     ITokenizerService tokenizer,
-    DeleteManager manager,
+    DeleteService deleteService,
     ILogger<DeleteController> logger) : ControllerBase
 {
     /// <summary>
@@ -34,7 +34,7 @@ public class DeleteController(
     {
         try
         {
-            var response = await manager.DeleteNote(id, pg);
+            var response = await deleteService.DeleteNote(id, pg);
             await tokenizer.Delete(id);
             return response.MapFromDto();
         }

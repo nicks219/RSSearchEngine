@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace SearchEngine.Domain.ApiModels;
 
 /// <summary>
-/// Шаблон передачи данных авторизации
+/// Контракт запроса авторизации.
 /// </summary>
 public record CredentialsRequest
 (

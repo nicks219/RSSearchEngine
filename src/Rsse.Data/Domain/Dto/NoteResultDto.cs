@@ -10,22 +10,22 @@ public record NoteResultDto
     /// <summary>
     /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
     /// </summary>
-    public List<string>? TagsCheckedUncheckedResponse { get; }
+    public List<string>? CheckedUncheckedTags { get; }
 
     /// <summary>
     /// Именование заметки в ответе
     /// </summary>
-    public string? TitleResponse { get; init; }
+    public string? Title { get; init; }
 
     /// <summary>
     /// Текст заметки в ответе
     /// </summary>
-    public string? TextResponse { get; init; }
+    public string? Text { get; init; }
 
     /// <summary>
     /// Список тегов в формате "имя : количество записей"
     /// </summary>
-    public List<string>? StructuredTagsListResponse { get; }
+    public List<string>? StructuredTags { get; }
 
     /// <summary>
     /// Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны
@@ -35,7 +35,7 @@ public record NoteResultDto
     /// <summary>
     /// Сообщение об ошибке
     /// </summary>
-    public string? CommonErrorMessageResponse { get; init; }
+    public string? ErrorMessage { get; init; }
 
 
     /// <summary/> Создать незаполненный контейнер для заметки.
@@ -43,16 +43,16 @@ public record NoteResultDto
 
     /// <summary/> Создать заполненный контейнер для заметки.
     public NoteResultDto(
-        List<string> structuredTagsListResponse,
+        List<string> structuredTags,
         int noteIdExchange = 0,
-        string textResponse = "",
-        string titleResponse = "",
+        string text = "",
+        string title = "",
         List<string>? tagsCheckedUncheckedResponse = null)
     {
-        TextResponse = textResponse;
-        TitleResponse = titleResponse;
-        TagsCheckedUncheckedResponse = tagsCheckedUncheckedResponse ?? [];
-        StructuredTagsListResponse = structuredTagsListResponse;
+        Text = text;
+        Title = title;
+        CheckedUncheckedTags = tagsCheckedUncheckedResponse ?? [];
+        StructuredTags = structuredTags;
         NoteIdExchange = noteIdExchange;
     }
 }

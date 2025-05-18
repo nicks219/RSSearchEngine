@@ -123,13 +123,13 @@
       * [x] использовать **IAsyncEnumerable** в перечислении по **ReadAllNotes** 
       * [x] рефакторинг методов, используемых только для тестов
     * [ ] code-style и небольшой рефакторинг: 
-      * нейминг: managers -> services, убрать request/response из dto 
-      * распилить dto CatalogItem по слоям
+      * [x] нейминг: managers -> services, убрать request/response из dto 
+      * [x] распилить dto CatalogItem по слоям
       * [.] сделать dto неизменяемыми (init-only либо primary-конструктор)
       * перенести в маппинг trim из CreateManager, checked/unchecked сделать bool
       * единообразно отсортировать методы
     * [x] tokenizer service: сделать обертку с двумя векторами для каждой заметки
-    * [ ] сделать фабоику для tokenizer processor
+    * [ ] сделать фабрику для tokenizer processor
 
 
 # Запланированные изменения:

@@ -10,7 +10,7 @@ using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Entities;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tooling.Contracts;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -23,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
     ITokenizerService tokenizer,
-    CreateManager manager,
+    CreateService createService,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions,
@@ -46,17 +46,17 @@ public class CreateController(
         {
             var noteRequestDto = request.MapToDto();
 
-            await manager.CreateTagFromTitle(noteRequestDto);
-            var noteResultDto = await manager.CreateNote(noteRequestDto);
+            await createService.CreateTagFromTitle(noteRequestDto);
+            var noteResultDto = await createService.CreateNote(noteRequestDto);
 
-            if (!string.IsNullOrEmpty(noteResultDto.CommonErrorMessageResponse))
+            if (!string.IsNullOrEmpty(noteResultDto.ErrorMessage))
             {
                 return new NoteResponse
                 {
-                    TitleResponse = noteResultDto.TitleResponse,
-                    TextResponse = noteResultDto.TextResponse,
-                    StructuredTagsListResponse = noteResultDto.StructuredTagsListResponse,
-                    CommonErrorMessageResponse = noteResultDto.CommonErrorMessageResponse
+                    Title = noteResultDto.Title,
+                    Text = noteResultDto.Text,
+                    StructuredTags = noteResultDto.StructuredTags,
+                    ErrorMessage = noteResultDto.ErrorMessage
                 };
             }
 
@@ -64,8 +64,8 @@ public class CreateController(
                 noteResultDto.NoteIdExchange,
                 new NoteEntity
                 {
-                    Title = request.TitleRequest,
-                    Text = request.TextRequest
+                    Title = request.Title,
+                    Text = request.Text
                 });
 
             var path = CreateDumpAndGetFilePath();
@@ -73,7 +73,7 @@ public class CreateController(
             // todo: можно добавить в маппер
             noteResultDto = noteResultDto with
             {
-                TextResponse = path ?? string.Empty
+                Text = path ?? string.Empty
             };
 
             return noteResultDto.MapFromDto();
@@ -81,7 +81,7 @@ public class CreateController(
         catch (Exception ex)
         {
             logger.LogError(ex, CreateNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteResponse { ErrorMessage = CreateNoteError };
         }
     }
 

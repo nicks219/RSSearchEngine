@@ -155,7 +155,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public async Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
-        var forAddition = noteRequest.TagsCheckedRequest!.ToHashSet();
+        var forAddition = noteRequest.CheckedTags!.ToHashSet();
 
         var forDelete = initialTags.ToHashSet();
 
@@ -179,9 +179,9 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
                     throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
                 }
 
-                processedNote.Title = noteRequest.TitleRequest;
+                processedNote.Title = noteRequest.Title;
 
-                processedNote.Text = noteRequest.TextRequest;
+                processedNote.Text = noteRequest.Text;
 
                 context.Notes.Update(processedNote);
 
@@ -241,7 +241,7 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        if (await VerifyTitleNotExists(noteRequest.TitleRequest!) == false)
+        if (await VerifyTitleNotExists(noteRequest.Title!) == false)
         {
             return noteRequest.NoteIdExchange;
         }
@@ -251,14 +251,14 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
 
         try
         {
-            var forAddition = new NoteEntity { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest };
+            var forAddition = new NoteEntity { Title = noteRequest.Title, Text = noteRequest.Text };
 
             await context.Notes.AddAsync(forAddition);
 
             await context.SaveChangesAsync();
 
             await context.TagsToNotesRelation
-                .AddRangeAsync(noteRequest.TagsCheckedRequest!
+                .AddRangeAsync(noteRequest.CheckedTags!
                     .Select(id =>
                         new TagsToNotesEntity
                         {

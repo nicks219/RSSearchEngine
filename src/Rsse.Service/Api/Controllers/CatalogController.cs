@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -15,7 +15,7 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-public class CatalogController(CatalogManager manager, ILogger<CatalogController> logger) : ControllerBase
+public class CatalogController(CatalogService catalogService, ILogger<CatalogController> logger) : ControllerBase
 {
     /// <summary>
     /// Прочитать страницу каталога
@@ -26,7 +26,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
     {
         try
         {
-            var response = await manager.ReadPage(id);
+            var response = await catalogService.ReadPage(id);
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -46,7 +46,7 @@ public class CatalogController(CatalogManager manager, ILogger<CatalogController
         try
         {
             var dto = request.MapToDto();
-            var response = await manager.NavigateCatalog(dto);
+            var response = await catalogService.NavigateCatalog(dto);
             return response.MapFromDto();
         }
         catch (Exception ex)

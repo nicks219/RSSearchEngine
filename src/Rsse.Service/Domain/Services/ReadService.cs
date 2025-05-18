@@ -6,12 +6,12 @@ using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Elector;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
+public class ReadService(IDataRepository repo, ILogger<ReadService> logger)
 {
     /// <summary>
     /// Прочитать название заметки по её идентификатору
@@ -50,7 +50,7 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
         {
             logger.LogError(ex, ReadModelReadTagListError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = ReadModelReadTagListError };
+            return new NoteResultDto { ErrorMessage = ReadModelReadTagListError };
         }
     }
 
@@ -69,11 +69,11 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
 
         try
         {
-            if (request is { TagsCheckedRequest: not null } && request.TagsCheckedRequest.Count != 0)
+            if (request is { CheckedTags: not null } && request.CheckedTags.Count != 0)
             {
                 if (IsSpecific() == false)
                 {
-                    var checkedTags = request.TagsCheckedRequest;
+                    var checkedTags = request.CheckedTags;
                     // todo: вычитывается весь список
                     var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags);
                     noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
@@ -100,7 +100,7 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
         {
             logger.LogError(ex, ElectNoteError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = ElectNoteError };
+            return new NoteResultDto { ErrorMessage = ElectNoteError };
         }
 
         bool IsSpecific() => int.TryParse(id, out noteId);

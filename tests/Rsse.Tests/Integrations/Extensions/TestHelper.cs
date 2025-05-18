@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Api;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
@@ -46,7 +46,7 @@ public static class TestHelper
     internal static StringContent GetRequestContentWithTags()
     {
         // в TagsCheckedRequest содержатся отмеченные теги
-        var dto = new NoteRequest { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
+        var dto = new NoteRequest { CheckedTags = Enumerable.Range(1, 44).ToList() };
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
@@ -99,10 +99,10 @@ public static class TestHelper
 
 
     // для сценарных тестов
-    private static readonly NoteRequest CreateRequest = new() { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
-    private static readonly NoteRequest UpdateRequest = new() { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1], NoteIdExchange = 946 };
-    private static readonly NoteRequest ReadRequest = new() { TagsCheckedRequest = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogManager.Direction.Forward]);
+    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
+    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
+    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
+    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
     public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
     public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
     public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");

@@ -5,12 +5,12 @@ using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал удаления заметок.
 /// </summary>
-public class DeleteManager(IDataRepository repo, CatalogManager catalogManager, ILogger<DeleteManager> logger)
+public class DeleteService(IDataRepository repo, CatalogService catalogService, ILogger<DeleteService> logger)
 {
     /// <summary>
     /// Удалить заметку.
@@ -24,7 +24,7 @@ public class DeleteManager(IDataRepository repo, CatalogManager catalogManager, 
         {
             await repo.DeleteNote(noteId);
 
-            return await catalogManager.ReadPage(pageNumber);
+            return await catalogService.ReadPage(pageNumber);
         }
         catch (Exception ex)
         {
