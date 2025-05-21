@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Elector;
-using static SearchEngine.Domain.Configuration.ErrorMessages;
+using static SearchEngine.Domain.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Domain.Services;
 

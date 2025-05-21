@@ -11,17 +11,23 @@ using Microsoft.Build.Utilities;
 namespace SearchEngine.Tooling.Generators;
 
 /// <summary>
-/// Билд-таска для генерации json/tsx по файлу с константами
+/// Билд-таска для генерации json/tsx по файлу с константами.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public sealed class GenerateConstantsJsonTask : Task
 {
+    // <summary/> Именование класса с константами.
     [Required] public string ConstantsClass { get; set; }
 
+    // <summary/> Файл с результатами, *.tst либо *.json.
     [Required] public string OutputFile { get; set; }
 
+    // <summary/> Путь к сборке.
     [Required] public string DllPath { get; set; }
 
+    /// <summary>
+    /// Выполнить билд-таску.
+    /// </summary>
     public override bool Execute()
     {
         var isTsx = OutputFile.EndsWith(".tsx");
@@ -49,21 +55,20 @@ public sealed class GenerateConstantsJsonTask : Task
                 }
 
                 sw.WriteLine("}");
+                return true;
             }
 
-            if (isTsx)
+            if (!isTsx) return false;
+
+            sw.WriteLine("export const RouteConstants = {");
+            var lastKvp = fields.Last();
+            foreach (var pair in fields)
             {
-                sw.WriteLine("export const RouteConstants = {");
-                var last = fields.Last();
-                foreach (var pair in fields)
-                {
-                    var comma = pair.Key == last.Key ? "" : ",";
-                    sw.WriteLine($"  {char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}: \"{pair.Value}\"{comma}");
-                }
-
-                sw.WriteLine("} as const;");
+                var comma = pair.Key == lastKvp.Key ? "" : ",";
+                sw.WriteLine($"  {char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}: \"{pair.Value}\"{comma}");
             }
 
+            sw.WriteLine("} as const;");
             return true;
         }
         catch (Exception ex)

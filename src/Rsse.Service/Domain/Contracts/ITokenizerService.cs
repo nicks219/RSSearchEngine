@@ -6,7 +6,7 @@ using SearchEngine.Domain.Entities;
 namespace SearchEngine.Domain.Contracts;
 
 /// <summary>
-/// Контракт сервиса поддержки токенизации заметок
+/// Контракт сервиса поддержки токенизации заметок.
 /// </summary>
 public interface ITokenizerService
 {
@@ -18,10 +18,10 @@ public interface ITokenizerService
     public Task Create(int id, TextRequestDto note);
 
     /// <summary>
-    /// Вычислить индексы соответствия хранимых заметок поисковому запросу
+    /// Вычислить индексы соответствия хранимых заметок поисковому запросу.
     /// </summary>
-    /// <param name="text">текст для поиска соответствий</param>
-    /// <returns>идентификаторы заметок и их индексы соответствия</returns>
+    /// <param name="text">Текст для поиска соответствий.</param>
+    /// <returns>Идентификаторы заметок и их индексы соответствия.</returns>
     public Dictionary<int, double> ComputeComplianceIndices(string text);
 
     /// <summary>
@@ -32,18 +32,18 @@ public interface ITokenizerService
     public Task Update(int id, TextRequestDto note);
 
     /// <summary>
-    /// Удалить вектор для заметки
+    /// Удалить вектор для заметки по идентификатору.
     /// </summary>
-    /// <param name="id">идентификатор заметки</param>
+    /// <param name="id">Идентификатор заметки.</param>
     public Task Delete(int id);
 
     /// <summary>
-    /// Инициализация функционала токенизации
+    /// Инициализация функционала токенизации.
     /// </summary>
     public Task Initialize();
 
     /// <summary>
-    /// Дождаться инициализации токенизатора
+    /// Дождаться инициализации токенизатора.
     /// </summary>
     public Task WaitWarmUp();
 }

@@ -13,7 +13,7 @@ internal static class TracingExtensions
     /// <summary>
     /// Зарегистрировать функционала поставки трассировок.
     /// </summary>
-    /// <param name="services">коллекция служб</param>
+    /// <param name="services">Коллекция служб.</param>
     internal static void AddTracingInternal(this IServiceCollection services)
     {
         services

@@ -13,7 +13,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для получения заметок
+/// Контроллер для чтения заметок.
 /// </summary>
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
@@ -25,7 +25,7 @@ public class ReadController(
     private static bool _randomElection = true;
 
     /// <summary>
-    /// Переключить режим выбора следующей заметки
+    /// Переключить режим выбора следующей заметки.
     /// </summary>
     [HttpGet(RouteConstants.ReadElectionGetUrl)]
     public ActionResult SwitchNodeElectionMode()
@@ -35,9 +35,9 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Прочитать заголовок заметки по её идентификатору
+    /// Прочитать заголовок заметки по её идентификатору.
     /// </summary>
-    /// <param name="id">идентификатор заметки</param>
+    /// <param name="id">Идентификатор заметки.</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
     public async Task<ActionResult> ReadTitleByNoteId(string id)
     {
@@ -54,11 +54,11 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Выбрать следующую либо прочитать конкретную заметку, по отмеченным тегам или идентификатору
+    /// Выбрать следующую либо прочитать конкретную заметку, по отмеченным тегам или идентификатору.
     /// </summary>
-    /// <param name="request">данные с отмеченными тегами</param>
-    /// <param name="id">строка с идентификатором, если требуется</param>
-    /// <returns>ответ с заметкой</returns>
+    /// <param name="request">Контейнер с отмеченными тегами.</param>
+    /// <param name="id">Строка с идентификатором, если требуется.</param>
+    /// <returns>Ответ с заметкой.</returns>
     [HttpPost(RouteConstants.ReadNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
     {
@@ -84,7 +84,7 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Получить список тегов
+    /// Получить полный список тегов.
     /// </summary>
     [HttpGet(RouteConstants.ReadTagsGetUrl)]
     public async Task<ActionResult<NoteResponse>> ReadTagList()
@@ -102,7 +102,7 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Получить список тегов
+    /// Получить список тегов, под авторизацией.
     /// </summary>
     [Authorize, HttpGet(RouteConstants.ReadTagsForCreateAuthGetUrl)]
     [Obsolete("используйте ReadController.ReadTagList")]
@@ -122,9 +122,9 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Получить обновляемую заметку
+    /// Получить обновляемую заметку.
     /// </summary>
-    /// <param name="id">идентификатор обновляемой заметки</param>
+    /// <param name="id">Идентификатор обновляемой заметки.</param>
     [Authorize, HttpGet(RouteConstants.ReadNoteWithTagsForUpdateAuthGetUrl)]
     // todo: неудачный рефакторинг, исправить
     public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)

@@ -17,7 +17,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для создания заметок
+/// Контроллер для создания заметок.
 /// </summary>
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
@@ -35,10 +35,10 @@ public class CreateController(
     private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
 
     /// <summary>
-    /// Создать заметку
+    /// Создать заметку.
     /// </summary>
-    /// <param name="request">данные для создания заметки</param>
-    /// <returns>данные с созданной заметкой либо ошибкой</returns>
+    /// <param name="request">Контрейнер с запросом создания заметки.</param>
+    /// <returns>Контрейнер с информацией по созданной заметке, либо с ошибкой.</returns>
     [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
@@ -86,7 +86,7 @@ public class CreateController(
     }
 
     /// <summary>
-    /// Зафиксировать дамп бд и вернуть путь к созданному файлу
+    /// Зафиксировать дамп бд и вернуть путь к созданному файлу.
     /// </summary>
     private string? CreateDumpAndGetFilePath()
     {

@@ -28,9 +28,9 @@ public class DeleteService(IDataRepository repo, CatalogService catalogService, 
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ErrorMessages.DeleteNoteError);
+            logger.LogError(ex, ServiceErrorMessages.DeleteNoteError);
 
-            return new CatalogResultDto { ErrorMessage = ErrorMessages.DeleteNoteError };
+            return new CatalogResultDto { ErrorMessage = ServiceErrorMessages.DeleteNoteError };
         }
     }
 }

@@ -7,12 +7,12 @@ using SearchEngine.Domain.Entities;
 namespace SearchEngine.Api.Mapping;
 
 /// <summary>
-/// Расширения для маппинга
+/// Расширения для маппинга.
 /// </summary>
 public static class Mapper
 {
     /// <summary>
-    /// Маппинг из request model в request dto
+    /// Маппинг из request model в request dto.
     /// </summary>
     public static UpdateCredosRequestDto MapToDto(this UpdateCredentialsRequest updateCredosRequest)
     {
@@ -34,7 +34,7 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из request model в request dto
+    /// Маппинг из request model в request dto.
     /// </summary>
     public static CatalogRequestDto MapToDto(this CatalogRequest catalogRequest)
     {
@@ -48,7 +48,7 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из result dto в response model
+    /// Маппинг из result dto в response model.
     /// </summary>
     public static CatalogResponse MapFromDto(this CatalogResultDto catalogResultDto)
     {
@@ -74,7 +74,7 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из request dto в request model
+    /// Маппинг из request dto в request model.
     /// </summary>
     public static NoteRequestDto MapToDto(this NoteRequest noteRequest)
     {
@@ -90,7 +90,7 @@ public static class Mapper
     }
 
     /// <summary>
-    /// Маппинг из result dto в response model
+    /// Маппинг из result dto в response model.
     /// </summary>
     public static NoteResponse MapFromDto(this NoteResultDto noteResultDto)
     {

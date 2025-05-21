@@ -3,15 +3,18 @@ using SearchEngine.Api.Controllers;
 namespace SearchEngine.Domain.Configuration;
 
 /// <summary>
-/// Сообщения для функционала логирования.
+/// Сообщения контроллеров, для функционала логирования.
 /// </summary>
 internal abstract class ControllerMessages
 {
-    internal const string LoginError = $"[{nameof(AccountController)}] {nameof(AccountController.Login)} system error";
-    internal const string DataError = $"[{nameof(AccountController)}] credentials error";
+    // сообщения контроллеров:
     internal const string LogOutMessage = $"[{nameof(AccountController)}] {nameof(AccountController.Logout)}";
     internal const string LoginOkMessage = $"[{nameof(AccountController)}] {nameof(AccountController.Login)}";
     internal const string ModifyCookieMessage = $"[{nameof(AccountController)}] {nameof(AccountController.ModifyCookie)}";
+
+    // ошибки контроллеров:
+    internal const string LoginError = $"[{nameof(AccountController)}] {nameof(AccountController.Login)} system error";
+    internal const string DataError = $"[{nameof(AccountController)}] credentials error";
 
     internal const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(CatalogController.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogController)}] {nameof(CatalogController.ReadCatalogPage)} error";

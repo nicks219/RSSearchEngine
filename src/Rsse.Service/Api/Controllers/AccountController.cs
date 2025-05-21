@@ -18,7 +18,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер авторизации
+/// Контроллер авторизации.
 /// </summary>
 [ApiController]
 public class AccountController(
@@ -30,12 +30,11 @@ public class AccountController(
     private const string SameSiteNone = "samesite=none; secure; partitioned";
 
     /// <summary>
-    /// Авторизоваться в системе
+    /// Авторизоваться в системе.
     /// </summary>
-    /// <param name="email">email</param>
-    /// <param name="password">пароль</param>
-    /// <param name="returnUrl">пиздец</param>
-    /// <returns>объект OkObjectResult с результатом</returns>
+    /// <param name="email">Электронная почта.</param>
+    /// <param name="password">Пароль.</param>
+    /// <param name="returnUrl">Артефакты легаси-фронта.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
     public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
@@ -55,7 +54,7 @@ public class AccountController(
     }
 
     /// <summary>
-    /// Выйти из системы
+    /// Выйти из системы.
     /// </summary>
     [HttpGet(RouteConstants.AccountLogoutGetUrl)]
     public async Task<ActionResult<string>> Logout()
@@ -67,7 +66,9 @@ public class AccountController(
         return LogOutMessage;
     }
 
-    /// <summary/> Проверить, авторизован ли запрос
+    /// <summary>
+    /// Проверить, авторизован ли запрос.
+    /// </summary>
     [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
     [HttpGet(RouteConstants.AccountCheckGetUrl), Authorize]
     public ActionResult CheckAuth()
@@ -78,8 +79,10 @@ public class AccountController(
         });
     }
 
-    /// <summary/> Обновить логин и пароль
-    // todo: перенести в domain
+    /// <summary>
+    /// Обновить логин и пароль.
+    /// </summary>
+    /// <param name="credentials">Данные для обновления.</param>
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
@@ -90,9 +93,9 @@ public class AccountController(
     }
 
     /// <summary>
-    /// Вход в систему, аутентификация на основе кук
+    /// Вход в систему, аутентификация на основе кук.
     /// </summary>
-    /// <param name="credentialsRequestDto">данные для авторизации</param>
+    /// <param name="credentialsRequestDto">Данные для авторизации.</param>
     private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
     {
         try
@@ -118,7 +121,7 @@ public class AccountController(
     }
 
     /// <summary>
-    /// Модифицировать куки при разработке
+    /// Модифицировать куки на разработке.
     /// </summary>
     internal void ModifyCookie()
     {

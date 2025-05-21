@@ -9,9 +9,9 @@ namespace SearchEngine.Api.Startup;
 internal static class MetricsExtensions
 {
     /// <summary>
-    /// Зарегистрировать функционала поставки метрик.
+    /// Зарегистрировать функционал поставки метрик.
     /// </summary>
-    /// <param name="services">коллекция служб</param>
+    /// <param name="services">Коллекция служб.</param>
     internal static void AddMetricsInternal(this IServiceCollection services)
     {
         services.AddOpenTelemetry()

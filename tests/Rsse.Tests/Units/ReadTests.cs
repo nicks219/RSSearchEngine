@@ -76,8 +76,8 @@ public class ReadTests
         }
 
         // asserts:
-        Assert.AreEqual(ErrorMessages.ElectNoteError, noteResultDto.ErrorMessage);
-        Assert.AreEqual(ErrorMessages.ElectNoteError, Logger.Message);
+        Assert.AreEqual(ServiceErrorMessages.ElectNoteError, noteResultDto.ErrorMessage);
+        Assert.AreEqual(ServiceErrorMessages.ElectNoteError, Logger.Message);
     }
 
     [TestMethod]

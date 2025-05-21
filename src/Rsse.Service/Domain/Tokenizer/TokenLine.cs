@@ -3,8 +3,10 @@ using System.Collections.Generic;
 namespace SearchEngine.Domain.Tokenizer;
 
 /// <summary>
-/// Контейнер с векторами для заметки.
+/// Контейнер с двумя векторами для заметки.
 /// </summary>
+/// <param name="Extended">Расширенный вектор.</param>
+/// <param name="Reduced">Урезанный вектор.</param>
 public record TokenLine(
     List<int> Extended,
     List<int> Reduced

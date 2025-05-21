@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace SearchEngine.Domain.ApiModels;
 
 /// <summary>
-/// Контейнер с записью в странице каталога для контракта ответа со страницей каталога.
+/// Контейнер с одной записью в странице каталога, для контракта ответа со страницей каталога.
 /// </summary>
 /// <param name="Title">Именование заметки.</param>
 /// <param name="NoteId">Идентификатор заметки.</param>

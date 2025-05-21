@@ -10,7 +10,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер обработки индексов соответствия для функционала поиска
+/// Контроллер обработки индексов соответствия для функционала поиска.
 /// </summary>
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ComplianceSearchController(
@@ -18,10 +18,9 @@ public class ComplianceSearchController(
     ILogger<ComplianceSearchController> logger) : ControllerBase
 {
     /// <summary>
-    /// Получить индексы соответсвия хранимых заметок поисковому запросу
+    /// Получить индексы соответствия заметок поисковому запросу.
     /// </summary>
-    /// <param name="text">строка с поисковым запросом</param>
-    /// <returns>объект OkObjectResult с результатом поиска</returns>
+    /// <param name="text">Строка с поисковым запросом.</param>
     [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
     public ActionResult GetComplianceIndices(string text)
     {

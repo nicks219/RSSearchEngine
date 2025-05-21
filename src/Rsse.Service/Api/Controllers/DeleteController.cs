@@ -13,7 +13,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для удаления сущностей
+/// Контроллер для удаления сущностей.
 /// </summary>
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
@@ -23,11 +23,11 @@ public class DeleteController(
     ILogger<DeleteController> logger) : ControllerBase
 {
     /// <summary>
-    /// Удалить заметку
+    /// Удалить заметку.
     /// </summary>
-    /// <param name="id">идентификатор заметки</param>
-    /// <param name="pg">номер страницы каталога с удаляемой заметкой</param>
-    /// <returns>актуальная страница каталога</returns>
+    /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="pg">Номер страницы каталога с удаляемой заметкой.</param>
+    /// <returns>Актуализированная страница каталога.</returns>
     [Authorize, HttpDelete(RouteConstants.DeleteNoteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)

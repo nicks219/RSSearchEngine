@@ -1,4 +1,3 @@
-using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Domain.Tokenizer.Processor;
 
 namespace SearchEngine.Domain.Contracts;
@@ -9,9 +8,9 @@ namespace SearchEngine.Domain.Contracts;
 public interface ITokenizerProcessorFactory
 {
     /// <summary>
-    /// Создать процессор токенизации требуемого типа.
+    /// Создать процессор требуемого типа для токенизации.
     /// </summary>
-    /// <param name="processorType">Тип процессора.</param>
+    /// <param name="processorType">Требуемый тип процессора.</param>
     /// <returns>Процессор токенизации.</returns>
     ITokenizerProcessor CreateProcessor(ProcessorType processorType);
 }

@@ -17,7 +17,7 @@ using static SearchEngine.Domain.Configuration.ControllerMessages;
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для работы с миграциями бд
+/// Контроллер для работы с миграциями бд.
 /// </summary>
 [Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
@@ -29,8 +29,7 @@ public class MigrationController(
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
-    /// <returns></returns>
-    // todo: MySQL WORK. DELETE
+    // todo: удалить после переходя на Postgres
     [HttpGet(RouteConstants.MigrationCopyGetUrl)]
     [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
     public async Task<IActionResult> CopyFromMySqlToPostgres()
@@ -54,8 +53,8 @@ public class MigrationController(
     /// <summary>
     /// Создать дамп бд.
     /// </summary>
-    /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
-    /// <param name="migratorType">тип мигратора</param>
+    /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
+    /// <param name="migratorType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
     public IActionResult CreateDump(string? fileName, MigratorType migratorType = MigratorType.Postgres)
     {
@@ -77,8 +76,8 @@ public class MigrationController(
     /// <summary>
     /// Накатить дамп.
     /// </summary>
-    /// <param name="fileName">имя файла с дампом, либо выбор имени из ротации</param>
-    /// <param name="migratorType">тип мигратора</param>
+    /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
+    /// <param name="migratorType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<IActionResult> RestoreFromDump(string? fileName, MigratorType migratorType = MigratorType.Postgres)
@@ -100,7 +99,7 @@ public class MigrationController(
     }
 
     /// <summary>
-    /// Загрузить файл на сервер
+    /// Загрузить файл на сервер.
     /// </summary>
     [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
@@ -113,7 +112,7 @@ public class MigrationController(
     }
 
     /// <summary>
-    /// Выгрузить файл с сервера
+    /// Выгрузить файл с сервера.
     /// </summary>
     [HttpGet(RouteConstants.MigrationDownloadGetUrl)]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
@@ -128,6 +127,9 @@ public class MigrationController(
         return PhysicalFile(path, mimeType, Path.GetFileName(path));
     }
 
+    /// <summary>
+    /// Получить мигратор требуемого типа из списка зависимостей.
+    /// </summary>
     internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, MigratorType migratorType)
     {
         var migrator = migratorType switch

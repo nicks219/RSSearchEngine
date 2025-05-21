@@ -8,14 +8,14 @@ using SearchEngine.Domain.Configuration;
 namespace SearchEngine.Api.Startup;
 
 /// <summary>
-/// Расширение для функционала рейтлимитера.
+/// Расширение для регистрации функционала рейтлимитера.
 /// </summary>
 internal static class RateLimiterExtensions
 {
     /// <summary>
     /// Зарегистрировать функционал рейтлимитера.
     /// </summary>
-    /// <param name="services">коллекция служб</param>
+    /// <param name="services">Коллекция служб.</param>
     internal static void AddRateLimiterInternal(this IServiceCollection services)
     {
         services.AddRateLimiter(rateLimiterOptions =>

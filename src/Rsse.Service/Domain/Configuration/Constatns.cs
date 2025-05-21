@@ -8,25 +8,25 @@ namespace SearchEngine.Domain.Configuration;
 /// </summary>
 public abstract class Constants
 {
-    /// <summary/> Выставляется для отладочной сборки
+    /// <summary/> Выставляется для отладочной сборки.
 #if DEBUG
     internal const bool IsDebug = true;
 #else
     internal const bool IsDebug = false;
 #endif
 
-    /// <summary/> Мажорная версия
+    /// <summary/> Мажорная версия.
     internal const string MajorVersion = "6";
-    /// <summary/> Минорная версия
+    /// <summary/> Минорная версия.
     private const string MinorVersion = "0";
-    /// <summary/> Патч
+    /// <summary/> Патч.
     private const string PatchVersion = "0";
 
-    // <summary/> Рут для статики
+    // <summary/> Рут для статики.
     internal const string StaticDirectory = "ClientApp/build";
-    // <summary/> Расширение для дампа mysql
+    // <summary/> Расширение для дампа mysql.
     internal const string MySqlDumpExt = ".dump";
-    // <summary/> Расширение для архива дампа postgres
+    // <summary/> Расширение для архива дампа postgres.
     internal const string PostgresDumpArchiveName = "dump.zip";
 
     // <summary>Версия приложения.</summary>

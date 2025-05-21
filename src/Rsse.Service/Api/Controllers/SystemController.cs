@@ -28,7 +28,7 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokeni
     }
 
     /// <summary>
-    /// Дождаться прогрева токенизатора
+    /// Дождаться прогрева токенизатора.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
     public async Task<ActionResult> WaitReadiness()

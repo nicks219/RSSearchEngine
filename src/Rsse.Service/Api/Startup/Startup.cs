@@ -28,10 +28,11 @@ using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 using Serilog;
 
-// не удалять, трассировка
-
 namespace SearchEngine.Api.Startup;
 
+/// <summary>
+/// Настройка зависимостей и пайплайна запроса сервиса.
+/// </summary>
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     internal const string DefaultConnectionKey = "DefaultConnection";
@@ -51,6 +52,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         "http://188.120.235.243:5000"
     };
 
+    /// <summary>
+    /// Настроить зависимости сервиса.
+    /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ActivatorService>();
@@ -147,6 +151,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 #endif
     }
 
+    /// <summary>
+    /// Настроить найплайн обработки запроса.
+    /// </summary>
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         var isDevelopment = env.IsDevelopment();

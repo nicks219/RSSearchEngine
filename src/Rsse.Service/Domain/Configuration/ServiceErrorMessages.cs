@@ -3,10 +3,11 @@ using SearchEngine.Domain.Services;
 namespace SearchEngine.Domain.Configuration;
 
 /// <summary>
-/// Сообщения для функционала логирования.
+/// Сообщения сервисов, для функционала логирования.
 /// </summary>
-internal abstract class ErrorMessages
+internal abstract class ServiceErrorMessages
 {
+    // ошибки сервисов:
     internal const string NavigateCatalogError = $"[{nameof(CatalogService)}] {nameof(CatalogService.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogService)}] {nameof(CatalogService.ReadPage)} error";
 

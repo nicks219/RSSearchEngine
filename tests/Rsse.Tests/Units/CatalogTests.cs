@@ -88,7 +88,7 @@ public class CatalogTests
         var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(ErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
+        Assert.AreEqual(ServiceErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
     }
 
     [TestMethod]

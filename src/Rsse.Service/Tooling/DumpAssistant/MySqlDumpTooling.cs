@@ -9,7 +9,7 @@ using SearchEngine.Tooling.Contracts;
 namespace SearchEngine.Tooling.DumpAssistant;
 
 /// <summary>
-/// Функционал обработки дампа
+/// Тулинг для конвертации дампа MySql и переименования таблиц.
 /// </summary>
 /// [
 [ExcludeFromCodeCoverage]
@@ -44,7 +44,7 @@ internal class MySqlDumpTooling
     };
 
     /// <summary>
-    /// Переименовать поля дампа
+    /// Переименовать поля дампа.
     /// </summary>
     internal void Rename(Dictionary<string, string> namingPattern)
     {
@@ -142,7 +142,7 @@ internal class MySqlDumpTooling
         }
     }
 
-    /// <summary> Конвертироать дамп </summary>
+    /// <summary>Конвертироать дамп.</summary>
     internal static void Convert(IDbConvertor convertor, object ddlFrom, object ddlTo, string pathToDump)
     {
         // пока не решил, как лучше описать схему данных

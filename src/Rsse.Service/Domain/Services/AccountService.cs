@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using static SearchEngine.Domain.Configuration.ErrorMessages;
+using static SearchEngine.Domain.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Domain.Services;
 

@@ -10,7 +10,7 @@ namespace SearchEngine.Domain.ApiModels;
 /// </summary>
 /// <param name="ErrorMessage">Сообщение об ошибке, если потребуется.</param>
 /// <param name="CatalogPage">Названия заметок и соответствующие им Id.</param>
-/// <param name="NotesCount">Количество заметок.</param>
+/// <param name="NotesCount">Общее количество заметок сервиса.</param>
 /// <param name="PageNumber">Номер страницы каталога.</param>
 public record CatalogResponse(
     [property: JsonPropertyName("errorMessage")] string? ErrorMessage = null,

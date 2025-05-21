@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 namespace SearchEngine.Api.Logger;
 
 /// <summary>
-/// Расширение для функционала логера
+/// Расширение для функционала логера.
 /// </summary>
 public static class LoggerFactoryExtensions
 {
     /// <summary>
-    /// Сконфигурировать логер возможностью писать в файл
+    /// Добавить в фабрику логеров файловый провайдером.
     /// </summary>
-    /// <param name="factory">фабрика</param>
-    /// <param name="filePath">путь к файлу</param>
+    /// <param name="factory">Фабрика логеров.</param>
+    /// <param name="filePath">Путь к файлу.</param>
     [Obsolete("use Serilog instead")]
     public static void AddFileLoggerProviderInternal(this ILoggerFactory factory, string filePath)
     {

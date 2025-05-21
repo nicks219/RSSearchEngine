@@ -2,22 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace SearchEngine.Domain.Elector;
 
+/// <summary>
+/// Функционал для выбора заметок.
+/// </summary>
 internal static class NoteElector
 {
     private static readonly Random Random = new();
     private static uint _id;
 
     /// <summary>
-    /// Выбрать идентификатор заметки из списка, случайно или раунд-робином
+    /// Выбрать идентификатор заметки из списка, случайно или раунд-робином.
     /// </summary>
-    /// <param name="electableNoteIds">идентификаторы заметок, участвующих в выборе</param>
-    /// <param name="randomElectionEnabled">алгоритм выбора</param>
-    /// <returns>идентификатор выбранной заметки</returns>
+    /// <param name="electableNoteIds">Идентификаторы заметок, участвующих в выборе.</param>
+    /// <param name="randomElectionEnabled">Алгоритм выбора, <b>true</b> - случайный выбор.</param>
+    /// <returns>Идентификатор выбранной заметки.</returns>
     internal static int ElectNextNote(List<int> electableNoteIds, bool randomElectionEnabled = true)
     {
         var electableNoteCount = electableNoteIds.Count;
@@ -41,10 +42,10 @@ internal static class NoteElector
     }
 
     /// <summary>
-    /// Потокобезопасная генерация случайного числа в заданном диапазоне
+    /// Потокобезопасная генерация случайного числа в заданном непрерывном диапазоне.
     /// </summary>
-    /// <param name="howMany">Количество песен, доступных для выбора</param>
-    /// <returns></returns>
+    /// <param name="howMany">Количество заметок, доступных для выбора.</param>
+    /// <returns>Идентификатор случайной заметки.</returns>
     private static int GetRandomInRange(int howMany)
     {
         lock (Random)

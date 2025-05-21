@@ -12,8 +12,10 @@ using Serilog;
 namespace SearchEngine.Tooling.MigrationAssistant;
 
 /// <summary>
-/// Функционал работы с миграциями MySql
+/// Функционал работы с миграциями MySql.
 /// </summary>
+/// <param name="configuration">Конфигурация.</param>
+/// <param name="factory">Из фабрики однократко получаем IDataRepository для копирования данных.</param>
 internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactory factory) : IDbMigrator
 {
 

@@ -15,6 +15,11 @@ using Serilog;
 
 namespace SearchEngine.Tooling.MigrationAssistant;
 
+/// <summary>
+/// Функционал работы с миграциями MySql.
+/// </summary>
+/// <param name="configuration">Конфигурация.</param>
+/// <param name="serviceProvider">Из провайдера однократно получаем NpgsqlCatalogContext для пересоздания бд.</param>
 public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider serviceProvider) : IDbMigrator
 {
     // todo

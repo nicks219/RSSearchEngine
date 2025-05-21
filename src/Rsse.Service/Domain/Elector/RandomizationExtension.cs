@@ -5,12 +5,12 @@ using System.Security.Cryptography;
 namespace SearchEngine.Domain.Elector;
 
 /// <summary>
-/// Расширение для дополнительной рандомизации
+/// Расширение для дополнительной рандомизации.
 /// </summary>
 public static class RandomizationExtension
 {
     /// <summary>
-    /// Перемешивание списка, качество зависит от RNG.
+    /// Перемешать список, качество зависит от RNG.
     /// </summary>
     public static IList<T> Shuffle<T>(this IList<T> list, RandomNumberGenerator rng)
     {
@@ -26,7 +26,7 @@ public static class RandomizationExtension
     }
 
     /// <summary>
-    /// Использование криптостойкого RNG для генерации.
+    /// Получить случайное число с использованием криптостойкого RNG для генерации.
     /// </summary>
     private static int GetNextInt32(RandomNumberGenerator rnd)
     {

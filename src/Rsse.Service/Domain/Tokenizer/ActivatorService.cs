@@ -9,7 +9,7 @@ using SearchEngine.Tooling;
 namespace SearchEngine.Domain.Tokenizer;
 
 /// <summary>
-/// Сервис запуска по расписанию инициализации функционала токенизатора
+/// Сервис запуска по расписанию инициализации функционала токенизатора.
 /// </summary>
 internal class ActivatorService(
     ITokenizerService tokenizer,
@@ -26,7 +26,7 @@ internal class ActivatorService(
     private int _count = 1;
 
     /// <summary>
-    /// Инициализация токенайзера по расписанию и баз данных на старте
+    /// Инициализация баз данных на старте сервиса и токенизатора по расписанию.
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

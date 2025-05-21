@@ -15,7 +15,7 @@ using SearchEngine.Domain.Tokenizer.Processor;
 namespace SearchEngine.Domain.Tokenizer;
 
 /// <summary>
-/// Сервис поддержки токенайзера
+/// Сервис поддержки токенайзера.
 /// </summary>
 public sealed class TokenizerService : ITokenizerService, IDisposable
 {

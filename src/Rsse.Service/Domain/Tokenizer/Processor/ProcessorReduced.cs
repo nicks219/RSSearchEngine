@@ -4,7 +4,7 @@ using System.Linq;
 namespace SearchEngine.Domain.Tokenizer.Processor;
 
 /// <summary>
-/// Основной функционал токенизатора с урезанным набором симвлолв.
+/// Основной функционал токенизатора с урезанным набором символов.
 /// </summary>
 public sealed class ProcessorReduced : ProcessorBase
 {
