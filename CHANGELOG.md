@@ -118,6 +118,8 @@
   * upd: рефакторинг tokenizer service
 ---
   * [x] написать тест на UpdateCredos (в CatalogRepository было перепутано поле old/new)
+  * [x] поправить summary в Rsse.Data
+  * [ ] поправить summary в Rsse.Service
   * [ ] выделить domain в отдельный проект, дополнить билд докера с учетом изменений
   * [ ] доработать маппинг (перенести trim из CreateManager, checked/unchecked сделать bool)
   * [ ] удалить очистку контекстов из имплементаций IDataRepository (тк не они владельцы контекстов бд)

@@ -73,8 +73,8 @@ public class RepositoryTests
         await using var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
-        var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
-        var tagsFromNpg = await npgsqlRepo.ReadStructuredTagList();
+        var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList();
+        var tagsFromNpg = await npgsqlRepo.ReadEnrichedTagList();
 
         // assert:
         // теги сохраняются в верхнем регистре

@@ -95,7 +95,7 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
     /// <inheritdoc/>
     public async Task CopyDbFromMysqlToNpgsql()
     {
-        var repo = factory.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
+        await using var repo = factory.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
         await repo.CopyDbFromMysqlToNpgsql();
     }
 }

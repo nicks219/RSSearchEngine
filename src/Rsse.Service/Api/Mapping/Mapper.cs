@@ -99,7 +99,7 @@ public static class Mapper
             CheckedUncheckedTags = noteResultDto.CheckedUncheckedTags,
             Title = noteResultDto.Title,
             Text = noteResultDto.Text,
-            StructuredTags = noteResultDto.StructuredTags,
+            StructuredTags = noteResultDto.EnrichedTags,
             NoteIdExchange = noteResultDto.NoteIdExchange,
             ErrorMessage = noteResultDto.ErrorMessage,
         };

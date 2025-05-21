@@ -51,7 +51,7 @@ public class ReadTests
         var noteResultDto = await ReadService.ReadTagList();
 
         // assert:
-        Assert.AreEqual(_tagsCount, noteResultDto.StructuredTags?.Count);
+        Assert.AreEqual(_tagsCount, noteResultDto.EnrichedTags?.Count);
     }
 
     [TestMethod]

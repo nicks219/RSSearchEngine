@@ -42,7 +42,7 @@ public class ReadService(IDataRepository repo, ILogger<ReadService> logger)
     {
         try
         {
-            var tagList = await repo.ReadStructuredTagList();
+            var tagList = await repo.ReadEnrichedTagList();
 
             return new NoteResultDto(tagList);
         }
@@ -92,7 +92,7 @@ public class ReadService(IDataRepository repo, ILogger<ReadService> logger)
                 }
             }
 
-            var tagList = await repo.ReadStructuredTagList();
+            var tagList = await repo.ReadEnrichedTagList();
 
             return new NoteResultDto(tagList, noteId, text, title);
         }

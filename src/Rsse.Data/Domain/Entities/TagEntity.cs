@@ -5,26 +5,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SearchEngine.Domain.Entities;
 
 /// <summary>
-/// Представление строки таблицы бд с тегами заметок
+/// Представление строки таблицы бд с тегом.
 /// </summary>
 [Table("Tag")]
 public class TagEntity
 {
     /// <summary>
-    /// Номер тега
+    /// Идентификатор тега.
     /// </summary>
     [Column("TagId")]
     public int TagId { get; set; }
 
     /// <summary>
-    /// Именование тега
+    /// Именование тега.
     /// </summary>
     [MaxLength(30)]
     [Column("Tag")]
     public string? Tag { get; set; }
 
     /// <summary>
-    /// Служебное поле EF для создания связи
+    /// Служебное поле EF для создания связи.
     /// </summary>
     public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
 }

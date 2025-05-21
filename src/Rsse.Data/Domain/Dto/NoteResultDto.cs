@@ -8,42 +8,44 @@ namespace SearchEngine.Domain.Dto;
 public record NoteResultDto
 {
     /// <summary>
-    /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе
+    /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе.
     /// </summary>
     public List<string>? CheckedUncheckedTags { get; }
 
     /// <summary>
-    /// Именование заметки в ответе
+    /// Именование заметки в ответе.
     /// </summary>
     public string? Title { get; init; }
 
     /// <summary>
-    /// Текст заметки в ответе
+    /// Текст заметки в ответе.
     /// </summary>
     public string? Text { get; init; }
 
     /// <summary>
-    /// Список тегов в формате "имя : количество записей"
+    /// Список тегов в формате "имя : количество записей".
     /// </summary>
-    public List<string>? StructuredTags { get; }
+    public List<string>? EnrichedTags { get; }
 
     /// <summary>
-    /// Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны
+    /// Поле для передачи идентификатора сохраненной/измененной заметки в обе стороны.
     /// </summary>
     public int NoteIdExchange { get; }
 
     /// <summary>
-    /// Сообщение об ошибке
+    /// Сообщение об ошибке.
     /// </summary>
     public string? ErrorMessage { get; init; }
 
 
-    /// <summary/> Создать незаполненный контейнер для заметки.
+    /// <summary>
+    /// Создать незаполненный контейнер для заметки.
+    /// </summary>
     public NoteResultDto() { }
 
-    /// <summary/> Создать заполненный контейнер для заметки.
+    /// <summary/> Создать заполненный контейнер с заметкой.
     public NoteResultDto(
-        List<string> structuredTags,
+        List<string> enrichedTags,
         int noteIdExchange = 0,
         string text = "",
         string title = "",
@@ -52,7 +54,7 @@ public record NoteResultDto
         Text = text;
         Title = title;
         CheckedUncheckedTags = tagsCheckedUncheckedResponse ?? [];
-        StructuredTags = structuredTags;
+        EnrichedTags = enrichedTags;
         NoteIdExchange = noteIdExchange;
     }
 }

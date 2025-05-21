@@ -1,5 +1,8 @@
 namespace SearchEngine.Tooling.Scripts;
 
+/// <summary>
+/// Инициализация данных для Postgres.
+/// </summary>
 public static class NpgsqlScript
 {
     public const string CreateUserOnlyData = """INSERT INTO public."Users" VALUES (1, '1@2', '12');""";

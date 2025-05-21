@@ -68,7 +68,7 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
 
             var dtoWithTagsAfterSuccessfulCreate = await ReadStructuredTagList();
 
-            var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.StructuredTags;
+            var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.EnrichedTags;
 
             var checkboxes = new List<string>();
 
@@ -123,7 +123,7 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
     {
         try
         {
-            var tagList = await repo.ReadStructuredTagList();
+            var tagList = await repo.ReadEnrichedTagList();
 
             return new NoteResultDto(tagList);
         }

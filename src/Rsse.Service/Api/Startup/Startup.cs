@@ -73,7 +73,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
         {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<MigratorType>());
         });
 
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));

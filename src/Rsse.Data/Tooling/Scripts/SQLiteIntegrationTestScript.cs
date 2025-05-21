@@ -1,7 +1,7 @@
 namespace SearchEngine.Tooling.Scripts;
 
 /// <summary>
-/// Скрипт инициализируется при запуске интеграционных тестов
+/// Скрипт инициализации используется при запуске интеграционных тестов.
 /// Ссылка на информацию по SQLite: https://www.sqlite.org/lang.html
 /// </summary>
 // ReSharper disable once InconsistentNaming

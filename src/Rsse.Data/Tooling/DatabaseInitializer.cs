@@ -9,13 +9,13 @@ using SearchEngine.Tooling.Scripts;
 namespace SearchEngine.Tooling;
 
 /// <summary>
-/// Создание и заполнение базы данных.
+/// Создание и первоначальное заполнение базы данных.
 /// Требуется для интеграционных тестов и первоначального запуска до накатки дампа.
 /// </summary>
 public abstract class DatabaseInitializer
 {
     /// <summary>
-    /// Инициализировать базы данных, вызывается однократно.
+    /// Инициализировать две базы данных, вызывается однократно.
     /// </summary>
     public static void CreateAndSeed(IServiceProvider provider, ILogger logger)
     {
@@ -54,8 +54,8 @@ public abstract class DatabaseInitializer
     /// <summary>
     /// Заполнить базу тестовыми данными.
     /// </summary>
-    /// <param name="context">контекст базы данных</param>
-    /// <param name="created">была ли база создана</param>
+    /// <param name="context">Контекст базы данных.</param>
+    /// <param name="created">Была ли база создана.</param>
     private static void SeedDatabase(BaseCatalogContext context, bool created)
     {
         var database = context.Database;

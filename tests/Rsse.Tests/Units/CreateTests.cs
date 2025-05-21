@@ -33,7 +33,7 @@ public class CreateTests
         var resultDto = await CreateService.ReadStructuredTagList();
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.StructuredTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.EnrichedTags?.Count);
     }
 
     [TestMethod]

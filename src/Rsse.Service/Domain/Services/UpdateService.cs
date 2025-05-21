@@ -70,7 +70,7 @@ public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
                 text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
             }
 
-            var tagList = await repo.ReadStructuredTagList();
+            var tagList = await repo.ReadEnrichedTagList();
 
             var noteTags = await repo.ReadNoteTagIds(originalNoteId);
 

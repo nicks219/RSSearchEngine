@@ -6,35 +6,33 @@ using SearchEngine.Domain.Configuration;
 namespace SearchEngine.Domain.Entities;
 
 /// <summary>
-/// Представление строки таблицы бд с заметками
+/// Представление строки таблицы бд с заметкой.
 /// </summary>
 [Table("Note")]
-public class NoteEntity : INote
+public class NoteEntity
 {
     /// <summary>
-    /// Номер заметки
+    /// Идентификатор заметки.
     /// </summary>
-    //[Key]
-    //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("NoteId")]
     public int NoteId { get; set; }
 
     /// <summary>
-    /// Именование заметки
+    /// Именование заметки.
     /// </summary>
     [Column("Title")]
     [MaxLength(CommonDataConstants.MaxTitleLength)]
     public string? Title { get; set; }
 
     /// <summary>
-    /// Текст заметки
+    /// Текст заметки.
     /// </summary>
     [Column("Text")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
     public string? Text { get; set; }
 
     /// <summary>
-    /// Служебное поле EF для создания связи
+    /// Служебное поле EF для создания связи.
     /// </summary>
     public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
 }

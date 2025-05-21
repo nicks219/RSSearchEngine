@@ -55,7 +55,7 @@ public class CreateController(
                 {
                     Title = noteResultDto.Title,
                     Text = noteResultDto.Text,
-                    StructuredTags = noteResultDto.StructuredTags,
+                    StructuredTags = noteResultDto.EnrichedTags,
                     ErrorMessage = noteResultDto.ErrorMessage
                 };
             }

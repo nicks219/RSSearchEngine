@@ -139,7 +139,7 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.FromResult(titlesList);
     }
 
-    public Task<List<string>> ReadStructuredTagList()
+    public Task<List<string>> ReadEnrichedTagList()
     {
         var result = Task.FromResult(TagList);
         return result;
@@ -205,7 +205,7 @@ public sealed class FakeCatalogRepository : IDataRepository
 
     public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 
-    public void Dispose() {}
+    public void Dispose() { }
 
     public ValueTask DisposeAsync()
     {

@@ -3,7 +3,7 @@ namespace SearchEngine.Domain.Configuration;
 /// <summary>
 /// Тип мигратора.
 /// </summary>
-public enum DatabaseType
+public enum MigratorType
 {
     MySql = 0,
     Postgres = 1,
