@@ -36,7 +36,7 @@ public class MigrationController(
     {
         try
         {
-            var mySqlMigrator = GetMigrator(migrators, MigratorType.MySql);
+            var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
             await mySqlMigrator.CopyDbFromMysqlToNpgsql();
             await tokenizer.Initialize();
         }
@@ -54,11 +54,11 @@ public class MigrationController(
     /// Создать дамп бд.
     /// </summary>
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
-    /// <param name="migratorType">Тип мигратора.</param>
+    /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
-    public IActionResult CreateDump(string? fileName, MigratorType migratorType = MigratorType.Postgres)
+    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, migratorType);
+        var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
@@ -77,12 +77,12 @@ public class MigrationController(
     /// Накатить дамп.
     /// </summary>
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
-    /// <param name="migratorType">Тип мигратора.</param>
+    /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<IActionResult> RestoreFromDump(string? fileName, MigratorType migratorType = MigratorType.Postgres)
+    public async Task<IActionResult> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, migratorType);
+        var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
@@ -130,13 +130,13 @@ public class MigrationController(
     /// <summary>
     /// Получить мигратор требуемого типа из списка зависимостей.
     /// </summary>
-    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, MigratorType migratorType)
+    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)
     {
-        var migrator = migratorType switch
+        var migrator = databaseType switch
         {
-            MigratorType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
-            MigratorType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
-            _ => throw new ArgumentOutOfRangeException(nameof(migratorType), migratorType, "unknown database type")
+            DatabaseType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
+            DatabaseType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
+            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, "unknown database type")
         };
 
         return migrator;

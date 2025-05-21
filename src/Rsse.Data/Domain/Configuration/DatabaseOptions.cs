@@ -8,7 +8,7 @@ public class DatabaseOptions
     /// <summary>
     /// Выбор контекста бд для чтения.
     /// </summary>
-    public MigratorType ReaderContext { get; init; }
+    public DatabaseType ReaderContext { get; init; }
 
     /// <summary>
     /// Применять ли скрипт с созданием таблиц на миграции для postgres.

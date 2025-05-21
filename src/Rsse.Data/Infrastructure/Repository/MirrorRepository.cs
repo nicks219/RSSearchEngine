@@ -29,8 +29,8 @@ public sealed class MirrorRepository(
     // выбор контеста для чтения, завязан на резолве контекстов в конструкторах, добавлена compile-time проверка.
     private readonly IDataRepository _reader = options.Value.ReaderContext switch
     {
-        MigratorType.Postgres => reader as CatalogRepository<NpgsqlCatalogContext>,
-        MigratorType.MySql => writerPrimary as CatalogRepository<MysqlCatalogContext>,
+        DatabaseType.Postgres => reader as CatalogRepository<NpgsqlCatalogContext>,
+        DatabaseType.MySql => writerPrimary as CatalogRepository<MysqlCatalogContext>,
         _ => reader
     };
     private readonly IDataRepository _writerPrimary = writerPrimary;
