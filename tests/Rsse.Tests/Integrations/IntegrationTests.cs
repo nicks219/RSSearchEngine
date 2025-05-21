@@ -8,10 +8,14 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Org.BouncyCastle.Security;
 using SearchEngine.Domain.ApiModels;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
@@ -419,6 +423,46 @@ public class IntegrationTests
 
         // clean up:
         requestContent.Dispose();
+    }
+
+    [TestMethod]
+    public async Task Integration_UpdateCredosCorrectly_ShouldChangePassword()
+    {
+        // arrange:
+        const string oldEmail = "1@2";
+        const string oldPassword = "12";
+        const string newEmail = "1@3";
+        const string newPassword = "13";
+        using var client = _factory.CreateClient(_cookiesOptions);
+        await client.TryAuthorizeToService(oldEmail, oldPassword);
+
+        // act:
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["OldCredos.Email"] = oldEmail,
+            ["OldCredos.Password"] = oldPassword,
+            ["NewCredos.Email"] = newEmail,
+            ["NewCredos.Password"] = newPassword,
+        };
+        var queryStringWithCorrectCredos = QueryHelpers.AddQueryString(AccountUpdateGetUrl, queryParams);
+        var uriWithCorrectCredos = new Uri(queryStringWithCorrectCredos, UriKind.Relative);
+
+        // act:
+        using var _ = await client.SendTestRequest(Request.Get, uriWithCorrectCredos);
+        Exception? exceptionOnIncorrectAuthorization = null;
+        try
+        {
+            // incorrect credos:
+            await client.TryAuthorizeToService(oldEmail, oldPassword);
+        }
+        catch (Exception exception)
+        {
+            exceptionOnIncorrectAuthorization = exception;
+        }
+
+        // asserts:
+        await client.TryAuthorizeToService(newEmail, newPassword);
+        exceptionOnIncorrectAuthorization.Should().NotBeNull();
     }
 
     // выполнить каст
