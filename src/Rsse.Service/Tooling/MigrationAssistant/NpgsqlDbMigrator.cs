@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -221,6 +222,9 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
 
         return sourceArchiveFileName;
     }
+
+    /// <inheritdoc/>
+    public Task CopyDbFromMysqlToNpgsql() => throw new NotSupportedException($"use {nameof(MySqlDbMigrator)} instead.");
 
     // <summary/> выставить актуальные значения ключей
     private static void SetVals(NpgsqlConnection connection)

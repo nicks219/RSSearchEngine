@@ -58,7 +58,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 
-        services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
+        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         services.AddHttpContextAccessor();
 
@@ -98,6 +98,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddScoped<IDataRepository, MirrorRepository>();
 
         services.AddControllers();
+        services.AddDomainLayerDependencies();
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -133,7 +134,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             {
                 policyBuilder.WithOrigins(_allowedOrigins).AllowCredentials();
                 policyBuilder.WithHeaders("Content-Type");
-                policyBuilder.WithMethods("GET", "POST", "DELETE", "OPTIONS");
+                policyBuilder.WithMethods("GET", "POST", "DELETE", "PUT", "OPTIONS");
             });
         });
 

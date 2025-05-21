@@ -7,8 +7,9 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -16,53 +17,38 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для обновления заметки
 /// </summary>
-[Authorize, Route("api/update"), ApiController]
+[Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
-    IDataRepository repo,
     ITokenizerService tokenizer,
-    ILogger<UpdateController> logger,
-    ILogger<UpdateManager> managerLogger) : ControllerBase
+    UpdateService updateService,
+    ILogger<UpdateController> logger) : ControllerBase
 {
-    /// <summary>
-    /// Получить обновляемую заметку
-    /// </summary>
-    /// <param name="id">идентификатор обновляемой заметки</param>
-    [HttpGet]
-    public async Task<ActionResult<NoteResponse>> GetInitialNote(int id)
-    {
-        try
-        {
-            var response = await new UpdateManager(repo, managerLogger).GetOriginalNote(id);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetInitialNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = GetInitialNoteError };
-        }
-    }
-
     /// <summary>
     /// Обновить заметку
     /// </summary>
     /// <param name="request">данные для обновления</param>
-    [Authorize, HttpPost]
+    [Authorize, HttpPut(RouteConstants.UpdateNotePutUrl)]
     public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
         try
         {
             var dto = request.MapToDto();
-            var response = await new UpdateManager(repo, managerLogger).UpdateNote(dto);
+            var response = await updateService.UpdateNote(dto);
+            var entity = new TextRequestDto
+            {
+                Title = dto.Title,
+                Text = dto.Text
+            };
 
-            tokenizer.Update(dto.NoteIdExchange, new NoteEntity { Title = dto.TitleRequest, Text = dto.TextRequest });
+            await tokenizer.Update(dto.NoteIdExchange, entity);
 
             return response.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, UpdateNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = UpdateNoteError };
+            return new NoteResponse { ErrorMessage = UpdateNoteError };
         }
     }
 }

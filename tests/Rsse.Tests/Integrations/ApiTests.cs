@@ -11,6 +11,8 @@ using SearchEngine.Domain.Configuration;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
+using static SearchEngine.Domain.Configuration.RouteConstants;
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace SearchEngine.Tests.Integrations;
@@ -62,9 +64,9 @@ public class ApiTests
     }
 
     [TestMethod]
-    [DataRow("api/read/title?id=1", "res", "Розенбаум -- Вечерняя застольная")]
-    [DataRow("api/read/election", "randomElection", false)]
-    [DataRow("api/read", "structuredTagsListResponse", TestHelper.TagListResponse)]
+    [DataRow($"{ReadTitleGetUrl}?id=1", "res", "Розенбаум -- Вечерняя застольная")]
+    [DataRow($"{ReadElectionGetUrl}", "randomElection", false)]
+    [DataRow(ReadTagsGetUrl, "structuredTagsListResponse", TestHelper.TagListResponse)]
     public async Task Api_ReadController_Get_ShouldReturnsExpectedResult(string uriString, string key, object expected)
     {
         // arrange:
@@ -106,7 +108,7 @@ public class ApiTests
     }
 
     [TestMethod]
-    [DataRow("api/read", "titleResponse", "Розенбаум -- Вечерняя застольная")]
+    [DataRow(ReadNotePostUrl, "titleResponse", "Розенбаум -- Вечерняя застольная")]
     public async Task Api_ReadController_Post_ShouldReturnsExpectedResult(string uriString, string key, string expected)
     {
         // arrange:

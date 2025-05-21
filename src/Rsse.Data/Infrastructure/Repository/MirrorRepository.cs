@@ -66,9 +66,9 @@ public class MirrorRepository(
         await npgsqlCatalogContext.Database.EnsureCreatedAsync();
 
         // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
-        var notes = mysqlCatalogContext.Notes!.Select(note => note).ToList();
-        var tags = mysqlCatalogContext.Tags!.Select(tag => tag).ToList();
-        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation!.Select(relation => relation).ToList();
+        var notes = mysqlCatalogContext.Notes.Select(note => note).ToList();
+        var tags = mysqlCatalogContext.Tags.Select(tag => tag).ToList();
+        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation.Select(relation => relation).ToList();
 
         var users = mysqlCatalogContext.Users.Select(user => user).ToList();
 
@@ -77,9 +77,9 @@ public class MirrorRepository(
         try
         {
             // notes, tags, relations:
-            await npgsqlCatalogContext.Notes!.AddRangeAsync(notes);
-            await npgsqlCatalogContext.Tags!.AddRangeAsync(tags);
-            await npgsqlCatalogContext.TagsToNotesRelation!.AddRangeAsync(tagsToNotes);
+            await npgsqlCatalogContext.Notes.AddRangeAsync(notes);
+            await npgsqlCatalogContext.Tags.AddRangeAsync(tags);
+            await npgsqlCatalogContext.TagsToNotesRelation.AddRangeAsync(tagsToNotes);
 
             // users:
             await npgsqlCatalogContext.Users.ExecuteDeleteAsync();
@@ -127,7 +127,7 @@ public class MirrorRepository(
         return secondary;
     }
 
-    public IQueryable<TextResult> ReadNote(int noteId) => _reader.ReadNote(noteId);
+    public Task<TextResultDto?> ReadNote(int noteId) => _reader.ReadNote(noteId);
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
@@ -158,17 +158,15 @@ public class MirrorRepository(
 
     public Task<int> ReadNotesCount() => _reader.ReadNotesCount();
 
-    public IQueryable<NoteEntity> ReadAllNotes() => _reader.ReadAllNotes();
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes() => _reader.ReadAllNotes();
 
-    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags) => _reader.ReadTaggedNotesIds(checkedTags);
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags) => _reader.ReadTaggedNotesIds(checkedTags);
 
-    public string ReadNoteTitle(int noteId) => _reader.ReadNoteTitle(noteId);
+    public Task<string?> ReadNoteTitle(int noteId) => _reader.ReadNoteTitle(noteId);
 
-    public int ReadNoteId(string noteTitle) => _reader.ReadNoteId(noteTitle);
+    public Task<List<int>> ReadNoteTagIds(int noteId) => _reader.ReadNoteTagIds(noteId);
 
-    public IQueryable<int> ReadNoteTags(int noteId) => _reader.ReadNoteTags(noteId);
-
-    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
+    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize) => _reader.ReadCatalogPage(pageNumber, pageSize);
 
     public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest) => _reader.GetUser(credentialsRequest);
 }

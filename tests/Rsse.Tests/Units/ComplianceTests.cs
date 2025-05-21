@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Dto;
 using SearchEngine.Tests.Units.Mocks;
@@ -21,25 +22,25 @@ public class ComplianceTests
     private const string Text = "чорт з ным зо сталом";
 
     [TestMethod]
-    public void ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
+    public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceSearchController>>();
-        var sp = new ServiceProviderStub<TokenizerService>();
-        var repo = sp.Provider.GetRequiredService<IDataRepository>();
+        var sp = new ServiceProviderStub();
         var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
+        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchService>();
 
-        var complianceController = new ComplianceSearchController(repo, tokenizer, logger);
+        var complianceController = new ComplianceSearchController(complianceManager, logger);
         complianceController.AddHttpContext(sp.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        tokenizer.Initialize();
+        await tokenizer.Initialize();
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);
         var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
         var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ComplianceResponseModel>(serialized);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponseTestDto>(serialized);
 
         // assert:
         deserialized.Should().NotBeNull();

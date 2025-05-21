@@ -4,8 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -13,11 +12,9 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска
 /// </summary>
-[Route("api/compliance")]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ComplianceSearchController(
-    IDataRepository repo,
-    ITokenizerService tokenizer,
+    ComplianceSearchService complianceService,
     ILogger<ComplianceSearchController> logger) : ControllerBase
 {
     /// <summary>
@@ -25,7 +22,7 @@ public class ComplianceSearchController(
     /// </summary>
     /// <param name="text">строка с поисковым запросом</param>
     /// <returns>объект OkObjectResult с результатом поиска</returns>
-    [HttpGet("indices")]
+    [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
     public ActionResult GetComplianceIndices(string text)
     {
         var okEmptyResponse = Ok(new { });
@@ -37,9 +34,8 @@ public class ComplianceSearchController(
 
         try
         {
-            var manager = new ComplianceSearchManager(repo, tokenizer);
-            Dictionary<int, double> searchIndexes = manager.ComputeComplianceIndices(text);
             const double threshold = 0.1D;
+            Dictionary<int, double> searchIndexes = complianceService.ComputeComplianceIndices(text);
 
             switch (searchIndexes.Count)
             {
@@ -54,6 +50,7 @@ public class ComplianceSearchController(
                     break;
             }
 
+            // todo: поведение не гарантировано, лучше использовать список
             searchIndexes = searchIndexes
                 .OrderByDescending(x => x.Value)
                 .ToDictionary(x => x.Key, x => x.Value);
@@ -64,8 +61,8 @@ public class ComplianceSearchController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, FindError);
-            return new BadRequestObjectResult(FindError);
+            logger.LogError(ex, ComplianceError);
+            return new BadRequestObjectResult(ComplianceError);
         }
     }
 }

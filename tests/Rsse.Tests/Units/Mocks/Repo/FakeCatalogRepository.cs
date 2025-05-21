@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EntityFrameworkCore.Testing.Common;
-using Moq;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
@@ -14,7 +12,7 @@ namespace SearchEngine.Tests.Units.Mocks.Repo;
 /// <summary>
 /// Тестовый репозиторий
 /// </summary>
-public class FakeCatalogRepository : IDataRepository
+public sealed class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
@@ -29,11 +27,11 @@ public class FakeCatalogRepository : IDataRepository
 
     internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
-    private readonly Dictionary<int, TextResult> _notes = new();
+    private readonly Dictionary<int, TextResultDto> _notes = new();
 
     public FakeCatalogRepository()
     {
-        _notes.Add(TestNoteId, new TextResult { Title = FirstNoteTitle, Text = FirstNoteText });
+        _notes.Add(TestNoteId, new TextResultDto { Title = FirstNoteTitle, Text = FirstNoteText });
     }
 
     private int _lastId = 1;
@@ -44,7 +42,7 @@ public class FakeCatalogRepository : IDataRepository
         {
             if (i != 1 && !_notes.ContainsKey(i))
             {
-                _notes.Add(i, new TextResult { Title = i + ": key", Text = i + ": value" });
+                _notes.Add(i, new TextResultDto { Title = i + ": key", Text = i + ": value" });
             }
         }
     }
@@ -57,7 +55,7 @@ public class FakeCatalogRepository : IDataRepository
         }
     }
 
-    public IQueryable<NoteEntity> ReadAllNotes()
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
         var notes = _notes
             .Select(keyValue => new NoteEntity
@@ -68,22 +66,23 @@ public class FakeCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return notes.AsQueryable();
+        return notes.ToAsyncEnumerable();
     }
 
-    public string ReadNoteTitle(int noteId)
+    public Task<string?> ReadNoteTitle(int noteId)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
         foreach (var keyValue in _notes.Where(keyValue => keyValue.Key == noteId))
         {
-            return keyValue.Value.Title;
+            return Task.FromResult<string?>(keyValue.Value.Title);
         }
 
-        throw new NotImplementedException($"Note with id `{noteId}` not found");
+        return Task.FromResult<string?>(null);
     }
 
-    public int ReadNoteId(string noteTitle)
+    /// <summary/> Метод для тестового мока, отсутствует в основном контракте
+    public int? ReadNoteId(string noteTitle)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -92,18 +91,18 @@ public class FakeCatalogRepository : IDataRepository
             return keyValue.Key;
         }
 
-        throw new NotImplementedException($"Note `{noteTitle}` not found");
+        return null;
     }
 
     public Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
+        if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
         _lastId++;
-        _notes.Add(_lastId, new TextResult { Title = noteRequest.TitleRequest, Text = noteRequest.TextRequest });
+        _notes.Add(_lastId, new TextResultDto { Title = noteRequest.Title, Text = noteRequest.Text });
 
         return Task.FromResult(_lastId);
     }
@@ -126,7 +125,7 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(user);
     }
 
-    public IQueryable<CatalogItemDto> ReadCatalogPage(int pageNumber, int pageSize)
+    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -137,7 +136,7 @@ public class FakeCatalogRepository : IDataRepository
                 .Select<int, CatalogItemDto>(x => new CatalogItemDto { Title = _notes[x].Title, NoteId = x })
                 .ToList();
 
-        return new FakeDbSet<CatalogItemDto>(titlesList);
+        return Task.FromResult(titlesList);
     }
 
     public Task<List<string>> ReadStructuredTagList()
@@ -146,10 +145,10 @@ public class FakeCatalogRepository : IDataRepository
         return result;
     }
 
-    public IQueryable<int> ReadNoteTags(int noteId)
+    public Task<List<int>> ReadNoteTagIds(int noteId)
     {
         var tagList = new List<int> { 1, 2 };
-        return new FakeDbSet<int>(tagList);
+        return Task.FromResult(tagList);
     }
 
     public Task<int> ReadNotesCount()
@@ -159,15 +158,15 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_notes.Count);
     }
 
-    public IQueryable<TextResult> ReadNote(int noteId)
+    public Task<TextResultDto?> ReadNote(int noteId)
     {
-        var note = new List<TextResult> { _notes[noteId] };
-        return new FakeDbSet<TextResult>(note);
+        var note = _notes[noteId];
+        return Task.FromResult<TextResultDto?>(note);
     }
 
-    public IQueryable<int> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
     {
-        var ids = checkedTags as int[] ?? checkedTags.ToArray();
+        var ids = checkedTags as List<int> ?? checkedTags.ToList();
         if (ids.First() == ReadTests.ElectionTestCheckedTag)
         {
             // признак теста ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest
@@ -175,42 +174,41 @@ public class FakeCatalogRepository : IDataRepository
             ids = [TestNoteId];
         }
 
-        if (ids.Length == ReadTests.ElectionTestTagsCount)
+        if (ids.Count == ReadTests.ElectionTestTagsCount)
         {
             // признак теста ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests
             // отдаём ElectionTestNotesCount заметок - пусть выбирает
-            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToArray();
+            ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToList();
         }
 
-        // выглядит как архитектурная проблема: IAsyncQueryProvider используется вне слоя репозитория в ElectNextNoteAsync
-        var queryable = new List<NoteEntity>().AsQueryable();
-        var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
-        var asyncQueryProvider = mock.Object;
+        // todo: сейчас нет необходимости мокать AsyncQueryProvider
+        // var queryable = new List<NoteEntity>().AsQueryable();
+        // var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
+        // var asyncQueryProvider = mock.Object;
 
-        var result = new FakeDbSet<int>(ids, asyncQueryProvider);
+        // var result = new FakeDbSet<int>(ids, asyncQueryProvider);
 
-        return result;
+        return Task.FromResult(ids);
     }
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {
-        if (noteRequest.TitleRequest == null || noteRequest.TextRequest == null || _notes == null)
+        if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[noteRequest.NoteIdExchange] = new TextResult { Text = noteRequest.TextRequest, Title = noteRequest.TitleRequest };
+        _notes[noteRequest.NoteIdExchange] = new TextResultDto { Text = noteRequest.Text, Title = noteRequest.Title };
 
         return Task.CompletedTask;
     }
 
     public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 
-    public void Dispose() => GC.SuppressFinalize(this);
+    public void Dispose() {}
 
     public ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
         return new ValueTask();
     }
 }

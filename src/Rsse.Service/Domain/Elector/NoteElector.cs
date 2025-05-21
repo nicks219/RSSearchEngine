@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +13,14 @@ internal static class NoteElector
     private static uint _id;
 
     /// <summary>
-    /// Выбрать заметку по заданным тегам, случайно или раунд-робином
+    /// Выбрать идентификатор заметки из списка, случайно или раунд-робином
     /// </summary>
     /// <param name="electableNoteIds">идентификаторы заметок, участвующих в выборе</param>
     /// <param name="randomElectionEnabled">алгоритм выбора</param>
     /// <returns>идентификатор выбранной заметки</returns>
-    internal static async Task<int> ElectNextNoteAsync(IQueryable<int> electableNoteIds, bool randomElectionEnabled = true)
+    internal static int ElectNextNote(List<int> electableNoteIds, bool randomElectionEnabled = true)
     {
-        var electableNoteCount = await electableNoteIds.CountAsync();
+        var electableNoteCount = electableNoteIds.Count;
 
         if (electableNoteCount == 0)
         {
@@ -28,31 +29,15 @@ internal static class NoteElector
 
         Interlocked.Increment(ref _id);
 
-        // round-robin либо random:
+        // round-robin либо random, отсчёт от нуля:
         var coin = randomElectionEnabled ? GetRandomInRange(electableNoteCount) : (int)(_id % electableNoteCount);
 
-        // в данный момент дополнительная рандомизация не задействована:
-        var result = randomElectionEnabled switch
-        {
-            // случайный выбор:
-            true => await electableNoteIds
-                // дополнительное перемешивание:
-                // .ToList().Shuffle(random)
-                // .OrderBy(s => GetNextInt32(random))
-                .OrderBy(s => s)
-                .Skip(coin)
-                .Take(1)
-                .FirstAsync(),
+        // в данный момент дополнительная рандомизация Shuffle не задействована:
+        var nextId = electableNoteIds
+            .OrderBy(s => s)
+            .ElementAt(coin);
 
-            // round-robin:
-            _ => await electableNoteIds
-                .OrderBy(s => s)
-                .Skip(coin)
-                .Take(1)
-                .FirstAsync()
-        };
-
-        return result;
+        return nextId;
     }
 
     /// <summary>

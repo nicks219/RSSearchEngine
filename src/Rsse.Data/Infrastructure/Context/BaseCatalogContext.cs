@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SearchEngine.Domain.Entities;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace SearchEngine.Infrastructure.Context;
 
 /// <summary>
@@ -17,28 +19,26 @@ public abstract class BaseCatalogContext(DbContextOptions options) : DbContext(o
     /// <summary>
     /// Контекст для текстов заметок
     /// </summary>
-    public DbSet<NoteEntity>? Notes { get; set; }
+    public DbSet<NoteEntity> Notes { get; set; }
 
     /// <summary>
     /// Контекст для тегов заметок
     /// </summary>
-    public DbSet<TagEntity>? Tags { get; set; }
+    public DbSet<TagEntity> Tags { get; set; }
 
     /// <summary>
-    /// Контекст для связыви заметок и тегов
+    /// Контекст для связи заметок и тегов
     /// </summary>
-    public DbSet<TagsToNotesEntity>? TagsToNotesRelation { get; set; }
+    public DbSet<TagsToNotesEntity> TagsToNotesRelation { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserEntity>().HasKey(x => x.Id);
 
         modelBuilder.Entity<NoteEntity>().HasKey(noteEntity => noteEntity.NoteId);
-        // CONSTRAINT: UNIQUE NONCLUSTERED
         modelBuilder.Entity<NoteEntity>().HasAlternateKey(noteEntity => noteEntity.Title);
 
         modelBuilder.Entity<TagEntity>().HasKey(tagsEntity => tagsEntity.TagId);
-        // CONSTRAINT: UNIQUE NONCLUSTERED
         modelBuilder.Entity<TagEntity>().HasAlternateKey(tagsEntity => tagsEntity.Tag);
 
         modelBuilder.Entity<TagsToNotesEntity>()

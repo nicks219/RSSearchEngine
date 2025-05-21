@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +10,7 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -21,23 +20,26 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class CatalogTests
 {
-    public required CatalogManager CatalogManager;
+    public required CatalogService CatalogService;
+    public required DeleteService DeleteService;
     public required FakeCatalogRepository Repo;
 
     private const int NotesPerPage = 10;
     private int _notesCount;
 
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
-        var host = new ServiceProviderStub<CatalogManager>();
+        var host = new ServiceProviderStub();
         var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogManager>>();
+        var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
+        var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();
 
-        CatalogManager = new CatalogManager(repo, managerLogger);
+        CatalogService = new CatalogService(repo, catalogManagerLogger);
+        DeleteService = new DeleteService(repo, CatalogService, deleteManagerLogger);
         Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
-        _notesCount = Repo.ReadAllNotes().Count();
+        _notesCount = await Repo.ReadNotesCount();
     }
 
     [TestMethod]
@@ -49,7 +51,7 @@ public class CatalogTests
         Repo.CreateStubData(totalPages);
 
         // act:
-        var responseDto = await CatalogManager.ReadPage(existingPage);
+        var responseDto = await CatalogService.ReadPage(existingPage);
 
         // asserts:
         Assert.AreEqual(NotesPerPage, responseDto.CatalogPage?.Count);
@@ -67,23 +69,13 @@ public class CatalogTests
         var request = new CatalogRequestDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
-        var responseDto = await CatalogManager.NavigateCatalog(request);
+        var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
         responseDto.PageNumber
             .Should()
             .Be(currentPage + 1);
     }
-
-    /*[TestMethod]
-    public async Task CatalogManager_ShouldLogError_OnUndefinedRequest()
-    {
-        // arrange & act:
-        _ = await CatalogManager.NavigateCatalog(null!);
-
-        // assert:
-        Assert.AreEqual(ErrorMessages.NavigateCatalogError, _logger?.Message);
-    }*/
 
     [TestMethod]
     public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
@@ -93,10 +85,10 @@ public class CatalogTests
         var request = new CatalogRequestDto { Direction = invalidData };
 
         // act:
-        var responseDto = await CatalogManager.NavigateCatalog(request);
+        var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(responseDto.ErrorMessage, ErrorMessages.NavigateCatalogError);
+        Assert.AreEqual(ErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
     }
 
     [TestMethod]
@@ -105,7 +97,7 @@ public class CatalogTests
         // arrange & act:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var responseDto = await CatalogManager.DeleteNote(invalidPageId, invalidPageNumber);
+        var responseDto = await DeleteService.DeleteNote(invalidPageId, invalidPageNumber);
 
         // assert:
         Assert.AreEqual(0, responseDto.NotesCount);
@@ -117,18 +109,16 @@ public class CatalogTests
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var logger = Substitute.For<ILogger<CatalogController>>();
-        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
-        var repo = Substitute.For<IDataRepository>();
+        var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
+        var catalogController = new DeleteController(tokenizer, DeleteService, logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
 
         // assert:
-        Assert.AreEqual(null, responseDto.EnsureNotNull().CatalogPage);
+        Assert.IsNull(responseDto.EnsureNotNull().CatalogPage);
     }
 
     [TestMethod]
@@ -136,16 +126,14 @@ public class CatalogTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<CatalogController>>();
-        var managerLogger = Substitute.For<ILogger<CatalogManager>>();
-        var repo = Substitute.For<IDataRepository>();
-        var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new CatalogController(repo, tokenizer, logger, managerLogger);
+        var catalogController = new CatalogController(CatalogService, logger);
 
         // act:
         _ = await catalogController.NavigateCatalog(null!);
 
         // assert:
+        //var logger = loggerFactory.Received().CreateLogger<CatalogController>();//
         logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
     }
 }

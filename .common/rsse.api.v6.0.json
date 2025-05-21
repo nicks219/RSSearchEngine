@@ -5,7 +5,7 @@
     "version": "6.0"
   },
   "paths": {
-    "/account/login": {
+    "/v6/account/login": {
       "get": {
         "tags": [
           "Account"
@@ -57,7 +57,7 @@
         }
       }
     },
-    "/account/logout": {
+    "/v6/account/logout": {
       "get": {
         "tags": [
           "Account"
@@ -86,7 +86,7 @@
         }
       }
     },
-    "/account/check": {
+    "/v6/account/check": {
       "get": {
         "tags": [
           "Account"
@@ -98,7 +98,7 @@
         }
       }
     },
-    "/account/update": {
+    "/v6/account/update": {
       "get": {
         "tags": [
           "Account"
@@ -107,7 +107,6 @@
           {
             "name": "OldCredos.Email",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -115,7 +114,6 @@
           {
             "name": "OldCredos.Password",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -123,7 +121,6 @@
           {
             "name": "NewCredos.Email",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -131,7 +128,6 @@
           {
             "name": "NewCredos.Password",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -144,7 +140,7 @@
         }
       }
     },
-    "/api/catalog": {
+    "/v6/catalog": {
       "get": {
         "tags": [
           "Catalog"
@@ -165,23 +161,25 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/v6/catalog/navigate": {
       "post": {
         "tags": [
           "Catalog"
@@ -190,17 +188,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CatalogDto"
+                "$ref": "#/components/schemas/CatalogRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CatalogDto"
+                "$ref": "#/components/schemas/CatalogRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CatalogDto"
+                "$ref": "#/components/schemas/CatalogRequest"
               }
             }
           }
@@ -211,26 +209,97 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/v6/compliance/indices": {
+      "get": {
+        "tags": [
+          "ComplianceSearch"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v6/note/create": {
+      "post": {
+        "tags": [
+          "Create"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v6/note/delete": {
       "delete": {
         "tags": [
-          "Catalog"
+          "Delete"
         ],
         "parameters": [
           {
@@ -256,113 +325,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/compliance/indices": {
-      "get": {
-        "tags": [
-          "Compliance"
-        ],
-        "parameters": [
-          {
-            "name": "text",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/create": {
-      "get": {
-        "tags": [
-          "Create"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Create"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NoteDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NoteDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NoteDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/CatalogResponse"
                 }
               }
             }
@@ -532,7 +505,7 @@
         }
       }
     },
-    "/api/read/election": {
+    "/v6/election/switch": {
       "get": {
         "tags": [
           "Read"
@@ -544,7 +517,7 @@
         }
       }
     },
-    "/api/read/title": {
+    "/v6/title": {
       "get": {
         "tags": [
           "Read"
@@ -565,34 +538,7 @@
         }
       }
     },
-    "/api/read": {
-      "get": {
-        "tags": [
-          "Read"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/v6/election/note": {
       "post": {
         "tags": [
           "Read"
@@ -610,17 +556,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             }
           }
@@ -631,17 +577,115 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v6/tags": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v6/tags/forCreate": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/v6/note/forUpdate": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               }
             }
@@ -661,45 +705,8 @@
         }
       }
     },
-    "/api/update": {
-      "get": {
-        "tags": [
-          "Update"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
+    "/v6/note/update": {
+      "put": {
         "tags": [
           "Update"
         ],
@@ -707,17 +714,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteDto"
+                "$ref": "#/components/schemas/NoteRequest"
               }
             }
           }
@@ -728,17 +735,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NoteDto"
+                  "$ref": "#/components/schemas/NoteResponse"
                 }
               }
             }
@@ -749,13 +756,49 @@
   },
   "components": {
     "schemas": {
-      "CatalogDto": {
+      "CatalogItemDto": {
+        "required": [
+          "item1",
+          "item2"
+        ],
+        "type": "object",
+        "properties": {
+          "item1": {
+            "type": "string",
+            "nullable": true
+          },
+          "item2": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CatalogRequest": {
+        "type": "object",
+        "properties": {
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "direction": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CatalogResponse": {
         "type": "object",
         "properties": {
           "catalogPage": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StringInt32Tuple"
+              "$ref": "#/components/schemas/CatalogItemDto"
             },
             "nullable": true
           },
@@ -770,14 +813,6 @@
           "errorMessage": {
             "type": "string",
             "nullable": true
-          },
-          "direction": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -789,7 +824,7 @@
         ],
         "type": "string"
       },
-      "NoteDto": {
+      "NoteRequest": {
         "type": "object",
         "properties": {
           "tagsCheckedRequest": {
@@ -808,6 +843,16 @@
             "type": "string",
             "nullable": true
           },
+          "commonNoteID": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NoteResponse": {
+        "type": "object",
+        "properties": {
           "tagsCheckedUncheckedResponse": {
             "type": "array",
             "items": {
@@ -867,20 +912,6 @@
           }
         },
         "additionalProperties": { }
-      },
-      "StringInt32Tuple": {
-        "type": "object",
-        "properties": {
-          "item1": {
-            "type": "string",
-            "nullable": true
-          },
-          "item2": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
       }
     }
   },

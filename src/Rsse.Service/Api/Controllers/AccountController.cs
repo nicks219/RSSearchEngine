@@ -11,9 +11,8 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -21,12 +20,11 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер авторизации
 /// </summary>
-[ApiController, Route("account")]
+[ApiController]
 public class AccountController(
     IWebHostEnvironment env,
-    IDataRepository repo,
-    ILogger<AccountController> logger,
-    ILogger<AccountManager> managerLogger) : ControllerBase
+    AccountService accountService,
+    ILogger<AccountController> logger) : ControllerBase
 {
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
@@ -38,7 +36,7 @@ public class AccountController(
     /// <param name="password">пароль</param>
     /// <param name="returnUrl">пиздец</param>
     /// <returns>объект OkObjectResult с результатом</returns>
-    [HttpGet("login")]
+    [HttpGet(RouteConstants.AccountLoginGetUrl)]
     public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
         if (returnUrl != null)
@@ -59,7 +57,7 @@ public class AccountController(
     /// <summary>
     /// Выйти из системы
     /// </summary>
-    [HttpGet("logout")]
+    [HttpGet(RouteConstants.AccountLogoutGetUrl)]
     public async Task<ActionResult<string>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -71,7 +69,7 @@ public class AccountController(
 
     /// <summary/> Проверить, авторизован ли запрос
     [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
-    [HttpGet("check"), Authorize]
+    [HttpGet(RouteConstants.AccountCheckGetUrl), Authorize]
     public ActionResult CheckAuth()
     {
         return Ok(new
@@ -81,11 +79,12 @@ public class AccountController(
     }
 
     /// <summary/> Обновить логин и пароль
-    [HttpGet("update"), Authorize]
+    // todo: перенести в domain
+    [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var credosForUpdate = credentials.MapToDto();
-        await repo.UpdateCredos(credosForUpdate);
+        await accountService.UpdateCredos(credosForUpdate);
         await Logout();
         return Ok("updated");
     }
@@ -98,7 +97,7 @@ public class AccountController(
     {
         try
         {
-            var identity = await new AccountManager(repo, managerLogger).TrySignInWith(credentialsRequestDto);
+            var identity = await accountService.TrySignInWith(credentialsRequestDto);
 
             if (identity == null)
             {

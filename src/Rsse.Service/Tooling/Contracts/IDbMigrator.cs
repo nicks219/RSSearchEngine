@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace SearchEngine.Tooling.Contracts;
 
 /// <summary>
@@ -18,4 +20,10 @@ public interface IDbMigrator
     /// <param name="fileName">имя существующего файла миграции, при пустом аргументе используются имена из ротации</param>
     /// <returns>путь к существующему файлу миграции</returns>
     public string Restore(string? fileName);
+
+    /// <summary>
+    /// Скопировать данные из MySql в Postgres
+    /// </summary>
+    // todo: удалить из контракта после завершения перехода на Postgres
+    public Task CopyDbFromMysqlToNpgsql();
 }

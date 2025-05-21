@@ -1,13 +1,11 @@
-using System;
 using System.Collections.Generic;
-using SearchEngine.Domain.Tokenizer;
 
 namespace SearchEngine.Domain.Contracts;
 
 /// <summary>
 /// Контракт функционала токенизации заметок
 /// </summary>
-public interface ITokenizerProcessor : IDisposable
+public interface ITokenizerProcessor
 {
     /// <summary>
     /// Подготовить заметку к токенизации
@@ -30,11 +28,5 @@ public interface ITokenizerProcessor : IDisposable
     /// <param name="inputTokens">сравниваемый вектор токенов</param>
     /// <returns>метрика, говорящая о количестве совпадений</returns>
     public int ComputeComparisionMetric(List<int> referenceTokens, IEnumerable<int> inputTokens);
-
-    /// <summary>
-    /// Выбрать эталонную последовательность символов
-    /// </summary>
-    /// <param name="consonantChain">параметр выбора последовательности символов</param>
-    public void SetupChain(ConsonantChain consonantChain);
 }
 

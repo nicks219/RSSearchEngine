@@ -14,7 +14,7 @@ export const ReadSubmitButton = (props: {formElement: HTMLFormElement|null, stat
             "tagsCheckedRequest": checkboxesArray
         };
         const requestBody = JSON.stringify(item);
-        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.readUrl);
+        Loader.unusedPromise = Loader.postData(props.stateWrapper, requestBody, Loader.readNotePostUrl);
         (document.getElementById(Doms.header) as HTMLElement).style.backgroundColor = SystemConstants.slategreyStr;
     }
 

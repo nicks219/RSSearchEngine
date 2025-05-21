@@ -99,11 +99,11 @@ public class RepositoryTests
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
         var reader = repo
-            .GetReaderContext()?.Tags?
+            .GetReaderContext()?.Tags
             .Select(x => x.Tag)
             .ToList();
         var writer = repo
-            .GetPrimaryWriterContext()?.Tags?
+            .GetPrimaryWriterContext()?.Tags
             .Select(x => x.Tag)
             .ToList();
 
@@ -129,11 +129,11 @@ public class RepositoryTests
         // act:
         await repo.CreateTagIfNotExists(tag);
         var reader = repo
-            .GetReaderContext()?.Tags?
+            .GetReaderContext()?.Tags
             .Select(x => x.Tag)
             .ToList();
         var writer = repo
-            .GetPrimaryWriterContext()?.Tags?
+            .GetPrimaryWriterContext()?.Tags
             .Select(x => x.Tag)
             .ToList();
 

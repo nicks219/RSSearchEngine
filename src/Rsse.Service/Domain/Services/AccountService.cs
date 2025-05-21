@@ -8,12 +8,12 @@ using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал авторизации
 /// </summary>
-public class AccountManager(IDataRepository repo, ILogger<AccountManager> logger)
+public class AccountService(IDataRepository repo, ILogger<AccountService> logger)
 {
     /// <summary>
     /// Войти в систему
@@ -55,5 +55,11 @@ public class AccountManager(IDataRepository repo, ILogger<AccountManager> logger
             logger.LogError(ex, SignInError);
             return null;
         }
+    }
+
+    /// <summary/> Обновить логин и пароль
+    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate)
+    {
+        await repo.UpdateCredos(credosForUpdate);
     }
 }

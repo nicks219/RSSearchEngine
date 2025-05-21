@@ -1,29 +1,28 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Elector;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал получения заметок
 /// </summary>
-public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
+public class ReadService(IDataRepository repo, ILogger<ReadService> logger)
 {
     /// <summary>
     /// Прочитать название заметки по её идентификатору
     /// </summary>
     /// <param name="id">идентификатор заметки</param>
     /// <returns>название заметки</returns>
-    public string? ReadTitleByNoteId(int id)
+    public async Task<string?> ReadTitleByNoteId(int id)
     {
         try
         {
-            var res = repo.ReadNoteTitle(id);
+            var res = await repo.ReadNoteTitle(id);
 
             return res;
         }
@@ -51,7 +50,7 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
         {
             logger.LogError(ex, ReadModelReadTagListError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = ReadModelReadTagListError };
+            return new NoteResultDto { ErrorMessage = ReadModelReadTagListError };
         }
     }
 
@@ -70,26 +69,25 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
 
         try
         {
-            if (request is { TagsCheckedRequest: not null } && request.TagsCheckedRequest.Count != 0)
+            if (request is { CheckedTags: not null } && request.CheckedTags.Count != 0)
             {
                 if (IsSpecific() == false)
                 {
-                    var checkedTags = request.TagsCheckedRequest;
-                    var electableNoteIds = repo.ReadTaggedNotesIds(checkedTags);
-                    noteId = await NoteElector.ElectNextNoteAsync(electableNoteIds, randomElectionEnabled);
+                    var checkedTags = request.CheckedTags;
+                    // todo: вычитывается весь список
+                    var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags);
+                    noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
                 }
 
                 if (noteId != 0)
                 {
-                    var notes = await repo
-                        .ReadNote(noteId)
-                        .ToListAsync();
+                    var note = await repo.ReadNote(noteId);
 
-                    if (notes.Count > 0)
+                    if (note != null)
                     {
-                        text = notes[0].Text;
+                        text = note.Text;
 
-                        title = notes[0].Title;
+                        title = note.Title;
                     }
                 }
             }
@@ -102,7 +100,7 @@ public class ReadManager(IDataRepository repo, ILogger<ReadManager> logger)
         {
             logger.LogError(ex, ElectNoteError);
 
-            return new NoteResultDto { CommonErrorMessageResponse = ElectNoteError };
+            return new NoteResultDto { ErrorMessage = ElectNoteError };
         }
 
         bool IsSpecific() => int.TryParse(id, out noteId);

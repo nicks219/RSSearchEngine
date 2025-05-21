@@ -2,14 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Tests.Integrations.Dto;
+using static SearchEngine.Domain.Configuration.RouteConstants;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -23,63 +19,12 @@ public static class HttpClientExtensions
     /// </summary>
     internal static async Task TryAuthorizeToService(this HttpClient client, string login = "admin", string password = "admin")
     {
-        var uri = new Uri($"account/login?email={login}&password={password}", UriKind.Relative);
+        var uri = new Uri($"{AccountLoginGetUrl}?email={login}&password={password}", UriKind.Relative);
         using var authResponse = await client.GetAsync(uri);
         authResponse.EnsureSuccessStatusCode();
         var headers = authResponse.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
         client.DefaultRequestHeaders.Add("Cookie", new List<string> { cookie });
-    }
-
-    /// <summary>
-    /// Получить первый элемент из списка релевантности для текста
-    /// </summary>
-    internal static async Task<int> GetFirstComplianceIndexFromTokenizer(this HttpClient client, string text)
-    {
-        using var complianceResponse = await client.GetAsync($"api/compliance/indices?text={text}");
-        var result = await complianceResponse.Content.ReadAsStringAsync();
-        var firstKey = JsonSerializer.Deserialize<ComplianceResponseModel>(result)?.res.Keys.ElementAt(0);
-        Int32.TryParse(firstKey, out var complianceId);
-
-        return complianceId;
-    }
-
-    /// <summary>
-    /// Получить список тегов в формате "тег: количество заметок" либо "тег" если заметки в категории отсутствуют
-    /// </summary>
-    internal static async Task<List<string>> GetTagsFromReaderOnly(this HttpClient client)
-    {
-        using var tagsResponse = await client.GetAsync("api/create");
-        var tagDto = await tagsResponse.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NoteResponse>();
-        var tags = tagDto.EnsureNotNull().StructuredTagsListResponse.EnsureNotNull();
-
-        return tags;
-    }
-
-    /// <summary>
-    /// Удалить заметку с требуемым идентификатором
-    /// </summary>
-    internal static async Task DeleteNoteFromService(this HttpClient client, int noteId)
-    {
-        // CatalogDto
-        using var noteResponse = await client.GetAsync($"api/catalog?id={noteId}&pg=1");
-        noteResponse.EnsureSuccessStatusCode();
-    }
-
-    /// <summary>
-    /// Создать требуемое количество случайных записей в базк
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="notes"></param>
-    internal static async Task CreateNotes(this HttpClient client, int notes)
-    {
-        for (var i = 0; i < notes; i++)
-        {
-            var guid = Guid.NewGuid();
-            var createRequest = new NoteRequest { TitleRequest = $"название: {guid}", TextRequest = $"текст: {guid}", TagsCheckedRequest = [1] };
-            using var content = new StringContent(JsonSerializer.Serialize(createRequest), Encoding.UTF8, "application/json");
-            using var _ = await client.PostAsync("api/create", content);
-        }
     }
 
     /// <summary>
@@ -96,5 +41,31 @@ public static class HttpClientExtensions
                 RequestServices = serviceProvider
             }
         };
+    }
+
+    /// <summary>
+    /// Выполнить вызов на ручку для тестов, вернуть результат запроса
+    /// </summary>
+    /// <param name="client">клиент</param>
+    /// <param name="method">HTTP глагол</param>
+    /// <param name="uri">строка запроса</param>
+    /// <param name="content">содержимое запроса</param>
+    /// <param name="verify">проверять ли успешность вызова</param>
+    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Request method, Uri uri,
+        HttpContent? content = null, bool verify = true)
+    {
+        //HttpMethod httpMethod = HttpMethod.Post;
+        var response = method switch
+        {
+            Request.Get => await client.GetAsync(uri),
+            Request.Post => await client.PostAsync(uri, content),
+            Request.Put => await client.PutAsync(uri, content),
+            Request.Delete => await client.DeleteAsync(uri),
+            _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+        };
+
+        if (verify) response.EnsureSuccessStatusCode();
+
+        return response;
     }
 }

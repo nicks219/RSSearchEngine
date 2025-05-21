@@ -4,21 +4,28 @@ import {
     RecoveryStateStorage,
     StateTypesAlias
 } from "./state.handlers";
+import {RouteConstants} from "../../api-routes.tsx";
 
 export class Loader {
-    static createUrl: string = "/api/create";
-    static readUrl: string = "/api/read";
-    static readTitleUrl: string = "/api/read/title";
-    static updateUrl: string = "/api/update";
-    static catalogUrl: string = "/api/catalog";
-    static loginUrl: string = "/account/login";
-    static logoutUrl: string = "/account/logout";
-    static checkAuth: string = "/account/check";
-    static complianceIndicesUrl: string = "/api/compliance/indices";
+    // дубль readTagsGetUrl под авторизацией
+    static readTagsForCreateAuthGetUrl: string = RouteConstants.readTagsForCreateAuthGetUrl;
+    static createNotePostUrl: string = RouteConstants.createNotePostUrl;
+    static readTagsGetUrl: string = RouteConstants.readTagsGetUrl;
+    static readNotePostUrl: string = RouteConstants.readNotePostUrl;
+    static readTitleGetUrl: string = RouteConstants.readTitleGetUrl;
+    static readNoteWithTagsForUpdateAuthGetUrl: string = RouteConstants.readNoteWithTagsForUpdateAuthGetUrl;
+    static updateNotePutUrl: string = RouteConstants.updateNotePutUrl;
+    static catalogPageGetUrl: string = RouteConstants.catalogPageGetUrl;
+    static catalogNavigatePostUrl: string = RouteConstants.catalogNavigatePostUrl;
+    static deleteNoteUrl: string = RouteConstants.deleteNoteUrl;
+    static loginUrl: string = RouteConstants.accountLoginGetUrl;
+    static logoutUrl: string = RouteConstants.accountLogoutGetUrl;
+    static checkAuth: string = RouteConstants.accountCheckGetUrl;
+    static complianceIndicesUrl: string = RouteConstants.complianceIndicesGetUrl;
 
-    static migrationCreateUrl: string = "/migration/create";
-    static migrationRestoreUrl: string = "/migration/restore";
-    static migrationDownloadUrl: string = "/migration/download";
+    static migrationCreateUrl: string = RouteConstants.migrationCreateGetUrl;
+    static migrationRestoreUrl: string = RouteConstants.migrationRestoreGetUrl;
+    static migrationDownloadUrl: string = RouteConstants.migrationDownloadGetUrl;
 
     static corsCredentialsPolicy: "omit" | "same-origin" | "include" = "same-origin";
     static corsServiceBaseUrl: string = "";
@@ -135,6 +142,30 @@ export class Loader {
         try {
             const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
                 method: "POST",
+                headers: {'Content-Type': "application/json;charset=utf-8"},
+                body: requestBody,
+                credentials: this.corsCredentialsPolicy
+            });
+
+            await this.processResponse(response, stateWrapper, url, error, recoveryContext);
+        } catch {
+            console.log(error);
+        }
+    }
+
+    // PUT request: /api/controller
+    static async putData(stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>,
+                          requestBody: string,
+                          url: string,
+                          id: number|string|null = null,
+                          recoveryContext?: RecoveryStateStorage<StateTypesAlias>): Promise<void> {
+        const error: string = `${Loader.name}: postData exception`;
+        Loader.setupDevEnvironment();
+        setLoginBoxVisibility(false);
+
+        try {
+            const response = await fetch(`${this.corsServiceBaseUrl}${url}?id=${String(id)}`, {
+                method: "PUT",
                 headers: {'Content-Type': "application/json;charset=utf-8"},
                 body: requestBody,
                 credentials: this.corsCredentialsPolicy

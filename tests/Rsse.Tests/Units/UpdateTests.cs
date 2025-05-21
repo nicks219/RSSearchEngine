@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Managers;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Domain.Services;
+using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -14,36 +14,33 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class UpdateTests
 {
-    public required UpdateManager UpdateManager;
+    public required UpdateService UpdateService;
 
     private const string Title = "0: key";
     private const string Text = "test text text";
-    private int _testNoteId;
+    private int? _testNoteId;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub<TokenizerService>();
-        var secondHost = new ServiceProviderStub<UpdateManager>();
+        var host = new ServiceProviderStub();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        var tokenizer = host.Provider.GetRequiredService<ITokenizerService>();
-        var manager = new ComplianceSearchManager(repo, tokenizer);
-        var managerLogger = secondHost.Provider.GetRequiredService<ILogger<UpdateManager>>();
+        var managerLogger = host.Provider.GetRequiredService<ILogger<UpdateService>>();
 
         repo.CreateStubData(10);
-        _testNoteId = manager.FindNoteId(Title);
+        _testNoteId = repo.ReadNoteId(Title);
 
-        UpdateManager = new UpdateManager(repo, managerLogger);
+        UpdateService = new UpdateService(repo, managerLogger);
     }
 
     [TestMethod]
     public async Task UpdateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var responseDto = await UpdateManager.GetOriginalNote(1);
+        var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.StructuredTagsListResponse?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.StructuredTags?.Count);
     }
 
     [TestMethod]
@@ -51,17 +48,17 @@ public class UpdateTests
     {
         // arrange:
         var requestDto = new NoteRequestDto
-        {
-            TitleRequest = Title,
-            TextRequest = Text,
-            TagsCheckedRequest = [1, 2, 3, 11],
-            NoteIdExchange = _testNoteId
-        };
+        (
+            CheckedTags: [1, 2, 3, 11],
+            Title: Title,
+            Text: Text,
+            NoteIdExchange: _testNoteId.EnsureNotNull().Value
+        );
 
         // act:
-        var responseDto = await UpdateManager.UpdateNote(requestDto);
+        var responseDto = await UpdateService.UpdateNote(requestDto);
 
         // assert:
-        Assert.AreEqual(Text, responseDto.TextResponse);
+        Assert.AreEqual(Text, responseDto.Text);
     }
 }

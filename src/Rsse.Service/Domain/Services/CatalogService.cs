@@ -1,21 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Dto;
 using static SearchEngine.Domain.Configuration.ErrorMessages;
 
-namespace SearchEngine.Domain.Managers;
+namespace SearchEngine.Domain.Services;
 
 /// <summary>
 /// Функционал каталога
 /// </summary>
-public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger)
+public class CatalogService(IDataRepository repo, ILogger<CatalogService> logger)
 {
-    public const int Backward = 1;
-    public const int Forward = 2;
+    /// <summary/> Направление навигации по каталогу.
+    public enum Direction
+    {
+        Backward = 1,
+        Forward = 2
+    }
+
     private const int MinimalPageNumber = 1;
     private const int PageSize = 10;
 
@@ -30,7 +35,7 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
         {
             var notesCount = await repo.ReadNotesCount();
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
@@ -59,7 +64,7 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
 
             pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize).ToListAsync();
+            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
 
             return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
         }
@@ -72,50 +77,29 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
     }
 
     /// <summary>
-    /// Удалить заметку
-    /// </summary>
-    /// <param name="noteId">идентификатор заметки</param>
-    /// <param name="pageNumber">номер страницы каталога с удаляемой заметкой</param>
-    /// <returns>актуальная страница каталога</returns>
-    public async Task<CatalogResultDto> DeleteNote(int noteId, int pageNumber)
-    {
-        try
-        {
-            await repo.DeleteNote(noteId);
-
-            return await ReadPage(pageNumber);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, DeleteNoteError);
-
-            return new CatalogResultDto { ErrorMessage = DeleteNoteError };
-        }
-    }
-
-    /// <summary>
     /// Получить направление перемещения по каталогу в виде константы
     /// </summary>
-    private static int GetDirection(List<int>? direction)
+    private static Direction GetDirection(List<int>? direction)
     {
         if (direction is null)
         {
             return 0;
         }
 
-        return direction[0] switch
+        var current = (Direction)direction.ElementAt(0);
+        return current switch
         {
-            Backward => Backward,
-            Forward => Forward,
+            Direction.Backward => Direction.Backward,
+            Direction.Forward => Direction.Forward,
             _ => throw new NotImplementedException($"[{nameof(GetDirection)}] unknown direction")
         };
     }
 
-    private static int NavigateCatalogPages(int direction, int pageNumber, int notesCount)
+    private static int NavigateCatalogPages(Direction direction, int pageNumber, int notesCount)
     {
         switch (direction)
         {
-            case Forward:
+            case Direction.Forward:
                 {
                     var pageCount = Math.DivRem(notesCount, PageSize, out var remainder);
 
@@ -131,7 +115,7 @@ public class CatalogManager(IDataRepository repo, ILogger<CatalogManager> logger
 
                     break;
                 }
-            case Backward:
+            case Direction.Backward:
                 {
                     if (pageNumber > MinimalPageNumber) pageNumber--;
                     break;

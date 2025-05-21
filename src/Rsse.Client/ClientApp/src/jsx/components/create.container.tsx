@@ -26,7 +26,7 @@ export const CreateContainer = ({buttonRef}: ButtonAnchorProps) => {
 
     const onMount = () => {
         formElement = refObject.current;
-        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.createUrl, recoveryContext);
+        Loader.unusedPromise = Loader.getData(stateWrapper, Loader.readTagsForCreateAuthGetUrl, recoveryContext);
     }
     const onUnmount = () => {
         // переход на update при несохраненной заметке не приведёт к ошибке 400 (сервер не понимает NaN):

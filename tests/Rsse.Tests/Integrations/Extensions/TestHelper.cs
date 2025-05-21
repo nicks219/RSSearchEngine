@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tests.Integrations.Api;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
@@ -43,49 +43,13 @@ public static class TestHelper
         return content;
     }
 
-    /// <summary>
-    /// Получить контент для POST запроса
-    /// </summary>
-    internal static IEnumerable<StringContent> GetEnumerableRequestContent(bool forUpdate = false)
-    {
-        var dto = new NoteRequest { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        yield return jsonContent;
-
-        var title = forUpdate ? "[1]" : "1";
-        // todo: название заметки не очищается от скобочек, только именование тега
-        dto = new NoteRequest { TitleRequest = title, TextRequest = "раз два три четыре", TagsCheckedRequest = [1] };
-        jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        yield return jsonContent;
-    }
-
     internal static StringContent GetRequestContentWithTags()
     {
         // в TagsCheckedRequest содержатся отмеченные теги
-        var dto = new NoteRequest { TagsCheckedRequest = Enumerable.Range(1, 44).ToList() };
+        var dto = new NoteRequest { CheckedTags = Enumerable.Range(1, 44).ToList() };
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
-    }
-
-    internal static NoteRequest GetNoteDto()
-    {
-        List<int> checkedTags = [1];
-        var note = new NoteRequest { TitleRequest = "тестовая запись", TextRequest = "раз два три", TagsCheckedRequest = checkedTags };
-        return note;
-    }
-
-    internal static NoteRequest GetNoteDto(List<int> tags)
-    {
-        var note = new NoteRequest { TitleRequest = "название", TextRequest = "раз два три", TagsCheckedRequest = tags };
-        return note;
-    }
-
-    internal static NoteRequest GetNoteForUpdate(string text)
-    {
-        List<int> tagsForUpdate = [4];
-        var noteForUpdate = new NoteRequest { TitleRequest = "название", TextRequest = text, TagsCheckedRequest = tagsForUpdate };
-        return noteForUpdate;
     }
 
     /// <summary>
@@ -135,10 +99,10 @@ public static class TestHelper
 
 
     // для сценарных тестов
-    private static readonly NoteRequest CreateRequest = new() { TitleRequest = "[1]", TextRequest = "посчитаем до четырёх", TagsCheckedRequest = [1] };
-    private static readonly NoteRequest UpdateRequest = new() { TitleRequest = "[1]", TextRequest = "раз два три четыре", TagsCheckedRequest = [1], NoteIdExchange = 946 };
-    private static readonly NoteRequest ReadRequest = new() { TagsCheckedRequest = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [CatalogManager.Forward]);
+    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
+    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
+    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
+    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
     public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
     public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
     public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
@@ -151,5 +115,6 @@ public enum Request
 {
     Get = 0,
     Post = 1,
-    Delete = 2
+    Delete = 2,
+    Put = 3
 }

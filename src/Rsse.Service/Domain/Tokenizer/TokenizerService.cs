@@ -2,171 +2,152 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Tokenizer.Processor;
 
 namespace SearchEngine.Domain.Tokenizer;
 
 /// <summary>
 /// Сервис поддержки токенайзера
 /// </summary>
-public class TokenizerService : ITokenizerService, IDisposable
+public sealed class TokenizerService : ITokenizerService, IDisposable
 {
     private TokenizerLock TokenizerLock { get; } = new();
+    private readonly ConcurrentDictionary<int, TokenLine> _tokenLines;
 
-    private readonly ConcurrentDictionary<int, List<int>> _reducedTokenLines;
-    private readonly ConcurrentDictionary<int, List<int>> _extendedTokenLines;
-
-    private readonly IServiceProvider _provider;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ITokenizerProcessorFactory _processorFactory;
     private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
 
     /// <summary>
-    /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов
+    /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов.
     /// </summary>
-    /// <param name="provider">DI-фабрика</param>
-    /// <param name="options">настройки</param>
-    /// <param name="logger">логер</param>
-    public TokenizerService(IServiceProvider provider, IOptions<CommonBaseOptions> options, ILogger<TokenizerService> logger)
+    /// <param name="scopeFactory">Scope-фабрика.</param>
+    /// <param name="processorFactory">Фабрика токенайзеров.</param>
+    /// <param name="options">Настройки.</param>
+    /// <param name="logger">Логер.</param>
+    public TokenizerService(
+        IServiceScopeFactory scopeFactory,
+        ITokenizerProcessorFactory processorFactory,
+        IOptions<CommonBaseOptions> options,
+        ILogger<TokenizerService> logger)
     {
-        _provider = provider;
-        _reducedTokenLines = new ConcurrentDictionary<int, List<int>>();
-        _extendedTokenLines = new ConcurrentDictionary<int, List<int>>();
+        _tokenLines = new ConcurrentDictionary<int, TokenLine>();
+        _scopeFactory = scopeFactory;
+        _processorFactory = processorFactory;
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
     }
 
     // используется для тестов
-    internal ConcurrentDictionary<int, List<int>> GetReducedLines() => _reducedTokenLines;
-
-    // используется для тестов
-    internal ConcurrentDictionary<int, List<int>> GetExtendedLines() => _extendedTokenLines;
+    internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _tokenLines;
 
     /// <inheritdoc/>
-    public void Delete(int id)
+    public async Task Delete(int id)
     {
         if (!_isEnabled) return;
 
-        using var __ = TokenizerLock.AcquireSharedLock();
+        using var __ = await TokenizerLock.AcquireExclusiveLockAsync();
+        var isRemoved = _tokenLines.TryRemove(id, out _);
 
-        var isReducedRemoved = _reducedTokenLines.TryRemove(id, out _);
-
-        var isExtendedRemoved = _extendedTokenLines.TryRemove(id, out _);
-
-        if (!(isReducedRemoved && isExtendedRemoved))
+        if (!isRemoved)
         {
             _logger.LogError($"[{nameof(TokenizerService)}] delete error");
         }
     }
 
     /// <inheritdoc/>
-    public void Create(int id, NoteEntity note)
+    public async Task Create(int id, TextRequestDto note)
     {
         if (!_isEnabled) return;
 
-        using var _ = TokenizerLock.AcquireSharedLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
-        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
+        var createdTokenLine = CreateTokensLine(_processorFactory, note);
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
-
-        if (!_extendedTokenLines.TryAdd(id, extendedLine))
+        if (!_tokenLines.TryAdd(id, createdTokenLine))
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] extended vectors create error");
-        }
-
-        if (!_reducedTokenLines.TryAdd(id, reducedLine))
-        {
-            _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors create error");
+            _logger.LogError($"[{nameof(TokenizerService)}] vectors create error");
         }
     }
 
     /// <inheritdoc/>
-    public void Update(int id, NoteEntity note)
+    public async Task Update(int id, TextRequestDto note)
     {
         if (!_isEnabled) return;
 
-        using var _ = TokenizerLock.AcquireSharedLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
-        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
+        var updatedTokenLine = CreateTokensLine(_processorFactory, note);
 
-        var (extendedLine, reducedLine, _) = CreateTokensLine(processor, note);
-
-        if (_extendedTokenLines.TryGetValue(id, out var existedLine))
+        if (_tokenLines.TryGetValue(id, out var existedLine))
         {
-            if (!_extendedTokenLines.TryUpdate(id, extendedLine, existedLine))
+            if (!_tokenLines.TryUpdate(id, updatedTokenLine, existedLine))
             {
-                _logger.LogError($"[{nameof(TokenizerService)}] extended vectors concurrent update error");
+                _logger.LogError($"[{nameof(TokenizerService)}] vectors concurrent update error");
             }
         }
         else
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] extended vectors has not been updated");
-        }
-
-        if (_reducedTokenLines.TryGetValue(id, out existedLine))
-        {
-            if (!_reducedTokenLines.TryUpdate(id, reducedLine, existedLine))
-            {
-                _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors concurrent update error");
-            }
-        }
-        else
-        {
-            _logger.LogError($"[{nameof(TokenizerService)}] reduced vectors has not been updated");
+            _logger.LogError($"[{nameof(TokenizerService)}] vectors has not been updated");
         }
     }
 
     /// <inheritdoc/>
-    public void Initialize()
+    public async Task Initialize()
     {
         if (!_isEnabled) return;
 
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
-        using var _ = TokenizerLock.AcquireExclusiveLock();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
         // Не закрываем контекст в корневом scope провайдера.
-        using var repo = _provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
-
-        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
+        await using var repo = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
 
         try
         {
-            _reducedTokenLines.Clear();
-
-            _extendedTokenLines.Clear();
+            _tokenLines.Clear();
 
             // todo: избавиться от загрузки всех записей из таблицы:
-            var texts = repo.ReadAllNotes();
+            var notes = repo.ReadAllNotes();
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
-            foreach (var text in texts)
+            await foreach (var note in notes)
             {
-                var (extendedLine, reducedLine, id) = CreateTokensLine(processor, text);
+                var requestNote = note.MapToDto();
 
-                if (!_extendedTokenLines.TryAdd(id, extendedLine))
-                {
-                    throw new MethodAccessException($"[{nameof(TokenizerService)}] extended vectors initialization error");
-                }
+                var newTokenLine = CreateTokensLine(_processorFactory, requestNote);
 
-                if (!_reducedTokenLines.TryAdd(id, reducedLine))
+                if (!_tokenLines.TryAdd(note.NoteId, newTokenLine))
                 {
-                    throw new MethodAccessException($"[{nameof(TokenizerService)}] reduced vectors initialization error");
+                    throw new MethodAccessException($"[{nameof(TokenizerService)}] vectors initialization error");
                 }
             }
-
-            GC.Collect();
         }
         catch (Exception ex)
         {
-            _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'", nameof(TokenizerService), ex.Source, ex.Message);
+            _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'",
+                nameof(TokenizerService), ex.Source, ex.Message);
         }
 
-        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{Extended}'-'{Reduced}'", nameof(TokenizerService), _extendedTokenLines.Count, _reducedTokenLines.Count);
+        _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
+            nameof(TokenizerService), _tokenLines.Count);
+    }
+
+    /// <inheritdoc/>
+    public async Task WaitWarmUp()
+    {
+        if (!_isEnabled) return;
+
+        await TokenizerLock.SyncOnLockAsync();
     }
 
     /// <inheritdoc/>
@@ -174,8 +155,6 @@ public class TokenizerService : ITokenizerService, IDisposable
     // Допустимо, если метод вернёт неактуальные данные.
     public Dictionary<int, double> ComputeComplianceIndices(string text)
     {
-        using var processor = _provider.GetRequiredService<ITokenizerProcessor>();
-
         var result = new Dictionary<int, double>();
 
         // I. коэффициент extended поиска: 0.8D
@@ -185,7 +164,7 @@ public class TokenizerService : ITokenizerService, IDisposable
 
         var reducedChainSearch = true;
 
-        processor.SetupChain(ConsonantChain.Extended);
+        var processor = _processorFactory.CreateProcessor(ProcessorType.Extended);
 
         var preprocessedStrings = processor.PreProcessNote(text);
 
@@ -197,15 +176,17 @@ public class TokenizerService : ITokenizerService, IDisposable
 
         var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
-        foreach (var (key, cachedTokensLine) in _extendedTokenLines)
+        // поиск в векторе extended
+        foreach (var (key, tokensLine) in _tokenLines)
         {
-            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+            var extendedTokensLine = tokensLine.Extended;
+            var metric = processor.ComputeComparisionMetric(extendedTokensLine, newTokensLine);
 
             // I. 100% совпадение по extended последовательности, по reduced можно не искать
             if (metric == newTokensLine.Count)
             {
                 reducedChainSearch = false;
-                result.Add(key, metric * (1000D / cachedTokensLine.Count)); // было int
+                result.Add(key, metric * (1000D / extendedTokensLine.Count));
                 continue;
             }
 
@@ -214,7 +195,7 @@ public class TokenizerService : ITokenizerService, IDisposable
             {
                 // [TODO] можно так оценить
                 // reducedChainSearch = false;
-                result.Add(key, metric * (100D / cachedTokensLine.Count)); // было int
+                result.Add(key, metric * (100D / extendedTokensLine.Count));
             }
         }
 
@@ -223,7 +204,7 @@ public class TokenizerService : ITokenizerService, IDisposable
             return result;
         }
 
-        processor.SetupChain(ConsonantChain.Reduced);
+        processor = _processorFactory.CreateProcessor(ProcessorType.Reduced);
 
         preprocessedStrings = processor.PreProcessNote(text);
 
@@ -238,21 +219,23 @@ public class TokenizerService : ITokenizerService, IDisposable
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         newTokensLine = newTokensLine.ToHashSet().ToList();
 
-        foreach (var (key, cachedTokensLine) in _reducedTokenLines)
+        // поиск в векторе reduced
+        foreach (var (key, tokensLine) in _tokenLines)
         {
-            var metric = processor.ComputeComparisionMetric(cachedTokensLine, newTokensLine);
+            var reducedTokensLine = tokensLine.Reduced;
+            var metric = processor.ComputeComparisionMetric(reducedTokensLine, newTokensLine);
 
             // III. 100% совпадение по reduced
             if (metric == newTokensLine.Count)
             {
-                result.TryAdd(key, metric * (10D / cachedTokensLine.Count)); // было int
+                result.TryAdd(key, metric * (10D / reducedTokensLine.Count));
                 continue;
             }
 
             // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
             if (metric >= newTokensLine.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / cachedTokensLine.Count)); // было int
+                result.TryAdd(key, metric * (1D / reducedTokensLine.Count));
             }
         }
 
@@ -260,33 +243,32 @@ public class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <summary>
-    /// Создать два вектора токенов для заметки
+    /// Создать два вектора токенов для заметки.
     /// </summary>
-    /// <param name="processor">токенайзер</param>
-    /// <param name="note">заметка</param>
-    /// <returns>векторы на базе двух разных эталонных наборов</returns>
-    private static (List<int> Extended, List<int> Reduced, int Id) CreateTokensLine(ITokenizerProcessor processor, NoteEntity note)
+    /// <param name="factory">Фабрика токенайзеров.</param>
+    /// <param name="note">Текстовая нагрузка заметки.</param>
+    /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
+    private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
     {
         // расширенная эталонная последовательность:
-        processor.SetupChain(ConsonantChain.Extended);
+        var processor = factory.CreateProcessor(ProcessorType.Extended);
 
         var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
         var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         // урезанная эталонная последовательность:
-        processor.SetupChain(ConsonantChain.Reduced);
+        processor = factory.CreateProcessor(ProcessorType.Reduced);
 
         preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
         var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
-        return (Extended: extendedTokensLine, Reduced: reducedTokensLine, Id: note.NoteId);
+        return new TokenLine(Extended: extendedTokensLine, Reduced: reducedTokensLine);
     }
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         TokenizerLock.Dispose();
     }
 }

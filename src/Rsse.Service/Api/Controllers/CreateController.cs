@@ -9,8 +9,8 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Entities;
-using SearchEngine.Domain.Managers;
+using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Services;
 using SearchEngine.Tooling.Contracts;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
 
@@ -19,81 +19,69 @@ namespace SearchEngine.Api.Controllers;
 /// <summary>
 /// Контроллер для создания заметок
 /// </summary>
-[Authorize, Route("api/create"), ApiController]
+[Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
-    IDataRepository repo,
     ITokenizerService tokenizer,
+    CreateService createService,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions,
-    ILogger<CreateController> logger,
-    ILogger<CreateManager> managerLogger) : ControllerBase
+    ILogger<CreateController> logger) : ControllerBase
 {
+
     private const string BackupFileName = "db_last_dump";
     private readonly CommonBaseOptions _baseOptions = options.Value;
     private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
-
-    /// <summary>
-    /// Получить список тегов
-    /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<NoteResponse>> GetStructuredTagListAsync()
-    {
-        try
-        {
-            var model = new CreateManager(repo, managerLogger);
-            var response = await model.ReadStructuredTagList();
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetTagListError);
-            return new NoteResponse { CommonErrorMessageResponse = GetTagListError };
-        }
-    }
 
     /// <summary>
     /// Создать заметку
     /// </summary>
     /// <param name="request">данные для создания заметки</param>
     /// <returns>данные с созданной заметкой либо ошибкой</returns>
-    [HttpPost]
+    [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
         try
         {
-            var manager = new CreateManager(repo, managerLogger);
-            var dto = request.MapToDto();
+            var noteRequestDto = request.MapToDto();
 
-            await manager.CreateTagFromTitle(dto);
-            var response = await manager.CreateNote(dto);
+            await createService.CreateTagFromTitle(noteRequestDto);
+            var noteResultDto = await createService.CreateNote(noteRequestDto);
 
-            if (!string.IsNullOrEmpty(response.CommonErrorMessageResponse))
+            if (!string.IsNullOrEmpty(noteResultDto.ErrorMessage))
             {
-                // теги structuredTagsListResponse - ошибка - титл - текст
                 return new NoteResponse
                 {
-                    // NoteExchangeId ??
-                    TitleResponse = response.TitleResponse,
-                    TextResponse = response.TextResponse,
-                    StructuredTagsListResponse = response.StructuredTagsListResponse,
-                    CommonErrorMessageResponse = response.CommonErrorMessageResponse
+                    Title = noteResultDto.Title,
+                    Text = noteResultDto.Text,
+                    StructuredTags = noteResultDto.StructuredTags,
+                    ErrorMessage = noteResultDto.ErrorMessage
                 };
             }
 
-            tokenizer.Create(response.NoteIdExchange, new NoteEntity { Title = request.TitleRequest, Text = request.TextRequest });
+            await tokenizer.Create(
+                noteResultDto.NoteIdExchange,
+                new TextRequestDto
+                {
+                    Title = request.Title,
+                    Text = request.Text
+                });
 
             var path = CreateDumpAndGetFilePath();
 
-            response.TextResponse = path ?? string.Empty;
+            // todo: можно добавить в маппер
+            noteResultDto = noteResultDto with
+            {
+                Text = path ?? string.Empty
+            };
 
-            return response.MapFromDto();
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, CreateNoteError);
-            return new NoteResponse { CommonErrorMessageResponse = CreateNoteError };
+            return new NoteResponse { ErrorMessage = CreateNoteError };
         }
     }
 
