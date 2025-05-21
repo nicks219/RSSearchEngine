@@ -31,7 +31,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="noteId">идентификатор заметки</param>
     /// <returns>кортеж с текстом и названием заметки</returns>
-    Task<TextResult?> ReadNote(int noteId);
+    Task<TextResultDto?> ReadNote(int noteId);
 
     /// <summary>
     /// Изменить заметку

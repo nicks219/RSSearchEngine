@@ -57,7 +57,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 
-        services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
+        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         services.AddHttpContextAccessor();
 

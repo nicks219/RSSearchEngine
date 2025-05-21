@@ -7,7 +7,7 @@ namespace SearchEngine.Domain.Tokenizer;
 /// <summary>
 /// Блокировка в disposable-обертке
 /// </summary>
-public class TokenizerLock : IDisposable
+public sealed class TokenizerLock : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
@@ -33,7 +33,6 @@ public class TokenizerLock : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         _semaphore.Dispose();
     }
 }

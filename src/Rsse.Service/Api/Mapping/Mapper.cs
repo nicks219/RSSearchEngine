@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Dto;
+using SearchEngine.Domain.Entities;
 
 namespace SearchEngine.Api.Mapping;
 
@@ -104,5 +105,19 @@ public static class Mapper
         };
 
         return noteResponse;
+    }
+
+    /// <summary>
+    /// Маппинг из entity в request dto.
+    /// </summary>
+    public static TextRequestDto MapToDto(this NoteEntity noteEntity)
+    {
+        var textRequestDto = new TextRequestDto
+        {
+            Text = noteEntity.Text,
+            Title = noteEntity.Title
+        };
+
+        return textRequestDto;
     }
 }

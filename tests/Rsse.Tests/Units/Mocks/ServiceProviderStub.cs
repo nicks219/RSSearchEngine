@@ -21,8 +21,9 @@ public class ServiceProviderStub
         services.AddSingleton<IDataRepository, FakeCatalogRepository>();// один набор данных для группы тестов
         services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
 
-        services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
         services.AddSingleton<ITokenizerService, TokenizerService>();
+
+        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         // для тестов create
         services.AddDomainLayerDependencies();

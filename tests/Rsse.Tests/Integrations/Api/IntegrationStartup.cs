@@ -37,7 +37,9 @@ public class IntegrationStartup(IConfiguration configuration)
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
-        services.AddTransient<ITokenizerProcessor, TokenizerProcessor>();
+
+        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
+
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
 

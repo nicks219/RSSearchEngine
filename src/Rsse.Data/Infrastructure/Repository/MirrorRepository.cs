@@ -127,7 +127,7 @@ public class MirrorRepository(
         return secondary;
     }
 
-    public Task<TextResult?> ReadNote(int noteId) => _reader.ReadNote(noteId);
+    public Task<TextResultDto?> ReadNote(int noteId) => _reader.ReadNote(noteId);
 
     public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
     {

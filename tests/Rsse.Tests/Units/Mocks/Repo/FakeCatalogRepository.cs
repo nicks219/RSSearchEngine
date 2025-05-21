@@ -12,7 +12,7 @@ namespace SearchEngine.Tests.Units.Mocks.Repo;
 /// <summary>
 /// Тестовый репозиторий
 /// </summary>
-public class FakeCatalogRepository : IDataRepository
+public sealed class FakeCatalogRepository : IDataRepository
 {
     // todo: MySQL WORK. DELETE
     public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
@@ -27,11 +27,11 @@ public class FakeCatalogRepository : IDataRepository
 
     internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
 
-    private readonly Dictionary<int, TextResult> _notes = new();
+    private readonly Dictionary<int, TextResultDto> _notes = new();
 
     public FakeCatalogRepository()
     {
-        _notes.Add(TestNoteId, new TextResult { Title = FirstNoteTitle, Text = FirstNoteText });
+        _notes.Add(TestNoteId, new TextResultDto { Title = FirstNoteTitle, Text = FirstNoteText });
     }
 
     private int _lastId = 1;
@@ -42,7 +42,7 @@ public class FakeCatalogRepository : IDataRepository
         {
             if (i != 1 && !_notes.ContainsKey(i))
             {
-                _notes.Add(i, new TextResult { Title = i + ": key", Text = i + ": value" });
+                _notes.Add(i, new TextResultDto { Title = i + ": key", Text = i + ": value" });
             }
         }
     }
@@ -102,7 +102,7 @@ public class FakeCatalogRepository : IDataRepository
         }
 
         _lastId++;
-        _notes.Add(_lastId, new TextResult { Title = noteRequest.Title, Text = noteRequest.Text });
+        _notes.Add(_lastId, new TextResultDto { Title = noteRequest.Title, Text = noteRequest.Text });
 
         return Task.FromResult(_lastId);
     }
@@ -158,10 +158,10 @@ public class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_notes.Count);
     }
 
-    public Task<TextResult?> ReadNote(int noteId)
+    public Task<TextResultDto?> ReadNote(int noteId)
     {
         var note = _notes[noteId];
-        return Task.FromResult<TextResult?>(note);
+        return Task.FromResult<TextResultDto?>(note);
     }
 
     public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
@@ -198,18 +198,17 @@ public class FakeCatalogRepository : IDataRepository
             throw new NullReferenceException("[TestRepository: data error]");
         }
 
-        _notes[noteRequest.NoteIdExchange] = new TextResult { Text = noteRequest.Text, Title = noteRequest.Title };
+        _notes[noteRequest.NoteIdExchange] = new TextResultDto { Text = noteRequest.Text, Title = noteRequest.Title };
 
         return Task.CompletedTask;
     }
 
     public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 
-    public void Dispose() => GC.SuppressFinalize(this);
+    public void Dispose() {}
 
     public ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
         return new ValueTask();
     }
 }

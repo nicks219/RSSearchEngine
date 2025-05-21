@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 
 namespace SearchEngine.Domain.Contracts;
@@ -10,11 +11,11 @@ namespace SearchEngine.Domain.Contracts;
 public interface ITokenizerService
 {
     /// <summary>
-    /// Создать вектор для заметки
+    /// Создать вектор для заметки.
     /// </summary>
-    /// <param name="id">идентификатор заметки</param>
-    /// <param name="note">заметка</param>
-    public Task Create(int id, NoteEntity note);
+    /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="note">Текстовая нагрузка заметки.</param>
+    public Task Create(int id, TextRequestDto note);
 
     /// <summary>
     /// Вычислить индексы соответствия хранимых заметок поисковому запросу
@@ -24,11 +25,11 @@ public interface ITokenizerService
     public Dictionary<int, double> ComputeComplianceIndices(string text);
 
     /// <summary>
-    /// Обновить вектор для заметки
+    /// Обновить вектор для заметки.
     /// </summary>
-    /// <param name="id">идентификатор заметки</param>
-    /// <param name="note">заметка</param>
-    public Task Update(int id, NoteEntity note);
+    /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="note">Текстовая нагрузка заметки.</param>
+    public Task Update(int id, TextRequestDto note);
 
     /// <summary>
     /// Удалить вектор для заметки

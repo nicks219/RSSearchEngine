@@ -9,7 +9,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Services;
 using SearchEngine.Tooling.Contracts;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
@@ -62,7 +62,7 @@ public class CreateController(
 
             await tokenizer.Create(
                 noteResultDto.NoteIdExchange,
-                new NoteEntity
+                new TextRequestDto
                 {
                     Title = request.Title,
                     Text = request.Text

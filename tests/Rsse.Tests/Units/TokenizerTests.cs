@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Units.Mocks;
@@ -20,7 +19,8 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
-    public required IServiceProvider Factory;
+    public required IServiceScopeFactory ScopeFactory;
+    public required ITokenizerProcessorFactory ProcessorFactory;
 
     // векторы соответствуют заметкам из FakeCatalogRepository
 
@@ -47,7 +47,8 @@ public class TokenizerTests
     public void Initialize()
     {
         var host = new ServiceProviderStub();
-        Factory = host.Provider;
+        ScopeFactory = host.Provider.GetRequiredService<IServiceScopeFactory>();
+        ProcessorFactory = host.Provider.GetRequiredService<ITokenizerProcessorFactory>();
         var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400);
     }
@@ -58,7 +59,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
 
@@ -86,13 +87,16 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
 
         // act:
         await tokenizer.Update(1,
-            new NoteEntity
-            { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+            new TextRequestDto
+            {
+                Title = FakeCatalogRepository.SecondNoteTitle,
+                Text = FakeCatalogRepository.SecondNoteText
+            });
         var tokenLines = tokenizer.GetTokenLines();
 
         // assert:
@@ -115,11 +119,11 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // act:
-        await tokenizer.Create(2, new NoteEntity
+        await tokenizer.Create(2, new TextRequestDto
         {
             Title = FakeCatalogRepository.SecondNoteTitle,
             Text = FakeCatalogRepository.SecondNoteText
@@ -145,7 +149,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
         var countBefore = tokenLines.Count;
@@ -165,7 +169,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var tokenizer = new TokenizerService(Factory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // init asserts:
@@ -173,14 +177,20 @@ public class TokenizerTests
 
         // create act & asserts:
         await tokenizer.Create(2,
-            new NoteEntity
-            { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+            new TextRequestDto
+            {
+                Title = FakeCatalogRepository.SecondNoteTitle,
+                Text = FakeCatalogRepository.SecondNoteText
+            });
         VectorsShouldBeEmpty();
 
         // update act & asserts:
         await tokenizer.Update(2,
-            new NoteEntity
-            { Title = FakeCatalogRepository.SecondNoteTitle, Text = FakeCatalogRepository.SecondNoteText });
+            new TextRequestDto
+            {
+                Title = FakeCatalogRepository.SecondNoteTitle,
+                Text = FakeCatalogRepository.SecondNoteText
+            });
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
@@ -197,7 +207,7 @@ public class TokenizerTests
     }
 
     private static async Task CreateTestNote(TokenizerService tokenizerService) =>
-        await tokenizerService.Create(id: 1, new NoteEntity
+        await tokenizerService.Create(id: 1, new TextRequestDto
         {
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText

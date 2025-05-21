@@ -14,7 +14,7 @@ namespace SearchEngine.Infrastructure.Repository;
 /// <summary>
 /// Репозиторий слоя данных
 /// </summary>
-public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
+public sealed class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
     /// <summary/> Контейнер для метода
     private record struct StructuredTagList(string Tag, int RelationEntityReferenceCount);
@@ -102,11 +102,11 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     }
 
     /// <inheritdoc/>
-    public async Task<TextResult?> ReadNote(int noteId)
+    public async Task<TextResultDto?> ReadNote(int noteId)
     {
         var note = await context.Notes
             .Where(note => note.NoteId == noteId)
-            .Select(note => new TextResult { Text = note.Text!, Title = note.Title! })
+            .Select(note => new TextResultDto { Text = note.Text!, Title = note.Title! })
             .FirstOrDefaultAsync();
 
         return note;
@@ -342,15 +342,11 @@ public class CatalogRepository<T>(T context) : IDataRepository where T : BaseCat
     public async ValueTask DisposeAsync()
     {
         await context.DisposeAsync().ConfigureAwait(false);
-
-        GC.SuppressFinalize(this);
     }
 
     // WARN на старте отрабатывает четыре раза
     void IDisposable.Dispose()
     {
         context.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 }

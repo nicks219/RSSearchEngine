@@ -10,7 +10,6 @@ using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Domain.Contracts;
 using SearchEngine.Domain.Services;
-using SearchEngine.Domain.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Dto;
 using SearchEngine.Tests.Units.Mocks;

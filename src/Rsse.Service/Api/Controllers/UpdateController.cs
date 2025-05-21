@@ -7,6 +7,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Domain.ApiModels;
 using SearchEngine.Domain.Configuration;
 using SearchEngine.Domain.Contracts;
+using SearchEngine.Domain.Dto;
 using SearchEngine.Domain.Entities;
 using SearchEngine.Domain.Services;
 using static SearchEngine.Domain.Configuration.ControllerMessages;
@@ -34,7 +35,11 @@ public class UpdateController(
         {
             var dto = request.MapToDto();
             var response = await updateService.UpdateNote(dto);
-            var entity = new NoteEntity { Title = dto.Title, Text = dto.Text };
+            var entity = new TextRequestDto
+            {
+                Title = dto.Title,
+                Text = dto.Text
+            };
 
             await tokenizer.Update(dto.NoteIdExchange, entity);
 
