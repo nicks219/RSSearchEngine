@@ -10,7 +10,6 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Messages;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
@@ -35,11 +34,9 @@ public class CatalogTests
     {
         Stub = new ServiceProviderStub();
         var repo = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var catalogManagerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
-        var deleteManagerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();
 
-        CatalogService = new CatalogService(repo, catalogManagerLogger);
-        DeleteService = new DeleteService(repo, CatalogService, deleteManagerLogger);
+        CatalogService = new CatalogService(repo);
+        DeleteService = new DeleteService(repo, CatalogService);
         Repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = await Repo.ReadNotesCount();
@@ -52,7 +49,7 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task CatalogManager_ShouldRead_ExistingPage()
+    public async Task CatalogService_ShouldRead_ExistingPage()
     {
         // arrange:
         const int existingPage = 1;
@@ -68,7 +65,7 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task CatalogManager_ShouldNavigate_ForwardDirection()
+    public async Task CatalogService_ShouldNavigate_ForwardDirection()
     {
         const int currentPage = 1;
         const int forwardMagicNumber = 2;
@@ -87,29 +84,36 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task CatalogManager_ShouldLogError_OnInvalidRequest()
+    public async Task CatalogService_ShouldThrow_OnInvalidRequest()
     {
         // arrange:
         List<int> invalidData = [1000, 2000];
         var request = new CatalogRequestDto { Direction = invalidData };
 
         // act:
-        var responseDto = await CatalogService.NavigateCatalog(request);
+        var exception = await TestHelper.GetExpectedExceptionWithAsync<NotSupportedException>(() =>
+            CatalogService.NavigateCatalog(request));
 
         // assert:
-        Assert.AreEqual(ServiceErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be("[GetDirection] unknown direction");
     }
 
     [TestMethod]
-    public async Task CatalogManager_ShouldReturnZeroSongCount_OnInvalidDeleteRequest()
+    public async Task DeleteService_ShouldThrow_OnInvalidDeleteRequest()
     {
-        // arrange & act:
+        // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var responseDto = await DeleteService.DeleteNote(invalidPageId, invalidPageNumber);
+
+        // act:
+        var exception =
+            await TestHelper.GetExpectedExceptionWithAsync<Exception>(() =>
+                DeleteService.DeleteNote(invalidPageId, invalidPageNumber));
 
         // assert:
-        Assert.AreEqual(0, responseDto.NotesCount);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be("Page number error");
     }
 
     [TestMethod]

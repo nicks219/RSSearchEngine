@@ -1,16 +1,13 @@
-using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Services;
 
 /// <summary>
 /// Функционал удаления заметок.
 /// </summary>
-public class DeleteService(IDataRepository repo, CatalogService catalogService, ILogger<DeleteService> logger)
+public class DeleteService(IDataRepository repo, CatalogService catalogService)
 {
     /// <summary>
     /// Удалить заметку.
@@ -20,17 +17,8 @@ public class DeleteService(IDataRepository repo, CatalogService catalogService, 
     /// <returns>Актуальная страница каталога.</returns>
     public async Task<CatalogResultDto> DeleteNote(int noteId, int pageNumber)
     {
-        try
-        {
-            await repo.DeleteNote(noteId);
+        await repo.DeleteNote(noteId);
 
-            return await catalogService.ReadPage(pageNumber);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, ServiceErrorMessages.DeleteNoteError);
-
-            return new CatalogResultDto { ErrorMessage = ServiceErrorMessages.DeleteNoteError };
-        }
+        return await catalogService.ReadPage(pageNumber);
     }
 }

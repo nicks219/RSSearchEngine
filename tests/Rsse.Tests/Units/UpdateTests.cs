@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -26,12 +25,11 @@ public class UpdateTests
     {
         Stub = new ServiceProviderStub();
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Stub.Provider.GetRequiredService<ILogger<UpdateService>>();
 
         repo.CreateStubData(10);
         _testNoteId = repo.ReadNoteId(Title);
 
-        UpdateService = new UpdateService(repo, managerLogger);
+        UpdateService = new UpdateService(repo);
     }
 
     [TestCleanup]
@@ -41,7 +39,7 @@ public class UpdateTests
     }
 
     [TestMethod]
-    public async Task UpdateManager_ShouldReports_ExpectedTagsCount()
+    public async Task UpdateService_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
         var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1);
@@ -51,7 +49,7 @@ public class UpdateTests
     }
 
     [TestMethod]
-    public async Task UpdateManager_ShouldUpdateNoteToExpected()
+    public async Task UpdateService_ShouldUpdateNote_Correctly()
     {
         // arrange:
         var requestDto = new NoteRequestDto

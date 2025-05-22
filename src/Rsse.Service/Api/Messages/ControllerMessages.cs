@@ -3,7 +3,7 @@ using SearchEngine.Api.Controllers;
 namespace SearchEngine.Api.Messages;
 
 /// <summary>
-/// Сообщения контроллеров, для функционала логирования.
+/// Сообщения контроллеров.
 /// </summary>
 internal abstract class ControllerMessages : ControllerErrorMessages
 {

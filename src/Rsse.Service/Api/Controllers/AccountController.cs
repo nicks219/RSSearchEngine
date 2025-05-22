@@ -14,8 +14,8 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using static SearchEngine.Api.Messages.ControllerErrorMessages;
-using static SearchEngine.Api.Messages.ControllerMessages;
 using static SearchEngine.Api.Messages.ControllerErrorMessages;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 

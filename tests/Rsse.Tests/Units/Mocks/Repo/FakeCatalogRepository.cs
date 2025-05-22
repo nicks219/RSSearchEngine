@@ -175,13 +175,6 @@ public sealed class FakeCatalogRepository : IDataRepository
             ids = Enumerable.Range(0, ReadTests.ElectionTestNotesCount).ToList();
         }
 
-        // todo: сейчас нет необходимости мокать AsyncQueryProvider
-        // var queryable = new List<NoteEntity>().AsQueryable();
-        // var mock = new Mock<AsyncQueryProvider<NoteEntity>>(queryable) { CallBase = true };
-        // var asyncQueryProvider = mock.Object;
-
-        // var result = new FakeDbSet<int>(ids, asyncQueryProvider);
-
         return Task.FromResult(ids);
     }
 

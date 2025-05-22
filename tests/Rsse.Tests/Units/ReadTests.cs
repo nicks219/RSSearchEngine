@@ -12,7 +12,6 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
@@ -29,7 +28,6 @@ public class ReadTests
 
     public required ReadService ReadService;
     public required ServiceProviderStub Stub;
-    public required NoopLogger<ReadService> Logger;
 
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
 
@@ -38,10 +36,8 @@ public class ReadTests
     {
         Stub = new ServiceProviderStub();
         var repo = Stub.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Stub.Provider.GetRequiredService<ILogger<ReadService>>();
 
-        ReadService = new ReadService(repo, managerLogger);
-        Logger = (NoopLogger<ReadService>)Stub.Provider.GetRequiredService<ILogger<ReadService>>();
+        ReadService = new ReadService(repo);
     }
 
     [TestCleanup]
@@ -51,7 +47,7 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ReadManager_ShouldReports_ExpectedTagsCount()
+    public async Task ReadService_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
         var noteResultDto = await ReadService.ReadEnrichedTagList();
@@ -60,41 +56,37 @@ public class ReadTests
         Assert.AreEqual(_tagsCount, noteResultDto.EnrichedTags?.Count);
     }
 
-    [TestMethod]
-    public async Task ReadManager_ShouldReturnErrorMessage_OnInvalidElectionRequest()
+    [TestMethod] // ---
+    public async Task ReadService_ShouldThrow_OnInvalidElectionRequest()
     {
         // arrange:
+        const int key = 25000;
         var noteRequestDto = new NoteRequestDto
         (
-            CheckedTags: [25000],
+            CheckedTags: [key],
             Title: default,
             Text: default,
             NoteIdExchange: default
         );
 
         // act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto).ConfigureAwait(false);
-        // ждём тестовый логер:
-        var count = 20;
-        while (count-- > 0 && !Logger.Reported)
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-        }
+        var exception =
+            await TestHelper.GetExpectedExceptionWithAsync<KeyNotFoundException>(() =>
+                ReadService.GetNextOrSpecificNote(noteRequestDto));
 
         // asserts:
-        Assert.AreEqual(ServiceErrorMessages.ElectNoteError, noteResultDto.ErrorMessage);
-        Assert.AreEqual(ServiceErrorMessages.ElectNoteError, Logger.Message);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be($"The given key '{key}' was not present in the dictionary.");
     }
 
     [TestMethod]
-    public async Task ReadManager_ShouldProduceEmptyLogAndResponse_OnNullElectionRequest()
+    public async Task ReadService_ShouldProduceEmptyResponse_OnNullElectionRequest()
     {
         // arrange & act:
         var noteResultDto = await ReadService.GetNextOrSpecificNote(null);
 
         // asserts:
         Assert.AreEqual(string.Empty, noteResultDto.Title);
-        Assert.AreEqual(string.Empty, Logger.Message);
     }
 
     [TestMethod]
@@ -137,7 +129,7 @@ public class ReadTests
     }
 
     [TestMethod]
-    public async Task ReadManager_Election_ShouldReturnNextNote_OnValidElectionRequest()
+    public async Task ReadService_Election_ShouldReturnNextNote_OnValidElectionRequest()
     {
         // arrange:
         var noteRequestDto = new NoteRequestDto
@@ -152,13 +144,12 @@ public class ReadTests
         var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, false);
 
         // assert:
-        Assert.AreEqual(Logger.Message, string.Empty);
         Assert.AreEqual(FakeCatalogRepository.FirstNoteText, noteResultDto.Text);
     }
 
     [TestMethod]
     // NB: в тч демонстрация распределения результатов алгоритме выбора
-    public async Task ReadManager_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
+    public async Task ReadService_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
     {
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
 
