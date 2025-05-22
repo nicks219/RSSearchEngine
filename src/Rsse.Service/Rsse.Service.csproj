@@ -47,18 +47,14 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <RsseDomainDll>$(BaseIntermediateOutputPath)..\..\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <RsseDomainDll>$(SolutionDir)src\Rsse.Service\bin\$(Configuration)\$(TargetFramework)\win-x64\Rsse.Service.dll</RsseDomainDll>
+      <RsseDomainDll>$(SolutionDir)src\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
       <Generator>$(SolutionDir)src\Rsse.Generator\Rsse.Generator.csproj</Generator>
     </PropertyGroup>
 
     <!-- генерация констант -->
     <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
       <Message Text="Generating constants using $(Generator)" Importance="high" />
-      <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Domain.Configuration.RouteConstants $(SolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx" />
+      <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Service.Configuration.RouteConstants $(SolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx" />
     </Target>
 
     <ItemGroup>
