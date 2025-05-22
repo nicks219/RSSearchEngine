@@ -2,9 +2,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -40,7 +40,7 @@ public class UpdateTests
         var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.StructuredTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.EnrichedTags?.Count);
     }
 
     [TestMethod]

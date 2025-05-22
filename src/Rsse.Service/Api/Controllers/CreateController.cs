@@ -6,18 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для создания заметок
+/// Контроллер для создания заметок.
 /// </summary>
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
@@ -35,10 +36,10 @@ public class CreateController(
     private readonly DatabaseOptions _databaseOptions = dbOptions.Value;
 
     /// <summary>
-    /// Создать заметку
+    /// Создать заметку.
     /// </summary>
-    /// <param name="request">данные для создания заметки</param>
-    /// <returns>данные с созданной заметкой либо ошибкой</returns>
+    /// <param name="request">Контрейнер с запросом создания заметки.</param>
+    /// <returns>Контрейнер с информацией по созданной заметке, либо с ошибкой.</returns>
     [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
@@ -55,7 +56,7 @@ public class CreateController(
                 {
                     Title = noteResultDto.Title,
                     Text = noteResultDto.Text,
-                    StructuredTags = noteResultDto.StructuredTags,
+                    StructuredTags = noteResultDto.EnrichedTags,
                     ErrorMessage = noteResultDto.ErrorMessage
                 };
             }
@@ -86,7 +87,7 @@ public class CreateController(
     }
 
     /// <summary>
-    /// Зафиксировать дамп бд и вернуть путь к созданному файлу
+    /// Зафиксировать дамп бд и вернуть путь к созданному файлу.
     /// </summary>
     private string? CreateDumpAndGetFilePath()
     {

@@ -1,31 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository.Exceptions;
 
 namespace SearchEngine.Infrastructure.Repository;
 
 /// <summary>
-/// Репозиторий слоя данных
+/// Репозиторий слоя данных.
 /// </summary>
 public sealed class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
-    /// <summary/> Контейнер для метода
-    private record struct StructuredTagList(string Tag, int RelationEntityReferenceCount);
-
-    // todo: MySQL WORK. DELETE
-    public BaseCatalogContext GetReaderContext() => context;
-    public BaseCatalogContext GetPrimaryWriterContext() => context;
-
-    /// <inheritdoc/>
-    // todo: MySQL WORK. DELETE
-    public Task CopyDbFromMysqlToNpgsql() => throw new NotImplementedException();
+    /// <summary/> Контейнер для метода, создающего обогащенный список тегов.
+    private record struct EnrichedTagList(string Tag, int RelationEntityReferenceCount);
 
     /// <inheritdoc/>
     public async Task CreateTagIfNotExists(string tag)
@@ -137,12 +130,12 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task<List<string>> ReadStructuredTagList()
+    public async Task<List<string>> ReadEnrichedTagList()
     {
         var tagList = await context.Tags
             // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new StructuredTagList(tag.Tag!, tag.RelationEntityReference!.Count))
+            .Select(tag => new EnrichedTagList(tag.Tag!, tag.RelationEntityReference!.Count))
             .ToListAsync();
 
         return tagList.Select(tagAndAmount =>
@@ -197,7 +190,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                             {
                                 NoteId = noteRequest.NoteIdExchange,
                                 TagId = id
-                            }));
+                            }), CancellationToken.None);
 
                 await context.SaveChangesAsync();
 
@@ -216,6 +209,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         }
     }
 
+    /// <inheritdoc/>
     public async Task UpdateCredos(UpdateCredosRequestDto credosRequest)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -264,7 +258,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                         {
                             NoteId = forAddition.NoteId,
                             TagId = id
-                        }));
+                        }), CancellationToken.None);
 
             await context.SaveChangesAsync();
 
@@ -339,12 +333,15 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         return true;
     }
 
+    // todo: на старте отрабатывает четыре раза, см. changelog
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         await context.DisposeAsync().ConfigureAwait(false);
     }
 
-    // WARN на старте отрабатывает четыре раза
+    // todo: на старте отрабатывает четыре раза, см. changelog
+    /// <inheritdoc/>
     void IDisposable.Dispose()
     {
         context.Dispose();

@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30413.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36119.2 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsse.Service", "src\Rsse.Service\Rsse.Service.csproj", "{57F9C100-FA1B-4DD0-A816-0196B48EBD71}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests", "tests\Rsse.Tests\Rsse.Tests.csproj", "{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Data", "src\Rsse.Data\Rsse.Data.csproj", "{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Domain", "src\Rsse.Domain\Rsse.Domain.csproj", "{C6EAC129-D474-41DB-89AF-BA1A208A84AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA4EF658-DA2E-4C04-AE32-6D2576462FCA}"
 EndProject
@@ -16,27 +18,27 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307CC769-2E8D-4951-A185-1F260C962A19}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		README.md = README.md
 		CHANGELOG.md = CHANGELOG.md
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
+		src\Rsse.Service\Properties\launchSettings.json = src\Rsse.Service\Properties\launchSettings.json
+		README.md = README.md
+		.common\rsse.api.v6.0.json = .common\rsse.api.v6.0.json
 		.common\scripts.docker.md = .common\scripts.docker.md
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
-		src\Rsse.Service\Properties\launchSettings.json = src\Rsse.Service\Properties\launchSettings.json
 		.common\ssl.update.md = .common\ssl.update.md
-		.common\rsse.api.v6.0.json = .common\rsse.api.v6.0.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Client\ClientApp\src\index.tsx = src\Rsse.Client\ClientApp\src\index.tsx
-		src\Rsse.Client\ClientApp\src\jsx\components\create.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\create.container.tsx
-		src\Rsse.Client\ClientApp\src\jsx\components\update.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\update.container.tsx
-		src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx
-		src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx
 		src\Rsse.Client\ClientApp\src\jsx\components\catalog.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\catalog.container.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\create.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\create.container.tsx
+		src\Rsse.Client\ClientApp\src\index.tsx = src\Rsse.Client\ClientApp\src\index.tsx
+		src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx = src\Rsse.Client\ClientApp\src\jsx\common\loader.tsx
 		src\Rsse.Client\ClientApp\src\jsx\components\login.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\login.container.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx = src\Rsse.Client\ClientApp\src\jsx\components\menu.component.tsx
 		src\Rsse.Client\ClientApp\src\jsx\components\read.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\read.container.tsx
+		src\Rsse.Client\ClientApp\src\jsx\components\update.container.tsx = src\Rsse.Client\ClientApp\src\jsx\components\update.container.tsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.scripts", "client.scripts", "{40D75148-337E-4545-94AB-2D06AB6F27E9}"
@@ -49,11 +51,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{783F77EB-C548-44FA-9E9C-03B9185033F1}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\cd.deploy.k3s.yml = .github\workflows\cd.deploy.k3s.yml
+		.github\workflows\cd.deploy.server.yml = .github\workflows\cd.deploy.server.yml
 		.github\workflows\ci.docker.build.yml = .github\workflows\ci.docker.build.yml
 		.github\workflows\ci.docker.publish.yml = .github\workflows\ci.docker.publish.yml
 		.github\workflows\ci.dotnet.build.yml = .github\workflows\ci.dotnet.build.yml
 		.github\workflows\ci.node.js.build.yml = .github\workflows\ci.node.js.build.yml
-		.github\workflows\cd.deploy.server.yml = .github\workflows\cd.deploy.server.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
@@ -64,24 +66,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.config", "client.config", "{4FD34D03-D220-4406-AAC5-846D83DBFB73}"
 	ProjectSection(SolutionItems) = preProject
-		src\Rsse.Client\ClientApp\package.json = src\Rsse.Client\ClientApp\package.json
+		src\Rsse.Client\ClientApp\.eslintrc.cjs = src\Rsse.Client\ClientApp\.eslintrc.cjs
+		src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json
 		src\Rsse.Client\ClientApp\package-lock.json = src\Rsse.Client\ClientApp\package-lock.json
+		src\Rsse.Client\ClientApp\package.json = src\Rsse.Client\ClientApp\package.json
 		src\Rsse.Client\ClientApp\tsconfig.json = src\Rsse.Client\ClientApp\tsconfig.json
 		src\Rsse.Client\ClientApp\tsconfig.node.json = src\Rsse.Client\ClientApp\tsconfig.node.json
 		src\Rsse.Client\ClientApp\vite.config.ts = src\Rsse.Client\ClientApp\vite.config.ts
-		src\Rsse.Client\ClientApp\.eslintrc.cjs = src\Rsse.Client\ClientApp\.eslintrc.cjs
-		src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json = src\Rsse.Client\ClientApp\src\jsx\.eslintrc.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".client.js", ".client.js", "{AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE091A-8698-4755-85D8-0BCCDAC427A1}"
 	ProjectSection(SolutionItems) = preProject
-		src\docker-compose.yml = src\docker-compose.yml
+		src\.dockerignore = src\.dockerignore
 		src\docker-compose-build.yml = src\docker-compose-build.yml
+		src\docker-compose.yml = src\docker-compose.yml
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
-		src\.dockerignore = src\.dockerignore
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"
@@ -89,15 +91,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-AFC8-4031-95FC-F4976BB8A0F9}"
 	ProjectSection(SolutionItems) = preProject
 		.k3s\configmap.mysql.cnf = .k3s\configmap.mysql.cnf
+		.k3s\deployment.rsse.pvc.yml = .k3s\deployment.rsse.pvc.yml
 		.k3s\deployment.rsse.yml = .k3s\deployment.rsse.yml
-		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
-		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
-		.k3s\service.rsse.yml = .k3s\service.rsse.yml
 		.k3s\ingress.traefik.ip.yml = .k3s\ingress.traefik.ip.yml
 		.k3s\ingress.traefik.ru.yml = .k3s\ingress.traefik.ru.yml
-		.k3s\resource.postgres.yml = .k3s\resource.postgres.yml
+		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
 		.k3s\pvc.k3s.yml = .k3s\pvc.k3s.yml
-		.k3s\deployment.rsse.pvc.yml = .k3s\deployment.rsse.pvc.yml
+		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
+		.k3s\resource.postgres.yml = .k3s\resource.postgres.yml
+		.k3s\service.rsse.yml = .k3s\service.rsse.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
@@ -105,6 +107,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5
 		.common\.drafts\ingress.traefik.one.yml = .common\.drafts\ingress.traefik.one.yml
 		.common\.drafts\ingress.traefik.two.yml = .common\.drafts\ingress.traefik.two.yml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Generator", "src\Rsse.Generator\Rsse.Generator.csproj", "{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,51 +120,69 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.ActiveCfg = Debug|x64
-		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.Build.0 = Debug|x64
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.ActiveCfg = Debug|x64
+		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Debug|x64.Build.0 = Debug|x64
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|x64.ActiveCfg = Release|x64
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71}.Release|x64.Build.0 = Release|x64
 		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.Build.0 = Debug|Any CPU
 		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.ActiveCfg = Release|Any CPU
-		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.Build.0 = Release|Any CPU
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.ActiveCfg = Debug|x64
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Debug|x64.Build.0 = Debug|x64
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.ActiveCfg = Release|x64
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E}.Release|x64.Build.0 = Release|x64
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.Build.0 = Debug|Any CPU
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.ActiveCfg = Release|Any CPU
-		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.Build.0 = Release|Any CPU
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.ActiveCfg = Debug|x64
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Debug|x64.Build.0 = Debug|x64
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.ActiveCfg = Release|x64
+		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1}.Release|x64.Build.0 = Release|x64
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Debug|x64.ActiveCfg = Debug|x64
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Debug|x64.Build.0 = Debug|x64
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Release|x64.ActiveCfg = Release|x64
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB}.Release|x64.Build.0 = Release|x64
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|x64.Build.0 = Debug|Any CPU
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|Any CPU.Build.0 = Release|Any CPU
-		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|x64.ActiveCfg = Release|Any CPU
-		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|x64.Build.0 = Release|Any CPU
+		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|x64.ActiveCfg = Debug|x64
+		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Debug|x64.Build.0 = Debug|x64
+		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|x64.ActiveCfg = Release|x64
+		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}.Release|x64.Build.0 = Release|x64
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Debug|x64.ActiveCfg = Debug|x64
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Debug|x64.Build.0 = Debug|x64
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|x64.ActiveCfg = Release|x64
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{57F9C100-FA1B-4DD0-A816-0196B48EBD71} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{F06299B5-A78B-4FD9-BCD3-DD53BA78424E} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{E5FA90BD-FED6-4E11-9F35-10808BA33FF1} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
-		{4FD34D03-D220-4406-AAC5-846D83DBFB73} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
-		{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{C6EAC129-D474-41DB-89AF-BA1A208A84AB} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{F63409DD-059D-445B-95EA-897A6333935C} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
 		{40D75148-337E-4545-94AB-2D06AB6F27E9} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
+		{4FD34D03-D220-4406-AAC5-846D83DBFB73} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}
 	EndGlobalSection
 EndGlobal

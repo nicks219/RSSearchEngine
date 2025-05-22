@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -28,7 +29,7 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokeni
     }
 
     /// <summary>
-    /// Дождаться прогрева токенизатора
+    /// Дождаться прогрева токенизатора.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
     public async Task<ActionResult> WaitReadiness()

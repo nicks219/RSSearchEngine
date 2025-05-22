@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace SearchEngine.Tooling.DevelopmentAssistant;
 
 /// <summary>
-/// Подъём и остановка среды разработки JS
+/// Подъём и остановка среды разработки JS.
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal static class ClientLauncher
@@ -40,10 +40,10 @@ internal static class ClientLauncher
     private static volatile bool _initialized;
 
     /// <summary>
-    /// Запустить dev-среду JS в требуемом режиме
+    /// Запустить dev-среду JS в требуемом режиме.
     /// </summary>
-    /// <param name="args">режимы старта и остановки <b>true - only - false</b></param>
-    /// <returns><b>false</b> - выбран отличный от <b>only</b> режим</returns>
+    /// <param name="args">Режимы старта и остановки <b>true - only - false</b>.</param>
+    /// <returns><b>false</b> - Выбран отличный от <b>only</b> режим.</returns>
     internal static bool Run(string[]? args)
     {
         if (args is not ["--js", _])
@@ -69,7 +69,7 @@ internal static class ClientLauncher
     }
 
     /// <summary>
-    /// Запустить dev server и браузер и подписаться на завершение приложения
+    /// Запустить dev server и браузер, подписаться на завершение приложения.
     /// </summary>
     private static void Up()
     {

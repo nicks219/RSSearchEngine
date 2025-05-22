@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,19 +21,24 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
 using SearchEngine.Api.Logger;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Api.Services;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 using Serilog;
 
-// не удалять, трассировка
-
+[assembly: InternalsVisibleTo("Rsse.Tests")]
 namespace SearchEngine.Api.Startup;
 
+/// <summary>
+/// Настройка зависимостей и пайплайна запроса сервиса.
+/// </summary>
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     internal const string DefaultConnectionKey = "DefaultConnection";
@@ -52,6 +58,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         "http://188.120.235.243:5000"
     };
 
+    /// <summary>
+    /// Настроить зависимости сервиса.
+    /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddHostedService<ActivatorService>();
@@ -148,6 +157,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 #endif
     }
 
+    /// <summary>
+    /// Настроить найплайн обработки запроса.
+    /// </summary>
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         var isDevelopment = env.IsDevelopment();

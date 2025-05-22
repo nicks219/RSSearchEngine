@@ -3,24 +3,24 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Services;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Services;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
 /// <summary>
-/// Контроллер для функционала каталога
+/// Контроллер для функционала каталога.
 /// </summary>
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CatalogController(CatalogService catalogService, ILogger<CatalogController> logger) : ControllerBase
 {
     /// <summary>
-    /// Прочитать страницу каталога
+    /// Прочитать страницу каталога.
     /// </summary>
-    /// <param name="id">номер страницы</param>
+    /// <param name="id">Номер страницы.</param>
     [HttpGet(RouteConstants.CatalogPageGetUrl)]
     public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
     {
@@ -37,9 +37,9 @@ public class CatalogController(CatalogService catalogService, ILogger<CatalogCon
     }
 
     /// <summary>
-    /// Переместиться по каталогу
+    /// Переместиться по каталогу.
     /// </summary>
-    /// <param name="request">шаблон с информацией для навигации</param>
+    /// <param name="request">Контейнер с информацией для навигации по каталогу.</param>
     [HttpPost(RouteConstants.CatalogNavigatePostUrl)]
     public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
     {

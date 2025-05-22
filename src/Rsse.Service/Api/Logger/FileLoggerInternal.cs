@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace SearchEngine.Api.Logger;
 
 /// <summary>
-/// Файловый логгер
+/// Файловый логгер.
 /// </summary>
 [Obsolete("use Serilog instead")]
 internal class FileLoggerInternal : ILogger

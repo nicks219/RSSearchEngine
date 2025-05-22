@@ -8,11 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
+using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Repository;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Domain.Services;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Api.Services;
+using SearchEngine.Services;
 
 namespace SearchEngine.Tests.Units.Mocks;
 

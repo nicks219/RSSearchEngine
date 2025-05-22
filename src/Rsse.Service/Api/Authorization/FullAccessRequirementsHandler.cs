@@ -3,15 +3,16 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using SearchEngine.Domain.Configuration;
+using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Api.Authorization;
 
 /// <summary>
-/// Обработчик правила авторизации <see cref="FullAccessRequirement"/>>
+/// Обработчик правила авторизации <see cref="FullAccessRequirement"/>.
 /// </summary>
 public class FullAccessRequirementsHandler : AuthorizationHandler<FullAccessRequirement>
 {
+    /// <summary>Проверить, применимо ли правило авторизации.</summary>
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FullAccessRequirement requirement)
     {
         var claims = context.User.Claims.ToList();

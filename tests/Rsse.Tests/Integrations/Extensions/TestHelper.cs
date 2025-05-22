@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Services;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Api;
 
 namespace SearchEngine.Tests.Integrations.Extensions;

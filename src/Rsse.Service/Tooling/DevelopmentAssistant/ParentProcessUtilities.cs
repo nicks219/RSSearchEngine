@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace SearchEngine.Tooling.DevelopmentAssistant;
 
 /// <summary>
-/// Утилита для определения родительского процесса
+/// Утилита для определения родительского процесса.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 [ExcludeFromCodeCoverage]
@@ -26,10 +26,10 @@ public struct ParentProcessUtilities
     private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ParentProcessUtilities processInformation, int processInformationLength, out int returnLength);
 
     /// <summary>
-    /// Получить родительский процесс по идентификатору заданного процесса
+    /// Получить родительский процесс по идентификатору заданного процесса.
     /// </summary>
-    /// <param name="id">идентификатор заданного процесса</param>
-    /// <returns>инстанс родительского процесса</returns>
+    /// <param name="id">Идентификатор заданного процесса.</param>
+    /// <returns>Инстанс родительского процесса.</returns>
     public static Process? GetParentProcess(int id)
     {
         var process = Process.GetProcessById(id);
@@ -37,10 +37,10 @@ public struct ParentProcessUtilities
     }
 
     /// <summary>
-    /// Получить родительский процесс указанного процесса
+    /// Получить родительский процесс указанного процесса.
     /// </summary>
-    /// <param name="handle">хендлер заданного процесса</param>
-    /// <returns>инстанс родительского процесса</returns>
+    /// <param name="handle">Хендлер заданного процесса.</param>
+    /// <returns>Инстанс родительского процесса.</returns>
     private static Process? GetParentProcess(IntPtr handle)
     {
         var pbi = new ParentProcessUtilities();

@@ -6,6 +6,7 @@ WORKDIR /app
 COPY Directory.Packages.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
+COPY ./Rsse.Domain/ ./Rsse.Domain/
 # скопируем предварительно собранный фронт
 COPY ./Rsse.Client/ClientApp/build/ ./Rsse.Service/ClientApp/build/
 

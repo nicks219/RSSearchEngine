@@ -1,9 +1,9 @@
-using SearchEngine.Domain.Configuration;
+using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Tooling.Scripts;
 
 /// <summary>
-/// Инициализация таблицы тегов для MySql
+/// Инициализация таблицы тегов и авторизации для MySql.
 /// </summary>
 public static class MySqlScript
 {

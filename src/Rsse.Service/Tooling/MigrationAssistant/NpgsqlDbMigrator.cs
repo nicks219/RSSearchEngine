@@ -7,14 +7,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
 using SearchEngine.Infrastructure.Context;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.Scripts;
 using Serilog;
 
 namespace SearchEngine.Tooling.MigrationAssistant;
 
+/// <summary>
+/// Функционал работы с миграциями MySql.
+/// </summary>
+/// <param name="configuration">Конфигурация.</param>
+/// <param name="serviceProvider">Из провайдера однократно получаем NpgsqlCatalogContext для пересоздания бд.</param>
 public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider serviceProvider) : IDbMigrator
 {
     // todo

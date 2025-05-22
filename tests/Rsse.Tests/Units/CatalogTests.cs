@@ -7,10 +7,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Api.Messages;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -88,7 +90,7 @@ public class CatalogTests
         var responseDto = await CatalogService.NavigateCatalog(request);
 
         // assert:
-        Assert.AreEqual(ErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
+        Assert.AreEqual(ServiceErrorMessages.NavigateCatalogError, responseDto.ErrorMessage);
     }
 
     [TestMethod]

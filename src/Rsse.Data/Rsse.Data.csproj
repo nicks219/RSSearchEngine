@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>SearchEngine</RootNamespace>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
     <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
@@ -15,9 +17,10 @@
     <ItemGroup>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-        <!-- <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design"/>
-        MySql.EntityFrameworkCore -->
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
     </ItemGroup>
 
 </Project>

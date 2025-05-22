@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Contracts;
+using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Tests.Integrations.Api;
@@ -73,8 +73,8 @@ public class RepositoryTests
         await using var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
-        var tagsFromMysql = await mysqlRepo.ReadStructuredTagList();
-        var tagsFromNpg = await npgsqlRepo.ReadStructuredTagList();
+        var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList();
+        var tagsFromNpg = await npgsqlRepo.ReadEnrichedTagList();
 
         // assert:
         // теги сохраняются в верхнем регистре
@@ -94,25 +94,27 @@ public class RepositoryTests
         const string tag = "new-2";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
         await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
+        await using var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        await using var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
-        var reader = repo
-            .GetReaderContext()?.Tags
+        var mysqlTags = mysqlContext
+            .Tags
             .Select(x => x.Tag)
             .ToList();
-        var writer = repo
-            .GetPrimaryWriterContext()?.Tags
+        var npgsqlTags = npgsqlContext
+            .Tags
             .Select(x => x.Tag)
             .ToList();
 
         // assert:
-        writer
+        mysqlTags
             .Should()
             .Contain(tag.ToUpper());
 
-        reader
+        npgsqlTags
             .Should()
             .NotContain(tag.ToUpper());
     }
@@ -123,27 +125,30 @@ public class RepositoryTests
         const string tag = "new-3";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var repo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
-        repo.EnsureNotNull();
+        await using var mirroredRepo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
+        await using var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        await using var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+
+        mirroredRepo.EnsureNotNull();
 
         // act:
-        await repo.CreateTagIfNotExists(tag);
-        var reader = repo
-            .GetReaderContext()?.Tags
+        await mirroredRepo.CreateTagIfNotExists(tag);
+        var mysqlTags = mysqlContext
+            .Tags
             .Select(x => x.Tag)
             .ToList();
-        var writer = repo
-            .GetPrimaryWriterContext()?.Tags
+        var npgsqlTags = npgsqlContext
+            .Tags
             .Select(x => x.Tag)
             .ToList();
 
         // assert:
         // теги сохраняются в верхнем регистре
-        writer
+        mysqlTags
             .Should()
             .Contain(tag.ToUpper());
 
-        reader
+        npgsqlTags
             .Should()
             .Contain(tag.ToUpper());
     }

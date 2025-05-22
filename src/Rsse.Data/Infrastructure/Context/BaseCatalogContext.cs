@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Data.Entities;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
@@ -12,25 +12,26 @@ namespace SearchEngine.Infrastructure.Context;
 public abstract class BaseCatalogContext(DbContextOptions options) : DbContext(options)
 {
     /// <summary>
-    /// Контекст для пользователей приложения
+    /// Представление таблицы с пользователемя приложения.
     /// </summary>
     public DbSet<UserEntity> Users { get; set; }
 
     /// <summary>
-    /// Контекст для текстов заметок
+    /// Представление таблицы с заметками.
     /// </summary>
     public DbSet<NoteEntity> Notes { get; set; }
 
     /// <summary>
-    /// Контекст для тегов заметок
+    /// Представление таблицы с тегами.
     /// </summary>
     public DbSet<TagEntity> Tags { get; set; }
 
     /// <summary>
-    /// Контекст для связи заметок и тегов
+    /// Представление таблицы для связи заметок и тегов.
     /// </summary>
     public DbSet<TagsToNotesEntity> TagsToNotesRelation { get; set; }
 
+    /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserEntity>().HasKey(x => x.Id);
