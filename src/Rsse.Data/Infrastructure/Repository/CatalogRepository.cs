@@ -332,18 +332,4 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
         return true;
     }
-
-    // todo: на старте отрабатывает четыре раза, см. changelog
-    /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
-    {
-        await context.DisposeAsync().ConfigureAwait(false);
-    }
-
-    // todo: на старте отрабатывает четыре раза, см. changelog
-    /// <inheritdoc/>
-    void IDisposable.Dispose()
-    {
-        context.Dispose();
-    }
 }

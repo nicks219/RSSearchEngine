@@ -62,9 +62,12 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 
         var types = new List<Type>
         {
-            typeof(DbContextOptions<MysqlCatalogContext>),typeof(DbContextOptions<NpgsqlCatalogContext>),
-            typeof(MysqlCatalogContext), typeof(NpgsqlCatalogContext),
-            typeof(IDbContextOptionsConfiguration<MysqlCatalogContext>), typeof(IDbContextOptionsConfiguration<NpgsqlCatalogContext>)
+            typeof(DbContextOptions<MysqlCatalogContext>),
+            typeof(DbContextOptions<NpgsqlCatalogContext>),
+            typeof(MysqlCatalogContext),
+            typeof(NpgsqlCatalogContext),
+            typeof(IDbContextOptionsConfiguration<MysqlCatalogContext>),
+            typeof(IDbContextOptionsConfiguration<NpgsqlCatalogContext>)
         };
 
         foreach (var descriptor in types.Select(type => services.FirstOrDefault(d => d.ServiceType == type)).OfType<ServiceDescriptor>())

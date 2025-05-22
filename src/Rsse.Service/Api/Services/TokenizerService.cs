@@ -111,8 +111,9 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
 
-        // Не закрываем контекст в корневом scope провайдера.
-        await using var repo = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
+        // Создаём scope, чтобы не закрывать контекст в корневом scope провайдера.
+        using var scope = _scopeFactory.CreateScope();
+        var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
         try
         {

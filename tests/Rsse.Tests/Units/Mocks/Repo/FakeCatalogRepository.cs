@@ -5,20 +5,14 @@ using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Infrastructure.Context;
 
 namespace SearchEngine.Tests.Units.Mocks.Repo;
 
 /// <summary>
-/// Тестовый репозиторий
+/// Тестовый репозиторий.
 /// </summary>
 public sealed class FakeCatalogRepository : IDataRepository
 {
-    // todo: MySQL WORK. DELETE
-    public Task CopyDbFromMysqlToNpgsql() => Task.CompletedTask;
-    public BaseCatalogContext? GetReaderContext() => null;
-    public BaseCatalogContext? GetPrimaryWriterContext() => null;
-
     internal const string FirstNoteText = "Чёрт с ними! За столом сидим, поём, пляшем…\r\nПоднимем эту чашу за детей наших\r\n";
     internal const string FirstNoteTitle = "Розенбаум - Вечерняя застольная";
     internal const string SecondNoteText = "Облака, белогривыи лошадки, облака, что ж вы мчитесь?\r\n";
@@ -204,11 +198,4 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
-
-    public void Dispose() { }
-
-    public ValueTask DisposeAsync()
-    {
-        return new ValueTask();
-    }
 }

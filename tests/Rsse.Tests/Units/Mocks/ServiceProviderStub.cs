@@ -11,7 +11,7 @@ using SearchEngine.Tests.Units.Mocks.Repo;
 namespace SearchEngine.Tests.Units.Mocks;
 
 /// <summary/> Для тестов, с двумя логгерами.
-public class ServiceProviderStub
+public sealed class ServiceProviderStub : IDisposable
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
@@ -34,5 +34,10 @@ public class ServiceProviderStub
         var serviceProvider = services.BuildServiceProvider();
         Provider = serviceProvider;
         Scope = serviceProvider.CreateScope();
+    }
+
+    public void Dispose()
+    {
+        Scope.Dispose();
     }
 }

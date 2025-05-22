@@ -33,22 +33,6 @@ public sealed class MirrorRepository(
     private readonly IDataRepository _writerPrimary = writerPrimary;
     private readonly IDataRepository _writerSecondary = writerSecondary;
 
-    // todo: на старте отрабатывает четыре раза, см. changelog
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        _reader.Dispose();
-        _writerPrimary.Dispose();
-    }
-
-    // todo: на старте отрабатывает четыре раза, см. changelog
-    /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
-    {
-        await _reader.DisposeAsync().ConfigureAwait(false);
-        await _writerPrimary.DisposeAsync().ConfigureAwait(false);
-    }
-
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {

@@ -166,10 +166,10 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             // пересоздадим базу до открытия соединения
             if (!createTablesOnPgMigration)
             {
-                var context = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
+                using var scope = serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
-                context.Dispose();
                 Log.Information("pg on restore | recreate database");
             }
 

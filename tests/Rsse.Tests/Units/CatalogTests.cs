@@ -22,6 +22,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class CatalogTests
 {
+    public required ServiceProviderStub Stub;
     public required CatalogService CatalogService;
     public required DeleteService DeleteService;
     public required FakeCatalogRepository Repo;
@@ -32,16 +33,22 @@ public class CatalogTests
     [TestInitialize]
     public async Task Initialize()
     {
-        var host = new ServiceProviderStub();
-        var repo = host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var catalogManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
-        var deleteManagerLogger = host.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();
+        Stub = new ServiceProviderStub();
+        var repo = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var catalogManagerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<CatalogService>>();
+        var deleteManagerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<DeleteService>>();
 
         CatalogService = new CatalogService(repo, catalogManagerLogger);
         DeleteService = new DeleteService(repo, CatalogService, deleteManagerLogger);
-        Repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
+        Repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = await Repo.ReadNotesCount();
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Stub?.Dispose();
     }
 
     [TestMethod]
