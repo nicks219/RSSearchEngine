@@ -5,7 +5,7 @@ namespace SearchEngine.Api.Messages;
 /// <summary>
 /// Сообщения контроллеров, для функционала логирования.
 /// </summary>
-internal abstract class ControllerMessages
+internal abstract class ControllerMessages : ControllerErrorMessages
 {
     internal const string OkMessage = "[Ok]";
     internal const string LogOutMessage = $"[{nameof(AccountController)}] {nameof(AccountController.Logout)}";
