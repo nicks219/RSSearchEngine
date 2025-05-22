@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
@@ -48,7 +48,7 @@ public class ReadTests
     public async Task ReadManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var noteResultDto = await ReadService.ReadTagList();
+        var noteResultDto = await ReadService.ReadEnrichedTagList();
 
         // assert:
         Assert.AreEqual(_tagsCount, noteResultDto.EnrichedTags?.Count);

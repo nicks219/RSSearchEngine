@@ -1,11 +1,15 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
+using SearchEngine.Infrastructure.Context;
+using SearchEngine.Infrastructure.Repository.Exceptions;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
 using Serilog;
 
@@ -15,10 +19,9 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// Функционал работы с миграциями MySql.
 /// </summary>
 /// <param name="configuration">Конфигурация.</param>
-/// <param name="factory">Из фабрики однократко получаем IDataRepository для копирования данных.</param>
+/// <param name="factory">Из фабрики однократко получаем контексты бд для копирования данных.</param>
 internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactory factory) : IDbMigrator
 {
-
     private const int MaxVersion = 10;
     private int _version;
     private int _perSongVersion;
@@ -97,8 +100,78 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
     /// <inheritdoc/>
     public async Task CopyDbFromMysqlToNpgsql()
     {
-        await using var repo = factory.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
-        await repo.CopyDbFromMysqlToNpgsql();
+        using var scope = factory.CreateScope();
+        await using var mysqlCatalogContext = (MysqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        await using var npgsqlCatalogContext = (NpgsqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+        await CopyDbFromMysqlToNpgsql(mysqlCatalogContext, npgsqlCatalogContext);
+    }
+
+    // todo: методу миграции не место в проксирующем репо
+    // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
+    public async Task CopyDbFromMysqlToNpgsql(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext)
+    {
+        // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
+        //var mysqlCatalogContext = (writerPrimary as CatalogRepository<MysqlCatalogContext>).GetReaderContext();
+        //var npgsqlCatalogContext = (writerSecondary as CatalogRepository<NpgsqlCatalogContext>).GetReaderContext();
+        if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
+            throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
+
+        // пересоздаём базу перед копированием данных
+        await npgsqlCatalogContext.Database.EnsureDeletedAsync();
+        await npgsqlCatalogContext.Database.EnsureCreatedAsync();
+
+        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
+        var notes = mysqlCatalogContext.Notes.Select(note => note).ToList();
+        var tags = mysqlCatalogContext.Tags.Select(tag => tag).ToList();
+        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation.Select(relation => relation).ToList();
+
+        var users = mysqlCatalogContext.Users.Select(user => user).ToList();
+
+        await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync();
+
+        try
+        {
+            // notes, tags, relations:
+            await npgsqlCatalogContext.Notes.AddRangeAsync(notes);
+            await npgsqlCatalogContext.Tags.AddRangeAsync(tags);
+            await npgsqlCatalogContext.TagsToNotesRelation.AddRangeAsync(tagsToNotes);
+
+            // users:
+            await npgsqlCatalogContext.Users.ExecuteDeleteAsync();
+            await npgsqlCatalogContext.Users.AddRangeAsync(users);
+
+            await npgsqlCatalogContext.SaveChangesAsync();
+
+            // мы заполнили значение ключей "вручную" и EF не изменил identity
+            await PgSetVals(npgsqlCatalogContext);
+
+            await transaction.CommitAsync();
+        }
+        catch (DataExistsException)
+        {
+            await transaction.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            // include error detail:
+            await transaction.RollbackAsync();
+            Console.WriteLine(ex.Message);
+            throw new Exception($"[{nameof(CopyDbFromMysqlToNpgsql)}: Repo]", ex);
+        }
+    }
+
+    // <summary/> Выставить актуальные значения ключей для postgres.
+    private static async Task PgSetVals(BaseCatalogContext dbContext)
+    {
+        if (dbContext.Database.ProviderName != "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            throw new NotSupportedException($"{nameof(PgSetVals)} | '{dbContext.Database.ProviderName}' provider is not supported.");
+        }
+
+        var noteRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""");
+        var tagRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""");
+        var userRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));""");
+        Console.WriteLine($"repo set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
     }
 }
 

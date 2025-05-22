@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 

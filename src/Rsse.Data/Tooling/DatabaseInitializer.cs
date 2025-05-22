@@ -2,7 +2,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Domain.Contracts;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Tooling.Scripts;
 
@@ -17,30 +16,20 @@ public abstract class DatabaseInitializer
     /// <summary>
     /// Инициализировать две базы данных, вызывается однократно.
     /// </summary>
-    public static void CreateAndSeed(IServiceProvider provider, ILogger logger)
+    public static void CreateAndSeed(IServiceScopeFactory factory, ILogger logger)
     {
         // чтобы не закрывать контекст в корневом scope провайдера
-        using var repo = provider.CreateScope().ServiceProvider.GetRequiredService<IDataRepository>();
+        using var scope = factory.CreateScope();
+        var mysqlContext = scope.ServiceProvider.GetRequiredService<MysqlCatalogContext>();
+        var npgsqlContext = scope.ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
 
         try
         {
-            var readerContext = repo.GetReaderContext();
-            var primaryWriterContext = repo.GetPrimaryWriterContext();
+            var readerCreated = mysqlContext.Database.EnsureCreated();
+            var writerCreated = npgsqlContext.Database.EnsureCreated();
 
-            if (readerContext == null || primaryWriterContext == null)
-            {
-                logger.LogWarning("[{Reporter}] | No context(s) provided", nameof(DatabaseInitializer));
-                return;
-            }
-
-            // readerContext.Database.EnsureDeleted();
-            // primaryWriterContext.Database.EnsureDeleted();
-
-            var readerCreated = readerContext.Database.EnsureCreated();
-            var writerCreated = primaryWriterContext.Database.EnsureCreated();
-
-            SeedDatabase(readerContext, readerCreated);
-            SeedDatabase(primaryWriterContext, writerCreated);
+            SeedDatabase(mysqlContext, readerCreated);
+            SeedDatabase(npgsqlContext, writerCreated);
 
             logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
                 nameof(DatabaseInitializer), readerCreated, writerCreated);

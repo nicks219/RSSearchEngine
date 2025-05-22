@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using SearchEngine.Data.Dto;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Services;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 

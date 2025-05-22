@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using SearchEngine.Domain.Configuration;
+using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Api.Authorization;
 

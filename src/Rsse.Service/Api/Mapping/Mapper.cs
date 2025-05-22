@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
+using SearchEngine.Service.ApiModels;
 
 namespace SearchEngine.Api.Mapping;
 

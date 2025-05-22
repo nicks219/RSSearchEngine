@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Services;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Services;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 

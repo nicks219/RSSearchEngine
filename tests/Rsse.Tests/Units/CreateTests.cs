@@ -3,9 +3,9 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Services;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Services;
 using SearchEngine.Tests.Units.Mocks;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
@@ -30,7 +30,7 @@ public class CreateTests
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await CreateService.ReadStructuredTagList();
+        var resultDto = await CreateService.ReadEnrichedTagList();
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.EnrichedTags?.Count);

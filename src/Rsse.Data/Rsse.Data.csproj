@@ -20,4 +20,8 @@
         MySql.EntityFrameworkCore -->
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

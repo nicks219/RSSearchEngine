@@ -10,8 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
 using SearchEngine.Infrastructure.Context;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 

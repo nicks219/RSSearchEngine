@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository.Exceptions;
 
@@ -18,14 +19,6 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 {
     /// <summary/> Контейнер для метода, создающего обогащенный список тегов.
     private record struct EnrichedTagList(string Tag, int RelationEntityReferenceCount);
-
-    // todo: удалить после перехода на Postgres
-    /// <inheritdoc/>
-    public BaseCatalogContext GetReaderContext() => context;
-    /// <inheritdoc/>
-    public BaseCatalogContext GetPrimaryWriterContext() => context;
-    /// <inheritdoc/>
-    public Task CopyDbFromMysqlToNpgsql() => throw new NotImplementedException();
 
     /// <inheritdoc/>
     public async Task CreateTagIfNotExists(string tag)
@@ -197,7 +190,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                             {
                                 NoteId = noteRequest.NoteIdExchange,
                                 TagId = id
-                            }));
+                            }), CancellationToken.None);
 
                 await context.SaveChangesAsync();
 
@@ -265,7 +258,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                         {
                             NoteId = forAddition.NoteId,
                             TagId = id
-                        }));
+                        }), CancellationToken.None);
 
             await context.SaveChangesAsync();
 

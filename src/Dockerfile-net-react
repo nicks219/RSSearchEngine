@@ -18,6 +18,7 @@ WORKDIR /app
 COPY Directory.Packages.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
+COPY ./Rsse.Domain/ ./Rsse.Domain/
 
 # JS: копируем папку с файлами фронта
 COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Dto;
-using SearchEngine.Domain.Entities;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Infrastructure.Context;
 
 namespace SearchEngine.Tests.Units.Mocks.Repo;

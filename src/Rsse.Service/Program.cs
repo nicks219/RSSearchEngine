@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
 

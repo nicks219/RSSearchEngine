@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <Platforms>x64</Platforms>
         <Authors>nick219</Authors>
         <Company>nick219</Company>
         <Nullable>enable</Nullable>
@@ -42,14 +41,23 @@
       <PackageReference Include="OpenTelemetry.Exporter.Console" />
     </ItemGroup>
 
+    <ItemGroup>
+     <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
+      <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RsseDomainDll>$(BaseIntermediateOutputPath)..\..\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
+    </PropertyGroup>
+
     <!-- start: code gen section -->
-    <ItemGroup Label="DomainCodeGen" Condition="'$(Configuration)' == 'Debug'" >
-      <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <ItemGroup Label="CodeGen" Condition="'$(Configuration)' == 'Debug'" >
+      <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(Configuration)' != 'Debug'">
       <Compile Remove="Tooling/Generators/GenerateConstantsJsonTask.cs" />
     </ItemGroup>
-  
+
     <UsingTask
       TaskName="GenerateConstantsJsonTask"
       TaskFactory="RoslynCodeTaskFactory"
@@ -64,18 +72,14 @@
         <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)Tooling/Generators/GenerateConstantsJsonTask.cs"/>
       </Task>
     </UsingTask>
-  
+
     <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'" >
       <GenerateConstantsJsonTask
-        ConstantsClass="SearchEngine.Domain.Configuration.RouteConstants"
+        ConstantsClass="SearchEngine.Service.Configuration.RouteConstants"
         OutputFile="$(SolutionDir)/src/Rsse.Client/ClientApp/src/api-routes.tsx"
-        DllPath="$(TargetPath)" />
+        DllPath="$(RsseDomainDll)" />
     </Target>
     <!-- end: code gen section -->
-
-    <ItemGroup>
-      <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
       <Folder Include="ClientApp\build\dump\" />

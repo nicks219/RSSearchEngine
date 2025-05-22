@@ -119,8 +119,11 @@
 ---
   * [x] написать тест на UpdateCredos (в CatalogRepository было перепутано поле old/new)
   * [x] поправить summary в Rsse.Data
-  * [ ] поправить summary в Rsse.Service
-  * [ ] выделить domain в отдельный проект, дополнить билд докера с учетом изменений
+  * [x] поправить summary в Rsse.Service
+  * [x] выделить domain в отдельный проект, дополнить билд докера с учетом изменений
+    * [x] перенести в domain SearchEngine.Domain.Configuration.RouteConstants (не работает в Visual Studio, переделать)
+    * [x] методу миграции не место в проксирующем репо (CopyFromMySQlToPostgres)
+    * [x] методам получения контекста не место в репозиториях и контракте
   * [ ] доработать маппинг (перенести trim из CreateManager, checked/unchecked сделать bool)
   * [ ] удалить очистку контекстов из имплементаций IDataRepository (тк не они владельцы контекстов бд)
   * [ ] сделать более информативной обработку ошибок

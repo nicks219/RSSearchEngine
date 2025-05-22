@@ -1,4 +1,4 @@
-using SearchEngine.Domain.Configuration;
+using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Tooling.Scripts;
 

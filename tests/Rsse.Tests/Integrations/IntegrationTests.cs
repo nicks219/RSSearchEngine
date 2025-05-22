@@ -14,13 +14,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Org.BouncyCastle.Security;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Dto;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 using SearchEngine.Tests.Units.Dto;
-using static SearchEngine.Domain.Configuration.RouteConstants;
+using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 

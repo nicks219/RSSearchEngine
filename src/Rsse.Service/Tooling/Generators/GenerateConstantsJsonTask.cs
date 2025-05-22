@@ -11,7 +11,7 @@ using Microsoft.Build.Utilities;
 namespace SearchEngine.Tooling.Generators;
 
 /// <summary>
-/// Билд-таска для генерации json/tsx по файлу с константами.
+/// Билд-таска для генерации json/tsx по файлу с константами, см. csproj.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public sealed class GenerateConstantsJsonTask : Task

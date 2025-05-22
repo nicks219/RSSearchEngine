@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
-using SearchEngine.Domain.ApiModels;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Services;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Services;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 

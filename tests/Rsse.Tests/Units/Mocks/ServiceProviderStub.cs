@@ -1,9 +1,11 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
-using SearchEngine.Domain.Tokenizer;
+using SearchEngine.Data.Contracts;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tests.Units.Mocks.Repo;
 
 namespace SearchEngine.Tests.Units.Mocks;

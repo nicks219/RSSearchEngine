@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Domain.Services;
+using SearchEngine.Services;
 
 namespace SearchEngine.Api.Startup;
 

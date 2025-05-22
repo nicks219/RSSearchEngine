@@ -7,12 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Domain.Configuration;
-using SearchEngine.Domain.Contracts;
+using SearchEngine.Data.Configuration;
+using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 using Swashbuckle.AspNetCore.Annotations;
-using static SearchEngine.Domain.Configuration.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
