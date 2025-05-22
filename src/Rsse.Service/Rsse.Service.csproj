@@ -51,7 +51,7 @@
     </PropertyGroup>
 
     <!-- start: code gen section -->
-    <ItemGroup Label="CodeGen" Condition="'$(Configuration)' == 'Debug'" >
+    <!--<ItemGroup Label="DomainCodeGen" Condition="'$(Configuration)' == 'Debug'" >
       <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(Configuration)' != 'Debug'">
@@ -78,8 +78,18 @@
         ConstantsClass="SearchEngine.Service.Configuration.RouteConstants"
         OutputFile="$(SolutionDir)/src/Rsse.Client/ClientApp/src/api-routes.tsx"
         DllPath="$(RsseDomainDll)" />
-    </Target>
+    </Target>-->
     <!-- end: code gen section -->
+
+    <PropertyGroup>
+      <RsseDomainDll>$(SolutionDir)src\Rsse.Service\bin\$(Configuration)\$(TargetFramework)\win-x64\Rsse.Service.dll</RsseDomainDll>
+      <GeneratorExe>$(SolutionDir)src\Rsse.Service\tools\Rsse.Generator.exe</GeneratorExe>
+    </PropertyGroup>
+
+    <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+      <Message Text="Generating constants using $(GeneratorExe)" Importance="high" />
+      <Exec Command="&quot;$(GeneratorExe)&quot; &quot;$(RsseDomainDll)&quot; SearchEngine.Domain.Configuration.RouteConstants &quot;$(SolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx&quot;" />
+    </Target>
 
     <ItemGroup>
       <Folder Include="ClientApp\build\dump\" />
