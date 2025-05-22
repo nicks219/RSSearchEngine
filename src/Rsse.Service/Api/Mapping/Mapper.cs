@@ -81,8 +81,8 @@ public static class Mapper
         var noteRequestDto = new NoteRequestDto
         (
             CheckedTags: noteRequest.CheckedTags,
-            Title: noteRequest.Title,
-            Text: noteRequest.Text,
+            Title: noteRequest.Title?.Trim(),
+            Text: noteRequest.Text?.Trim(),
             NoteIdExchange: noteRequest.NoteIdExchange ?? 0
         );
 
@@ -96,7 +96,9 @@ public static class Mapper
     {
         var noteResponse = new NoteResponse
         {
-            CheckedUncheckedTags = noteResultDto.CheckedUncheckedTags,
+            CheckedUncheckedTags = noteResultDto.CheckedUncheckedTags?
+                .Select(flag => flag ? "checked" : "unchecked")
+                .ToList(),
             Title = noteResultDto.Title,
             Text = noteResultDto.Text,
             StructuredTags = noteResultDto.EnrichedTags,

@@ -134,8 +134,8 @@ public class ReadController(
     {
         try
         {
-            var response = await updateService.GetNoteWithTagsForUpdate(id);
-            return response.MapFromDto();
+            var noteResultDto = await updateService.GetNoteWithTagsForUpdate(id);
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {

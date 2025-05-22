@@ -71,7 +71,6 @@ public class CreateController(
 
             var path = CreateDumpAndGetFilePath();
 
-            // todo: можно добавить в маппер
             noteResultDto = noteResultDto with
             {
                 Text = path ?? string.Empty

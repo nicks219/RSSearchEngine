@@ -122,7 +122,7 @@
   * [x] поправить summary в Rsse.Service
   * [x] выделить domain в отдельный проект, дополнить билд докера с учетом изменений
   * [x] выделить генератор констант в отдельный проект для корректного запуска под Visual Studio и Rider
-  * [ ] доработать маппинг (перенести trim из CreateManager, checked/unchecked сделать bool)
+  * [x] доработать маппинг (перенести trim из CreateManager, checked/unchecked сделать bool)
   * [ ] удалить очистку контекстов из имплементаций IDataRepository (тк не они владельцы контекстов бд)
   * [ ] сделать более информативной обработку ошибок
   * [ ] MySqlDbMigrator.CopyDbFromMysqlToNpgsql - разберись с очисткой, restore - убрать close

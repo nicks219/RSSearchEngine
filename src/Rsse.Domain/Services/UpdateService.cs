@@ -74,16 +74,16 @@ public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
 
             var noteTags = await repo.ReadNoteTagIds(originalNoteId);
 
-            var checkboxes = new List<string>();
+            var checkboxes = new List<bool>();
 
             for (var i = 0; i < tagList.Count; i++)
             {
-                checkboxes.Add("unchecked");
+                checkboxes.Add(false);// unchecked
             }
 
             foreach (var i in noteTags)
             {
-                checkboxes[i - 1] = "checked";
+                checkboxes[i - 1] = true;// checked
             }
 
             return new NoteResultDto(tagList, originalNoteId, text, title, checkboxes);

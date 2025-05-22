@@ -49,8 +49,7 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
                 return dtoWithInitialTags;
             }
 
-            // todo: перенести в маппер
-            noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title.Trim() };
+            noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title };
 
             var newNoteId = await repo.CreateNote(noteRequestDto);
 
@@ -70,16 +69,16 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
 
             var tagsAfterCreate = dtoWithTagsAfterSuccessfulCreate.EnrichedTags;
 
-            var checkboxes = new List<string>();
+            var checkboxes = new List<bool>();
 
             for (var i = 0; i < tagsAfterCreate!.Count; i++)
             {
-                checkboxes.Add("unchecked");
+                checkboxes.Add(false);// unchecked
             }
 
             foreach (var i in noteRequestDto.CheckedTags)
             {
-                checkboxes[i - 1] = "checked";
+                checkboxes[i - 1] = true;// checked
             }
 
             return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
