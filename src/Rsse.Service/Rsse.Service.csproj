@@ -50,45 +50,15 @@
       <RsseDomainDll>$(BaseIntermediateOutputPath)..\..\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
     </PropertyGroup>
 
-    <!-- start: code gen section -->
-    <!--<ItemGroup Label="DomainCodeGen" Condition="'$(Configuration)' == 'Debug'" >
-      <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' != 'Debug'">
-      <Compile Remove="Tooling/Generators/GenerateConstantsJsonTask.cs" />
-    </ItemGroup>
-
-    <UsingTask
-      TaskName="GenerateConstantsJsonTask"
-      TaskFactory="RoslynCodeTaskFactory"
-      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"
-      Condition="'$(Configuration)' == 'Debug'" >
-      <ParameterGroup>
-        <ConstantsClass ParameterType="System.String" Required="true" />
-        <OutputFile ParameterType="System.String" Required="true" />
-        <DllPath ParameterType="System.String" Required="true" />
-      </ParameterGroup>
-      <Task>
-        <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)Tooling/Generators/GenerateConstantsJsonTask.cs"/>
-      </Task>
-    </UsingTask>
-
-    <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'" >
-      <GenerateConstantsJsonTask
-        ConstantsClass="SearchEngine.Service.Configuration.RouteConstants"
-        OutputFile="$(SolutionDir)/src/Rsse.Client/ClientApp/src/api-routes.tsx"
-        DllPath="$(RsseDomainDll)" />
-    </Target>-->
-    <!-- end: code gen section -->
-
     <PropertyGroup>
       <RsseDomainDll>$(SolutionDir)src\Rsse.Service\bin\$(Configuration)\$(TargetFramework)\win-x64\Rsse.Service.dll</RsseDomainDll>
-      <GeneratorExe>$(SolutionDir)src\Rsse.Service\tools\Rsse.Generator.exe</GeneratorExe>
+      <Generator>$(SolutionDir)src\Rsse.Generator\Rsse.Generator.csproj</Generator>
     </PropertyGroup>
 
+    <!-- генерация констант -->
     <Target Name="GenerateConstantsJson" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-      <Message Text="Generating constants using $(GeneratorExe)" Importance="high" />
-      <Exec Command="&quot;$(GeneratorExe)&quot; &quot;$(RsseDomainDll)&quot; SearchEngine.Domain.Configuration.RouteConstants &quot;$(SolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx&quot;" />
+      <Message Text="Generating constants using $(Generator)" Importance="high" />
+      <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Domain.Configuration.RouteConstants $(SolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx" />
     </Target>
 
     <ItemGroup>

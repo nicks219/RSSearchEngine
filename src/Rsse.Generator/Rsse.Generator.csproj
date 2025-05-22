@@ -5,8 +5,10 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <DebugType>none</DebugType>
 
+        <IsPackable>false</IsPackable>
+        <IsPublishable>false</IsPublishable>
+        <DebugType>none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>

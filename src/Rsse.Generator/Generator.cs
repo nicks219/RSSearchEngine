@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -6,10 +7,11 @@ using System.Reflection;
 namespace Rsse.Generator;
 
 /// <summary>
-/// Генератор констант путей.
-/// Запуск из папки scr: dotnet publish Rsse.Generator -c Release -o ../src/Rsse.Service/tools
+/// Генератор констант с роутами API для клиента.
 /// </summary>
-internal abstract class Program
+// NB: Если переделать на publish, то запуск из папки scr: dotnet publish Rsse.Generator -c Release -o ../src/Rsse.Service/tools
+[ExcludeFromCodeCoverage]
+internal abstract class Generator
 {
     private static int Main(string[] args)
     {
@@ -70,7 +72,7 @@ internal abstract class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("{0} crashed: {1}", nameof(Generator), ex);
+            Console.Error.WriteLine("{0} crashed: {1}", nameof(Rsse.Generator), ex);
             return 1;
         }
     }
