@@ -18,7 +18,6 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
-using SearchEngine.Tests.Units.Dto;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -106,12 +105,12 @@ public class IntegrationTests
 
     public static IEnumerable<object?[]> AfterCopyTestData =>
     [
-        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
-        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), null, null, null],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(StringResponse), null, null, null],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(StringResponse), null, null, null],
         [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), null, "dump files created", new NoteRequest { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] }],
         [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), null, "раз два три четыре", new NoteRequest { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1] }],
 
-        [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponseTestDto), null, null, null],
+        [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponse), null, null, null],
         [$"{ReadTagsForCreateAuthGetUrl}", Request.Get, typeof(NoteResponse), "Авторские: 80", "1", null],
         // [$"{DeleteNoteUrl}?id={noteId}&pg=1"]
     ];
@@ -134,7 +133,7 @@ public class IntegrationTests
         using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
         var result = await response.Content.ReadFromJsonAsync(responseType);
         var asNote = CastTo<NoteResponse>(result.EnsureNotNull());
-        var asCompliance = CastTo<ComplianceResponseTestDto>(result.EnsureNotNull());
+        var asCompliance = CastTo<ComplianceResponse>(result.EnsureNotNull());
 
         // assert:
         switch (requestMethod)
@@ -152,8 +151,7 @@ public class IntegrationTests
             case Request.Get:
                 if (uri.StartsWith(ComplianceIndicesGetUrl))
                 {
-                    var firstKey = asCompliance.EnsureNotNull().Res!.Keys.ElementAt(0);
-                    _ = int.TryParse(firstKey, out var complianceId);
+                    var complianceId = asCompliance.EnsureNotNull().Res!.Keys.ElementAt(0);
 
                     _processedId
                         .Should()
@@ -242,15 +240,15 @@ public class IntegrationTests
     private const string ReadNoteTestText = "рас дваа три";
     public static IEnumerable<object[]> ReadNoteTestData =>
     [
-        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), "backup_9.dump", "", TestHelper.Empty],
-        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(StringResponse), "backup_9.dump", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(StringResponse), "success", "", TestHelper.Empty],
 
         [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
         [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[Already Exist]", "", TestHelper.CreateContent],
         [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
         [$"{UpdateNotePutUrl}", Request.Put, typeof(NoteResponse), "[1]", "раз два три четыре", TestHelper.UpdateContent],
 
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, typeof(ComplianceResponseTestDto), "946", "0.5", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadNoteTestText)}", Request.Get, typeof(ComplianceResponse), "946", "0.5", TestHelper.Empty],
         [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "раз два три четыре", TestHelper.ReadContent]
     ];
 
@@ -268,8 +266,8 @@ public class IntegrationTests
         // act:
         using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
         var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
-        var asCompliance = CastTo<ComplianceResponseTestDto>(result);
-        var asMigration = CastTo<MigrationResponseTestDto>(result);
+        var asCompliance = CastTo<ComplianceResponse>(result);
+        var asMigration = CastTo<StringResponse>(result);
         var asNote = CastTo<NoteResponse>(result);
 
         // assert:
@@ -277,13 +275,14 @@ public class IntegrationTests
         {
             case Request.Get:
                 {
-                    if (responseType == typeof(MigrationResponseTestDto))
+                    if (responseType == typeof(StringResponse))
                     {
                         asMigration.EnsureNotNull().Res.Should().Be(firstExpected);
                         break;
                     }
 
-                    asCompliance.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(firstExpected);
+                    _ = int.TryParse(firstExpected, out var firstInt);
+                    asCompliance.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(firstInt);
                     _ = double.TryParse(secondExpected, out var doubleExpected);
                     asCompliance.EnsureNotNull().Res.EnsureNotNull().Values.First().Should().Be(doubleExpected);
                     break;
@@ -309,24 +308,24 @@ public class IntegrationTests
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
     public static IEnumerable<object[]> ReadCatalogTestData =>
     [
-        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(MigrationResponseTestDto), "backup_9.dump", "", TestHelper.Empty],
-        [$"{MigrationCopyGetUrl}", Request.Get, typeof(MigrationResponseTestDto), "success", "", TestHelper.Empty],
+        [$"{MigrationRestoreGetUrl}?databaseType=MySql", Request.Get, typeof(StringResponse), "backup_9.dump", "", TestHelper.Empty],
+        [$"{MigrationCopyGetUrl}", Request.Get, typeof(StringResponse), "success", "", TestHelper.Empty],
 
         [$"{CreateNotePostUrl}", Request.Post, typeof(NoteResponse), "[OK]", "dump files created", TestHelper.CreateContent],
         [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "930", TestHelper.Empty],
         // навигация "вперёд" по каталогу
         [$"{CatalogNavigatePostUrl}", Request.Post, typeof(CatalogResponse), "2", "930", TestHelper.CatalogContent],
         // проверим наличие заметки 1
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseTestDto), "1", "1.2", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponse), "1", "1.2", TestHelper.Empty],
         [$"{DeleteNoteUrl}?id=1&pg=2", Request.Delete, typeof(CatalogResponse), "2", "929", TestHelper.Empty],
         [$"{DeleteNoteUrl}?id=2&pg=1", Request.Delete, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
         // проверим наличие заметки 946
         [$"{CatalogPageGetUrl}?id=1", Request.Get, typeof(CatalogResponse), "1", "928", TestHelper.Empty],
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponseTestDto), "946", "6.67", TestHelper.Empty],
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(ReadCatalogPageTestText)}", Request.Get, typeof(ComplianceResponse), "946", "6.67", TestHelper.Empty],
         [$"{ReadNotePostUrl}?id=946", Request.Post, typeof(NoteResponse), "[1]", "посчитаем до четырёх", TestHelper.ReadContent],
         // проверим отсутствие заметки 1
         [$"{ReadNotePostUrl}?id=1", Request.Post, typeof(NoteResponse), "", "", TestHelper.ReadContent],
-        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponseTestDto), "{}", "", TestHelper.Empty]
+        [$"{ComplianceIndicesGetUrl}?text={Uri.EscapeDataString(TitleToFind)}", Request.Get, typeof(ComplianceResponse), "{}", "", TestHelper.Empty]
     ];
 
     [TestMethod]
@@ -346,8 +345,8 @@ public class IntegrationTests
         using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
         var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
 
-        var asCompliance = CastTo<ComplianceResponseTestDto>(result);
-        var asMigration = CastTo<MigrationResponseTestDto>(result);
+        var asCompliance = CastTo<ComplianceResponse>(result);
+        var asMigration = CastTo<StringResponse>(result);
         var asCatalog = CastTo<CatalogResponse>(result);
         var asNote = CastTo<NoteResponse>(result);
 
@@ -356,20 +355,21 @@ public class IntegrationTests
         {
             case Request.Get:
                 {
-                    if (responseType == typeof(ComplianceResponseTestDto))
+                    if (responseType == typeof(ComplianceResponse))
                     {
                         if (asCompliance.EnsureNotNull().Res == null && firstExpected == "{}")
                         {
                             break;
                         }
 
-                        asCompliance.Res.EnsureNotNull().Keys.First().Should().Be(firstExpected);
+                        _ = int.TryParse(firstExpected, out var asInt);
+                        asCompliance.Res.EnsureNotNull().Keys.First().Should().Be(asInt);
                         var value = Math.Round(asCompliance.Res.EnsureNotNull().Values.First(), 2);
                         value.Should().Be(double.Parse(secondExpected));
                         break;
                     }
 
-                    if (responseType == typeof(MigrationResponseTestDto))
+                    if (responseType == typeof(StringResponse))
                     {
                         asMigration.EnsureNotNull().Res.Should().Be(firstExpected);
                         break;

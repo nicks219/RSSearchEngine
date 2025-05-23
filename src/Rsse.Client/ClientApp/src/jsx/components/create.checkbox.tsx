@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
 import {Dispatch, SetStateAction, useContext} from "react";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {CommonContext} from "../common/context.provider";
 import {getStructuredTagsListResponse, getTagCheckedUncheckedResponse} from "../common/dto.handlers";
 import {ComponentMode} from "../common/state.handlers";

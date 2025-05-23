@@ -1,5 +1,5 @@
 ﻿import {useEffect, useReducer} from "react";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getTextResponse, getTitleResponse, setTextResponse} from "../common/dto.handlers";
 import {Doms, Messages, SystemConstants} from "../dto/doms.tsx";

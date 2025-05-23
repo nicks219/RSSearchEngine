@@ -2,7 +2,7 @@
 import {FC, JSX, ReactNode, useContext, useEffect, useState} from "react";
 import {getPageNumber, getCatalogPage} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
-import {CatalogResponseDto} from "../dto/request.response.dto";
+import {CatalogResponseDto} from "../dto/catalog.response.dto.tsx";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {CatalogView} from "./catalog.view";

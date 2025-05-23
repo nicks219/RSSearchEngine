@@ -1,6 +1,7 @@
 ﻿import * as React from "react";
 import {Dispatch, SetStateAction} from "react";
-import {CatalogResponseDto, NoteResponseDto} from "../dto/request.response.dto";
+import {CatalogResponseDto} from "../dto/catalog.response.dto.tsx";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 
 /** Глобальный общий стейт с начальной инициализацией некоторых полей */
 export class CommonStateStorage {

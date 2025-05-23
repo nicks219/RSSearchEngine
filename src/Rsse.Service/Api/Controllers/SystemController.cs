@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SearchEngine.Data.Configuration;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 
@@ -19,13 +20,13 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokeni
     [HttpGet(RouteConstants.SystemVersionGetUrl)]
     public ActionResult GetVersion()
     {
-        return Ok(new
-        {
-            Version = Constants.ApplicationFullName,
-            DebugBuild = Constants.IsDebug,
-            ReaderContext = options.Value.ReaderContext,
-            CreateTablesOnPgMigration = options.Value.CreateTablesOnPgMigration
-        });
+        var response = new SystemResponse(
+            Version: Constants.ApplicationFullName,
+            DebugBuild: Constants.IsDebug,
+            ReaderContext: options.Value.ReaderContext,
+            CreateTablesOnPgMigration: options.Value.CreateTablesOnPgMigration
+        );
+        return Ok(response);
     }
 
     /// <summary>

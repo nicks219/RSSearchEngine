@@ -1,5 +1,5 @@
 ﻿import {JSX, useContext} from "react";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {CommonContext} from "../common/context.provider";
 import {toggleContainerVisibility} from "../common/visibility.handlers";
 import {getCommonNoteId, getTextResponse, getTitleResponse} from "../common/dto.handlers";

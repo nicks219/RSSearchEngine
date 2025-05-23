@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
 import {useContext} from "react";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {getTitleResponse} from "../common/dto.handlers";
