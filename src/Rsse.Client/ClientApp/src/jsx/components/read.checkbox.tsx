@@ -1,4 +1,4 @@
-﻿import {NoteResponseDto} from "../dto/request.response.dto";
+﻿import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {getStructuredTagsListResponse} from "../common/dto.handlers";
 import {Doms} from "../dto/doms.tsx";
 

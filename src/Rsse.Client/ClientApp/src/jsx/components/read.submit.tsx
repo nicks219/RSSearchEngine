@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {Loader} from "../common/loader";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using static SearchEngine.Api.Messages.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -22,9 +23,9 @@ public class ComplianceSearchController(
     /// </summary>
     /// <param name="text">Строка с поисковым запросом.</param>
     [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
-    public ActionResult GetComplianceIndices(string text)
+    public ActionResult<ComplianceResponse> GetComplianceIndices(string text)
     {
-        var okEmptyResponse = Ok(new { });
+        var okEmptyResponse = Ok(new ComplianceResponse());
 
         if (string.IsNullOrEmpty(text))
         {
@@ -54,14 +55,16 @@ public class ComplianceSearchController(
                 .OrderByDescending(x => x.Value)
                 .ToDictionary(x => x.Key, x => x.Value);
 
-            var response = new OkObjectResult(new { Res = searchIndexes });
+            var response = new ComplianceResponse { Res = searchIndexes };
+            var result = Ok(response);
 
-            return response;
+            return result;
         }
         catch (Exception ex)
         {
+            var error = new ComplianceResponse { Error = ComplianceError };
             logger.LogError(ex, ComplianceError);
-            return new BadRequestObjectResult(ComplianceError);
+            return BadRequest(error);
         }
     }
 }

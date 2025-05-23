@@ -135,7 +135,6 @@ public class CatalogTests
         _ = await catalogController.NavigateCatalog(null!);
 
         // assert:
-        //var logger = loggerFactory.Received().CreateLogger<CatalogController>();//
-        logger.Received().LogError(Arg.Any<Exception>(), ControllerMessages.NavigateCatalogError);
+        logger.Received().LogError(Arg.Any<Exception>(), ControllerErrorMessages.NavigateCatalogError);
     }
 }

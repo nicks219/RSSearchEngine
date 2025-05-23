@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Dto;
 using SearchEngine.Tests.Units.Mocks;
 
 namespace SearchEngine.Tests.Units;
@@ -38,11 +38,12 @@ public class ComplianceTests
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);
-        var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
-        var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ComplianceResponseTestDto>(serialized);
+        var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+        var serialized = JsonSerializer.Serialize(okObjectResult);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
         // assert:
+        serialized.Should().Be("""{"res":{"1":2.3529411764705883},"error":null}""");
         deserialized.Should().NotBeNull();
         deserialized.Res.Should().NotBeNull();
 
@@ -50,7 +51,7 @@ public class ComplianceTests
             .Keys
             .ElementAt(0)
             .Should()
-            .Be("1");
+            .Be(1);
 
         deserialized.Res
             .Values

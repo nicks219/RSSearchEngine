@@ -13,7 +13,7 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
-using static SearchEngine.Api.Messages.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
 namespace SearchEngine.Api.Controllers;
 

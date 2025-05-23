@@ -8,7 +8,7 @@ using SearchEngine.Api.Mapping;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using static SearchEngine.Api.Messages.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -28,10 +28,11 @@ public class ReadController(
     /// Переключить режим выбора следующей заметки.
     /// </summary>
     [HttpGet(RouteConstants.ReadElectionGetUrl)]
-    public ActionResult SwitchNodeElectionMode()
+    public ActionResult<RandomElectionResponse> SwitchNodeElectionMode()
     {
         _randomElection = !_randomElection;
-        return Ok(new { RandomElection = _randomElection });
+        var response = new RandomElectionResponse(RandomElection: _randomElection);
+        return Ok(response);
     }
 
     /// <summary>
@@ -39,16 +40,18 @@ public class ReadController(
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
-    public async Task<ActionResult> ReadTitleByNoteId(string id)
+    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(string id)
     {
         try
         {
             var res = await readService.ReadTitleByNoteId(int.Parse(id));
-            return Ok(new { res });
+            var response = new StringResponse(Res: res);
+            return Ok(response);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, ReadTitleByNoteIdError);
+            var response = new StringResponse(Error: ReadTitleByNoteIdError);
             return BadRequest(ReadTitleByNoteIdError);
         }
     }

@@ -4,7 +4,7 @@ import {useParams} from "react-router-dom";
 
 import {Loader} from "../common/loader";
 import {getStructuredTagsListResponse, getTextResponse} from "../common/dto.handlers";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {ReadNote} from "./read.note";
 import {ReadCheckbox} from "./read.checkbox";

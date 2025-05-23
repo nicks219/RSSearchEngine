@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Configuration;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 using Swashbuckle.AspNetCore.Annotations;
-using static SearchEngine.Api.Messages.ControllerMessages;
+using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -33,7 +34,7 @@ public class MigrationController(
     // todo: удалить после переходя на Postgres
     [HttpGet(RouteConstants.MigrationCopyGetUrl)]
     [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
-    public async Task<IActionResult> CopyFromMySqlToPostgres()
+    public async Task<ActionResult<StringResponse>> CopyFromMySqlToPostgres()
     {
         try
         {
@@ -43,12 +44,13 @@ public class MigrationController(
         }
         catch (Exception exception)
         {
-            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyFromMySqlToPostgres)} error";
-            logger.LogError(exception, copyError);
-            return BadRequest(copyError);
+            var error = new StringResponse { Res = CopyError };
+            logger.LogError(exception, CopyError);
+            return BadRequest(error);
         }
 
-        return new OkObjectResult(new { Res = "success" });
+        var response = new StringResponse { Res = "success" };
+        return Ok(response);
     }
 
     /// <summary>
@@ -57,20 +59,21 @@ public class MigrationController(
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
-    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public ActionResult<StringResponse> CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
 
         try
         {
             var result = migrator.Create(fileName);
-
-            return new OkObjectResult(new { Res = Path.GetFileName(result) });
+            var response = new StringResponse { Res = Path.GetFileName(result) };
+            return Ok(response);
         }
         catch (Exception exception)
         {
+            var error = new StringResponse { Res = CreateError };
             logger.LogError(exception, CreateError);
-            return BadRequest(CreateError);
+            return BadRequest(error);
         }
     }
 
@@ -81,7 +84,7 @@ public class MigrationController(
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<IActionResult> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
         var migrator = GetMigrator(migrators, databaseType);
 
@@ -89,13 +92,14 @@ public class MigrationController(
         {
             var result = migrator.Restore(fileName);
             await tokenizer.Initialize();
-
-            return new OkObjectResult(new { Res = Path.GetFileName(result) });
+            var response = new StringResponse { Res = Path.GetFileName(result) };
+            return Ok(response);
         }
         catch (Exception exception)
         {
+            var error = new StringResponse { Res = RestoreError };
             logger.LogError(exception, RestoreError);
-            return BadRequest(RestoreError);
+            return BadRequest(error);
         }
     }
 
@@ -104,12 +108,13 @@ public class MigrationController(
     /// </summary>
     [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
-    public IActionResult UploadFile(IFormFile file)
+    public ActionResult<StringResponse> UploadFile(IFormFile file)
     {
         var path = Path.Combine(Constants.StaticDirectory, file.FileName);
         using var stream = new FileStream(path, FileMode.Create);
         file.CopyTo(stream);
-        return Ok($"Файл сохранён: {path}");
+        var response = $"Файл сохранён: {path}";
+        return Ok(response);
     }
 
     /// <summary>
@@ -118,7 +123,7 @@ public class MigrationController(
     [HttpGet(RouteConstants.MigrationDownloadGetUrl)]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult DownloadFile([FromQuery] string filename)
+    public ActionResult DownloadFile([FromQuery] string filename)
     {
         // const string mimeType = "application/octet-stream";
         const string mimeType = "application/zip";

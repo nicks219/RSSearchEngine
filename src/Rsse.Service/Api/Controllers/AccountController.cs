@@ -13,6 +13,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
+using static SearchEngine.Api.Messages.ControllerErrorMessages;
 using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
@@ -36,34 +37,38 @@ public class AccountController(
     /// <param name="password">Пароль.</param>
     /// <param name="returnUrl">Артефакты легаси-фронта.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
-    public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
+    public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
         if (returnUrl != null)
         {
-            return Unauthorized("Authorize please: redirect detected");
+            var redirect = new StringResponse(Res: "Authorize please: redirect detected");
+            return Unauthorized(redirect);
         }
 
         if (email == null || password == null)
         {
-            return Unauthorized("Authorize please: empty credentials detected");
+            var empty = new StringResponse(Res: "Authorize please: empty credentials detected");
+            return Unauthorized(empty);
         }
 
         var loginDto = new CredentialsRequestDto { Email = email, Password = password };
-        var response = await TryLogin(loginDto);
-        return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
+        var responseMessage = await TryLogin(loginDto);
+        ActionResult result = responseMessage == OkMessage
+            ? Ok(new StringResponse(Res: LoginOkMessage))
+            : Unauthorized(new StringResponse(Res: responseMessage));
+        return result;
     }
 
     /// <summary>
     /// Выйти из системы.
     /// </summary>
     [HttpGet(RouteConstants.AccountLogoutGetUrl)]
-    public async Task<ActionResult<string>> Logout()
+    public async Task<ActionResult<StringResponse>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
         ModifyCookie();
-
-        return LogOutMessage;
+        var result = new StringResponse(Res: LogOutMessage);
+        return Ok(result);
     }
 
     /// <summary>
@@ -71,12 +76,10 @@ public class AccountController(
     /// </summary>
     [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
     [HttpGet(RouteConstants.AccountCheckGetUrl), Authorize]
-    public ActionResult CheckAuth()
+    public ActionResult<StringResponse> CheckAuth()
     {
-        return Ok(new
-        {
-            Username = User.Identity?.Name
-        });
+        var result = new StringResponse(Res: User.Identity?.Name);
+        return Ok(result);
     }
 
     /// <summary>
@@ -84,12 +87,13 @@ public class AccountController(
     /// </summary>
     /// <param name="credentials">Данные для обновления.</param>
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
-    public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
+    public async Task<ActionResult<StringResponse>> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
         var credosForUpdate = credentials.MapToDto();
         await accountService.UpdateCredos(credosForUpdate);
         await Logout();
-        return Ok("updated");
+        var result = new StringResponse(Res: "updated");
+        return Ok(result);
     }
 
     /// <summary>
@@ -111,7 +115,7 @@ public class AccountController(
 
             ModifyCookie();
 
-            return "[Ok]";
+            return OkMessage;
         }
         catch (Exception ex)
         {

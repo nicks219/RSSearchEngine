@@ -1,7 +1,8 @@
 ﻿import * as React from "react";
 import {useContext, useEffect} from "react";
 import {ComponentMode, FunctionComponentStateWrapper} from "../common/state.handlers";
-import {ComplianceResponseDto, NoteResponseDto} from "../dto/request.response.dto";
+import {ComplianceResponseDto} from "../dto/compliance.response.dto.tsx";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {CommonContext} from "../common/context.provider";
 import {getTextRequest, getTitleRequest} from "../common/dto.handlers";
 import {Loader} from "../common/loader";
@@ -14,6 +15,10 @@ export const CreateSubmitButton = (props: {formElement: HTMLFormElement|null, st
     let jsonString: string = SystemConstants.empty;
     let similarNoteNameStorage: string[] = [];
     const similarNotesIdStorage: string[] = [];
+
+    // перематываем на самый верх
+    const container = document.getElementById('main-content');
+    if (container) container.scrollTop = 0;
 
     const commonContext = useContext(CommonContext);
     const cancel = (e: React.SyntheticEvent) => {
