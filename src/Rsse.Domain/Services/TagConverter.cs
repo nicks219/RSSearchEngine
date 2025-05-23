@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using SearchEngine.Data.Contracts;
 
 namespace SearchEngine.Services;
 
@@ -10,26 +8,23 @@ namespace SearchEngine.Services;
 public static class TagConverter
 {
     /// <summary>
-    /// Создать представление всех тегов из репо и тегов заметки в виде списка флагов.
+    /// Создать представление тегов заметки и всех тегов из репо в виде списка флагов.
     /// </summary>
-    /// <param name="repo">Репозиторий с данными.</param>
-    /// <param name="tagsCount">Общее количество тегов в репозитории.</param>
-    /// <param name="originalNoteId">Идентификатор заметки, отмеченной тегами.</param>
+    /// <param name="noteTagIds">Теги заметки.</param>
+    /// <param name="totalTagsCount">Общее количество тегов в репозитории.</param>
     /// <returns></returns>
-    public static async Task<List<bool>> AllToFlags(IDataRepository repo, int tagsCount, int originalNoteId)
+    public static List<bool> AllToFlags(List<int> noteTagIds, int totalTagsCount)
     {
         var checkboxes = new List<bool>();
 
-        for (var i = 0; i < tagsCount; i++)
+        for (var i = 0; i < totalTagsCount; i++)
         {
             checkboxes.Add(false);
         }
 
-        var originalNoteTags = await repo.ReadNoteTagIds(originalNoteId);
-
-        foreach (var i in originalNoteTags)
+        foreach (var tagId in noteTagIds)
         {
-            checkboxes[i - 1] = true;
+            checkboxes[tagId - 1] = true;
         }
 
         return checkboxes;

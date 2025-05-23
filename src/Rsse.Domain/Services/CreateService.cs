@@ -66,9 +66,10 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
             }
 
             var tagsAfterCreate = await repo.ReadEnrichedTagList();
-            var tagListCount = tagsAfterCreate.Count;
+            var totalTagsCount = tagsAfterCreate.Count;
+            var noteTagIds = await repo.ReadNoteTagIds(newNoteId);
 
-            var checkboxes = await TagConverter.AllToFlags(repo, tagListCount, newNoteId);
+            var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
 
             return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
         }
