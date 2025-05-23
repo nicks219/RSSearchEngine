@@ -13,7 +13,6 @@ internal abstract class ServiceErrorMessages
 
     internal const string DeleteNoteError = $"[{nameof(DeleteService)}] {nameof(DeleteService.DeleteNote)} error";
 
-    internal const string CreateManagerReadTagListError = $"[{nameof(CreateService)}] {nameof(CreateService.ReadEnrichedTagList)} error";
     internal const string CreateNoteError = $"[{nameof(CreateService)}] {nameof(CreateService.CreateNote)} error";
     internal const string CreateNoteUnsuccessfulError = $"[{nameof(CreateService)}] {nameof(CreateService.CreateNote)} error: create unsuccessful";
     internal const string CreateNoteEmptyDataError = $"[{nameof(CreateService)}] {nameof(CreateService.CreateNote)} error: empty data";

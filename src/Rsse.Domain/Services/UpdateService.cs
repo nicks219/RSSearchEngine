@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Contracts;
@@ -70,23 +69,12 @@ public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
                 text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
             }
 
-            var tagList = await repo.ReadEnrichedTagList();
+            var tagsBeforeUpdate = await repo.ReadEnrichedTagList();
+            var tagListCount = tagsBeforeUpdate.Count;
 
-            var noteTags = await repo.ReadNoteTagIds(originalNoteId);
+            var checkboxes = await TagConverter.ConvertToFlags(repo, tagListCount, originalNoteId);
 
-            var checkboxes = new List<bool>();
-
-            for (var i = 0; i < tagList.Count; i++)
-            {
-                checkboxes.Add(false);// unchecked
-            }
-
-            foreach (var i in noteTags)
-            {
-                checkboxes[i - 1] = true;// checked
-            }
-
-            return new NoteResultDto(tagList, originalNoteId, text, title, checkboxes);
+            return new NoteResultDto(tagsBeforeUpdate, originalNoteId, text, title, checkboxes);
         }
         catch (Exception ex)
         {
