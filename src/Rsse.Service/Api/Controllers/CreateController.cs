@@ -23,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
-    ITokenizerService tokenizer,
+    ITokenizerService tokenizerService,
     CreateService createService,
     IEnumerable<IDbMigrator> migrators,
     IOptions<CommonBaseOptions> options,
@@ -61,7 +61,7 @@ public class CreateController(
                 };
             }
 
-            await tokenizer.Create(
+            await tokenizerService.Create(
                 noteResultDto.NoteIdExchange,
                 new TextRequestDto
                 {
@@ -71,12 +71,9 @@ public class CreateController(
 
             var path = CreateDumpAndGetFilePath();
 
-            noteResultDto = noteResultDto with
-            {
-                Text = path ?? string.Empty
-            };
+            var resultDto = noteResultDto with { Text = path };
 
-            return noteResultDto.MapFromDto();
+            return resultDto.MapFromDto();
         }
         catch (Exception ex)
         {
@@ -88,16 +85,20 @@ public class CreateController(
     /// <summary>
     /// Зафиксировать дамп бд и вернуть путь к созданному файлу.
     /// </summary>
-    private string? CreateDumpAndGetFilePath()
+    private string CreateDumpAndGetFilePath()
     {
-        // NB: создадим дамп для читающей базы
-        var dbType = _databaseOptions.ReaderContext;
-        var migrator = MigrationController.GetMigrator(migrators, dbType);
+        if (_baseOptions.CreateBackupForNewSong == false)
+        {
+            return string.Empty;
+        }
 
-        // NB: будут созданы незаархивированные файлы
-        return _baseOptions.CreateBackupForNewSong
-            // NB: создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные минрации:
-            ? migrator.Create(BackupFileName)
-            : null;
+        // Создаём дамп для читающей базы.
+        var databaseType = _databaseOptions.ReaderContext;
+        var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
+
+        // Будут созданы незаархивированные файлы.
+        // Создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные миграции.
+        var path = migrator.Create(BackupFileName);
+        return path;
     }
 }

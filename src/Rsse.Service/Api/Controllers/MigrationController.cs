@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +11,6 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
 using Swashbuckle.AspNetCore.Annotations;
 using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
@@ -38,7 +36,7 @@ public class MigrationController(
     {
         try
         {
-            var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
+            var mySqlMigrator = IDbMigrator.GetMigrator(migrators, DatabaseType.MySql);
             await mySqlMigrator.CopyDbFromMysqlToNpgsql();
             await tokenizer.Initialize();
         }
@@ -61,7 +59,7 @@ public class MigrationController(
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
     public ActionResult<StringResponse> CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
+        var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
 
         try
         {
@@ -86,7 +84,7 @@ public class MigrationController(
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
+        var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
 
         try
         {
@@ -131,21 +129,6 @@ public class MigrationController(
         if (!System.IO.File.Exists(path)) return NotFound("Файл не найден");
 
         return PhysicalFile(path, mimeType, Path.GetFileName(path));
-    }
-
-    /// <summary>
-    /// Получить мигратор требуемого типа из списка зависимостей.
-    /// </summary>
-    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)
-    {
-        var migrator = databaseType switch
-        {
-            DatabaseType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
-            DatabaseType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
-            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, "unknown database type")
-        };
-
-        return migrator;
     }
 }
 
