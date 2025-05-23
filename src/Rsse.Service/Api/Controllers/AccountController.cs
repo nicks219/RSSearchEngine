@@ -59,7 +59,7 @@ public class AccountController(
 
             return Ok(new StringResponse(Res: LoginOkMessage));
         }
-        catch(RsseBaseException ex) when (ex is RsseUserNotFoundException or RsseInvalidCredosException)
+        catch (RsseBaseException ex) when (ex is RsseUserNotFoundException or RsseInvalidCredosException)
         {
             logger.LogWarning(DataError);
             return Unauthorized(new StringResponse(Res: DataError));
