@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
 
@@ -44,5 +45,5 @@ public interface ITokenizerService
     /// <summary>
     /// Дождаться инициализации токенизатора.
     /// </summary>
-    public Task WaitWarmUp();
+    public Task<bool> WaitWarmUp(CancellationToken ct);
 }

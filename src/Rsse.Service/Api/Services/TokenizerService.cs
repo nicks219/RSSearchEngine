@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -143,15 +144,20 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
             nameof(TokenizerService), _tokenLines.Count);
+        _isActivated = true;
     }
 
     /// <inheritdoc/>
-    public async Task WaitWarmUp()
+    public async Task<bool> WaitWarmUp(CancellationToken ct)
     {
-        if (!_isEnabled) return;
+        if (ct.IsCancellationRequested || _isEnabled == false) return true;
 
-        await TokenizerLock.SyncOnLockAsync();
+        await TokenizerLock.SyncOnLockAsync(ct);
+
+        return _isActivated;
     }
+
+    private volatile bool _isActivated;
 
     /// <inheritdoc/>
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.

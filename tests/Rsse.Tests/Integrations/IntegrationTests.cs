@@ -80,6 +80,7 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_cookiesOptions);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
 
@@ -432,6 +433,7 @@ public class IntegrationTests
         const string newPassword = "13";
         using var client = _factory.CreateClient(_cookiesOptions);
         await client.TryAuthorizeToService(oldEmail, oldPassword);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
 
         // act:
         var queryParams = new Dictionary<string, string?>

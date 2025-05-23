@@ -19,9 +19,9 @@ public sealed class TokenizerLock : IDisposable
     }
 
     /// <summary/> Дождаться блокировку и сразу отдать её.
-    public async Task SyncOnLockAsync()
+    public async Task SyncOnLockAsync(CancellationToken ct)
     {
-        await _semaphore.WaitAsync().ConfigureAwait(false);
+        await _semaphore.WaitAsync(ct).ConfigureAwait(false);
         _semaphore.Release();
     }
 

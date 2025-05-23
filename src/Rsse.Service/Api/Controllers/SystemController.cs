@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,9 @@ namespace SearchEngine.Api.Controllers;
 /// Контроллер, поставляющий системную информацию.
 /// </summary>
 [ApiController]
-public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokenizerService tokenizer) : ControllerBase
+public class SystemController(
+    IOptionsSnapshot<DatabaseOptions> options,
+    ITokenizerService tokenizer) : ControllerBase
 {
     /// <summary>
     /// Получить версию сервиса.
@@ -33,9 +36,13 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokeni
     /// Дождаться прогрева токенизатора.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadiness()
+    public async Task<ActionResult> WaitReadiness(CancellationToken stoppingToken)
     {
-        await tokenizer.WaitWarmUp();
+        const int releaseMs = 5000;
+        var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        linkedTokenSource.CancelAfter(releaseMs);
+        var linkedToken = linkedTokenSource.Token;
+        while (await tokenizer.WaitWarmUp(linkedToken) == false) {}
         return Ok();
     }
 }

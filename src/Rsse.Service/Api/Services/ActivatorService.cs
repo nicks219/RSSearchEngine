@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tooling;
 
 namespace SearchEngine.Api.Services;
@@ -30,7 +31,7 @@ internal class ActivatorService(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        DatabaseInitializer.CreateAndSeed(factory, logger);
+        await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
 
         try
         {
