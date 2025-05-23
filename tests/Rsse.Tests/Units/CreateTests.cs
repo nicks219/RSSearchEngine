@@ -16,24 +16,25 @@ public class CreateTests
 {
     public required CreateService CreateService;
     public required ServiceProviderStub Host;
+    public required IDataRepository Repository;
 
     [TestInitialize]
     public void Initialize()
     {
         Host = new ServiceProviderStub();
-        var repo = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        Repository = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateService>>();
-        CreateService = new CreateService(repo, managerLogger);
+        CreateService = new CreateService(Repository, managerLogger);
     }
 
     [TestMethod]
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await CreateService.ReadEnrichedTagList();
+        var resultDto = await Repository.ReadEnrichedTagList();
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.EnrichedTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.Count);
     }
 
     [TestMethod]
