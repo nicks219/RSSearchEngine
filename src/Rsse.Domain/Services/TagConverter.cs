@@ -10,13 +10,13 @@ namespace SearchEngine.Services;
 public static class TagConverter
 {
     /// <summary>
-    /// Конвертировать все теги из репо в список флагов.
+    /// Создать представление всех тегов из репо и тегов заметки в виде списка флагов.
     /// </summary>
-    /// <param name="repo">Репозиторий.</param>
+    /// <param name="repo">Репозиторий с данными.</param>
     /// <param name="tagsCount">Общее количество тегов в репозитории.</param>
     /// <param name="originalNoteId">Идентификатор заметки, отмеченной тегами.</param>
     /// <returns></returns>
-    public static async Task<List<bool>> ConvertToFlags(IDataRepository repo, int tagsCount, int originalNoteId)
+    public static async Task<List<bool>> AllToFlags(IDataRepository repo, int tagsCount, int originalNoteId)
     {
         var checkboxes = new List<bool>();
 

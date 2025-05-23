@@ -72,7 +72,7 @@ public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
             var tagsBeforeUpdate = await repo.ReadEnrichedTagList();
             var tagListCount = tagsBeforeUpdate.Count;
 
-            var checkboxes = await TagConverter.ConvertToFlags(repo, tagListCount, originalNoteId);
+            var checkboxes = await TagConverter.AllToFlags(repo, tagListCount, originalNoteId);
 
             return new NoteResultDto(tagsBeforeUpdate, originalNoteId, text, title, checkboxes);
         }
