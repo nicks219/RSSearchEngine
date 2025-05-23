@@ -14,6 +14,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class UpdateTests
 {
+    public required ServiceProviderStub Stub;
     public required UpdateService UpdateService;
 
     private const string Title = "0: key";
@@ -23,14 +24,20 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub();
-        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = host.Provider.GetRequiredService<ILogger<UpdateService>>();
+        Stub = new ServiceProviderStub();
+        var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Stub.Provider.GetRequiredService<ILogger<UpdateService>>();
 
         repo.CreateStubData(10);
         _testNoteId = repo.ReadNoteId(Title);
 
         UpdateService = new UpdateService(repo, managerLogger);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Stub.Dispose();
     }
 
     [TestMethod]

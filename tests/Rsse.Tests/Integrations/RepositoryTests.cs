@@ -69,8 +69,8 @@ public class RepositoryTests
         const string tag = "new-1";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
-        await using var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
+        var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
+        var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
         var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList();
@@ -94,9 +94,9 @@ public class RepositoryTests
         const string tag = "new-2";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
-        await using var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
-        await using var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+        var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
+        var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
 
         mysqlRepo.EnsureNotNull();
         await mysqlRepo.CreateTagIfNotExists(tag);
@@ -125,9 +125,9 @@ public class RepositoryTests
         const string tag = "new-3";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
-        await using var mirroredRepo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
-        await using var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
-        await using var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+        var mirroredRepo = (IDataRepository)serviceScope.ServiceProvider.GetRequiredService(typeof(IDataRepository));
+        var mysqlContext = (MysqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
 
         mirroredRepo.EnsureNotNull();
 

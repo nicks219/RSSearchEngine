@@ -108,8 +108,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             File.WriteAllText($"{archiveTempPath}{NpgsqlUsersSuffix}", allUsers);
         }
 
-        connection.Close();
-
         // путь к архиву можно отдавать только при создании zip - что тогда отдавать в режиме files-only?
         var destinationArchiveFileName = "dump files created";
 
@@ -166,10 +164,10 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             // пересоздадим базу до открытия соединения
             if (!createTablesOnPgMigration)
             {
-                var context = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
+                using var scope = serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
-                context.Dispose();
                 Log.Information("pg on restore | recreate database");
             }
 
@@ -217,8 +215,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             }
 
             SetVals(connection);
-
-            connection.Close();
         }
         finally
         {

@@ -54,8 +54,6 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
 
         mb.ExportToFile(fileWithPath);
 
-        conn.Close();
-
         return fileWithPath;
 
         // ротация счетчика версий:
@@ -92,8 +90,6 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
 
         mb.ImportFromFile(fileWithPath);
 
-        conn.Close();
-
         return fileWithPath;
     }
 
@@ -101,18 +97,16 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
     public async Task CopyDbFromMysqlToNpgsql()
     {
         using var scope = factory.CreateScope();
-        await using var mysqlCatalogContext = (MysqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
-        await using var npgsqlCatalogContext = (NpgsqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
+        var mysqlCatalogContext = (MysqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        var npgsqlCatalogContext = (NpgsqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
         await CopyDbFromMysqlToNpgsql(mysqlCatalogContext, npgsqlCatalogContext);
     }
 
-    // todo: методу миграции не место в проксирующем репо
-    // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
-    public async Task CopyDbFromMysqlToNpgsql(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext)
+    /// <summary>
+    /// Копировать данные из MySql в Postgres.
+    /// </summary>
+    private async Task CopyDbFromMysqlToNpgsql(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext)
     {
-        // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
-        //var mysqlCatalogContext = (writerPrimary as CatalogRepository<MysqlCatalogContext>).GetReaderContext();
-        //var npgsqlCatalogContext = (writerSecondary as CatalogRepository<NpgsqlCatalogContext>).GetReaderContext();
         if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
             throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
 
@@ -160,7 +154,9 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
         }
     }
 
-    // <summary/> Выставить актуальные значения ключей для postgres.
+    /// <summary>
+    /// Выставить актуальные значения ключей для postgres.
+    /// </summary>
     private static async Task PgSetVals(BaseCatalogContext dbContext)
     {
         if (dbContext.Database.ProviderName != "Npgsql.EntityFrameworkCore.PostgreSQL")
@@ -171,7 +167,7 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
         var noteRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""");
         var tagRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""");
         var userRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));""");
-        Console.WriteLine($"repo set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
+        Console.WriteLine($"Migrator set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
     }
 }
 

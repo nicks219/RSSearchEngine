@@ -76,7 +76,6 @@ public static class TestHelper
             using var cmd = new NpgsqlCommand(command, pgConnection);
             cmd.ExecuteNonQuery();
         }
-        pgConnection.Close();
 
         using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
         mysqlConnection.Open();
@@ -94,7 +93,6 @@ public static class TestHelper
             using var cmd = new MySqlCommand(command, mysqlConnection);
             cmd.ExecuteNonQuery();
         }
-        mysqlConnection.Close();
     }
 
 

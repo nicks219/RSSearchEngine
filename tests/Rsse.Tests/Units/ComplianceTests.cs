@@ -26,12 +26,12 @@ public class ComplianceTests
     {
         // arrange:
         var logger = Substitute.For<ILogger<ComplianceSearchController>>();
-        var sp = new ServiceProviderStub();
-        var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
-        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchService>();
+        using var stub = new ServiceProviderStub();
+        var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+        var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
         var complianceController = new ComplianceSearchController(complianceManager, logger);
-        complianceController.AddHttpContext(sp.Provider);
+        complianceController.AddHttpContext(stub.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
         await tokenizer.Initialize();

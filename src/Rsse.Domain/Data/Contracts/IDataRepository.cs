@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
@@ -9,7 +8,7 @@ namespace SearchEngine.Data.Contracts;
 /// <summary>
 /// Контракт репозитория для данных.
 /// </summary>
-public interface IDataRepository : IDisposable, IAsyncDisposable
+public interface IDataRepository
 {
     /// <summary>
     /// Создать заметку.

@@ -15,16 +15,22 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateService CreateService;
-    public required ServiceProviderStub Host;
+    public required ServiceProviderStub Stub;
     public required IDataRepository Repository;
 
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServiceProviderStub();
-        Repository = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateService>>();
+        Stub = new ServiceProviderStub();
+        Repository = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        var managerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<CreateService>>();
         CreateService = new CreateService(Repository, managerLogger);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Stub.Dispose();
     }
 
     [TestMethod]
@@ -51,8 +57,8 @@ public class CreateTests
 
         // act:
         var responseDto = await CreateService.CreateNote(requestDto);
-        var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateService>>();
+        var repo = Stub.Provider.GetRequiredService<IDataRepository>();
+        var managerLogger = Stub.Provider.GetRequiredService<ILogger<UpdateService>>();
 
         var actualDto = await new UpdateService(repo, managerLogger).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
 
