@@ -54,8 +54,6 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
 
         mb.ExportToFile(fileWithPath);
 
-        conn.Close();
-
         return fileWithPath;
 
         // ротация счетчика версий:

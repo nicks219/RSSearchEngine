@@ -108,8 +108,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             File.WriteAllText($"{archiveTempPath}{NpgsqlUsersSuffix}", allUsers);
         }
 
-        connection.Close();
-
         // путь к архиву можно отдавать только при создании zip - что тогда отдавать в режиме files-only?
         var destinationArchiveFileName = "dump files created";
 
@@ -217,8 +215,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             }
 
             SetVals(connection);
-
-            connection.Close();
         }
         finally
         {
