@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,6 +11,7 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Messages;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
@@ -36,7 +38,7 @@ public class CatalogTests
         var repo = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
         CatalogService = new CatalogService(repo);
-        DeleteService = new DeleteService(repo, CatalogService);
+        DeleteService = new DeleteService(repo);
         Repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
         Repo.CreateStubData(50);
         _notesCount = await Repo.ReadNotesCount();
@@ -100,20 +102,26 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task DeleteService_ShouldThrow_OnInvalidDeleteRequest()
+    public async Task DeleteController_ShouldReturnError_OnInvalidDeleteRequest()
     {
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
+        var logger = Substitute.For<ILogger<DeleteController>>();
+        var tokenizerService = Substitute.For<ITokenizerService>();
+        var deleteController = new DeleteController(
+            tokenizerService,
+            DeleteService,
+            CatalogService,
+            logger);
 
         // act:
-        var exception =
-            await TestHelper.GetExpectedExceptionWithAsync<Exception>(() =>
-                DeleteService.DeleteNote(invalidPageId, invalidPageNumber));
+        var catalogResponse = await deleteController.DeleteNote(invalidPageId, invalidPageNumber);
 
         // assert:
-        exception.EnsureNotNull();
-        exception.Message.Should().Be("Page number error");
+        var response = catalogResponse.Value;
+        response.EnsureNotNull();
+        response.ErrorMessage.Should().Be(ControllerErrorMessages.DeleteNoteError);
     }
 
     [TestMethod]
@@ -125,7 +133,7 @@ public class CatalogTests
         var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
 
-        var catalogController = new DeleteController(tokenizer, DeleteService, logger);
+        var catalogController = new DeleteController(tokenizer, DeleteService, CatalogService, logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
