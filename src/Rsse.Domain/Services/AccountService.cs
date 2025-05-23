@@ -3,7 +3,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
+using SearchEngine.Exceptions;
 using SearchEngine.Service.Configuration;
+using static SearchEngine.Service.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Services;
 
@@ -13,22 +15,24 @@ namespace SearchEngine.Services;
 public class AccountService(IDataRepository repo)
 {
     /// <summary>
-    /// Войти в систему.
+    /// Попытаться войти в систему.
     /// </summary>
-    /// <param name="credentialsRequest">Данные авторизации.</param>
+    /// <param name="credentialsRequest">Данные для авторизации.</param>
     /// <returns>Контейнер с подверждением идентичности.</returns>
-    public async Task<ClaimsIdentity?> TrySignInWith(CredentialsRequestDto credentialsRequest)
+    /// <exception cref="RsseUserNotFoundException">Пользователь не найден.</exception>
+    /// <exception cref="RsseInvalidCredosException">Некорректные данные авторизации.</exception>
+    public async Task<ClaimsIdentity> TrySignInWith(CredentialsRequestDto credentialsRequest)
     {
         if (string.IsNullOrEmpty(credentialsRequest.Email) || string.IsNullOrEmpty(credentialsRequest.Password))
         {
-            return null;
+            throw new RsseInvalidCredosException(InvalidCredosError);
         }
 
         var user = await repo.GetUser(credentialsRequest);
 
         if (user == null)
         {
-            return null;
+            throw new RsseUserNotFoundException(UserNotFoundError);
         }
 
         var claims = new List<Claim>

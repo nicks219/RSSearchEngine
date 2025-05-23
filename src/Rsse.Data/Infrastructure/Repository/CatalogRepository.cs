@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
+using SearchEngine.Exceptions;
 using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository.Exceptions;
 
 namespace SearchEngine.Infrastructure.Repository;
 

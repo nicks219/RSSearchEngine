@@ -8,10 +8,10 @@ public record struct CredentialsRequestDto
     /// <summary>
     /// Электронная почта либо логин.
     /// </summary>
-    public required string Email { get; init; }
+    public required string? Email { get; init; }
 
     /// <summary>
     /// Пароль.
     /// </summary>
-    public required string Password { get; init; }
+    public required string? Password { get; init; }
 }

@@ -8,7 +8,10 @@ namespace SearchEngine.Api.Messages;
 public abstract class ControllerErrorMessages
 {
     internal const string LoginError = $"[{nameof(AccountController)}] {nameof(AccountController.Login)} system error";
-    internal const string DataError = $"[{nameof(AccountController)}] credentials error";
+    internal const string LogoutError = $"[{nameof(AccountController)}] {nameof(AccountController.Logout)} system error";
+    internal const string UpdateCredosError = $"[{nameof(AccountController)}] {nameof(AccountController.UpdateCredos)} system error";
+    internal const string DataError = $"[{nameof(AccountController)}] {nameof(AccountController.Login)} credentials error";
+    internal const string RedirectError = $"[{nameof(AccountController)}] {nameof(AccountController.Login)} redirect not supported error";
 
     internal const string NavigateCatalogError = $"[{nameof(CatalogController)}] {nameof(CatalogController.NavigateCatalog)} error";
     internal const string ReadCatalogPageError = $"[{nameof(CatalogController)}] {nameof(CatalogController.ReadCatalogPage)} error";
