@@ -23,6 +23,8 @@ public abstract class ControllerErrorMessages
 
     internal const string CreateError = $"[{nameof(MigrationController)}] {nameof(MigrationController.CreateDump)} error";
     internal const string RestoreError = $"[{nameof(MigrationController)}] {nameof(MigrationController.RestoreFromDump)} error";
+    internal const string UploadError = $"[{nameof(MigrationController)}] {nameof(MigrationController.UploadFile)} error";
+    internal const string DownloadError = $"[{nameof(MigrationController)}] {nameof(MigrationController.DownloadFile)} error";
     internal const string CopyError = $"[{nameof(MigrationController)}] {nameof(MigrationController.CopyFromMySqlToPostgres)} error";
 
     internal const string ElectNoteError = $"[{nameof(ReadController)}] {nameof(ReadController.GetNextOrSpecificNote)} error";
