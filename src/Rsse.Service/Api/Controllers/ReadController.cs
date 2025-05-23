@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,15 +43,15 @@ public class ReadController(
     {
         try
         {
-            var res = await readService.ReadTitleByNoteId(int.Parse(id));
-            var response = new StringResponse(Res: res);
+            var title = await readService.ReadTitleByNoteId(int.Parse(id));
+            var response = new StringResponse(Res: title);
             return Ok(response);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, ReadTitleByNoteIdError);
             var response = new StringResponse(Error: ReadTitleByNoteIdError);
-            return BadRequest(ReadTitleByNoteIdError);
+            return BadRequest(response);
         }
     }
 
@@ -68,19 +67,11 @@ public class ReadController(
         try
         {
             var noteRequestDto = request?.MapToDto();
-            if (noteRequestDto?.CheckedTags?.Count == 0)
-            {
-                // для пустого запроса считаем все теги отмеченными
-                // todo: перенести в маппер
-                noteRequestDto = noteRequestDto with { CheckedTags = Enumerable.Range(1, 44).ToList() };
-            }
-
-            var response = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
-            return response.MapFromDto();
+            var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
             logger.LogError(ex, ElectNoteError);
             return new NoteResponse { ErrorMessage = ElectNoteError };
         }
@@ -94,8 +85,8 @@ public class ReadController(
     {
         try
         {
-            var response = await readService.ReadEnrichedTagList();
-            return response.MapFromDto();
+            var noteResultDto = await readService.ReadEnrichedTagList();
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {
@@ -114,8 +105,8 @@ public class ReadController(
     {
         try
         {
-            var response = await ReadTagList();
-            return response;
+            var noteResponse = await ReadTagList();
+            return noteResponse;
         }
         catch (Exception ex)
         {

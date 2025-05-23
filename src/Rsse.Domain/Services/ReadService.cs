@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -43,6 +44,13 @@ public class ReadService(IDataRepository repo)
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
         bool randomElectionEnabled = true)
     {
+        if (request?.CheckedTags?.Count == 0)
+        {
+            // Для пустого запроса считаем все теги отмеченными.
+            var checkedTags = Enumerable.Range(1, 44).ToList();
+            request = request with { CheckedTags = checkedTags };
+        }
+
         var text = string.Empty;
         var title = string.Empty;
         var noteId = 0;
