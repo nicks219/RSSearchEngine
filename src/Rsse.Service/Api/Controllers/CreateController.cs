@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
@@ -23,6 +25,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
+    IHostApplicationLifetime lifetime,
     ITokenizerService tokenizerService,
     CreateService createService,
     IEnumerable<IDbMigrator> migrators,
@@ -39,16 +42,18 @@ public class CreateController(
     /// Создать заметку.
     /// </summary>
     /// <param name="request">Контрейнер с запросом создания заметки.</param>
-    /// <returns>Контрейнер с информацией по созданной заметке, либо с ошибкой.</returns>
+    /// <returns>Контейнер с информацией по созданной заметке, либо с ошибкой.</returns>
     [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
+        var ct = lifetime.ApplicationStopping;
+        var migratorToken = lifetime.ApplicationStopped;
         try
         {
             var noteRequestDto = request.MapToDto();
 
-            await createService.CreateTagFromTitle(noteRequestDto);
-            var noteResultDto = await createService.CreateNote(noteRequestDto);
+            await createService.CreateTagFromTitle(noteRequestDto, ct);
+            var noteResultDto = await createService.CreateNote(noteRequestDto, ct);
 
             if (!string.IsNullOrEmpty(noteResultDto.ErrorMessage))
             {
@@ -67,9 +72,9 @@ public class CreateController(
                 {
                     Title = request.Title,
                     Text = request.Text
-                });
+                }, ct);
 
-            var path = CreateDumpAndGetFilePath();
+            var path = await CreateDumpAndGetFilePath(migratorToken);
 
             var resultDto = noteResultDto with { Text = path };
 
@@ -85,7 +90,7 @@ public class CreateController(
     /// <summary>
     /// Зафиксировать дамп бд и вернуть путь к созданному файлу.
     /// </summary>
-    private string CreateDumpAndGetFilePath()
+    private async Task<string> CreateDumpAndGetFilePath(CancellationToken ct)
     {
         if (_baseOptions.CreateBackupForNewSong == false)
         {
@@ -98,7 +103,7 @@ public class CreateController(
 
         // Будут созданы незаархивированные файлы.
         // Создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные миграции.
-        var path = migrator.Create(BackupFileName);
+        var path = await migrator.Create(BackupFileName, ct);
         return path;
     }
 }

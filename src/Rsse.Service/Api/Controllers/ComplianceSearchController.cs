@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Service.ApiModels;
@@ -20,12 +21,13 @@ public class ComplianceSearchController(
     /// Получить индексы соответствия заметок поисковому запросу.
     /// </summary>
     /// <param name="text">Строка с поисковым запросом.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
-    public ActionResult<ComplianceResponse> GetComplianceIndices(string text)
+    public ActionResult<ComplianceResponse> GetComplianceIndices(string text, CancellationToken ct)
     {
         try
         {
-            var searchIndexes = complianceService.ComputeComplianceIndices(text);
+            var searchIndexes = complianceService.ComputeComplianceIndices(text, ct);
 
             var response = searchIndexes.Count == 0
                 ? new ComplianceResponse()

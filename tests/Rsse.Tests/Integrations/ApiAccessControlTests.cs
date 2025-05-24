@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,6 +24,8 @@ namespace SearchEngine.Tests.Integrations;
 public class ApiAccessControlTests
 {
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private static readonly CancellationToken Token = CancellationToken.None;
+
     private static CustomWebAppFactory<Startup> _factory;
     private static WebApplicationFactoryClientOptions _options;
 
@@ -63,7 +66,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.Unauthorized.ToString());
+            .Be(nameof(HttpStatusCode.Unauthorized));
 
         shift.Value.First()
             .Should()
@@ -76,7 +79,7 @@ public class ApiAccessControlTests
         // arrange:
         const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(unauthenticated, unauthenticated);
+        await client.TryAuthorizeToService(unauthenticated, unauthenticated, ct: Token);
         var uri = new Uri($"{DeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
 
         // act:
@@ -94,7 +97,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.Forbidden.ToString());
+            .Be(nameof(HttpStatusCode.Forbidden));
 
         content
             .Should()
@@ -131,7 +134,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.Unauthorized.ToString());
+            .Be(nameof(HttpStatusCode.Unauthorized));
 
         shift.Value.First()
             .Should()
@@ -148,9 +151,10 @@ public class ApiAccessControlTests
         using var client = _factory.CreateClient(_options);
         using MultipartFormDataContent content = TestHelper.GetRequestContent(true);
         var uri = new Uri(uriString, UriKind.Relative);
+        var ct = CancellationToken.None;
 
         // act:
-        using var response = await client.SendTestRequest(requestMethod, uri, content, verify: false);
+        using var response = await client.SendTestRequest(requestMethod, uri, content, verify: false, ct: ct);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -164,7 +168,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.Unauthorized.ToString());
+            .Be(nameof(HttpStatusCode.Unauthorized));
 
         shift.Value.First()
             .Should()
@@ -176,7 +180,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService();
+        await client.TryAuthorizeToService(ct: Token);
         // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
         var uri = new Uri($"{DeleteNoteUrl}?id=2&pg=1", UriKind.Relative);
 
@@ -192,7 +196,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.OK.ToString());
+            .Be(nameof(HttpStatusCode.OK));
     }
 
     [TestMethod]
@@ -205,7 +209,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService();
+        await client.TryAuthorizeToService(ct: Token);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -220,7 +224,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.OK.ToString());
+            .Be(nameof(HttpStatusCode.OK));
     }
 
     [TestMethod]
@@ -231,7 +235,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService();
+        await client.TryAuthorizeToService(ct: Token);
 
         var uri = new Uri(uriString, UriKind.Relative);
         using var content = TestHelper.GetRequestContent(appendFile);
@@ -251,7 +255,7 @@ public class ApiAccessControlTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.OK.ToString());
+            .Be(nameof(HttpStatusCode.OK));
     }
 }
 

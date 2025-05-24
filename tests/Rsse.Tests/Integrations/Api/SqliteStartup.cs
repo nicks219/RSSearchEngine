@@ -35,6 +35,7 @@ internal class SqliteStartup(IConfiguration configuration)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
+        services.AddSingleton<MigratorState>();
 
         services.AddDomainLayerDependencies();
     }

@@ -38,7 +38,8 @@ public abstract class DatabaseInitializer
         }
         catch (Exception ex)
         {
-            logger.LogError("[{Reporter}] error | source: {Source} | ensure created error: '{Message}'", nameof(DatabaseInitializer), ex.Source, ex.Message);
+            logger.LogError("[{Reporter}] error | source: {Source} | ensure created error: '{Message}'",
+                nameof(DatabaseInitializer), ex.Source, ex.Message);
         }
     }
 

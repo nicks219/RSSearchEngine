@@ -32,7 +32,7 @@ public sealed class FakeCatalogRepository : IDataRepository
 
     private int _lastId = 1;
 
-    public void CreateStubData(int count)
+    public void CreateStubData(int count, CancellationToken _)
     {
         for (var i = 0; i < count; i++)
         {
@@ -43,7 +43,7 @@ public sealed class FakeCatalogRepository : IDataRepository
         }
     }
 
-    public void RemoveStubData(int count)
+    public void RemoveStubData(int count, CancellationToken _)
     {
         for (var i = 0; i < count; i++)
         {
@@ -51,6 +51,7 @@ public sealed class FakeCatalogRepository : IDataRepository
         }
     }
 
+    /// <inheritdoc/>
     public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct)
     {
         var notes = _notes
@@ -65,7 +66,8 @@ public sealed class FakeCatalogRepository : IDataRepository
         return notes.ToAsyncEnumerable().WithCancellation(ct);
     }
 
-    public Task<string?> ReadNoteTitle(int noteId)
+    /// <inheritdoc/>
+    public Task<string?> ReadNoteTitle(int noteId, CancellationToken _)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -78,7 +80,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <summary/> Метод для тестового мока, отсутствует в основном контракте
-    public int? ReadNoteId(string noteTitle)
+    public int? ReadNoteId(string noteTitle, CancellationToken _)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -90,7 +92,8 @@ public sealed class FakeCatalogRepository : IDataRepository
         return null;
     }
 
-    public Task<int> CreateNote(NoteRequestDto noteRequest)
+    /// <inheritdoc/>
+    public Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken _)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
@@ -103,16 +106,18 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.FromResult(_lastId);
     }
 
-    public Task UpdateCredos(UpdateCredosRequestDto credosRequest) => throw new NotImplementedException();
+    /// <inheritdoc/>
+    public Task UpdateCredos(UpdateCredosRequestDto _, CancellationToken __) => throw new NotImplementedException();
 
-    public Task<int> DeleteNote(int noteId)
+    /// <inheritdoc/>
+    public Task<int> DeleteNote(int noteId, CancellationToken _)
     {
         var res = _notes.Remove(noteId);
         return Task.FromResult(Convert.ToInt32(res));
     }
 
-    //Login Ok
-    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest)
+    /// <inheritdoc/>
+    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken _)
     {
         var user = credentialsRequest.Password == "skip"
             ? null
@@ -121,7 +126,8 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.FromResult(user);
     }
 
-    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize)
+    /// <inheritdoc/>
+    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize, CancellationToken _)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -135,32 +141,37 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.FromResult(titlesList);
     }
 
-    public Task<List<string>> ReadEnrichedTagList()
+    /// <inheritdoc/>
+    public Task<List<string>> ReadEnrichedTagList(CancellationToken _)
     {
         var result = Task.FromResult(TagList);
         return result;
     }
 
-    public Task<List<int>> ReadNoteTagIds(int noteId)
+    /// <inheritdoc/>
+    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken _)
     {
         var tagList = new List<int> { 1, 2 };
         return Task.FromResult(tagList);
     }
 
-    public Task<int> ReadNotesCount()
+    /// <inheritdoc/>
+    public Task<int> ReadNotesCount(CancellationToken _)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
         return Task.FromResult(_notes.Count);
     }
 
-    public Task<TextResultDto?> ReadNote(int noteId)
+    /// <inheritdoc/>
+    public Task<TextResultDto?> ReadNote(int noteId, CancellationToken _)
     {
         var note = _notes[noteId];
         return Task.FromResult<TextResultDto?>(note);
     }
 
-    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags)
+    /// <inheritdoc/>
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken _)
     {
         var ids = checkedTags as List<int> ?? checkedTags.ToList();
         if (ids.First() == ReadTests.ElectionTestCheckedTag)
@@ -180,7 +191,8 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.FromResult(ids);
     }
 
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest)
+    /// <inheritdoc/>
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken _)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
@@ -192,5 +204,6 @@ public sealed class FakeCatalogRepository : IDataRepository
         return Task.CompletedTask;
     }
 
-    public Task CreateTagIfNotExists(string tag) => throw new NotImplementedException(nameof(FakeCatalogRepository));
+    /// <inheritdoc/>
+    public Task CreateTagIfNotExists(string _, CancellationToken __) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 }

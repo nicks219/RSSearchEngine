@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Service.Configuration;
@@ -43,7 +47,7 @@ public class ApiTests
         // arrange:
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
         using var client = factory.CreateClient(_options);
-        var uri = new Uri("system/version", UriKind.Relative);
+        var uri = new Uri(SystemVersionGetUrl, UriKind.Relative);
 
         // act:
         using var response = await client.GetAsync(uri);
@@ -61,6 +65,39 @@ public class ApiTests
             .ToString()
             .Should()
             .Be(Constants.ApplicationFullName);
+    }
+
+    [TestMethod]
+    public async Task Api_SystemController_OnSuccessWarmUp_ReturnsOkResult()
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
+        using var client = factory.CreateClient(_options);
+        var uri = new Uri(SystemWaitWarmUpGetUrl, UriKind.Relative);
+
+        // act:
+        using var response = await client.GetAsync(uri);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [TestMethod]
+    public async Task Api_SystemController_OnCancelledWarmUp_ReturnsUnavailableResult()
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
+        using var client = factory.CreateClient(_options);
+
+        // act:
+        var request = new HttpRequestMessage(HttpMethod.Get, SystemWaitWarmUpGetUrl);
+        var ct = new CancellationToken(true);
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
     [TestMethod]

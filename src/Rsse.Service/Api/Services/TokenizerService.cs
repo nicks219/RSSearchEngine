@@ -59,11 +59,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _tokenLines;
 
     /// <inheritdoc/>
-    public async Task Delete(int id)
+    public async Task Delete(int id, CancellationToken ct)
     {
         if (!_isEnabled) return;
 
-        using var __ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
+        using var __ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
         var isRemoved = _tokenLines.TryRemove(id, out _);
 
         if (!isRemoved)
@@ -73,11 +73,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Create(int id, TextRequestDto note)
+    public async Task Create(int id, TextRequestDto note, CancellationToken ct)
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
 
         var createdTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -88,11 +88,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Update(int id, TextRequestDto note)
+    public async Task Update(int id, TextRequestDto note, CancellationToken ct)
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
 
         var updatedTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -125,7 +125,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         {
             _tokenLines.Clear();
 
-            // todo: избавиться от загрузки всех записей из таблицы:
+            // todo: подумать, как избавиться от загрузки всех записей из таблицы
             var notes = repo.ReadAllNotes(ct);
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
@@ -158,7 +158,10 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// <inheritdoc/>
     public async Task<bool> WaitWarmUp(CancellationToken ct)
     {
-        if (ct.IsCancellationRequested || _isEnabled == false) return true;
+        if (_isEnabled == false) return true;
+
+        // Можно явно не бросать исключение тк оно в любом случае будет брошено в SyncOnLockAsync.
+        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(WaitWarmUp));
 
         await TokenizerLock.SyncOnLockAsync(ct);
 
@@ -168,7 +171,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// <inheritdoc/>
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
-    public Dictionary<int, double> ComputeComplianceIndices(string text)
+    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken ct)
     {
         var result = new Dictionary<int, double>();
 
@@ -192,6 +195,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
         // поиск в векторе extended
+        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices), ct);
         foreach (var (key, tokensLine) in _tokenLines)
         {
             var extendedTokensLine = tokensLine.Extended;
@@ -208,7 +212,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
             // II. extended% совпадение
             if (metric >= newTokensLine.Count * extended)
             {
-                // [TODO] можно так оценить
+                // todo: можно так оценить
                 // reducedChainSearch = false;
                 result.Add(key, metric * (100D / extendedTokensLine.Count));
             }
@@ -235,6 +239,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         newTokensLine = newTokensLine.ToHashSet().ToList();
 
         // поиск в векторе reduced
+        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices), ct);
         foreach (var (key, tokensLine) in _tokenLines)
         {
             var reducedTokensLine = tokensLine.Reduced;

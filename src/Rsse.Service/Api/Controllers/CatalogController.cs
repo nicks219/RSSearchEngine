@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,12 +22,13 @@ public class CatalogController(CatalogService catalogService, ILogger<CatalogCon
     /// Прочитать страницу каталога.
     /// </summary>
     /// <param name="id">Номер страницы.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.CatalogPageGetUrl)]
-    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id)
+    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id, CancellationToken ct)
     {
         try
         {
-            var response = await catalogService.ReadPage(id);
+            var response = await catalogService.ReadPage(id, ct);
             return response.MapFromDto();
         }
         catch (Exception ex)
@@ -40,13 +42,16 @@ public class CatalogController(CatalogService catalogService, ILogger<CatalogCon
     /// Переместиться по каталогу.
     /// </summary>
     /// <param name="request">Контейнер с информацией для навигации по каталогу.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpPost(RouteConstants.CatalogNavigatePostUrl)]
-    public async Task<ActionResult<CatalogResponse>> NavigateCatalog([FromBody] CatalogRequest request)
+    public async Task<ActionResult<CatalogResponse>> NavigateCatalog(
+        [FromBody] CatalogRequest request,
+        CancellationToken ct)
     {
         try
         {
             var dto = request.MapToDto();
-            var response = await catalogService.NavigateCatalog(dto);
+            var response = await catalogService.NavigateCatalog(dto, ct);
             return response.MapFromDto();
         }
         catch (Exception ex)

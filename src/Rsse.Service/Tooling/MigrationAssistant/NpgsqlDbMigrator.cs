@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
@@ -20,7 +22,10 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// </summary>
 /// <param name="configuration">Конфигурация.</param>
 /// <param name="serviceProvider">Из провайдера однократно получаем NpgsqlCatalogContext для пересоздания бд.</param>
-public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider serviceProvider) : IDbMigrator
+public class NpgsqlDbMigrator(
+    IConfiguration configuration,
+    IServiceProvider serviceProvider,
+    MigratorState migratorState) : IDbMigrator
 {
     private const string NpgsqlDumpPrefix = "pg";
     private const string NpgsqlDdlSuffix = "ddl";
@@ -31,10 +36,13 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
     private const string ArchiveDirectory = "ClientApp/build";
     private const int MaxVersion = 10;
     private const string ArchiveTempDirectory = "ClientApp/build/dump";
+
+    private readonly CancellationToken _rollbackToken = CancellationToken.None;
+
     private int _version;
 
     /// <inheritdoc/>
-    public string Create(string? fileName)
+    public async Task<string> Create(string? fileName, CancellationToken ct)
     {
         Log.Information("pg migrator on create");
 
@@ -56,67 +64,97 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             _version = (_version + 1) % MaxVersion;
         }
 
-        using var connection = new NpgsqlConnection(connectionString);
-
-        connection.Open();
-        using (var cmd = new NpgsqlCommand(NpgsqlScript.CreateDdl, connection))
-        {
-            var tablesDdl = new List<string>();
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                tablesDdl.Add(reader.GetString(0));
-            }
-
-            var allTablesDdl = string.Join("\n\n", tablesDdl);
-            File.WriteAllText($"{backupFilesPath}{NpgsqlDdlSuffix}", allTablesDdl);
-            File.WriteAllText($"{archiveTempPath}{NpgsqlDdlSuffix}", allTablesDdl);
-        }
-
-        using (var tagToNotesReader = connection.BeginTextExport("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") TO STDOUT"))
-        {
-            var allTagToNotes = tagToNotesReader.ReadToEnd();
-            File.WriteAllText($"{backupFilesPath}{NpgsqlRelationsSuffix}", allTagToNotes);
-            File.WriteAllText($"{archiveTempPath}{NpgsqlRelationsSuffix}", allTagToNotes);
-        }
-
-        using (var notesReader = connection.BeginTextExport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") TO STDOUT"))
-        {
-            var allNotes = notesReader.ReadToEnd();
-            File.WriteAllText($"{backupFilesPath}{NpgsqlNotesSuffix}", allNotes);
-            File.WriteAllText($"{archiveTempPath}{NpgsqlNotesSuffix}", allNotes);
-        }
-
-        using (var tagsReader = connection.BeginTextExport("COPY public.\"Tag\"(\"TagId\", \"Tag\") TO STDOUT"))
-        {
-            var allTags = tagsReader.ReadToEnd();
-            File.WriteAllText($"{backupFilesPath}{NpgsqlTagsSuffix}", allTags);
-            File.WriteAllText($"{archiveTempPath}{NpgsqlTagsSuffix}", allTags);
-        }
-
-        using (var usersReader = connection.BeginTextExport("COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") TO STDOUT"))
-        {
-            var allUsers = usersReader.ReadToEnd();
-            File.WriteAllText($"{backupFilesPath}{NpgsqlUsersSuffix}", allUsers);
-            File.WriteAllText($"{archiveTempPath}{NpgsqlUsersSuffix}", allUsers);
-        }
-
+        NpgsqlTransaction? transaction = null;
         // путь к архиву можно отдавать только при создании zip - что тогда отдавать в режиме files-only?
         var destinationArchiveFileName = "dump files created";
-
         try
         {
-            // NB: при вызове на создании заметки будут созданы незаархивированные файлы
-            if (IsCreateZippedDumpMode(fileName))
+            migratorState.Start();
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            await connection.OpenAsync(ct);
+            transaction = await connection.BeginTransactionAsync(ct);
+            await using (var cmd = new NpgsqlCommand(NpgsqlScript.CreateDdl, connection))
             {
-                destinationArchiveFileName = GetArchiveFileName();
-                File.Delete(destinationArchiveFileName);
-                ZipFile.CreateFromDirectory(ArchiveTempDirectory, destinationArchiveFileName);
+                var tablesDdl = new List<string>();
+                await using var reader = cmd.ExecuteReader();
+                while (await reader.ReadAsync(ct))
+                {
+                    tablesDdl.Add(reader.GetString(0));
+                }
+
+                var allTablesDdl = string.Join("\n\n", tablesDdl);
+                await File.WriteAllTextAsync($"{backupFilesPath}{NpgsqlDdlSuffix}", allTablesDdl, ct);
+                await File.WriteAllTextAsync($"{archiveTempPath}{NpgsqlDdlSuffix}", allTablesDdl, ct);
+            }
+
+            using (var tagToNotesReader =
+                   await connection.BeginTextExportAsync("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") TO STDOUT",
+                       ct))
+            {
+                var allTagToNotes = await tagToNotesReader.ReadToEndAsync(ct);
+                await File.WriteAllTextAsync($"{backupFilesPath}{NpgsqlRelationsSuffix}", allTagToNotes, ct);
+                await File.WriteAllTextAsync($"{archiveTempPath}{NpgsqlRelationsSuffix}", allTagToNotes, ct);
+            }
+
+            using (var notesReader =
+                   await connection.BeginTextExportAsync(
+                       "COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") TO STDOUT", ct))
+            {
+                var allNotes = await notesReader.ReadToEndAsync(ct);
+                await File.WriteAllTextAsync($"{backupFilesPath}{NpgsqlNotesSuffix}", allNotes, ct);
+                await File.WriteAllTextAsync($"{archiveTempPath}{NpgsqlNotesSuffix}", allNotes, ct);
+            }
+
+            using (var tagsReader =
+                   await connection.BeginTextExportAsync("COPY public.\"Tag\"(\"TagId\", \"Tag\") TO STDOUT", ct))
+            {
+                var allTags = await tagsReader.ReadToEndAsync(ct);
+                await File.WriteAllTextAsync($"{backupFilesPath}{NpgsqlTagsSuffix}", allTags, ct);
+                await File.WriteAllTextAsync($"{archiveTempPath}{NpgsqlTagsSuffix}", allTags, ct);
+            }
+
+            using (var usersReader =
+                   await connection.BeginTextExportAsync(
+                       "COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") TO STDOUT", ct))
+            {
+                var allUsers = await usersReader.ReadToEndAsync(ct);
+                await File.WriteAllTextAsync($"{backupFilesPath}{NpgsqlUsersSuffix}", allUsers, ct);
+                await File.WriteAllTextAsync($"{archiveTempPath}{NpgsqlUsersSuffix}", allUsers, ct);
+            }
+
+            try
+            {
+                // NB: при вызове на создании заметки будут созданы незаархивированные файлы
+                if (IsCreateZippedDumpMode(fileName))
+                {
+                    destinationArchiveFileName = GetArchiveFileName();
+                    File.Delete(destinationArchiveFileName);
+                    ZipFile.CreateFromDirectory(ArchiveTempDirectory, destinationArchiveFileName);
+                }
+            }
+            finally
+            {
+                CleanUpTempDirectory(archiveTempPath);
+            }
+
+            await transaction.CommitAsync(ct);
+        }
+        catch
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(_rollbackToken);
             }
         }
         finally
         {
-            CleanUpTempDirectory(archiveTempPath);
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
+
+            migratorState.End();
         }
 
         return destinationArchiveFileName;
@@ -136,7 +174,7 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
     }
 
     /// <inheritdoc/>
-    public string Restore(string? fileName)
+    public async Task<string> Restore(string? fileName, CancellationToken ct)
     {
         Log.Information("pg migrator on restore");
 
@@ -148,8 +186,11 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             : Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_{fileName}_.txt");
 
         var sourceArchiveFileName = GetArchiveFileName();
+
+        NpgsqlTransaction? transaction = null;
         try
         {
+            migratorState.Start();
             ZipFile.ExtractToDirectory(sourceArchiveFileName, ArchiveTempDirectory);
 
             // завязываемся на настройках
@@ -159,58 +200,72 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
             {
                 using var scope = serviceProvider.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<NpgsqlCatalogContext>();
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
+                await context.Database.EnsureDeletedAsync(ct);
+                await context.Database.EnsureCreatedAsync(ct);
                 Log.Information("pg on restore | recreate database");
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            var allTablesDdl = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlDdlSuffix}", ct);
+            var allTagToNotes = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlRelationsSuffix}", ct);
+            var allNotes = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlNotesSuffix}", ct);
+            var allTags = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlTagsSuffix}", ct);
+            var allUsers = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlUsersSuffix}", ct);
 
-            var allTablesDdl = File.ReadAllText($"{archiveTempPath}{NpgsqlDdlSuffix}");
-            var allTagToNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlRelationsSuffix}");
-            var allNotes = File.ReadAllText($"{archiveTempPath}{NpgsqlNotesSuffix}");
-            var allTags = File.ReadAllText($"{archiveTempPath}{NpgsqlTagsSuffix}");
-            var allUsers = File.ReadAllText($"{archiveTempPath}{NpgsqlUsersSuffix}");
-
-            connection.Open();
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(ct);
+            transaction = await connection.BeginTransactionAsync(ct);
 
             // завязываемся на настройках
             if (createTablesOnPgMigration)
             {
-                using var cmd = connection.CreateCommand();
+                await using var cmd = connection.CreateCommand();
                 cmd.Connection = connection;
                 cmd.CommandText = allTablesDdl;
-                var rows = cmd.ExecuteNonQuery();
+                var rows = await cmd.ExecuteNonQueryAsync(ct);
                 Log.Debug("pg on restore | apply ddl : '{CreateTable}' | rows affected: '{Rows}'", createTablesOnPgMigration, rows);
             }
 
-            using (var notesWriter =
-                   connection.BeginTextImport("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") FROM STDIN"))
+            await using (var notesWriter =
+                         await connection.BeginTextImportAsync("COPY public.\"Note\"(\"NoteId\", \"Title\", \"Text\") FROM STDIN", ct))
             {
-                notesWriter.Write(allNotes);
+                await notesWriter.WriteAsync(allNotes);
             }
 
-            using (var tagsWriter = connection.BeginTextImport("COPY public.\"Tag\"(\"TagId\", \"Tag\") FROM STDIN"))
+            await using (var tagsWriter = await connection.BeginTextImportAsync("COPY public.\"Tag\"(\"TagId\", \"Tag\") FROM STDIN", ct))
             {
-                tagsWriter.Write(allTags);
+                await tagsWriter.WriteAsync(allTags);
             }
 
-            using (var tagToNotesWriter =
-                   connection.BeginTextImport("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") FROM STDIN"))
+            await using (var tagToNotesWriter =
+                         await connection.BeginTextImportAsync("COPY public.\"TagsToNotes\"(\"TagId\", \"NoteId\") FROM STDIN", ct))
             {
-                tagToNotesWriter.Write(allTagToNotes);
+                await tagToNotesWriter.WriteAsync(allTagToNotes);
             }
 
-            using (var usersWriter =
-                   connection.BeginTextImport("COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") FROM STDIN"))
+            await using (var usersWriter =
+                         await connection.BeginTextImportAsync("COPY public.\"Users\"(\"Id\", \"Email\", \"Password\") FROM STDIN", ct))
             {
-                usersWriter.Write(allUsers);
+                await usersWriter.WriteAsync(allUsers);
             }
 
-            SetVals(connection);
+            await SetVals(connection, ct);
+            await transaction.CommitAsync(ct);
+        }
+        catch
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(_rollbackToken);
+            }
         }
         finally
         {
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
+
+            migratorState.End();
             CleanUpTempDirectory(archiveTempPath);
         }
 
@@ -218,10 +273,10 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
     }
 
     /// <inheritdoc/>
-    public Task CopyDbFromMysqlToNpgsql() => throw new NotSupportedException($"use {nameof(MySqlDbMigrator)} instead.");
+    public Task CopyDbFromMysqlToNpgsql(CancellationToken _) => throw new NotSupportedException($"use {nameof(MySqlDbMigrator)} instead.");
 
     // <summary/> выставить актуальные значения ключей
-    private static void SetVals(NpgsqlConnection connection)
+    private static async Task SetVals(NpgsqlConnection connection, CancellationToken ct)
     {
         var commands = new List<string>
         {
@@ -231,8 +286,8 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
         };
         foreach (var command in commands)
         {
-            using var cmd = new NpgsqlCommand(command, connection);
-            cmd.ExecuteNonQuery();
+            await using var cmd = new NpgsqlCommand(command, connection);
+            await cmd.ExecuteNonQueryAsync(ct);
         }
     }
 }

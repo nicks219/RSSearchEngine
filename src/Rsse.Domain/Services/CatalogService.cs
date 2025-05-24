@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -26,12 +27,13 @@ public class CatalogService(IDataRepository repo)
     /// Получить страницу каталога по номеру.
     /// </summary>
     /// <param name="pageNumber">Номер страницы.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> ReadPage(int pageNumber)
+    public async Task<CatalogResultDto> ReadPage(int pageNumber, CancellationToken ct)
     {
-        var notesCount = await repo.ReadNotesCount();
+        var notesCount = await repo.ReadNotesCount(ct);
 
-        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, ct);
 
         return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }
@@ -40,18 +42,19 @@ public class CatalogService(IDataRepository repo)
     /// Перейти на другую страницу.
     /// </summary>
     /// <param name="catalogRequest">Данные для навигации.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest)
+    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest, CancellationToken ct)
     {
         var direction = GetDirection(catalogRequest.Direction);
 
         var pageNumber = catalogRequest.PageNumber;
 
-        var notesCount = await repo.ReadNotesCount();
+        var notesCount = await repo.ReadNotesCount(ct);
 
         pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, ct);
 
         return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }

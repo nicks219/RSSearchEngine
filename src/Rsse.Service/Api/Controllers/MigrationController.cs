@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Service.ApiModels;
@@ -23,6 +24,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
+    IHostApplicationLifetime lifetime,
     IEnumerable<IDbMigrator> migrators,
     ITokenizerService tokenizerService,
     ILogger<MigrationController> logger) : ControllerBase
@@ -30,16 +32,18 @@ public class MigrationController(
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
-    // todo: удалить после переходя на Postgres
     [HttpGet(RouteConstants.MigrationCopyGetUrl)]
     [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
+    // todo: удалить после переходя на Postgres
     public async Task<ActionResult<StringResponse>> CopyFromMySqlToPostgres()
     {
+        var ct = lifetime.ApplicationStopping;
+        var migratorToken = lifetime.ApplicationStopped;
         try
         {
             var mySqlMigrator = IDbMigrator.GetMigrator(migrators, DatabaseType.MySql);
-            await mySqlMigrator.CopyDbFromMysqlToNpgsql();
-            await tokenizerService.Initialize(CancellationToken.None);
+            await mySqlMigrator.CopyDbFromMysqlToNpgsql(migratorToken);
+            await tokenizerService.Initialize(ct);
             var response = new StringResponse { Res = "success" };
             return Ok(response);
         }
@@ -57,12 +61,13 @@ public class MigrationController(
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
-    public ActionResult<StringResponse> CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public async Task<ActionResult<StringResponse>> CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
+        var migratorToken = lifetime.ApplicationStopped;
         try
         {
             var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
-            var result = migrator.Create(fileName);
+            var result = await migrator.Create(fileName, migratorToken);
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
         }
@@ -83,11 +88,13 @@ public class MigrationController(
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
+        var ct = lifetime.ApplicationStopping;
+        var migratorToken = lifetime.ApplicationStopped;
         try
         {
             var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
-            var result = migrator.Restore(fileName);
-            await tokenizerService.Initialize(CancellationToken.None);
+            var result = await migrator.Restore(fileName, migratorToken);
+            await tokenizerService.Initialize(ct);
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
         }
@@ -104,13 +111,14 @@ public class MigrationController(
     /// </summary>
     [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
-    public ActionResult<StringResponse> UploadFile(IFormFile file)
+    public async Task<ActionResult<StringResponse>> UploadFile(IFormFile file)
     {
+        var ct = lifetime.ApplicationStopping;
         try
         {
             var path = Path.Combine(Constants.StaticDirectory, file.FileName);
-            using var stream = new FileStream(path, FileMode.Create);
-            file.CopyTo(stream);
+            await using var stream = new FileStream(path, FileMode.Create);
+            await file.CopyToAsync(stream, ct);
             var response = new StringResponse { Res = $"Файл сохранён: {path}" };
             return Ok(response);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -37,8 +38,10 @@ public class AccountController(
     /// <param name="email">Электронная почта.</param>
     /// <param name="password">Пароль.</param>
     /// <param name="returnUrl">Параметр челенджа авторизации, разобраться с необходимостью.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
-    public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password, string? returnUrl)
+    public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password,
+        string? returnUrl, CancellationToken ct)
     {
         try
         {
@@ -50,7 +53,7 @@ public class AccountController(
 
             var credentialsRequestDto = new CredentialsRequestDto { Email = email, Password = password };
 
-            var identity = await accountService.TrySignInWith(credentialsRequestDto);
+            var identity = await accountService.TrySignInWith(credentialsRequestDto, ct);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity));
@@ -106,13 +109,16 @@ public class AccountController(
     /// Обновить логин и пароль.
     /// </summary>
     /// <param name="credentials">Данные для обновления.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
-    public async Task<ActionResult<StringResponse>> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
+    public async Task<ActionResult<StringResponse>> UpdateCredos(
+        [FromQuery] UpdateCredentialsRequest credentials,
+        CancellationToken ct)
     {
         try
         {
             var credosForUpdate = credentials.MapToDto();
-            await accountService.UpdateCredos(credosForUpdate);
+            await accountService.UpdateCredos(credosForUpdate, ct);
             await Logout();
             var result = new StringResponse(Res: "updated");
             return Ok(result);

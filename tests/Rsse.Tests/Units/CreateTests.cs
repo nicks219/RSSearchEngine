@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public class CreateTests
     public required ServiceProviderStub Stub;
     public required IDataRepository Repository;
 
+    private readonly CancellationToken _token = CancellationToken.None;
+
     [TestInitialize]
     public void Initialize()
     {
@@ -35,7 +38,7 @@ public class CreateTests
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await Repository.ReadEnrichedTagList();
+        var resultDto = await Repository.ReadEnrichedTagList(_token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.Count);
@@ -54,10 +57,10 @@ public class CreateTests
         );
 
         // act:
-        var responseDto = await CreateService.CreateNote(requestDto);
+        var responseDto = await CreateService.CreateNote(requestDto, _token);
         var repo = Stub.Provider.GetRequiredService<IDataRepository>();
 
-        var actualDto = await new UpdateService(repo).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateService(repo).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange, _token);
 
         // assert:
         responseDto.ErrorMessage.Should().BeNull();

@@ -1,5 +1,6 @@
 
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -19,10 +20,11 @@ public partial class CreateService(IDataRepository repo)
     /// Создать заметку.
     /// </summary>
     /// <param name="noteRequestDto">Данные для создания заметки.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Контейнер с иснформации о созданной заметке.</returns>
-    public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto)
+    public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto, CancellationToken ct)
     {
-        var enrichedTags = await repo.ReadEnrichedTagList();
+        var enrichedTags = await repo.ReadEnrichedTagList(ct);
         var unsuccessfulResultDto = new NoteResultDto(enrichedTags: enrichedTags);
 
         if (noteRequestDto.CheckedTags == null ||
@@ -48,7 +50,7 @@ public partial class CreateService(IDataRepository repo)
 
         noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title };
 
-        var newNoteId = await repo.CreateNote(noteRequestDto);
+        var newNoteId = await repo.CreateNote(noteRequestDto, ct);
 
         if (newNoteId == 0)
         {
@@ -62,9 +64,9 @@ public partial class CreateService(IDataRepository repo)
             return unsuccessfulResultDto;
         }
 
-        var tagsAfterCreate = await repo.ReadEnrichedTagList();
+        var tagsAfterCreate = await repo.ReadEnrichedTagList(ct);
         var totalTagsCount = tagsAfterCreate.Count;
-        var noteTagIds = await repo.ReadNoteTagIds(newNoteId);
+        var noteTagIds = await repo.ReadNoteTagIds(newNoteId, ct);
 
         var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
 
@@ -75,7 +77,8 @@ public partial class CreateService(IDataRepository repo)
     /// Создать новый тег из размеченного квадратными скобками заголовка.
     /// </summary>
     /// <param name="noteDto">Данные для создания тега.</param>
-    internal async Task CreateTagFromTitle(NoteRequestDto? noteDto)
+    /// <param name="ct">Токен отмены.</param>
+    internal async Task CreateTagFromTitle(NoteRequestDto? noteDto, CancellationToken ct)
     {
         const string tagPattern = "[]";
 
@@ -91,7 +94,7 @@ public partial class CreateService(IDataRepository repo)
             return;
         }
 
-        await repo.CreateTagIfNotExists(tag);
+        await repo.CreateTagIfNotExists(tag, ct);
     }
     [GeneratedRegex(@"\[(.+?)\]", RegexOptions.Compiled)]
     private static partial Regex TitleRegex();

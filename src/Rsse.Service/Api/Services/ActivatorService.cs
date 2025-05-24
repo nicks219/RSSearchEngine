@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace SearchEngine.Api.Services;
 /// Сервис запуска по расписанию инициализации функционала токенизатора.
 /// </summary>
 internal class ActivatorService(
+    MigratorState migratorState,
     ITokenizerService tokenizer,
     IServiceScopeFactory factory,
     ILogger<ActivatorService> logger) : BackgroundService
@@ -51,5 +53,45 @@ internal class ActivatorService(
         {
             logger.LogInformation("[{Reporter}] graceful shutdown, cycles counter: '{Count}'", nameof(ActivatorService), _count.ToString());
         }
+    }
+
+    /// <summary>
+    /// Попытаться дождаться завершения миграций при инициализации процесса остановки хоста.
+    /// </summary>
+    /// <param name="stoppingToken">Токен начала остановки хоста.</param>
+    public override async Task StopAsync(CancellationToken stoppingToken)
+    {
+        if (migratorState.IsMigrating)
+        {
+            logger.LogWarning("{Reporter} | graceful shutdown: waiting for migration to complete...", nameof(ActivatorService));
+        }
+        else
+        {
+            return;
+        }
+
+        try
+        {
+            const int totalWaitSeconds = 25;
+            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(totalWaitSeconds));
+            while (migratorState.IsMigrating && !timeoutCts.IsCancellationRequested)
+            {
+                await Task.Delay(500, timeoutCts.Token);
+            }
+        }
+        finally
+        {
+            if (migratorState.IsMigrating)
+            {
+                logger.LogError("{Reporter} | shutdown timeout: migration not finished...", nameof(ActivatorService));
+            }
+            else
+            {
+                logger.LogInformation("{Reporter} | shutdown timeout: migration finished", nameof(ActivatorService));
+            }
+        }
+
+        await base.StopAsync(stoppingToken);
     }
 }

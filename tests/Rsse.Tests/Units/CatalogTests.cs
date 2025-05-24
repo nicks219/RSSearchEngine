@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -11,7 +12,6 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Messages;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
@@ -28,6 +28,7 @@ public class CatalogTests
     public required DeleteService DeleteService;
     public required FakeCatalogRepository Repo;
 
+    private readonly CancellationToken _token = CancellationToken.None;
     private const int NotesPerPage = 10;
     private int _notesCount;
 
@@ -40,14 +41,14 @@ public class CatalogTests
         CatalogService = new CatalogService(repo);
         DeleteService = new DeleteService(repo);
         Repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
-        Repo.CreateStubData(50);
-        _notesCount = await Repo.ReadNotesCount();
+        Repo.CreateStubData(50, _token);
+        _notesCount = await Repo.ReadNotesCount(_token);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        Stub?.Dispose();
+        Stub.Dispose();
     }
 
     [TestMethod]
@@ -56,10 +57,10 @@ public class CatalogTests
         // arrange:
         const int existingPage = 1;
         const int totalPages = 50;
-        Repo.CreateStubData(totalPages);
+        Repo.CreateStubData(totalPages, _token);
 
         // act:
-        var responseDto = await CatalogService.ReadPage(existingPage);
+        var responseDto = await CatalogService.ReadPage(existingPage, _token);
 
         // asserts:
         Assert.AreEqual(NotesPerPage, responseDto.CatalogPage?.Count);
@@ -73,11 +74,11 @@ public class CatalogTests
         const int forwardMagicNumber = 2;
 
         // arrange:
-        Repo.CreateStubData(50);
+        Repo.CreateStubData(50, _token);
         var request = new CatalogRequestDto { Direction = [forwardMagicNumber], PageNumber = currentPage };
 
         // act:
-        var responseDto = await CatalogService.NavigateCatalog(request);
+        var responseDto = await CatalogService.NavigateCatalog(request, _token);
 
         // assert:
         responseDto.PageNumber
@@ -94,7 +95,7 @@ public class CatalogTests
 
         // act:
         var exception = await TestHelper.GetExpectedExceptionWithAsync<NotSupportedException>(() =>
-            CatalogService.NavigateCatalog(request));
+            CatalogService.NavigateCatalog(request, _token));
 
         // assert:
         exception.EnsureNotNull();
@@ -108,8 +109,10 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<DeleteController>>();
+        var lifetime = Substitute.For<IHostApplicationLifetime>();
         var tokenizerService = Substitute.For<ITokenizerService>();
         var deleteController = new DeleteController(
+            lifetime,
             tokenizerService,
             DeleteService,
             CatalogService,
@@ -132,8 +135,9 @@ public class CatalogTests
         const int invalidPageNumber = -200;
         var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
+        var lifetime = Substitute.For<IHostApplicationLifetime>();
 
-        var catalogController = new DeleteController(tokenizer, DeleteService, CatalogService, logger);
+        var catalogController = new DeleteController(lifetime, tokenizer, DeleteService, CatalogService, logger);
 
         // act:
         var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
@@ -151,7 +155,7 @@ public class CatalogTests
         var catalogController = new CatalogController(CatalogService, logger);
 
         // act:
-        _ = await catalogController.NavigateCatalog(null!);
+        _ = await catalogController.NavigateCatalog(null!, _token);
 
         // assert:
         logger.Received().LogError(Arg.Any<Exception>(), ControllerErrorMessages.NavigateCatalogError);

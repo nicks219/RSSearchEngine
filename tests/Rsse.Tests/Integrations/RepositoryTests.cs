@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -65,6 +66,8 @@ public class RepositoryTests
     [TestMethod]
     public async Task MySqlRepoAndPostgresRepo_ShouldOperateIndependently()
     {
+        var token = CancellationToken.None;
+
         // act:
         const string tag = "new-1";
         using var _ = _factory!.CreateClient(_options!);
@@ -72,9 +75,9 @@ public class RepositoryTests
         var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
         var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         mysqlRepo.EnsureNotNull();
-        await mysqlRepo.CreateTagIfNotExists(tag);
-        var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList();
-        var tagsFromNpg = await npgsqlRepo.ReadEnrichedTagList();
+        await mysqlRepo.CreateTagIfNotExists(tag, token);
+        var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList(token);
+        var tagsFromNpg = await npgsqlRepo.ReadEnrichedTagList(token);
 
         // assert:
         // теги сохраняются в верхнем регистре
@@ -90,6 +93,8 @@ public class RepositoryTests
     [TestMethod]
     public async Task ReaderAndWriterContexts_ShouldOperateIndependently()
     {
+        var token = CancellationToken.None;
+
         // act:
         const string tag = "new-2";
         using var _ = _factory!.CreateClient(_options!);
@@ -99,7 +104,7 @@ public class RepositoryTests
         var npgsqlContext = (NpgsqlCatalogContext)serviceScope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
 
         mysqlRepo.EnsureNotNull();
-        await mysqlRepo.CreateTagIfNotExists(tag);
+        await mysqlRepo.CreateTagIfNotExists(tag, token);
         var mysqlTags = mysqlContext
             .Tags
             .Select(x => x.Tag)
@@ -122,6 +127,8 @@ public class RepositoryTests
     [TestMethod]
     public async Task IDataRepository_WritesToBothDatabases_WhenCreateTagCalled()
     {
+        var token = CancellationToken.None;
+
         const string tag = "new-3";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
@@ -132,7 +139,7 @@ public class RepositoryTests
         mirroredRepo.EnsureNotNull();
 
         // act:
-        await mirroredRepo.CreateTagIfNotExists(tag);
+        await mirroredRepo.CreateTagIfNotExists(tag, token);
         var mysqlTags = mysqlContext
             .Tags
             .Select(x => x.Tag)

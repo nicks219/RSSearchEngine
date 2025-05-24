@@ -1,7 +1,9 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Dto;
@@ -19,6 +21,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
+    IHostApplicationLifetime lifetime,
     ITokenizerService tokenizerService,
     UpdateService updateService,
     ILogger<UpdateController> logger) : ControllerBase
@@ -30,17 +33,18 @@ public class UpdateController(
     [Authorize, HttpPut(RouteConstants.UpdateNotePutUrl)]
     public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
     {
+        var ct = lifetime.ApplicationStopping;
         try
         {
             var noteRequest = request.MapToDto();
-            var noteResultDto = await updateService.UpdateNote(noteRequest);
+            var noteResultDto = await updateService.UpdateNote(noteRequest, ct);
             var textRequestDto = new TextRequestDto
             {
                 Title = noteRequest.Title,
                 Text = noteRequest.Text
             };
 
-            await tokenizerService.Update(noteRequest.NoteIdExchange, textRequestDto);
+            await tokenizerService.Update(noteRequest.NoteIdExchange, textRequestDto, ct);
 
             return noteResultDto.MapFromDto();
         }

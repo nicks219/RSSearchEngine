@@ -21,6 +21,7 @@ namespace SearchEngine.Tests.Units;
 public class ComplianceTests
 {
     private const string Text = "чорт з ным зо сталом";
+    private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
@@ -38,7 +39,7 @@ public class ComplianceTests
         await tokenizer.Initialize(CancellationToken.None);
 
         // act:
-        var actionResult = complianceController.GetComplianceIndices(Text);
+        var actionResult = complianceController.GetComplianceIndices(Text, _token);
         var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
         var serialized = JsonSerializer.Serialize(okObjectResult);
         var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);

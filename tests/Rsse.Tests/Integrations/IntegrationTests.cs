@@ -28,6 +28,8 @@ namespace SearchEngine.Tests.Integrations;
 public class IntegrationTests
 {
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
+    private static readonly CancellationToken Token = CancellationToken.None;
+
     private static CustomWebAppFactory<IntegrationStartup> _factory;
     private static WebApplicationFactoryClientOptions _cookiesOptions;
     private static WebApplicationFactoryClientOptions _options;
@@ -82,12 +84,14 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_cookiesOptions);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
-        await client.TryAuthorizeToService("1@2", "12");
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.SendTestRequest(Request.Get, uri);
+        using var response = await client.SendTestRequest(Request.Get, uri, ct: Token);
         var reason = response.ReasonPhrase;
         var statusCode = response.StatusCode;
 
@@ -101,7 +105,7 @@ public class IntegrationTests
             .Be(nameof(HttpStatusCode.OK));
 
         // clean up:
-        TestHelper.CleanUpDatabases(_factory);
+        await TestHelper.CleanUpDatabases(_factory, ct: Token);
     }
 
     public static IEnumerable<object?[]> AfterCopyTestData =>
@@ -125,12 +129,14 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
-        await client.TryAuthorizeToService("1@2", "12");
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
         if (content != null) content = content with { NoteIdExchange = _processedId };
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // act:
-        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
+        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent, ct: Token);
         var result = await response.Content.ReadFromJsonAsync(responseType);
         var asNote = CastTo<NoteResponse>(result.EnsureNotNull());
         var asCompliance = CastTo<ComplianceResponse>(result.EnsureNotNull());
@@ -193,15 +199,17 @@ public class IntegrationTests
         int? idExpected, string? textExpected, NoteRequest? content)
     {
         //очищаем базу на старте:
-        if (idExpected == 1) TestHelper.CleanUpDatabases(_factory);
+        if (idExpected == 1) await TestHelper.CleanUpDatabases(_factory, ct: Token);
 
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
-        await client.TryAuthorizeToService("1@2", "12");
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // act:
-        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent);
+        using var response = await client.SendTestRequest(requestMethod, new Uri(uri, UriKind.Relative), jsonContent, ct: Token);
 
         switch (requestMethod)
         {
@@ -260,11 +268,13 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
-        await client.TryAuthorizeToService("1@2", "12");
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
         var uri = new Uri(uriString, UriKind.Relative);
         // act:
-        using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
+        using var response = await client.SendTestRequest(requestMethod, uri, requestContent, ct: Token);
         var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
         var asCompliance = CastTo<ComplianceResponse>(result);
         var asMigration = CastTo<StringResponse>(result);
@@ -338,11 +348,13 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
-        await client.TryAuthorizeToService("1@2", "12");
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
         var uri = new Uri(uriString, UriKind.Relative);
         // act:
-        using var response = await client.SendTestRequest(requestMethod, uri, requestContent);
+        using var response = await client.SendTestRequest(requestMethod, uri, requestContent, ct: Token);
         var result = (await response.Content.ReadFromJsonAsync(responseType)).EnsureNotNull();
 
         var asCompliance = CastTo<ComplianceResponse>(result);
@@ -433,8 +445,10 @@ public class IntegrationTests
         const string newEmail = "1@3";
         const string newPassword = "13";
         using var client = _factory.CreateClient(_cookiesOptions);
-        await client.TryAuthorizeToService(oldEmail, oldPassword);
-        await client.GetAsync(SystemWaitWarmUpGetUrl);
+        var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
+        warmupResult.EnsureSuccessStatusCode();
+
+        await client.TryAuthorizeToService(oldEmail, oldPassword, ct: Token);
 
         // act:
         var queryParams = new Dictionary<string, string?>
@@ -448,12 +462,12 @@ public class IntegrationTests
         var uriWithCorrectCredos = new Uri(queryStringWithCorrectCredos, UriKind.Relative);
 
         // act:
-        using var _ = await client.SendTestRequest(Request.Get, uriWithCorrectCredos);
+        using var _ = await client.SendTestRequest(Request.Get, uriWithCorrectCredos, ct: Token);
         Exception? exceptionOnIncorrectAuthorization = null;
         try
         {
             // incorrect credos:
-            await client.TryAuthorizeToService(oldEmail, oldPassword);
+            await client.TryAuthorizeToService(oldEmail, oldPassword, ct: Token);
         }
         catch (Exception exception)
         {
@@ -461,22 +475,10 @@ public class IntegrationTests
         }
 
         // asserts:
-        await client.TryAuthorizeToService(newEmail, newPassword);
+        await client.TryAuthorizeToService(newEmail, newPassword, ct: Token);
         exceptionOnIncorrectAuthorization.Should().NotBeNull();
     }
 
     // выполнить каст
     private static T? CastTo<T>(object value) where T : class => value as T;
 }
-
-// WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseCopyWithViaAPI:
-// I.      название заметки при создании тега можно очищать от скобочек
-// II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле CommonErrorMessageResponse
-//          например исключение менеджера оверрайдится контроллером
-
-// WARN по результатам теста Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI:
-// I.      на pg контексте: получил [CreateManager] CreateNote error: DETAIL: Key (TagId)=(1) is not present in table "Tag", тк заметка не создавалась, то и тег падал
-//         перенес создание тега до создания заметки - надо при удачном создании тега возвращаться, не пытаясь создать заметку
-// II.     надо текст внутренней ошибки возвращать "снизу" в ответе, в поле details
-// III.    на заметку не создаётся zip (только файлы) - а возвращается dump.zip
-// IV.     postgres: как ресториться из "последних" файлов? рестор сделан только из *.zip

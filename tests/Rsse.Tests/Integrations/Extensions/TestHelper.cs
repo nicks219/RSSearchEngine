@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,15 +58,16 @@ public static class TestHelper
     /// <summary>
     /// Очистить таблицы двух баз данных
     /// </summary>
-    /// <param name="factory"></param>
+    /// <param name="factory">Хост.</param>
+    /// <param name="ct">Токен отмены.</param>
     // todo: перенести в сид если требуется очистка
-    internal static void CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory)
+    internal static async Task CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory, CancellationToken ct)
     {
         var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
 
-        using var pgConnection = new NpgsqlConnection(pgConnectionString);
-        pgConnection.Open();
+        await using var pgConnection = new NpgsqlConnection(pgConnectionString);
+        await pgConnection.OpenAsync(ct);
         var commands = new List<string>
         {
             // """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
@@ -75,12 +77,12 @@ public static class TestHelper
         };
         foreach (var command in commands)
         {
-            using var cmd = new NpgsqlCommand(command, pgConnection);
-            cmd.ExecuteNonQuery();
+            await using var cmd = new NpgsqlCommand(command, pgConnection);
+            await cmd.ExecuteNonQueryAsync(ct);
         }
 
-        using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
-        mysqlConnection.Open();
+        await using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
+        await mysqlConnection.OpenAsync(ct);
         commands =
         [
             "SET FOREIGN_KEY_CHECKS = 0;",
@@ -92,8 +94,8 @@ public static class TestHelper
         ];
         foreach (var command in commands)
         {
-            using var cmd = new MySqlCommand(command, mysqlConnection);
-            cmd.ExecuteNonQuery();
+            await using var cmd = new MySqlCommand(command, mysqlConnection);
+            await cmd.ExecuteNonQueryAsync(ct);
         }
     }
 

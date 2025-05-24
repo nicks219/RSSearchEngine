@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 
@@ -12,8 +13,9 @@ public class DeleteService(IDataRepository repo)
     /// Удалить заметку.
     /// </summary>
     /// <param name="noteId">Идентификатор заметки.</param>
-    public async Task DeleteNote(int noteId)
+    /// <param name="ct">Токен отмены.</param>
+    public async Task DeleteNote(int noteId, CancellationToken ct)
     {
-        await repo.DeleteNote(noteId);
+        await repo.DeleteNote(noteId, ct);
     }
 }

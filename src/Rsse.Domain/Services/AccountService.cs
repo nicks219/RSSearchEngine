@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -18,17 +19,18 @@ public class AccountService(IDataRepository repo)
     /// Попытаться войти в систему.
     /// </summary>
     /// <param name="credentialsRequest">Данные для авторизации.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Контейнер с подверждением идентичности.</returns>
     /// <exception cref="RsseUserNotFoundException">Пользователь не найден.</exception>
     /// <exception cref="RsseInvalidCredosException">Некорректные данные авторизации.</exception>
-    public async Task<ClaimsIdentity> TrySignInWith(CredentialsRequestDto credentialsRequest)
+    public async Task<ClaimsIdentity> TrySignInWith(CredentialsRequestDto credentialsRequest, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(credentialsRequest.Email) || string.IsNullOrEmpty(credentialsRequest.Password))
         {
             throw new RsseInvalidCredosException(InvalidCredosError);
         }
 
-        var user = await repo.GetUser(credentialsRequest);
+        var user = await repo.GetUser(credentialsRequest, ct);
 
         if (user == null)
         {
@@ -51,8 +53,8 @@ public class AccountService(IDataRepository repo)
     }
 
     /// <summary/> Обновить логин и пароль.
-    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate)
+    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate, CancellationToken ct)
     {
-        await repo.UpdateCredos(credosForUpdate);
+        await repo.UpdateCredos(credosForUpdate, ct);
     }
 }

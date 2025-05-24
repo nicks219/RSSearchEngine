@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,6 +19,9 @@ public class UpdateTests
 
     private const string Title = "0: key";
     private const string Text = "test text text";
+
+    private readonly CancellationToken _token = CancellationToken.None;
+
     private int? _testNoteId;
 
     [TestInitialize]
@@ -26,8 +30,8 @@ public class UpdateTests
         Stub = new ServiceProviderStub();
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
 
-        repo.CreateStubData(10);
-        _testNoteId = repo.ReadNoteId(Title);
+        repo.CreateStubData(10, _token);
+        _testNoteId = repo.ReadNoteId(Title, _token);
 
         UpdateService = new UpdateService(repo);
     }
@@ -42,7 +46,7 @@ public class UpdateTests
     public async Task UpdateService_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1);
+        var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1, _token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.EnrichedTags?.Count);
@@ -61,7 +65,7 @@ public class UpdateTests
         );
 
         // act:
-        var responseDto = await UpdateService.UpdateNote(requestDto);
+        var responseDto = await UpdateService.UpdateNote(requestDto, _token);
 
         // assert:
         Assert.AreEqual(Text, responseDto.Text);

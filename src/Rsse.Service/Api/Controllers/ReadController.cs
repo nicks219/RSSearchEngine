@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,12 +39,13 @@ public class ReadController(
     /// Прочитать заголовок заметки по её идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
-    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(string id)
+    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(string id, CancellationToken ct)
     {
         try
         {
-            var title = await readService.ReadTitleByNoteId(int.Parse(id));
+            var title = await readService.ReadTitleByNoteId(int.Parse(id), ct);
             var response = new StringResponse(Res: title);
             return Ok(response);
         }
@@ -60,14 +62,18 @@ public class ReadController(
     /// </summary>
     /// <param name="request">Контейнер с отмеченными тегами.</param>
     /// <param name="id">Строка с идентификатором, если требуется.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
     [HttpPost(RouteConstants.ReadNotePostUrl)]
-    public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
+    public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote(
+        [FromBody] NoteRequest? request,
+        [FromQuery] string? id,
+        CancellationToken ct)
     {
         try
         {
             var noteRequestDto = request?.MapToDto();
-            var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
+            var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection, ct);
             return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
@@ -80,12 +86,13 @@ public class ReadController(
     /// <summary>
     /// Получить полный список тегов.
     /// </summary>
+    /// <param name="ct">Токен отмены.</param>
     [HttpGet(RouteConstants.ReadTagsGetUrl)]
-    public async Task<ActionResult<NoteResponse>> ReadTagList()
+    public async Task<ActionResult<NoteResponse>> ReadTagList(CancellationToken ct)
     {
         try
         {
-            var noteResultDto = await readService.ReadEnrichedTagList();
+            var noteResultDto = await readService.ReadEnrichedTagList(ct);
             return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
@@ -98,14 +105,15 @@ public class ReadController(
     /// <summary>
     /// Получить список тегов, под авторизацией.
     /// </summary>
+    /// <param name="ct">Токен отмены.</param>
     [Authorize, HttpGet(RouteConstants.ReadTagsForCreateAuthGetUrl)]
     [Obsolete("используйте ReadController.ReadTagList")]
     // todo: неудачный рефакторинг, исправить
-    public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate()
+    public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate(CancellationToken ct)
     {
         try
         {
-            var noteResponse = await ReadTagList();
+            var noteResponse = await ReadTagList(ct);
             return noteResponse;
         }
         catch (Exception ex)
@@ -119,13 +127,14 @@ public class ReadController(
     /// Получить обновляемую заметку.
     /// </summary>
     /// <param name="id">Идентификатор обновляемой заметки.</param>
+    /// <param name="ct">Токен отмены.</param>
     [Authorize, HttpGet(RouteConstants.ReadNoteWithTagsForUpdateAuthGetUrl)]
     // todo: неудачный рефакторинг, исправить
-    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)
+    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id, CancellationToken ct)
     {
         try
         {
-            var noteResultDto = await updateService.GetNoteWithTagsForUpdate(id);
+            var noteResultDto = await updateService.GetNoteWithTagsForUpdate(id, ct);
             return noteResultDto.MapFromDto();
         }
         catch (Exception ex)

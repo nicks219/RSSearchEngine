@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,8 @@ public class TokenizerTests
     public required ServiceProviderStub Stub;
     public required IServiceScopeFactory ScopeFactory;
     public required ITokenizerProcessorFactory ProcessorFactory;
+
+    private readonly CancellationToken _token = CancellationToken.None;
 
     // векторы соответствуют заметкам из FakeCatalogRepository
 
@@ -51,7 +54,7 @@ public class TokenizerTests
         ScopeFactory = Stub.Provider.GetRequiredService<IServiceScopeFactory>();
         ProcessorFactory = Stub.Provider.GetRequiredService<ITokenizerProcessorFactory>();
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
-        repo.RemoveStubData(400);
+        repo.RemoveStubData(400, _token);
     }
 
     [TestCleanup]
@@ -103,7 +106,7 @@ public class TokenizerTests
             {
                 Title = FakeCatalogRepository.SecondNoteTitle,
                 Text = FakeCatalogRepository.SecondNoteText
-            });
+            }, _token);
         var tokenLines = tokenizer.GetTokenLines();
 
         // assert:
@@ -134,7 +137,7 @@ public class TokenizerTests
         {
             Title = FakeCatalogRepository.SecondNoteTitle,
             Text = FakeCatalogRepository.SecondNoteText
-        });
+        }, _token);
 
         // assert:
         tokenLines.Last()
@@ -162,7 +165,7 @@ public class TokenizerTests
         var countBefore = tokenLines.Count;
 
         // act:
-        await tokenizer.Delete(1);
+        await tokenizer.Delete(1, _token);
         var countAfter = tokenLines.Count;
 
         // assert:
@@ -188,7 +191,7 @@ public class TokenizerTests
             {
                 Title = FakeCatalogRepository.SecondNoteTitle,
                 Text = FakeCatalogRepository.SecondNoteText
-            });
+            }, _token);
         VectorsShouldBeEmpty();
 
         // update act & asserts:
@@ -197,11 +200,11 @@ public class TokenizerTests
             {
                 Title = FakeCatalogRepository.SecondNoteTitle,
                 Text = FakeCatalogRepository.SecondNoteText
-            });
+            }, _token);
         VectorsShouldBeEmpty();
 
         // delete act & asserts:
-        await tokenizer.Delete(1);
+        await tokenizer.Delete(1, _token);
         VectorsShouldBeEmpty();
 
         return;
@@ -213,10 +216,10 @@ public class TokenizerTests
         }
     }
 
-    private static async Task CreateTestNote(TokenizerService tokenizerService) =>
+    private async Task CreateTestNote(TokenizerService tokenizerService) =>
         await tokenizerService.Create(id: 1, new TextRequestDto
         {
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText
-        });
+        }, _token);
 }

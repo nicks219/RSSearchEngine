@@ -1,3 +1,5 @@
+using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -33,19 +35,35 @@ public class SystemController(
     }
 
     /// <summary>
-    /// Дожидаться прогрева токенизатора с учётом таймаута.
+    /// Ждать прогрев токенизатора, с учётом таймаута.
     /// </summary>
+    /// <param name="timeoutMs">Таймаут.</param>
+    /// <param name="stoppingToken">Токен отмены.</param>
+    /// <returns>200 - прогрев завершен, 503 - прогрев не завершился до таймаута.</returns>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 2500, CancellationToken stoppingToken = default)
+    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 5000, CancellationToken stoppingToken = default)
     {
-        var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-        linkedTokenSource.CancelAfter(timeoutMs);
-        var linkedToken = linkedTokenSource.Token;
-        while (true)
+        try
         {
-            if (await tokenizerService.WaitWarmUp(linkedToken)) break;
-        }
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            linkedTokenSource.CancelAfter(timeoutMs);
+            var timeoutToken = linkedTokenSource.Token;
+            while (true)
+            {
+                if (await tokenizerService.WaitWarmUp(timeoutToken)) break;
+            }
 
-        return Ok();
+            return Ok();
+        }
+        catch (OperationCanceledException)
+        {
+            const int code = (int)HttpStatusCode.ServiceUnavailable;
+            return StatusCode(code, $"{nameof(WaitReadinessWithTimeout)} was cancelled");
+        }
+        catch (Exception ex)
+        {
+            const int code = (int)HttpStatusCode.InternalServerError;
+            return StatusCode(code, $"{nameof(WaitReadinessWithTimeout)} failed: {ex.Message}");
+        }
     }
 }

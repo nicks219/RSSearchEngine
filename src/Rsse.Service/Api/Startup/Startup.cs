@@ -101,6 +101,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
         services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
         services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
+        services.AddSingleton<MigratorState>();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();

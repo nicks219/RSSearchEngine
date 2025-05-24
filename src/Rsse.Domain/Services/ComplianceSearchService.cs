@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Services;
@@ -18,8 +19,9 @@ public sealed class ComplianceSearchService(ITokenizerService tokenizer)
     /// Вычислить индексы соответствия заметок поисковому запросу.
     /// </summary>
     /// <param name="text">Текст для поиска совпадений.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
-    public Dictionary<int, double> ComputeComplianceIndices(string text)
+    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -27,7 +29,7 @@ public sealed class ComplianceSearchService(ITokenizerService tokenizer)
         }
 
         // ReSharper disable once SuggestVarOrType_Elsewhere
-        Dictionary<int, double> searchIndexes = tokenizer.ComputeComplianceIndices(text);
+        Dictionary<int, double> searchIndexes = tokenizer.ComputeComplianceIndices(text, ct);
         switch (searchIndexes.Count)
         {
             case 0:

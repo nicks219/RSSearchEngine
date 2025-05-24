@@ -57,7 +57,8 @@ internal static class ClientLauncher
             case "true":
                 Task.Run(Up);
                 Console.WriteLine($"[{nameof(ClientLauncher)}] starting Vite");
-                return false;
+                break;
+
             case "only":
                 Task.Run(Up);
                 Console.WriteLine($"[{nameof(ClientLauncher)}] running JS only mode: press any key to stop");

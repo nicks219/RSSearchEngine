@@ -44,7 +44,7 @@ Log.Information("Starting web host");
 try
 {
     var app = builder.Build();
-    app.Run();
+    await app.RunAsync();
     return 0;
 }
 catch (InvalidOperationException ex)

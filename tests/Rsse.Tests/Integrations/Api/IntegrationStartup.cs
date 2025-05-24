@@ -45,6 +45,7 @@ public class IntegrationStartup(IConfiguration configuration)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
+        services.AddSingleton<MigratorState>();
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

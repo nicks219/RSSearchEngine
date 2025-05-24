@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -29,6 +30,7 @@ public class ReadTests
     public required ReadService ReadService;
     public required ServiceProviderStub Stub;
 
+    private readonly CancellationToken _token = CancellationToken.None;
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
 
     [TestInitialize]
@@ -50,7 +52,7 @@ public class ReadTests
     public async Task ReadService_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var noteResultDto = await ReadService.ReadEnrichedTagList();
+        var noteResultDto = await ReadService.ReadEnrichedTagList(_token);
 
         // assert:
         Assert.AreEqual(_tagsCount, noteResultDto.EnrichedTags?.Count);
@@ -83,7 +85,7 @@ public class ReadTests
     public async Task ReadService_ShouldProduceEmptyResponse_OnNullElectionRequest()
     {
         // arrange & act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(null);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(null, ct: _token);
 
         // asserts:
         Assert.AreEqual(string.Empty, noteResultDto.Title);
@@ -100,7 +102,7 @@ public class ReadTests
 
         // act:
         var readController = new ReadController(readManager, updateManager, logger);
-        var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null);
+        var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null, ct: _token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, noteResponse.Value.EnsureNotNull().Title);
@@ -119,7 +121,7 @@ public class ReadTests
         readController.AddHttpContext(host.Provider);
 
         // act:
-        var noteResponse = (await readController.GetNextOrSpecificNote(null, null))
+        var noteResponse = (await readController.GetNextOrSpecificNote(null, null, ct: _token))
             .Value
             .EnsureNotNull();
 
@@ -153,7 +155,7 @@ public class ReadTests
     {
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
 
-        repo.CreateStubData(ElectionTestNotesCount);
+        repo.CreateStubData(ElectionTestNotesCount, _token);
 
         const double expectedCoefficient = 0.7D;
 

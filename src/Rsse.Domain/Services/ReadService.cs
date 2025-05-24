@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -15,10 +16,11 @@ public class ReadService(IDataRepository repo)
     /// Прочитать название заметки по её идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Название заметки.</returns>
-    public async Task<string?> ReadTitleByNoteId(int id)
+    public async Task<string?> ReadTitleByNoteId(int id, CancellationToken ct)
     {
-        var res = await repo.ReadNoteTitle(id);
+        var res = await repo.ReadNoteTitle(id, ct);
 
         return res;
     }
@@ -26,10 +28,11 @@ public class ReadService(IDataRepository repo)
     /// <summary>
     /// Получить список тегов, обогащенный количеством заметок по каждому тегу.
     /// </summary>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Ответ со списком обогащенных тегов.</returns>
-    public async Task<NoteResultDto> ReadEnrichedTagList()
+    public async Task<NoteResultDto> ReadEnrichedTagList(CancellationToken ct)
     {
-        var enrichedTagList = await repo.ReadEnrichedTagList();
+        var enrichedTagList = await repo.ReadEnrichedTagList(ct);
 
         return new NoteResultDto(enrichedTagList);
     }
@@ -40,9 +43,10 @@ public class ReadService(IDataRepository repo)
     /// <param name="request">Данные с отмеченными тегами.</param>
     /// <param name="id">Cтрока с идентификатором, если требуется.</param>
     /// <param name="randomElectionEnabled">Алгоритм выбора следующей заметки, <b>true</b> случайный выбор.</param>
+    /// <param name="ct">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
-        bool randomElectionEnabled = true)
+        bool randomElectionEnabled = true, CancellationToken ct = default)
     {
         if (request?.CheckedTags?.Count == 0)
         {
@@ -61,13 +65,13 @@ public class ReadService(IDataRepository repo)
             {
                 var checkedTags = request.CheckedTags;
                 // todo: вычитывается весь список
-                var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags);
+                var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, ct);
                 noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
             }
 
             if (noteId != 0)
             {
-                var note = await repo.ReadNote(noteId);
+                var note = await repo.ReadNote(noteId, ct);
 
                 if (note != null)
                 {
@@ -78,7 +82,7 @@ public class ReadService(IDataRepository repo)
             }
         }
 
-        var tagList = await repo.ReadEnrichedTagList();
+        var tagList = await repo.ReadEnrichedTagList(ct);
 
         return new NoteResultDto(tagList, noteId, text, title);
 
