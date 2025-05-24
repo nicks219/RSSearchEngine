@@ -36,7 +36,7 @@ public class SystemController(
     /// Дожидаться прогрева токенизатора с учётом таймаута.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadinessOrTimeout(int timeoutMs = 5000, CancellationToken stoppingToken = default)
+    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 2500, CancellationToken stoppingToken = default)
     {
         var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         linkedTokenSource.CancelAfter(timeoutMs);
