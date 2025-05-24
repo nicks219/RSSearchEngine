@@ -31,6 +31,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     private readonly bool _isEnabled;
 
     /// <summary>
+    /// Флаг инициалицации токенайзера.
+    /// </summary>
+    private volatile bool _isActivated;
+
+    /// <summary>
     /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов.
     /// </summary>
     /// <param name="scopeFactory">Scope-фабрика.</param>
@@ -146,6 +151,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
             nameof(TokenizerService), _tokenLines.Count);
+
         _isActivated = true;
     }
 
@@ -158,8 +164,6 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         return _isActivated;
     }
-
-    private volatile bool _isActivated;
 
     /// <inheritdoc/>
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.

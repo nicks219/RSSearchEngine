@@ -171,12 +171,3 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
     }
 }
 
-// TODO: миграции можно реализовать средствами какой-либо утилиты, например:
-
-// export DOTNET_ROLL_FORWARD=LatestMajor
-// Microsoft.EntityFrameworkCore.Design
-// dotnet new tool-manifest
-// dotnet tool update dotnet-ef (7.0.1)
-// dotnet ef dbcontext list
-// dotnet ef migrations list
-// создаём миграцию из папки RsseBase: dotnet ef migrations add Init -s "./" -p "../Rsse.Data"

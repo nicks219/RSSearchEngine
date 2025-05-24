@@ -33,14 +33,13 @@ public class SystemController(
     }
 
     /// <summary>
-    /// Дождаться прогрева токенизатора.
+    /// Дожидаться прогрева токенизатора с учётом таймаута.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadiness(CancellationToken stoppingToken)
+    public async Task<ActionResult> WaitReadinessOrTimeout(int timeoutMs = 5000, CancellationToken stoppingToken = default)
     {
-        const int releaseMs = 1000;
         var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-        linkedTokenSource.CancelAfter(releaseMs);
+        linkedTokenSource.CancelAfter(timeoutMs);
         var linkedToken = linkedTokenSource.Token;
         while (true)
         {

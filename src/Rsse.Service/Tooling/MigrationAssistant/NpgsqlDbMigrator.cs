@@ -22,12 +22,6 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// <param name="serviceProvider">Из провайдера однократно получаем NpgsqlCatalogContext для пересоздания бд.</param>
 public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider serviceProvider) : IDbMigrator
 {
-    // todo
-    // 1. проверить в docker
-    // 2. использовать асинхронные перегрузки методов
-    // 3. можно добавить количество заметок в именование архива
-    // 4. варианты: либо склеить таблицы в файл, используя разделитель
-
     private const string NpgsqlDumpPrefix = "pg";
     private const string NpgsqlDdlSuffix = "ddl";
     private const string NpgsqlNotesSuffix = "notes";
@@ -36,7 +30,6 @@ public class NpgsqlDbMigrator(IConfiguration configuration, IServiceProvider ser
     private const string NpgsqlUsersSuffix = "usr";
     private const string ArchiveDirectory = "ClientApp/build";
     private const int MaxVersion = 10;
-    // что будет в docker?
     private const string ArchiveTempDirectory = "ClientApp/build/dump";
     private int _version;
 

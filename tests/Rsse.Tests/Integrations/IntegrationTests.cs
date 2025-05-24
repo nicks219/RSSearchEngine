@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -32,8 +33,9 @@ public class IntegrationTests
     private static WebApplicationFactoryClientOptions _options;
 
     [ClassInitialize]
-    public static void IntegrationTestsSetup(TestContext context)
+    public static async Task IntegrationTestsSetup(TestContext context)
     {
+        var ct = context.CancellationTokenSource.Token;
         var isGitHubAction = Docker.IsGitHubAction();
         if (isGitHubAction)
         {
@@ -43,8 +45,8 @@ public class IntegrationTests
         var sw = Stopwatch.StartNew();
         if (!isGitHubAction)
         {
-            Docker.CleanUpDbContainers();
-            Docker.InitializeDbContainers();
+            await Docker.CleanUpDbContainers(ct).ConfigureAwait(false);
+            await Docker.InitializeDbContainers(ct).ConfigureAwait(false);
         }
 
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
@@ -67,7 +69,7 @@ public class IntegrationTests
     public void IntegrationTestsSetup() => _factory = new CustomWebAppFactory<IntegrationStartup>();
 
     [TestCleanup]
-    public void IntegrationTestsCleanup() => _factory.Dispose();
+    public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();
 
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
