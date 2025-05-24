@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -32,12 +33,19 @@ public class SystemController(
     }
 
     /// <summary>
-    /// Дождаться прогрева токенизатора.
+    /// Дожидаться прогрева токенизатора с учётом таймаута.
     /// </summary>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadiness()
+    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 2500, CancellationToken stoppingToken = default)
     {
-        await tokenizerService.WaitWarmUp();
+        var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        linkedTokenSource.CancelAfter(timeoutMs);
+        var linkedToken = linkedTokenSource.Token;
+        while (true)
+        {
+            if (await tokenizerService.WaitWarmUp(linkedToken)) break;
+        }
+
         return Ok();
     }
 }

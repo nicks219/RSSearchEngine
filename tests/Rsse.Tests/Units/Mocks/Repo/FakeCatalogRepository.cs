@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -49,7 +51,7 @@ public sealed class FakeCatalogRepository : IDataRepository
         }
     }
 
-    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct)
     {
         var notes = _notes
             .Select(keyValue => new NoteEntity
@@ -60,7 +62,7 @@ public sealed class FakeCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return notes.ToAsyncEnumerable();
+        return notes.ToAsyncEnumerable().WithCancellation(ct);
     }
 
     public Task<string?> ReadNoteTitle(int noteId)

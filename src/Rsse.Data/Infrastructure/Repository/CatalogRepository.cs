@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,8 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         tag = tag.ToUpper();
 
-        var exists = await context.Tags.AnyAsync(tagEntity => tagEntity.Tag == tag);
+        var exists = await context.Tags
+            .AnyAsync(tagEntity => tagEntity.Tag == tag);
 
         if (exists)
         {
@@ -45,11 +47,12 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct)
     {
         var notes = context.Notes
             .AsNoTracking()
-            .AsAsyncEnumerable();
+            .AsAsyncEnumerable()
+            .WithCancellation(ct);
 
         return notes;
     }
@@ -217,8 +220,11 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         try
         {
             var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
-                userEntity.Email == credosRequest.OldCredos.Email && userEntity.Password == credosRequest.OldCredos.Password);
-            if (processed == null) throw new InvalidDataException($"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
+                userEntity.Email == credosRequest.OldCredos.Email &&
+                userEntity.Password == credosRequest.OldCredos.Password);
+            if (processed == null)
+                throw new InvalidDataException(
+                    $"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
             processed.Email = credosRequest.NewCredos.Email;
             processed.Password = credosRequest.NewCredos.Password;
             context.Users.Update(processed);
@@ -317,7 +323,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         return !await context.Notes.AnyAsync(entity => entity.Title == title);
     }
 
-    private async Task<bool> VerifyTagNotExists(int noteId, IReadOnlyCollection<int> forAddition)
+    private async Task<bool> VerifyTagNotExists(int noteId, HashSet<int> forAddition)
     {
         if (forAddition.Count == 0)
         {

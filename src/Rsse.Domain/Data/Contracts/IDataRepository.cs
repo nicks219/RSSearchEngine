@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -62,7 +64,7 @@ public interface IDataRepository
     /// Прочитать все заметки.
     /// </summary>
     /// <returns>Список заметок.</returns>
-    IAsyncEnumerable<NoteEntity> ReadAllNotes();
+    ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct);
 
     /// <summary>
     /// Получить идентификаторы заметок, отмеченных тегами.

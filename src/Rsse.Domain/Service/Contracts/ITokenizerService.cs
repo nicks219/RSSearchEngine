@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Dto;
 
@@ -39,10 +41,15 @@ public interface ITokenizerService
     /// <summary>
     /// Инициализация функционала токенизации.
     /// </summary>
-    public Task Initialize();
+    public Task Initialize(CancellationToken ct);
 
     /// <summary>
-    /// Дождаться инициализации токенизатора.
+    /// Дождаться освобождения блокировки токенизатора и вернуть значение флага инициализации.
+    /// При отмене задачи на старте вызова метод также вернёт <b>true</b> для предсказуемого использования в цикле.
+    /// Логика отмены используется для пользовательского прерывания тестов.
     /// </summary>
-    public Task WaitWarmUp();
+    /// <param name="ct">Токен отмены.</param>
+    /// <returns><b>true</b> - Инициализация завершена, либо сразу запрошена отмена.</returns>
+    /// <exception cref="OperationCanceledException">Запрошена отмена на ожидании блокировки.</exception>
+    public Task<bool> WaitWarmUp(CancellationToken ct);
 }

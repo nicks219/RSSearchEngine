@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -32,8 +33,9 @@ public class IntegrationTests
     private static WebApplicationFactoryClientOptions _options;
 
     [ClassInitialize]
-    public static void IntegrationTestsSetup(TestContext context)
+    public static async Task IntegrationTestsSetup(TestContext context)
     {
+        var ct = context.CancellationTokenSource.Token;
         var isGitHubAction = Docker.IsGitHubAction();
         if (isGitHubAction)
         {
@@ -43,8 +45,8 @@ public class IntegrationTests
         var sw = Stopwatch.StartNew();
         if (!isGitHubAction)
         {
-            Docker.CleanUpDbContainers();
-            Docker.InitializeDbContainers();
+            await Docker.CleanUpDbContainers(ct);
+            await Docker.InitializeDbContainers(ct);
         }
 
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
@@ -67,7 +69,7 @@ public class IntegrationTests
     public void IntegrationTestsSetup() => _factory = new CustomWebAppFactory<IntegrationStartup>();
 
     [TestCleanup]
-    public void IntegrationTestsCleanup() => _factory.Dispose();
+    public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();
 
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
@@ -80,6 +82,7 @@ public class IntegrationTests
     {
         // arrange:
         using var client = _factory.CreateClient(_cookiesOptions);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
         await client.TryAuthorizeToService("1@2", "12");
         var uri = new Uri(uriString, UriKind.Relative);
 
@@ -95,7 +98,7 @@ public class IntegrationTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.OK.ToString());
+            .Be(nameof(HttpStatusCode.OK));
 
         // clean up:
         TestHelper.CleanUpDatabases(_factory);
@@ -110,7 +113,6 @@ public class IntegrationTests
 
         [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponse), null, null, null],
         [$"{ReadTagsForCreateAuthGetUrl}", Request.Get, typeof(NoteResponse), "Авторские: 80", "1", null],
-        // [$"{DeleteNoteUrl}?id={noteId}&pg=1"]
     ];
     private const string TextToFind = "раз два три четыре";
     private static int _processedId;
@@ -432,6 +434,7 @@ public class IntegrationTests
         const string newPassword = "13";
         using var client = _factory.CreateClient(_cookiesOptions);
         await client.TryAuthorizeToService(oldEmail, oldPassword);
+        await client.GetAsync(SystemWaitWarmUpGetUrl);
 
         // act:
         var queryParams = new Dictionary<string, string?>

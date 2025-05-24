@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SearchEngine.Data.Configuration;
@@ -30,6 +32,7 @@ public sealed class MirrorRepository(
         DatabaseType.MySql => writerPrimary as CatalogRepository<MysqlCatalogContext>,
         _ => reader
     };
+
     private readonly IDataRepository _writerPrimary = writerPrimary;
     private readonly IDataRepository _writerSecondary = writerSecondary;
 
@@ -37,7 +40,6 @@ public sealed class MirrorRepository(
     public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
         _ = await _writerPrimary.CreateNote(noteRequest);
-        // secondary: CatalogRepository<NpgsqlCatalogContext>
         var secondary = await _writerSecondary.CreateNote(noteRequest);
         return secondary;
     }
@@ -50,7 +52,8 @@ public sealed class MirrorRepository(
     {
         // todo: можно сразу принимать IList
         var enumerable = initialTags.ToList();
-        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest), _writerSecondary.UpdateNote(enumerable, noteRequest));
+        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest),
+            _writerSecondary.UpdateNote(enumerable, noteRequest));
     }
 
     /// <inheritdoc/>
@@ -63,7 +66,6 @@ public sealed class MirrorRepository(
     public async Task<int> DeleteNote(int noteId)
     {
         _ = await _writerPrimary.DeleteNote(noteId);
-        // secondary: CatalogRepository<NpgsqlCatalogContext>
         var secondary = await _writerSecondary.DeleteNote(noteId);
         return secondary;
     }
@@ -81,7 +83,7 @@ public sealed class MirrorRepository(
     public Task<int> ReadNotesCount() => _reader.ReadNotesCount();
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<NoteEntity> ReadAllNotes() => _reader.ReadAllNotes();
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct) => _reader.ReadAllNotes(ct);
 
     /// <inheritdoc/>
     public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags) => _reader.ReadTaggedNotesIds(checkedTags);

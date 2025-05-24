@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     private readonly ITokenizerProcessorFactory _processorFactory;
     private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
+
+    /// <summary>
+    /// Флаг инициалицации токенайзера.
+    /// </summary>
+    private volatile bool _isActivated;
 
     /// <summary>
     /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов.
@@ -57,7 +63,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var __ = await TokenizerLock.AcquireExclusiveLockAsync();
+        using var __ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
         var isRemoved = _tokenLines.TryRemove(id, out _);
 
         if (!isRemoved)
@@ -71,7 +77,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
 
         var createdTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -86,7 +92,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(CancellationToken.None);
 
         var updatedTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -104,12 +110,12 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Initialize()
+    public async Task Initialize(CancellationToken ct)
     {
         if (!_isEnabled) return;
 
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync();
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
 
         // Создаём scope, чтобы не закрывать контекст в корневом scope провайдера.
         using var scope = _scopeFactory.CreateScope();
@@ -120,11 +126,13 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
             _tokenLines.Clear();
 
             // todo: избавиться от загрузки всех записей из таблицы:
-            var notes = repo.ReadAllNotes();
+            var notes = repo.ReadAllNotes(ct);
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
             await foreach (var note in notes)
             {
+                if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(Initialize), ct);
+
                 var requestNote = note.MapToDto();
 
                 var newTokenLine = CreateTokensLine(_processorFactory, requestNote);
@@ -143,14 +151,18 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
             nameof(TokenizerService), _tokenLines.Count);
+
+        _isActivated = true;
     }
 
     /// <inheritdoc/>
-    public async Task WaitWarmUp()
+    public async Task<bool> WaitWarmUp(CancellationToken ct)
     {
-        if (!_isEnabled) return;
+        if (ct.IsCancellationRequested || _isEnabled == false) return true;
 
-        await TokenizerLock.SyncOnLockAsync();
+        await TokenizerLock.SyncOnLockAsync(ct);
+
+        return _isActivated;
     }
 
     /// <inheritdoc/>

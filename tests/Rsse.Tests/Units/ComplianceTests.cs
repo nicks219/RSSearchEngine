@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ public class ComplianceTests
         complianceController.AddHttpContext(stub.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        await tokenizer.Initialize();
+        await tokenizer.Initialize(CancellationToken.None);
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text);

@@ -30,7 +30,7 @@ internal class ActivatorService(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        DatabaseInitializer.CreateAndSeed(factory, logger);
+        await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
 
         try
         {
@@ -40,7 +40,7 @@ internal class ActivatorService(
 
                 _count++;
 
-                await tokenizer.Initialize();
+                await tokenizer.Initialize(stoppingToken);
 
                 logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +39,7 @@ public class MigrationController(
         {
             var mySqlMigrator = IDbMigrator.GetMigrator(migrators, DatabaseType.MySql);
             await mySqlMigrator.CopyDbFromMysqlToNpgsql();
-            await tokenizerService.Initialize();
+            await tokenizerService.Initialize(CancellationToken.None);
             var response = new StringResponse { Res = "success" };
             return Ok(response);
         }
@@ -86,7 +87,7 @@ public class MigrationController(
         {
             var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
             var result = migrator.Restore(fileName);
-            await tokenizerService.Initialize();
+            await tokenizerService.Initialize(CancellationToken.None);
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
         }

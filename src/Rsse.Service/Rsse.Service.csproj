@@ -23,9 +23,9 @@
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <!-- <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DefineConstants>$(DefineConstants);TRACING_ENABLE</DefineConstants>
-    </PropertyGroup>
+    </PropertyGroup> -->
 
     <ItemGroup>
         <PackageReference Include="MySqlBackup.NET" />
