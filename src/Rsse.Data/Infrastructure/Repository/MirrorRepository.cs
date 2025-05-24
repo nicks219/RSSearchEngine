@@ -38,9 +38,9 @@ public sealed class MirrorRepository(
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        _ = await _writerPrimary.CreateNote(noteRequest);
+        _ = await _writerPrimary.CreateNote(noteRequest).ConfigureAwait(false);
         // secondary: CatalogRepository<NpgsqlCatalogContext>
-        var secondary = await _writerSecondary.CreateNote(noteRequest);
+        var secondary = await _writerSecondary.CreateNote(noteRequest).ConfigureAwait(false);
         return secondary;
     }
 
@@ -52,7 +52,8 @@ public sealed class MirrorRepository(
     {
         // todo: можно сразу принимать IList
         var enumerable = initialTags.ToList();
-        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest), _writerSecondary.UpdateNote(enumerable, noteRequest));
+        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest),
+            _writerSecondary.UpdateNote(enumerable, noteRequest));
     }
 
     /// <inheritdoc/>
@@ -64,9 +65,9 @@ public sealed class MirrorRepository(
     /// <inheritdoc/>
     public async Task<int> DeleteNote(int noteId)
     {
-        _ = await _writerPrimary.DeleteNote(noteId);
+        _ = await _writerPrimary.DeleteNote(noteId).ConfigureAwait(false);
         // secondary: CatalogRepository<NpgsqlCatalogContext>
-        var secondary = await _writerSecondary.DeleteNote(noteId);
+        var secondary = await _writerSecondary.DeleteNote(noteId).ConfigureAwait(false);
         return secondary;
     }
 

@@ -38,11 +38,15 @@ public class SystemController(
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
     public async Task<ActionResult> WaitReadiness(CancellationToken stoppingToken)
     {
-        const int releaseMs = 5000;
+        const int releaseMs = 1000;
         var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         linkedTokenSource.CancelAfter(releaseMs);
         var linkedToken = linkedTokenSource.Token;
-        while (await tokenizer.WaitWarmUp(linkedToken).ConfigureAwait(false) == false) { }
+        while (true)
+        {
+            if (await tokenizer.WaitWarmUp(linkedToken).ConfigureAwait(false)) break;
+        }
+
         return Ok();
     }
 }
