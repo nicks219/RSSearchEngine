@@ -12,7 +12,9 @@ namespace SearchEngine.Api.Controllers;
 /// Контроллер, поставляющий системную информацию.
 /// </summary>
 [ApiController]
-public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokenizerService tokenizer) : ControllerBase
+public class SystemController(
+    IOptionsSnapshot<DatabaseOptions> options,
+    ITokenizerService tokenizerService) : ControllerBase
 {
     /// <summary>
     /// Получить версию сервиса.
@@ -35,7 +37,7 @@ public class SystemController(IOptionsSnapshot<DatabaseOptions> options, ITokeni
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
     public async Task<ActionResult> WaitReadiness()
     {
-        await tokenizer.WaitWarmUp();
+        await tokenizerService.WaitWarmUp();
         return Ok();
     }
 }

@@ -1,7 +1,6 @@
-using System;
+
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using static SearchEngine.Service.Configuration.ServiceErrorMessages;
@@ -11,10 +10,10 @@ namespace SearchEngine.Services;
 /// <summary>
 /// Функционал создания заметок.
 /// </summary>
-public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
+public partial class CreateService(IDataRepository repo)
 {
     // \[([^\[\]]+)\]
-    private static readonly Regex TitlePattern = new(@"\[(.+?)\]", RegexOptions.Compiled);
+    private static readonly Regex TitlePattern = TitleRegex();
 
     /// <summary>
     /// Создать заметку.
@@ -23,62 +22,53 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
     /// <returns>Контейнер с иснформации о созданной заметке.</returns>
     public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto)
     {
-        try
+        var enrichedTags = await repo.ReadEnrichedTagList();
+        var unsuccessfulResultDto = new NoteResultDto(enrichedTags: enrichedTags);
+
+        if (noteRequestDto.CheckedTags == null ||
+            string.IsNullOrEmpty(noteRequestDto.Text) ||
+            string.IsNullOrEmpty(noteRequestDto.Title) ||
+            noteRequestDto.CheckedTags.Count == 0)
         {
-            var enrichedTags = await repo.ReadEnrichedTagList();
-            var unsuccessfulResultDto = new NoteResultDto(enrichedTags: enrichedTags);
-
-            if (noteRequestDto.CheckedTags == null ||
-                string.IsNullOrEmpty(noteRequestDto.Text) ||
-                string.IsNullOrEmpty(noteRequestDto.Title) ||
-                noteRequestDto.CheckedTags.Count == 0)
+            // пользовательская ошибка: невалидные данные
+            if (string.IsNullOrEmpty(noteRequestDto.Text))
             {
-                // пользовательская ошибка: невалидные данные
-                if (string.IsNullOrEmpty(noteRequestDto.Text))
-                {
-                    return unsuccessfulResultDto with { ErrorMessage = CreateNoteEmptyDataError };
-                }
-
-                unsuccessfulResultDto = unsuccessfulResultDto with
-                {
-                    ErrorMessage = CreateNoteEmptyDataError,
-                    Text = noteRequestDto.Text,
-                    Title = noteRequestDto.Title
-                };
-
-                return unsuccessfulResultDto;
+                return unsuccessfulResultDto with { ErrorMessage = CreateNoteEmptyDataError };
             }
 
-            noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title };
-
-            var newNoteId = await repo.CreateNote(noteRequestDto);
-
-            if (newNoteId == 0)
+            unsuccessfulResultDto = unsuccessfulResultDto with
             {
-                // пользовательская ошибка: не создалась заметка
-                unsuccessfulResultDto = unsuccessfulResultDto with
-                {
-                    ErrorMessage = CreateNoteUnsuccessfulError,
-                    Title = "[Already Exist]"
-                };
+                ErrorMessage = CreateNoteEmptyDataError,
+                Text = noteRequestDto.Text,
+                Title = noteRequestDto.Title
+            };
 
-                return unsuccessfulResultDto;
-            }
-
-            var tagsAfterCreate = await repo.ReadEnrichedTagList();
-            var totalTagsCount = tagsAfterCreate.Count;
-            var noteTagIds = await repo.ReadNoteTagIds(newNoteId);
-
-            var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
-
-            return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
+            return unsuccessfulResultDto;
         }
-        catch (Exception ex)
+
+        noteRequestDto = noteRequestDto with { Title = noteRequestDto.Title };
+
+        var newNoteId = await repo.CreateNote(noteRequestDto);
+
+        if (newNoteId == 0)
         {
-            logger.LogError(ex, CreateNoteError);
+            // пользовательская ошибка: не создалась заметка
+            unsuccessfulResultDto = unsuccessfulResultDto with
+            {
+                ErrorMessage = CreateNoteUnsuccessfulError,
+                Title = "[Already Exist]"
+            };
 
-            return new NoteResultDto { ErrorMessage = CreateNoteError };
+            return unsuccessfulResultDto;
         }
+
+        var tagsAfterCreate = await repo.ReadEnrichedTagList();
+        var totalTagsCount = tagsAfterCreate.Count;
+        var noteTagIds = await repo.ReadNoteTagIds(newNoteId);
+
+        var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
+
+        return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
     }
 
     /// <summary>
@@ -103,4 +93,6 @@ public class CreateService(IDataRepository repo, ILogger<CreateService> logger)
 
         await repo.CreateTagIfNotExists(tag);
     }
+    [GeneratedRegex(@"\[(.+?)\]", RegexOptions.Compiled)]
+    private static partial Regex TitleRegex();
 }

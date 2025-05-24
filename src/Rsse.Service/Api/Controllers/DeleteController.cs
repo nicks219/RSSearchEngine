@@ -18,12 +18,13 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
-    ITokenizerService tokenizer,
+    ITokenizerService tokenizerService,
     DeleteService deleteService,
+    CatalogService catalogService,
     ILogger<DeleteController> logger) : ControllerBase
 {
     /// <summary>
-    /// Удалить заметку.
+    /// Удалить заметку и вернуть обновленную страницу каталога.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
     /// <param name="pg">Номер страницы каталога с удаляемой заметкой.</param>
@@ -34,9 +35,10 @@ public class DeleteController(
     {
         try
         {
-            var response = await deleteService.DeleteNote(id, pg);
-            await tokenizer.Delete(id);
-            return response.MapFromDto();
+            await deleteService.DeleteNote(id);
+            await tokenizerService.Delete(id);
+            var catalogResultDto = await catalogService.ReadPage(pg);
+            return catalogResultDto.MapFromDto();
         }
         catch (Exception ex)
         {

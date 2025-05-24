@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
-    ITokenizerService tokenizer,
+    ITokenizerService tokenizerService,
     UpdateService updateService,
     ILogger<UpdateController> logger) : ControllerBase
 {
@@ -32,17 +32,17 @@ public class UpdateController(
     {
         try
         {
-            var dto = request.MapToDto();
-            var response = await updateService.UpdateNote(dto);
-            var entity = new TextRequestDto
+            var noteRequest = request.MapToDto();
+            var noteResultDto = await updateService.UpdateNote(noteRequest);
+            var textRequestDto = new TextRequestDto
             {
-                Title = dto.Title,
-                Text = dto.Text
+                Title = noteRequest.Title,
+                Text = noteRequest.Text
             };
 
-            await tokenizer.Update(dto.NoteIdExchange, entity);
+            await tokenizerService.Update(noteRequest.NoteIdExchange, textRequestDto);
 
-            return response.MapFromDto();
+            return noteResultDto.MapFromDto();
         }
         catch (Exception ex)
         {

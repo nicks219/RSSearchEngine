@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Service.ApiModels;
@@ -25,40 +23,15 @@ public class ComplianceSearchController(
     [HttpGet(RouteConstants.ComplianceIndicesGetUrl)]
     public ActionResult<ComplianceResponse> GetComplianceIndices(string text)
     {
-        var okEmptyResponse = Ok(new ComplianceResponse());
-
-        if (string.IsNullOrEmpty(text))
-        {
-            return okEmptyResponse;
-        }
-
         try
         {
-            const double threshold = 0.1D;
-            Dictionary<int, double> searchIndexes = complianceService.ComputeComplianceIndices(text);
+            var searchIndexes = complianceService.ComputeComplianceIndices(text);
 
-            switch (searchIndexes.Count)
-            {
-                case 0:
-                    return okEmptyResponse;
+            var response = searchIndexes.Count == 0
+                ? new ComplianceResponse()
+                : new ComplianceResponse { Res = searchIndexes };
 
-                // низкий вес не стоит учитывать если результатов много:
-                case > 10:
-                    searchIndexes = searchIndexes
-                        .Where(kv => kv.Value > threshold)
-                        .ToDictionary(x => x.Key, x => x.Value);
-                    break;
-            }
-
-            // todo: поведение не гарантировано, лучше использовать список
-            searchIndexes = searchIndexes
-                .OrderByDescending(x => x.Value)
-                .ToDictionary(x => x.Key, x => x.Value);
-
-            var response = new ComplianceResponse { Res = searchIndexes };
-            var result = Ok(response);
-
-            return result;
+            return Ok(response);
         }
         catch (Exception ex)
         {

@@ -47,7 +47,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
     private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
-    private readonly string[] _allowedOrigins = {
+    private readonly string[] _allowedOrigins =
+    [
         // dev сервер для JS:
         "https://localhost:5173",
         "http://localhost:5173",
@@ -55,7 +56,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         "http://127.0.0.1:5173",
         // same-origin на проде:
         "http://188.120.235.243:5000"
-    };
+    ];
 
     /// <summary>
     /// Настроить зависимости сервиса.
@@ -116,7 +117,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 options.LogoutPath = new PathString("/account/logout");
                 options.AccessDeniedPath = new PathString("/account/accessDenied");
                 options.ReturnUrlParameter = "returnUrl";
-                // todo уточнить коды ответа челенджа
+                // todo: уточнить коды ответа челенджа
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnRedirectToLogin = context =>

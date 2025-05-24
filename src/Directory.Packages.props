@@ -27,7 +27,4 @@
   <ItemGroup Label="CodeGen">
     <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="9.0.5" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup Label="Domain">
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
-  </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
@@ -23,8 +22,7 @@ public class CreateTests
     {
         Stub = new ServiceProviderStub();
         Repository = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = Stub.Scope.ServiceProvider.GetRequiredService<ILogger<CreateService>>();
-        CreateService = new CreateService(Repository, managerLogger);
+        CreateService = new CreateService(Repository);
     }
 
     [TestCleanup]
@@ -44,7 +42,7 @@ public class CreateTests
     }
 
     [TestMethod]
-    public async Task CreateManager_ShouldCreatValidNote_Correctly()
+    public async Task CreateService_ShouldCreatValidNote_Correctly()
     {
         // arrange:
         var requestDto = new NoteRequestDto
@@ -58,14 +56,12 @@ public class CreateTests
         // act:
         var responseDto = await CreateService.CreateNote(requestDto);
         var repo = Stub.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Stub.Provider.GetRequiredService<ILogger<UpdateService>>();
 
-        var actualDto = await new UpdateService(repo, managerLogger).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateService(repo).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
 
         // assert:
         responseDto.ErrorMessage.Should().BeNull();
         responseDto.Title.Should().Be("[OK]");
-        // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
         Assert.AreEqual(requestDto.Title, actualDto.Title);
     }
 }

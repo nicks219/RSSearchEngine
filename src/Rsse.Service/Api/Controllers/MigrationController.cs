@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +11,6 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
 using Swashbuckle.AspNetCore.Annotations;
 using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
@@ -25,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
     IEnumerable<IDbMigrator> migrators,
-    ITokenizerService tokenizer,
+    ITokenizerService tokenizerService,
     ILogger<MigrationController> logger) : ControllerBase
 {
     /// <summary>
@@ -38,9 +36,11 @@ public class MigrationController(
     {
         try
         {
-            var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
+            var mySqlMigrator = IDbMigrator.GetMigrator(migrators, DatabaseType.MySql);
             await mySqlMigrator.CopyDbFromMysqlToNpgsql();
-            await tokenizer.Initialize();
+            await tokenizerService.Initialize();
+            var response = new StringResponse { Res = "success" };
+            return Ok(response);
         }
         catch (Exception exception)
         {
@@ -48,9 +48,6 @@ public class MigrationController(
             logger.LogError(exception, CopyError);
             return BadRequest(error);
         }
-
-        var response = new StringResponse { Res = "success" };
-        return Ok(response);
     }
 
     /// <summary>
@@ -61,10 +58,9 @@ public class MigrationController(
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
     public ActionResult<StringResponse> CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
-
         try
         {
+            var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
             var result = migrator.Create(fileName);
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
@@ -86,12 +82,11 @@ public class MigrationController(
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
-
         try
         {
+            var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
             var result = migrator.Restore(fileName);
-            await tokenizer.Initialize();
+            await tokenizerService.Initialize();
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
         }
@@ -110,11 +105,20 @@ public class MigrationController(
     [RequestSizeLimit(10_000_000)]
     public ActionResult<StringResponse> UploadFile(IFormFile file)
     {
-        var path = Path.Combine(Constants.StaticDirectory, file.FileName);
-        using var stream = new FileStream(path, FileMode.Create);
-        file.CopyTo(stream);
-        var response = $"Файл сохранён: {path}";
-        return Ok(response);
+        try
+        {
+            var path = Path.Combine(Constants.StaticDirectory, file.FileName);
+            using var stream = new FileStream(path, FileMode.Create);
+            file.CopyTo(stream);
+            var response = new StringResponse { Res = $"Файл сохранён: {path}" };
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, UploadError);
+            var error = new StringResponse { Res = UploadError };
+            return BadRequest(error);
+        }
     }
 
     /// <summary>
@@ -125,27 +129,24 @@ public class MigrationController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DownloadFile([FromQuery] string filename)
     {
-        // const string mimeType = "application/octet-stream";
-        const string mimeType = "application/zip";
-        var path = Path.Combine(Directory.GetCurrentDirectory(), Constants.StaticDirectory, filename);
-        if (!System.IO.File.Exists(path)) return NotFound("Файл не найден");
-
-        return PhysicalFile(path, mimeType, Path.GetFileName(path));
-    }
-
-    /// <summary>
-    /// Получить мигратор требуемого типа из списка зависимостей.
-    /// </summary>
-    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)
-    {
-        var migrator = databaseType switch
+        try
         {
-            DatabaseType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
-            DatabaseType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
-            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, "unknown database type")
-        };
+            // const string mimeType = "application/octet-stream";
+            const string mimeType = "application/zip";
+            var path = Path.Combine(Directory.GetCurrentDirectory(), Constants.StaticDirectory, filename);
+            if (System.IO.File.Exists(path))
+            {
+                return PhysicalFile(path, mimeType, Path.GetFileName(path));
+            }
 
-        return migrator;
+            var response = new StringResponse { Res = "Файл не найден" };
+            return NotFound(response);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, DownloadError);
+            var error = new StringResponse { Res = DownloadError };
+            return BadRequest(error);
+        }
     }
 }
-

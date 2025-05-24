@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Dto;
+using SearchEngine.Exceptions;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
@@ -35,28 +36,39 @@ public class AccountController(
     /// </summary>
     /// <param name="email">Электронная почта.</param>
     /// <param name="password">Пароль.</param>
-    /// <param name="returnUrl">Артефакты легаси-фронта.</param>
+    /// <param name="returnUrl">Параметр челенджа авторизации, разобраться с необходимостью.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
     public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password, string? returnUrl)
     {
-        if (returnUrl != null)
+        try
         {
-            var redirect = new StringResponse(Res: "Authorize please: redirect detected");
-            return Unauthorized(redirect);
-        }
+            if (returnUrl != null)
+            {
+                var redirect = new StringResponse(Res: RedirectError);
+                return Unauthorized(redirect);
+            }
 
-        if (email == null || password == null)
+            var credentialsRequestDto = new CredentialsRequestDto { Email = email, Password = password };
+
+            var identity = await accountService.TrySignInWith(credentialsRequestDto);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
+
+            ModifyCookie();
+
+            return Ok(new StringResponse(Res: LoginOkMessage));
+        }
+        catch (RsseBaseException ex) when (ex is RsseUserNotFoundException or RsseInvalidCredosException)
         {
-            var empty = new StringResponse(Res: "Authorize please: empty credentials detected");
-            return Unauthorized(empty);
+            logger.LogWarning(DataError);
+            return Unauthorized(new StringResponse(Res: DataError));
         }
-
-        var loginDto = new CredentialsRequestDto { Email = email, Password = password };
-        var responseMessage = await TryLogin(loginDto);
-        ActionResult result = responseMessage == OkMessage
-            ? Ok(new StringResponse(Res: LoginOkMessage))
-            : Unauthorized(new StringResponse(Res: responseMessage));
-        return result;
+        catch (Exception ex)
+        {
+            logger.LogError(ex, LoginError);
+            return Unauthorized(new StringResponse(Res: LoginError));
+        }
     }
 
     /// <summary>
@@ -65,10 +77,18 @@ public class AccountController(
     [HttpGet(RouteConstants.AccountLogoutGetUrl)]
     public async Task<ActionResult<StringResponse>> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        ModifyCookie();
-        var result = new StringResponse(Res: LogOutMessage);
-        return Ok(result);
+        try
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            ModifyCookie();
+            var result = new StringResponse(Res: LogOutMessage);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, LogoutError);
+            return Unauthorized(new StringResponse(Res: LogoutError));
+        }
     }
 
     /// <summary>
@@ -89,38 +109,18 @@ public class AccountController(
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult<StringResponse>> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
     {
-        var credosForUpdate = credentials.MapToDto();
-        await accountService.UpdateCredos(credosForUpdate);
-        await Logout();
-        var result = new StringResponse(Res: "updated");
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Вход в систему, аутентификация на основе кук.
-    /// </summary>
-    /// <param name="credentialsRequestDto">Данные для авторизации.</param>
-    private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
-    {
         try
         {
-            var identity = await accountService.TrySignInWith(credentialsRequestDto);
-
-            if (identity == null)
-            {
-                return DataError;
-            }
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
-
-            ModifyCookie();
-
-            return OkMessage;
+            var credosForUpdate = credentials.MapToDto();
+            await accountService.UpdateCredos(credosForUpdate);
+            await Logout();
+            var result = new StringResponse(Res: "updated");
+            return Ok(result);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, LoginError);
-            return LoginError;
+            logger.LogError(ex, UpdateCredosError);
+            return Unauthorized(new StringResponse(Res: UpdateCredosError));
         }
     }
 

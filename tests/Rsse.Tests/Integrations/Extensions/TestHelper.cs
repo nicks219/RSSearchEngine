@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
@@ -93,6 +95,27 @@ public static class TestHelper
             using var cmd = new MySqlCommand(command, mysqlConnection);
             cmd.ExecuteNonQuery();
         }
+    }
+
+    /// <summary>
+    /// Вернуть ожидаемое исключение, которое вызовет выполнение асинхронного метода.
+    /// </summary>
+    /// <param name="action">Асинхронный метод.</param>
+    /// <typeparam name="T">Тип исключения.</typeparam>
+    /// <returns>Исключение либо <b>null</b></returns>
+    internal static async Task<T?> GetExpectedExceptionWithAsync<T>(Func<Task> action) where T : Exception
+    {
+        T? exception = null;
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        catch (T ex)
+        {
+            exception = ex;
+        }
+
+        return exception;
     }
 
 
