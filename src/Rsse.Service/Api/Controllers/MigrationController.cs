@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,7 +41,7 @@ public class MigrationController(
         {
             var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
             await mySqlMigrator.CopyDbFromMysqlToNpgsql();
-            await tokenizer.Initialize();
+            await tokenizer.Initialize(CancellationToken.None);
         }
         catch (Exception exception)
         {
@@ -91,7 +92,7 @@ public class MigrationController(
         try
         {
             var result = migrator.Restore(fileName);
-            await tokenizer.Initialize();
+            await tokenizer.Initialize(CancellationToken.None);
             var response = new StringResponse { Res = Path.GetFileName(result) };
             return Ok(response);
         }

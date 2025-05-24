@@ -27,11 +27,11 @@ public abstract class DatabaseInitializer
 
         try
         {
-            var readerCreated = await mysqlContext.Database.EnsureCreatedAsync(ct);
-            var writerCreated = await npgsqlContext.Database.EnsureCreatedAsync(ct);
+            var readerCreated = await mysqlContext.Database.EnsureCreatedAsync(ct).ConfigureAwait(false);
+            var writerCreated = await npgsqlContext.Database.EnsureCreatedAsync(ct).ConfigureAwait(false);
 
-            await SeedDatabase(mysqlContext, readerCreated, ct);
-            await SeedDatabase(npgsqlContext, writerCreated, ct);
+            await SeedDatabase(mysqlContext, readerCreated, ct).ConfigureAwait(false);
+            await SeedDatabase(npgsqlContext, writerCreated, ct).ConfigureAwait(false);
 
             logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
                 nameof(DatabaseInitializer), readerCreated, writerCreated);
@@ -56,7 +56,8 @@ public abstract class DatabaseInitializer
             case "Npgsql.EntityFrameworkCore.PostgreSQL":
                 if (created)
                 {
-                    var raws = await database.ExecuteSqlRawAsync(NpgsqlScript.CreateUserOnlyData, ct);
+                    var raws = await database.ExecuteSqlRawAsync(NpgsqlScript.CreateUserOnlyData, ct)
+                        .ConfigureAwait(false);
                     Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
                 }
 
@@ -65,7 +66,8 @@ public abstract class DatabaseInitializer
             case "Pomelo.EntityFrameworkCore.MySql":
                 if (created)
                 {
-                    var raws = await database.ExecuteSqlRawAsync(MySqlScript.CreateStubData, ct);
+                    var raws = await database.ExecuteSqlRawAsync(MySqlScript.CreateStubData, ct)
+                        .ConfigureAwait(false);
                     Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
                 }
 
@@ -76,13 +78,14 @@ public abstract class DatabaseInitializer
 
                 if (!created)
                 {
-                    await database.EnsureDeletedAsync(ct);
-                    created = await database.EnsureCreatedAsync(ct);
+                    await database.EnsureDeletedAsync(ct).ConfigureAwait(false);
+                    created = await database.EnsureCreatedAsync(ct).ConfigureAwait(false);
                 }
 
                 if (created)
                 {
-                    var rows = await database.ExecuteSqlRawAsync(SQLiteIntegrationTestScript.CreateTestData, ct);
+                    var rows = await database.ExecuteSqlRawAsync(SQLiteIntegrationTestScript.CreateTestData, ct)
+                        .ConfigureAwait(false);
                     Console.WriteLine($"[Sqlite] [ROWS AFFECTED] {rows}");
                 }
 
@@ -91,7 +94,8 @@ public abstract class DatabaseInitializer
             case "Microsoft.EntityFrameworkCore.SqlServer":
                 if (created)
                 {
-                    var raws = await database.ExecuteSqlRawAsync(MsSqlScript.CreateStubData, ct);
+                    var raws = await database.ExecuteSqlRawAsync(MsSqlScript.CreateStubData, ct)
+                        .ConfigureAwait(false);
                     Console.WriteLine($"[SqlServer] [ROWS AFFECTED] {raws}");
                 }
 

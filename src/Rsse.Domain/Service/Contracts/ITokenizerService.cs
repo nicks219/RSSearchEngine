@@ -40,7 +40,7 @@ public interface ITokenizerService
     /// <summary>
     /// Инициализация функционала токенизации.
     /// </summary>
-    public Task Initialize();
+    public Task Initialize(CancellationToken ct);
 
     /// <summary>
     /// Дождаться инициализации токенизатора.

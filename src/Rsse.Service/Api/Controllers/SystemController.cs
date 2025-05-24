@@ -42,7 +42,7 @@ public class SystemController(
         var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         linkedTokenSource.CancelAfter(releaseMs);
         var linkedToken = linkedTokenSource.Token;
-        while (await tokenizer.WaitWarmUp(linkedToken) == false) {}
+        while (await tokenizer.WaitWarmUp(linkedToken).ConfigureAwait(false) == false) { }
         return Ok();
     }
 }

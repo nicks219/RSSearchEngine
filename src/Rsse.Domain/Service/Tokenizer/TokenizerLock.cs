@@ -12,9 +12,9 @@ public sealed class TokenizerLock : IDisposable
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     /// <summary/> Эксклюзивная блокировка.
-    public async Task<ExclusiveLockToken> AcquireExclusiveLockAsync()
+    public async Task<ExclusiveLockToken> AcquireExclusiveLockAsync(CancellationToken ct)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(ct);
         return new ExclusiveLockToken(_semaphore);
     }
 
