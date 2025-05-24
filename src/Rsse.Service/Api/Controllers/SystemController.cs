@@ -43,7 +43,7 @@ public class SystemController(
         var linkedToken = linkedTokenSource.Token;
         while (true)
         {
-            if (await tokenizer.WaitWarmUp(linkedToken).ConfigureAwait(false)) break;
+            if (await tokenizer.WaitWarmUp(linkedToken)) break;
         }
 
         return Ok();

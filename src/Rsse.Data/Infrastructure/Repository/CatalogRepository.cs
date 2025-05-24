@@ -27,8 +27,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         tag = tag.ToUpper();
 
         var exists = await context.Tags
-            .AnyAsync(tagEntity => tagEntity.Tag == tag)
-            .ConfigureAwait(false);
+            .AnyAsync(tagEntity => tagEntity.Tag == tag);
 
         if (exists)
         {
@@ -38,8 +37,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var maxId = await context.Tags
             .Select(tagEntity => tagEntity.TagId)
             .DefaultIfEmpty()
-            .MaxAsync()
-            .ConfigureAwait(false);
+            .MaxAsync();
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
@@ -54,8 +52,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var notes = context.Notes
             .AsNoTracking()
             .AsAsyncEnumerable()
-            .WithCancellation(ct)
-            .ConfigureAwait(false);
+            .WithCancellation(ct);
 
         return notes;
     }
@@ -66,8 +63,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var title = await context.Notes
             .Where(noteEntity => noteEntity.NoteId == noteId)
             .Select(noteEntity => noteEntity.Title)
-            .FirstOrDefaultAsync()
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync();
 
         return title;
     }
@@ -83,8 +79,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var noteIds = await context.Notes
             .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
             .Select(note => note.NoteId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            .ToListAsync();
 
         return noteIds;
     }
@@ -97,8 +92,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(note => new CatalogItemDto { Title = note.Title!, NoteId = note.NoteId })
-            .ToListAsync()
-            .ConfigureAwait(false);
+            .ToListAsync();
 
         return catalogPages;
     }
@@ -109,8 +103,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var note = await context.Notes
             .Where(note => note.NoteId == noteId)
             .Select(note => new TextResultDto { Text = note.Text!, Title = note.Title! })
-            .FirstOrDefaultAsync()
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync();
 
         return note;
     }
@@ -121,8 +114,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var tagIds = await context.TagsToNotesRelation
             .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
             .Select(relation => relation.TagId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            .ToListAsync();
 
         return tagIds;
     }
@@ -131,14 +123,13 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     public async Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest)
     {
         return await context.Users.FirstOrDefaultAsync(user =>
-            user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password)
-            .ConfigureAwait(false);
+            user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password);
     }
 
     /// <inheritdoc/>
     public async Task<int> ReadNotesCount()
     {
-        return await context.Notes.CountAsync().ConfigureAwait(false);
+        return await context.Notes.CountAsync();
     }
 
     /// <inheritdoc/>
@@ -148,8 +139,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
             // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
             .Select(tag => new EnrichedTagList(tag.Tag!, tag.RelationEntityReference!.Count))
-            .ToListAsync()
-            .ConfigureAwait(false);
+            .ToListAsync();
 
         return tagList.Select(tagAndAmount =>
                 tagAndAmount.RelationEntityReferenceCount > 0
@@ -174,7 +164,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         if (await VerifyTagNotExists(noteRequest.NoteIdExchange, forAddition))
         {
             // ID тегов и номера кнопок с фронта совпадают
-            await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -203,20 +193,19 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                             {
                                 NoteId = noteRequest.NoteIdExchange,
                                 TagId = id
-                            }), CancellationToken.None)
-                    .ConfigureAwait(false);
+                            }), CancellationToken.None);
 
-                await context.SaveChangesAsync().ConfigureAwait(false);
+                await context.SaveChangesAsync();
 
-                await transaction.CommitAsync().ConfigureAwait(false);
+                await transaction.CommitAsync();
             }
             catch (DataExistsException)
             {
-                await transaction.RollbackAsync().ConfigureAwait(false);
+                await transaction.RollbackAsync();
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync().ConfigureAwait(false);
+                await transaction.RollbackAsync();
 
                 throw new Exception($"[{nameof(UpdateNote)}: Repo]", ex);
             }
@@ -226,23 +215,25 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     /// <inheritdoc/>
     public async Task UpdateCredos(UpdateCredosRequestDto credosRequest)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
-                userEntity.Email == credosRequest.OldCredos.Email && userEntity.Password == credosRequest.OldCredos.Password)
-                .ConfigureAwait(false);
-            if (processed == null) throw new InvalidDataException($"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
+                userEntity.Email == credosRequest.OldCredos.Email &&
+                userEntity.Password == credosRequest.OldCredos.Password);
+            if (processed == null)
+                throw new InvalidDataException(
+                    $"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
             processed.Email = credosRequest.NewCredos.Email;
             processed.Password = credosRequest.NewCredos.Password;
             context.Users.Update(processed);
-            await context.SaveChangesAsync().ConfigureAwait(false);
-            await transaction.CommitAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync().ConfigureAwait(false);
+            await transaction.RollbackAsync();
             throw new Exception($"{nameof(UpdateCredos)} | {ex.Message}");
         }
     }
@@ -256,15 +247,15 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         }
 
         var createdId = 0;
-        await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var forAddition = new NoteEntity { Title = noteRequest.Title, Text = noteRequest.Text };
 
-            await context.Notes.AddAsync(forAddition).ConfigureAwait(false);
+            await context.Notes.AddAsync(forAddition);
 
-            await context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync();
 
             await context.TagsToNotesRelation
                 .AddRangeAsync(noteRequest.CheckedTags!
@@ -273,22 +264,21 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                         {
                             NoteId = forAddition.NoteId,
                             TagId = id
-                        }), CancellationToken.None)
-                .ConfigureAwait(false);
+                        }), CancellationToken.None);
 
-            await context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync();
 
-            await transaction.CommitAsync().ConfigureAwait(false);
+            await transaction.CommitAsync();
 
             createdId = forAddition.NoteId;
         }
         catch (DataExistsException)
         {
-            await transaction.RollbackAsync().ConfigureAwait(false);
+            await transaction.RollbackAsync();
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync().ConfigureAwait(false);
+            await transaction.RollbackAsync();
 
             throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
         }
@@ -299,13 +289,13 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     /// <inheritdoc/>
     public async Task<int> DeleteNote(int noteId)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
             var deletedEntries = 0;
 
-            var processedNote = await context.Notes.FindAsync(noteId).ConfigureAwait(false);
+            var processedNote = await context.Notes.FindAsync(noteId);
 
             if (processedNote == null)
             {
@@ -314,15 +304,15 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
             context.Notes.Remove(processedNote);
 
-            deletedEntries = await context.SaveChangesAsync().ConfigureAwait(false);
+            deletedEntries = await context.SaveChangesAsync();
 
-            await transaction.CommitAsync().ConfigureAwait(false);
+            await transaction.CommitAsync();
 
             return deletedEntries;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync().ConfigureAwait(false);
+            await transaction.RollbackAsync();
 
             throw new Exception($"[{nameof(DeleteNote)}: Repo]", ex);
         }
@@ -330,10 +320,10 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
     private async Task<bool> VerifyTitleNotExists(string title)
     {
-        return !await context.Notes.AnyAsync(entity => entity.Title == title).ConfigureAwait(false);
+        return !await context.Notes.AnyAsync(entity => entity.Title == title);
     }
 
-    private async Task<bool> VerifyTagNotExists(int noteId, IReadOnlyCollection<int> forAddition)
+    private async Task<bool> VerifyTagNotExists(int noteId, HashSet<int> forAddition)
     {
         if (forAddition.Count == 0)
         {
@@ -341,8 +331,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         }
 
         if (await context.TagsToNotesRelation.AnyAsync(relation =>
-                relation.NoteId == noteId && relation.TagId == forAddition.First())
-                .ConfigureAwait(false))
+                relation.NoteId == noteId && relation.TagId == forAddition.First()))
         {
             throw new DataExistsException("[PANIC] tags exists error");
         }

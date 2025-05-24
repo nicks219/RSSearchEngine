@@ -45,8 +45,8 @@ public class IntegrationTests
         var sw = Stopwatch.StartNew();
         if (!isGitHubAction)
         {
-            await Docker.CleanUpDbContainers(ct).ConfigureAwait(false);
-            await Docker.InitializeDbContainers(ct).ConfigureAwait(false);
+            await Docker.CleanUpDbContainers(ct);
+            await Docker.InitializeDbContainers(ct);
         }
 
         context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
@@ -98,7 +98,7 @@ public class IntegrationTests
 
         reason
             .Should()
-            .Be(HttpStatusCode.OK.ToString());
+            .Be(nameof(HttpStatusCode.OK));
 
         // clean up:
         TestHelper.CleanUpDatabases(_factory);
@@ -113,7 +113,6 @@ public class IntegrationTests
 
         [$"{ComplianceIndicesGetUrl}?text={TextToFind}", Request.Get, typeof(ComplianceResponse), null, null, null],
         [$"{ReadTagsForCreateAuthGetUrl}", Request.Get, typeof(NoteResponse), "Авторские: 80", "1", null],
-        // [$"{DeleteNoteUrl}?id={noteId}&pg=1"]
     ];
     private const string TextToFind = "раз два три четыре";
     private static int _processedId;

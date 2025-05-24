@@ -32,15 +32,15 @@ public sealed class MirrorRepository(
         DatabaseType.MySql => writerPrimary as CatalogRepository<MysqlCatalogContext>,
         _ => reader
     };
+
     private readonly IDataRepository _writerPrimary = writerPrimary;
     private readonly IDataRepository _writerSecondary = writerSecondary;
 
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteRequestDto noteRequest)
     {
-        _ = await _writerPrimary.CreateNote(noteRequest).ConfigureAwait(false);
-        // secondary: CatalogRepository<NpgsqlCatalogContext>
-        var secondary = await _writerSecondary.CreateNote(noteRequest).ConfigureAwait(false);
+        _ = await _writerPrimary.CreateNote(noteRequest);
+        var secondary = await _writerSecondary.CreateNote(noteRequest);
         return secondary;
     }
 
@@ -65,9 +65,8 @@ public sealed class MirrorRepository(
     /// <inheritdoc/>
     public async Task<int> DeleteNote(int noteId)
     {
-        _ = await _writerPrimary.DeleteNote(noteId).ConfigureAwait(false);
-        // secondary: CatalogRepository<NpgsqlCatalogContext>
-        var secondary = await _writerSecondary.DeleteNote(noteId).ConfigureAwait(false);
+        _ = await _writerPrimary.DeleteNote(noteId);
+        var secondary = await _writerSecondary.DeleteNote(noteId);
         return secondary;
     }
 

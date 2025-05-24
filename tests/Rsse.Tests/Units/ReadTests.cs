@@ -73,12 +73,12 @@ public class ReadTests
         );
 
         // act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto).ConfigureAwait(false);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto);
         // ждём тестовый логер:
         var count = 20;
         while (count-- > 0 && !Logger.Reported)
         {
-            await Task.Delay(100).ConfigureAwait(false);
+            await Task.Delay(100);
         }
 
         // asserts:
