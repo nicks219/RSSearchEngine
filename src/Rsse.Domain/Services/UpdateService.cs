@@ -15,38 +15,38 @@ public class UpdateService(IDataRepository repo)
     /// Обновить заметку.
     /// </summary>
     /// <param name="updatedNoteRequest">Данные для обновления.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="stoppingToken">Токен отмены.</param>
     /// <returns>Обновленная заметка.</returns>
-    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest, CancellationToken ct)
+    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest, CancellationToken stoppingToken)
     {
         if (updatedNoteRequest.CheckedTags == null
             || string.IsNullOrEmpty(updatedNoteRequest.Text)
             || string.IsNullOrEmpty(updatedNoteRequest.Title)
             || updatedNoteRequest.CheckedTags.Count == 0)
         {
-            return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, ct);
+            return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
         }
 
         var initialNoteTags = await repo
-            .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange, ct);
+            .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange, stoppingToken);
 
-        await repo.UpdateNote(initialNoteTags, updatedNoteRequest, ct);
+        await repo.UpdateNote(initialNoteTags, updatedNoteRequest, stoppingToken);
 
-        return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, ct);
+        return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
     }
 
     /// <summary>
     /// Прочитать обновляемую заметку.
     /// </summary>
     /// <param name="originalNoteId">Идентификатор обновляемой заметки.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
-    public async Task<NoteResultDto> GetNoteWithTagsForUpdate(int originalNoteId, CancellationToken ct)
+    public async Task<NoteResultDto> GetNoteWithTagsForUpdate(int originalNoteId, CancellationToken cancellationToken)
     {
         string text;
         var title = string.Empty;
 
-        var note = await repo.ReadNote(originalNoteId, ct);
+        var note = await repo.ReadNote(originalNoteId, cancellationToken);
 
         if (note != null)
         {
@@ -59,9 +59,9 @@ public class UpdateService(IDataRepository repo)
             text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
         }
 
-        var tagsBeforeUpdate = await repo.ReadEnrichedTagList(ct);
+        var tagsBeforeUpdate = await repo.ReadEnrichedTagList(cancellationToken);
         var totalTagsCount = tagsBeforeUpdate.Count;
-        var noteTagIds = await repo.ReadNoteTagIds(originalNoteId, ct);
+        var noteTagIds = await repo.ReadNoteTagIds(originalNoteId, cancellationToken);
 
         var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
 

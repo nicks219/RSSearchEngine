@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
@@ -43,6 +44,7 @@ internal class SqliteStartup(IConfiguration configuration)
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.UseEndpoints(ep => ep.MapControllers());
     }
 }

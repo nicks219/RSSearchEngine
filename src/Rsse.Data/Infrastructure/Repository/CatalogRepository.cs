@@ -21,15 +21,15 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     /// <summary/> Контейнер для метода, создающего обогащенный список тегов.
     private record struct EnrichedTagList(string Tag, int RelationEntityReferenceCount);
 
-    private readonly CancellationToken _rollbackToken = CancellationToken.None;
+    private readonly CancellationToken _noneToken = CancellationToken.None;
 
     /// <inheritdoc/>
-    public async Task CreateTagIfNotExists(string tag, CancellationToken ct)
+    public async Task CreateTagIfNotExists(string tag, CancellationToken stoppingToken)
     {
         tag = tag.ToUpper();
 
         var exists = await context.Tags
-            .AnyAsync(tagEntity => tagEntity.Tag == tag, ct);
+            .AnyAsync(tagEntity => tagEntity.Tag == tag, stoppingToken);
 
         if (exists)
         {
@@ -39,39 +39,39 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var maxId = await context.Tags
             .Select(tagEntity => tagEntity.TagId)
             .DefaultIfEmpty()
-            .MaxAsync(ct);
+            .MaxAsync(stoppingToken);
 
         var newTag = new TagEntity { Tag = tag, TagId = ++maxId };
 
-        await context.Tags.AddAsync(newTag, ct);
+        await context.Tags.AddAsync(newTag, stoppingToken);
 
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(stoppingToken);
     }
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct)
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken)
     {
         var notes = context.Notes
             .AsNoTracking()
             .AsAsyncEnumerable()
-            .WithCancellation(ct);
+            .WithCancellation(cancellationToken);
 
         return notes;
     }
 
     /// <inheritdoc/>
-    public async Task<string?> ReadNoteTitle(int noteId, CancellationToken ct)
+    public async Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken)
     {
         var title = await context.Notes
             .Where(noteEntity => noteEntity.NoteId == noteId)
             .Select(noteEntity => noteEntity.Title)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(cancellationToken);
 
         return title;
     }
 
     /// <inheritdoc/>
-    public async Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken ct)
+    public async Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
     {
         // TODO: определить какой метод лучше
         // IQueryable<int> songsCollection = database.GenreText//
@@ -81,67 +81,69 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var noteIds = await context.Notes
             .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
             .Select(note => note.NoteId)
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return noteIds;
     }
 
     /// <inheritdoc/>
-    public async Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize, CancellationToken ct)
+    public async Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize,
+        CancellationToken cancellationToken)
     {
         var catalogPages = await context.Notes
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(note => new CatalogItemDto { Title = note.Title!, NoteId = note.NoteId })
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return catalogPages;
     }
 
     /// <inheritdoc/>
-    public async Task<TextResultDto?> ReadNote(int noteId, CancellationToken ct)
+    public async Task<TextResultDto?> ReadNote(int noteId, CancellationToken cancellationToken)
     {
         var note = await context.Notes
             .Where(note => note.NoteId == noteId)
             .Select(note => new TextResultDto { Text = note.Text!, Title = note.Title! })
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(cancellationToken);
 
         return note;
     }
 
     /// <inheritdoc/>
-    public async Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken ct)
+    public async Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken)
     {
         var tagIds = await context.TagsToNotesRelation
             .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
             .Select(relation => relation.TagId)
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return tagIds;
     }
 
     /// <inheritdoc/>
-    public async Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken ct)
+    public async Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest,
+        CancellationToken cancellationToken)
     {
         return await context.Users.FirstOrDefaultAsync(user =>
-            user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password, ct);
+            user.Email == credentialsRequest.Email && user.Password == credentialsRequest.Password, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> ReadNotesCount(CancellationToken ct)
+    public async Task<int> ReadNotesCount(CancellationToken cancellationToken)
     {
-        return await context.Notes.CountAsync(ct);
+        return await context.Notes.CountAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<List<string>> ReadEnrichedTagList(CancellationToken ct)
+    public async Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken)
     {
         var tagList = await context.Tags
             // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
             .Select(tag => new EnrichedTagList(tag.Tag!, tag.RelationEntityReference!.Count))
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return tagList.Select(tagAndAmount =>
                 tagAndAmount.RelationEntityReferenceCount > 0
@@ -151,7 +153,8 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken ct)
+    public async Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest,
+        CancellationToken stoppingToken)
     {
         var forAddition = noteRequest.CheckedTags!.ToHashSet();
 
@@ -163,101 +166,100 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
         forDelete.ExceptWith(except);
 
-        if (await VerifyTagNotExists(noteRequest.NoteIdExchange, forAddition, ct))
+        // непонятно, какой кейс закрывает проверка именно первого тега
+        await ThrowIfFirstTagExists(noteRequest.NoteIdExchange, forAddition, stoppingToken);
+
+        // ID тегов и номера кнопок с фронта совпадают
+        await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
+
+        try
         {
-            // ID тегов и номера кнопок с фронта совпадают
-            await using var transaction = await context.Database.BeginTransactionAsync(ct);
+            var processedNote =
+                await context.Notes.FindAsync([noteRequest.NoteIdExchange], cancellationToken: stoppingToken);
 
-            try
+            if (processedNote == null)
             {
-                var processedNote = await context.Notes.FindAsync([noteRequest.NoteIdExchange], cancellationToken: ct);
-
-                if (processedNote == null)
-                {
-                    throw new Exception($"[{nameof(UpdateNote)}: Null in Text]");
-                }
-
-                processedNote.Title = noteRequest.Title;
-
-                processedNote.Text = noteRequest.Text;
-
-                context.Notes.Update(processedNote);
-
-                context.TagsToNotesRelation
-                    .RemoveRange(context.TagsToNotesRelation
-                        .Where(relation =>
-                            relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
-
-                await context.TagsToNotesRelation
-                    .AddRangeAsync(forAddition
-                        .Select(id =>
-                            new TagsToNotesEntity
-                            {
-                                NoteId = noteRequest.NoteIdExchange,
-                                TagId = id
-                            }), ct);
-
-                await context.SaveChangesAsync(ct);
-
-                await transaction.CommitAsync(ct);
+                throw new RsseInvalidDataException($"[{nameof(UpdateNote)}] null note entity");
             }
-            catch (Exception ex) when (ex is DataExistsException or OperationCanceledException)
-            {
-                await transaction.RollbackAsync(_rollbackToken);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(_rollbackToken);
 
-                throw new Exception($"[{nameof(UpdateNote)}: Repo]", ex);
-            }
+            processedNote.Title = noteRequest.Title;
+
+            processedNote.Text = noteRequest.Text;
+
+            context.Notes.Update(processedNote);
+
+            context.TagsToNotesRelation
+                .RemoveRange(context.TagsToNotesRelation
+                    .Where(relation =>
+                        relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
+
+            await context.TagsToNotesRelation
+                .AddRangeAsync(forAddition
+                    .Select(id =>
+                        new TagsToNotesEntity
+                        {
+                            NoteId = noteRequest.NoteIdExchange,
+                            TagId = id
+                        }), stoppingToken);
+
+            await context.SaveChangesAsync(stoppingToken);
+
+            await transaction.CommitAsync(_noneToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(_noneToken);
+
+            throw;
         }
     }
 
     /// <inheritdoc/>
-    public async Task UpdateCredos(UpdateCredosRequestDto credosRequest, CancellationToken ct)
+    public async Task UpdateCredos(UpdateCredosRequestDto credosRequest, CancellationToken cancellationToken)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
             var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
                 userEntity.Email == credosRequest.OldCredos.Email &&
-                userEntity.Password == credosRequest.OldCredos.Password, ct);
+                userEntity.Password == credosRequest.OldCredos.Password, cancellationToken);
             if (processed == null)
-                throw new InvalidDataException(
-                    $"credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
+                throw new RsseInvalidDataException(
+                    $"[{nameof(UpdateCredos)}] credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
             processed.Email = credosRequest.NewCredos.Email;
             processed.Password = credosRequest.NewCredos.Password;
             context.Users.Update(processed);
-            await context.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(_noneToken);
         }
-        catch (Exception ex)
+        catch
         {
-            await transaction.RollbackAsync(_rollbackToken);
-            throw new Exception($"{nameof(UpdateCredos)} | {ex.Message}");
+            await transaction.RollbackAsync(_noneToken);
+
+            throw;
         }
     }
 
     /// <inheritdoc/>
-    public async Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken ct)
+    public async Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
-        if (await VerifyTitleNotExists(noteRequest.Title!, ct) == false)
+        if (await VerifyTitleNotExists(noteRequest.Title!, stoppingToken) == false)
         {
             return noteRequest.NoteIdExchange;
         }
 
+        // ReSharper disable once RedundantAssignment
         var createdId = 0;
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
 
         try
         {
             var forAddition = new NoteEntity { Title = noteRequest.Title, Text = noteRequest.Text };
 
-            await context.Notes.AddAsync(forAddition, ct);
+            await context.Notes.AddAsync(forAddition, stoppingToken);
 
-            await context.SaveChangesAsync(ct);
+            await context.SaveChangesAsync(stoppingToken);
 
             await context.TagsToNotesRelation
                 .AddRangeAsync(noteRequest.CheckedTags!
@@ -266,38 +268,34 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
                         {
                             NoteId = forAddition.NoteId,
                             TagId = id
-                        }), ct);
+                        }), stoppingToken);
 
-            await context.SaveChangesAsync(ct);
+            await context.SaveChangesAsync(stoppingToken);
 
-            await transaction.CommitAsync(ct);
+            await transaction.CommitAsync(_noneToken);
 
             createdId = forAddition.NoteId;
         }
-        catch (Exception ex) when (ex is DataExistsException or OperationCanceledException)
+        catch
         {
-            await transaction.RollbackAsync(_rollbackToken);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(_rollbackToken);
+            await transaction.RollbackAsync(_noneToken);
 
-            throw new Exception($"[{nameof(CreateNote)}: Repo]", ex);
+            throw;
         }
 
         return createdId;
     }
 
     /// <inheritdoc/>
-    public async Task<int> DeleteNote(int noteId, CancellationToken ct)
+    public async Task<int> DeleteNote(int noteId, CancellationToken stoppingToken)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
 
         try
         {
             var deletedEntries = 0;
 
-            var processedNote = await context.Notes.FindAsync([noteId], ct);
+            var processedNote = await context.Notes.FindAsync([noteId], stoppingToken);
 
             if (processedNote == null)
             {
@@ -306,17 +304,17 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
             context.Notes.Remove(processedNote);
 
-            deletedEntries = await context.SaveChangesAsync(ct);
+            deletedEntries = await context.SaveChangesAsync(stoppingToken);
 
-            await transaction.CommitAsync(ct);
+            await transaction.CommitAsync(_noneToken);
 
             return deletedEntries;
         }
-        catch (Exception ex)
+        catch
         {
-            await transaction.RollbackAsync(_rollbackToken);
+            await transaction.RollbackAsync(_noneToken);
 
-            throw new Exception($"[{nameof(DeleteNote)}: Repo]", ex);
+            throw;
         }
     }
 
@@ -325,19 +323,18 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         return !await context.Notes.AnyAsync(entity => entity.Title == title, ct);
     }
 
-    private async Task<bool> VerifyTagNotExists(int noteId, HashSet<int> forAddition, CancellationToken ct)
+    private async Task ThrowIfFirstTagExists(int noteId, HashSet<int> forAddition, CancellationToken ct)
     {
         if (forAddition.Count == 0)
         {
-            return true;
+            return;
         }
 
+        var firstTag = forAddition.First();
         if (await context.TagsToNotesRelation.AnyAsync(relation =>
-                relation.NoteId == noteId && relation.TagId == forAddition.First(), ct))
+                relation.NoteId == noteId && relation.TagId == firstTag, ct))
         {
-            throw new DataExistsException("[PANIC] tags exists error");
+            throw new RsseDataExistsException($"[{nameof(ThrowIfFirstTagExists)}] tags exists error");
         }
-
-        return true;
     }
 }

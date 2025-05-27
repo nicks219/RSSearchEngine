@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
@@ -45,7 +46,7 @@ public class IntegrationStartup(IConfiguration configuration)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
-        services.AddSingleton<MigratorState>();
+        services.AddToolingDependencies();
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -82,6 +83,7 @@ public class IntegrationStartup(IConfiguration configuration)
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
 

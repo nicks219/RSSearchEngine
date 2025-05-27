@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -74,7 +75,7 @@ public class ReadTests
         // act:
         var exception =
             await TestHelper.GetExpectedExceptionWithAsync<KeyNotFoundException>(() =>
-                ReadService.GetNextOrSpecificNote(noteRequestDto));
+                ReadService.GetNextOrSpecificNote(noteRequestDto, cancellationToken: _token));
 
         // asserts:
         exception.EnsureNotNull();
@@ -85,7 +86,7 @@ public class ReadTests
     public async Task ReadService_ShouldProduceEmptyResponse_OnNullElectionRequest()
     {
         // arrange & act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(null, ct: _token);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(null, cancellationToken: _token);
 
         // asserts:
         Assert.AreEqual(string.Empty, noteResultDto.Title);
@@ -96,16 +97,16 @@ public class ReadTests
     {
         // arrange:
         var noteRequest = new NoteRequest { CheckedTags = [ElectionTestCheckedTag] };
-        var logger = Substitute.For<ILogger<ReadController>>();
         var readManager = Stub.Provider.GetRequiredService<ReadService>();
         var updateManager = Stub.Provider.GetRequiredService<UpdateService>();
 
         // act:
-        var readController = new ReadController(readManager, updateManager, logger);
-        var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null, ct: _token);
+        var readController = new ReadController(readManager, updateManager);
+        var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null, cancellationToken: _token);
+        var result = ((OkObjectResult)noteResponse.Result.EnsureNotNull()).Value as NoteResponse;
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, noteResponse.Value.EnsureNotNull().Title);
+        Assert.AreEqual(FakeCatalogRepository.FirstNoteTitle, result.EnsureNotNull().Title);
     }
 
     [TestMethod]
@@ -115,19 +116,19 @@ public class ReadTests
         using var host = new ServiceProviderStub();
         var readManager = Stub.Provider.GetRequiredService<ReadService>();
         var updateManager = Stub.Provider.GetRequiredService<UpdateService>();
-        var logger = Substitute.For<ILogger<ReadController>>();
 
-        var readController = new ReadController(readManager, updateManager, logger);
+        var readController = new ReadController(readManager, updateManager);
         readController.AddHttpContext(host.Provider);
 
         // act:
-        var noteResponse = (await readController.GetNextOrSpecificNote(null, null, ct: _token))
-            .Value
-            .EnsureNotNull();
+        const int stubListCount = 3;
+        var noteResponse = await readController.GetNextOrSpecificNote(null, null, cancellationToken: _token);
+        var result = ((OkObjectResult)noteResponse.Result.EnsureNotNull()).Value as NoteResponse;
 
         // assert:
-        Assert.AreEqual(string.Empty, noteResponse.Title);
-        Assert.AreEqual(string.Empty, noteResponse.Text);
+        Assert.AreEqual(string.Empty, result.EnsureNotNull().Title);
+        Assert.AreEqual(string.Empty, result.Text);
+        result.StructuredTags.EnsureNotNull().Count.Should().Be(stubListCount);
     }
 
     [TestMethod]
@@ -143,7 +144,7 @@ public class ReadTests
         );
 
         // act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, false);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, false, _token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.FirstNoteText, noteResultDto.Text);
@@ -179,7 +180,7 @@ public class ReadTests
 
         while (requestCount-- > 0)
         {
-            var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto);
+            var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, cancellationToken: _token);
 
             var id = noteResultDto.NoteIdExchange;
 

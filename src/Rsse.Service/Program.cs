@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,17 @@ using Serilog;
 var standaloneMode = ClientLauncher.Run(args);
 if (standaloneMode) return 0;
 #endif
+
+TaskScheduler.UnobservedTaskException += (_, e) =>
+{
+    Log.Error("{Reporter} | unobserved:\r\n{Exception}", nameof(Program), e.Exception);
+    e.SetObserved();
+};
+AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+{
+    var ex = e.ExceptionObject as Exception;
+    Log.Error("{Reporter} | unhandled:\r\n{Exception}", nameof(Program), ex);
+};
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseSerilog()
@@ -47,15 +59,9 @@ try
     await app.RunAsync();
     return 0;
 }
-catch (InvalidOperationException ex)
-{
-    Log.Fatal(ex, "[{Reporter}] | startup error, more likely db server is down, see exception:\r\n{Message}",
-        nameof(Program), ex.Message);
-    return 1;
-}
 catch (Exception ex)
 {
-    Log.Fatal(ex, "[{Reporter}] | startup error, see exception:\r\n{Message}", nameof(Program), ex.Message);
+    Log.Fatal(ex, "[{Reporter}] | startup error:\r\n{Message}", nameof(Program), ex.Message);
     return 1;
 }
 finally

@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
 using SearchEngine.Api.Logger;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Contracts;
@@ -99,9 +100,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
         services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
-        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
-        services.AddSingleton<MigratorState>();
+        services.AddToolingDependencies();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
@@ -201,6 +200,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         });
 
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseCors(Constants.DevelopmentCorsPolicy);
 

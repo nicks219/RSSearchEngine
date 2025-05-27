@@ -27,13 +27,13 @@ public class CatalogService(IDataRepository repo)
     /// Получить страницу каталога по номеру.
     /// </summary>
     /// <param name="pageNumber">Номер страницы.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> ReadPage(int pageNumber, CancellationToken ct)
+    public async Task<CatalogResultDto> ReadPage(int pageNumber, CancellationToken cancellationToken)
     {
-        var notesCount = await repo.ReadNotesCount(ct);
+        var notesCount = await repo.ReadNotesCount(cancellationToken);
 
-        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, ct);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, cancellationToken);
 
         return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }
@@ -42,19 +42,19 @@ public class CatalogService(IDataRepository repo)
     /// Перейти на другую страницу.
     /// </summary>
     /// <param name="catalogRequest">Данные для навигации.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest, CancellationToken ct)
+    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest, CancellationToken cancellationToken)
     {
         var direction = GetDirection(catalogRequest.Direction);
 
         var pageNumber = catalogRequest.PageNumber;
 
-        var notesCount = await repo.ReadNotesCount(ct);
+        var notesCount = await repo.ReadNotesCount(cancellationToken);
 
         pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, ct);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, cancellationToken);
 
         return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }

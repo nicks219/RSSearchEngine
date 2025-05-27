@@ -1,5 +1,3 @@
-using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -23,8 +21,10 @@ public class SystemController(
     /// Получить версию сервиса.
     /// </summary>
     [HttpGet(RouteConstants.SystemVersionGetUrl)]
-    public ActionResult GetVersion()
+    public ActionResult GetVersion(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         var response = new SystemResponse(
             Version: Constants.ApplicationFullName,
             DebugBuild: Constants.IsDebug,
@@ -38,32 +38,22 @@ public class SystemController(
     /// Ждать прогрев токенизатора, с учётом таймаута.
     /// </summary>
     /// <param name="timeoutMs">Таймаут.</param>
-    /// <param name="stoppingToken">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>200 - прогрев завершен, 503 - прогрев не завершился до таймаута.</returns>
     [HttpGet(RouteConstants.SystemWaitWarmUpGetUrl)]
-    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 5000, CancellationToken stoppingToken = default)
+    public async Task<ActionResult> WaitReadinessWithTimeout(int timeoutMs = 5000,
+        CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-            linkedTokenSource.CancelAfter(timeoutMs);
-            var timeoutToken = linkedTokenSource.Token;
-            while (true)
-            {
-                if (await tokenizerService.WaitWarmUp(timeoutToken)) break;
-            }
+        var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        linkedTokenSource.CancelAfter(timeoutMs);
+        var timeoutToken = linkedTokenSource.Token;
+        if (timeoutToken.IsCancellationRequested) return StatusCode(503, nameof(WaitReadinessWithTimeout));
 
-            return Ok();
-        }
-        catch (OperationCanceledException)
+        while (true)
         {
-            const int code = (int)HttpStatusCode.ServiceUnavailable;
-            return StatusCode(code, $"{nameof(WaitReadinessWithTimeout)} was cancelled");
+            if (await tokenizerService.WaitWarmUp(timeoutToken)) break;
         }
-        catch (Exception ex)
-        {
-            const int code = (int)HttpStatusCode.InternalServerError;
-            return StatusCode(code, $"{nameof(WaitReadinessWithTimeout)} failed: {ex.Message}");
-        }
+
+        return Ok();
     }
 }

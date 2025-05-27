@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,7 +46,7 @@ public class ApiAccessControlTests
     public static void CleanUp() => _factory.Dispose();
 
     [TestMethod]
-    public async Task Api_Unauthorized_Delete_ShouldReturns401()
+    public async Task Unauthorized_Delete_ShouldReturns401()
     {
         // arrange:
         var uri = new Uri($"{DeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
@@ -74,7 +75,7 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    public async Task Api_Unauthenticated_Delete_ShouldReturns403()
+    public async Task Unauthenticated_Delete_ShouldReturns403()
     {
         // arrange:
         const string unauthenticated = "editor";
@@ -113,7 +114,7 @@ public class ApiAccessControlTests
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=1&OldCredos.Password=2&NewCredos.Email=3&NewCredos.Password=4")]
     [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
     [DataRow($"{ReadNoteWithTagsForUpdateAuthGetUrl}?id=1")]
-    public async Task Api_Unauthorized_Get_ShouldReturns401(string uriString)
+    public async Task Unauthorized_Get_ShouldReturns401(string uriString)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -145,7 +146,7 @@ public class ApiAccessControlTests
     [DataRow($"{MigrationUploadPostUrl}", Request.Post)]
     [DataRow($"{CreateNotePostUrl}", Request.Post)]
     [DataRow($"{UpdateNotePutUrl}", Request.Put)]
-    public async Task Api_Unauthorized_PostAndPut_ShouldReturns401(string uriString, Request requestMethod)
+    public async Task Unauthorized_PostAndPut_ShouldReturns401(string uriString, Request requestMethod)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -176,7 +177,7 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    public async Task Api_Authorized_Delete_ShouldReturns200()
+    public async Task Authorized_Delete_ShouldReturns200()
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -187,16 +188,11 @@ public class ApiAccessControlTests
         // act:
         using var response = await client.DeleteAsync(uri);
         var statusCode = response.StatusCode;
-        var reason = response.ReasonPhrase;
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
-
-        reason
-            .Should()
-            .Be(nameof(HttpStatusCode.OK));
     }
 
     [TestMethod]
@@ -205,7 +201,7 @@ public class ApiAccessControlTests
     [DataRow($"{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin")]
     [DataRow($"{ReadTagsForCreateAuthGetUrl}")]
     [DataRow($"{ReadNoteWithTagsForUpdateAuthGetUrl}?id=1")]
-    public async Task Api_Authorized_Get_ShouldReturns200(string uriString)
+    public async Task Authorized_Get_ShouldReturns200(string uriString)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -215,23 +211,18 @@ public class ApiAccessControlTests
         // act:
         using var response = await client.GetAsync(uri);
         var statusCode = response.StatusCode;
-        var reason = response.ReasonPhrase;
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
-
-        reason
-            .Should()
-            .Be(nameof(HttpStatusCode.OK));
     }
 
     [TestMethod]
     [DataRow($"{MigrationUploadPostUrl}", Request.Post, true)]
     [DataRow($"{CreateNotePostUrl}", Request.Post, false)]
     [DataRow($"{UpdateNotePutUrl}", Request.Put, false)]
-    public async Task Api_Authorized_PostAndPut_ShouldReturns200(string uriString, Request requestMethod, bool appendFile)
+    public async Task Authorized_PostAndPut_ShouldReturns200(string uriString, Request requestMethod, bool appendFile)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -246,16 +237,136 @@ public class ApiAccessControlTests
             : await client.PostAsync(uri, content);
 
         HttpStatusCode statusCode = response.StatusCode;
-        string reason = response.ReasonPhrase;
 
         // assert:
         statusCode
             .Should()
             .Be(HttpStatusCode.OK);
+    }
 
-        reason
-            .Should()
-            .Be(nameof(HttpStatusCode.OK));
+    public static IEnumerable<object[]> CancellationUnauthorizedTestData =>
+    [
+        [AccountCheckGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [AccountUpdateGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [ReadTagsForCreateAuthGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [ReadNoteWithTagsForUpdateAuthGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [MigrationCopyGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [MigrationCreateGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [MigrationRestoreGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [MigrationDownloadGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [CreateNotePostUrl, HttpMethod.Post, HttpStatusCode.Unauthorized],
+        [MigrationUploadPostUrl, HttpMethod.Post, HttpStatusCode.Unauthorized],
+        [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.Unauthorized],
+        [UpdateNotePutUrl, HttpMethod.Put, HttpStatusCode.Unauthorized],
+
+        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [AccountLogoutGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [CatalogPageGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ComplianceIndicesGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
+    ];
+
+    [TestMethod]
+    [DynamicData(nameof(CancellationUnauthorizedTestData))]
+    public async Task CancelledRequest_UnauthorizedCall_ShouldProducesExpectedStatus(string uriString, HttpMethod method, HttpStatusCode expected)
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        var ct = new CancellationToken(canceled: true);
+        var request = new HttpRequestMessage(method, uri);
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(expected);
+    }
+
+    private const string AccountUpdateRequest =
+        $"{AccountUpdateGetUrl}?OldCredos.Email=admin&OldCredos.Password=admin&NewCredos.Email=admin&NewCredos.Password=admin";
+
+    // играет роль очередность запросов тк один хост
+    public static IEnumerable<object[]> CancellationAuthorizedTestData =>
+    [
+        [AccountLogoutGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// exc -> middleware 401
+        [AccountCheckGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadTagsForCreateAuthGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadNoteWithTagsForUpdateAuthGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [CatalogPageGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ComplianceIndicesGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
+        [MigrationDownloadGetUrl+"?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404
+        [AccountUpdateRequest, HttpMethod.Get, HttpStatusCode.ServiceUnavailable]
+    ];
+    [TestMethod]
+    [DynamicData(nameof(CancellationAuthorizedTestData))]
+    public async Task CancelledRequest_AuthorizedCall_ShouldProducesExpectedStatus(string uriString, HttpMethod method, HttpStatusCode expected)
+    {
+        // arrange:
+        using var client = _factory.CreateClient(_options);
+        await client.TryAuthorizeToService(ct: Token);
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        var ct = new CancellationToken(canceled: true);
+        var request = new HttpRequestMessage(method, uri);
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(expected);
+    }
+
+    // мигратор ловит исключения только для отката транзакций и отдает ответ ок (изменено на throw).
+    // при вызове restore мигратора исключение бросит токенайзер.
+    // репозиторий оборачивает эксепшны и перевыбрасывает (изменено на throw).
+    // delete выходит из транзакции на проверке условия до выброса исключения.
+    // для CatalogNavigatePostUrl не удалось написать на 100% стабильный тест.
+    public static IEnumerable<object[]> CancellationHostTestData =>
+    [
+        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [MigrationCreateGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [MigrationCopyGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 500: sqlite not supported
+        [MigrationRestoreGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [MigrationUploadPostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
+        [CreateNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
+        [UpdateNotePutUrl, HttpMethod.Put, HttpStatusCode.ServiceUnavailable],
+        [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.ServiceUnavailable]
+        // [CatalogNavigatePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
+    ];
+    [TestMethod]
+    [DynamicData(nameof(CancellationHostTestData))]
+    public async Task CancelledHost_AuthorizeCall_ShouldProducesExpectedStatus(string uriString, HttpMethod method, HttpStatusCode expected)
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<Startup>();
+        using var client = factory.CreateClient(_options);
+        await client.TryAuthorizeToService(ct: Token);
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        var ct = CancellationToken.None;
+        var request = new HttpRequestMessage(method, uri);
+        TestHelper.EnrichData(request);
+        _ = factory.HostInternal.EnsureNotNull().StopAsync(CancellationToken.None);
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(expected);
     }
 }
 

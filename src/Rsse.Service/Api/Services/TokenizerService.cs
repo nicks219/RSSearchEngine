@@ -59,11 +59,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _tokenLines;
 
     /// <inheritdoc/>
-    public async Task Delete(int id, CancellationToken ct)
+    public async Task Delete(int id, CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
-        using var __ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
+        using var __ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
         var isRemoved = _tokenLines.TryRemove(id, out _);
 
         if (!isRemoved)
@@ -73,11 +73,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Create(int id, TextRequestDto note, CancellationToken ct)
+    public async Task Create(int id, TextRequestDto note, CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
         var createdTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -88,11 +88,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Update(int id, TextRequestDto note, CancellationToken ct)
+    public async Task Update(int id, TextRequestDto note, CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
         var updatedTokenLine = CreateTokensLine(_processorFactory, note);
 
@@ -110,12 +110,12 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Initialize(CancellationToken ct)
+    public async Task Initialize(CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
-        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(ct);
+        using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
         // Создаём scope, чтобы не закрывать контекст в корневом scope провайдера.
         using var scope = _scopeFactory.CreateScope();
@@ -126,12 +126,12 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
             _tokenLines.Clear();
 
             // todo: подумать, как избавиться от загрузки всех записей из таблицы
-            var notes = repo.ReadAllNotes(ct);
+            var notes = repo.ReadAllNotes(stoppingToken);
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
             await foreach (var note in notes)
             {
-                if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(Initialize), ct);
+                if (stoppingToken.IsCancellationRequested) throw new OperationCanceledException(nameof(Initialize));
 
                 var requestNote = note.MapToDto();
 
@@ -156,14 +156,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<bool> WaitWarmUp(CancellationToken ct)
+    public async Task<bool> WaitWarmUp(CancellationToken timeoutToken)
     {
         if (_isEnabled == false) return true;
 
-        // Можно явно не бросать исключение тк оно в любом случае будет брошено в SyncOnLockAsync.
-        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(WaitWarmUp));
-
-        await TokenizerLock.SyncOnLockAsync(ct);
+        await TokenizerLock.SyncOnLockAsync(timeoutToken);
 
         return _isActivated;
     }
@@ -171,7 +168,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// <inheritdoc/>
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken ct)
+    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
         var result = new Dictionary<int, double>();
 
@@ -195,7 +192,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
         // поиск в векторе extended
-        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices), ct);
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
         foreach (var (key, tokensLine) in _tokenLines)
         {
             var extendedTokensLine = tokensLine.Extended;
@@ -239,7 +236,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         newTokensLine = newTokensLine.ToHashSet().ToList();
 
         // поиск в векторе reduced
-        if (ct.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices), ct);
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
         foreach (var (key, tokensLine) in _tokenLines)
         {
             var reducedTokensLine = tokensLine.Reduced;

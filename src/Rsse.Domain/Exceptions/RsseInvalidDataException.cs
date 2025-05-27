@@ -3,4 +3,4 @@ namespace SearchEngine.Exceptions;
 /// <summary>
 /// Некорректные данные.
 /// </summary>
-public class InvalidDataException(string message) : RsseBaseException(message);
+public class RsseInvalidDataException(string message) : RsseBaseException(message);

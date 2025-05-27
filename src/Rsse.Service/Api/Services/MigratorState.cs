@@ -12,7 +12,7 @@ public class MigratorState
     /// <summary>
     /// Выполняется ли в данный момент хотя бы одна миграция.
     /// </summary>
-    public bool IsMigrating => _activeCount > 0;
+    public bool IsMigrating => Volatile.Read(ref _activeCount) > 0;
 
     /// <summary>
     /// Миграция началась.

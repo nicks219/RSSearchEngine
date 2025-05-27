@@ -42,7 +42,7 @@ public class ApiTests
     }
 
     [TestMethod]
-    public async Task Api_SystemController_Get_ReturnsResult()
+    public async Task Api_SystemController_GetVersion_ReturnsResult()
     {
         // arrange:
         await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
@@ -81,23 +81,6 @@ public class ApiTests
 
         // assert:
         statusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [TestMethod]
-    public async Task Api_SystemController_OnCancelledWarmUp_ReturnsUnavailableResult()
-    {
-        // arrange:
-        await using var factory = new CustomWebAppFactory<SqliteApiStartup>();
-        using var client = factory.CreateClient(_options);
-
-        // act:
-        var request = new HttpRequestMessage(HttpMethod.Get, SystemWaitWarmUpGetUrl);
-        var ct = new CancellationToken(true);
-        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        var statusCode = response.StatusCode;
-
-        // assert:
-        statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
     [TestMethod]

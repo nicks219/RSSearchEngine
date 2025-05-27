@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
@@ -27,12 +25,11 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
         using var stub = new ServiceProviderStub();
         var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
         var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
-        var complianceController = new ComplianceSearchController(complianceManager, logger);
+        var complianceController = new ComplianceSearchController(complianceManager);
         complianceController.AddHttpContext(stub.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Messages;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.Contracts;
@@ -103,61 +102,61 @@ public class CatalogTests
     }
 
     [TestMethod]
-    public async Task DeleteController_ShouldReturnError_OnInvalidDeleteRequest()
+    public async Task DeleteController_ShouldThrow_OnInvalidDeleteRequest()
     {
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var logger = Substitute.For<ILogger<DeleteController>>();
         var lifetime = Substitute.For<IHostApplicationLifetime>();
         var tokenizerService = Substitute.For<ITokenizerService>();
         var deleteController = new DeleteController(
             lifetime,
             tokenizerService,
             DeleteService,
-            CatalogService,
-            logger);
+            CatalogService);
 
         // act:
-        var catalogResponse = await deleteController.DeleteNote(invalidPageId, invalidPageNumber);
+        var exception = await TestHelper.GetExpectedExceptionWithAsync<Exception>(() =>
+            deleteController.DeleteNote(invalidPageId, invalidPageNumber));
 
         // assert:
-        var response = catalogResponse.Value;
-        response.EnsureNotNull();
-        response.ErrorMessage.Should().Be(ControllerErrorMessages.DeleteNoteError);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be("Page number error");
     }
 
     [TestMethod]
-    public async Task CatalogController_ShouldReturnNullPage_OnInvalidDeleteRequest()
+    public async Task CatalogController_ShouldThrow_OnInvalidDeleteRequest()
     {
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var logger = Substitute.For<ILogger<DeleteController>>();
         var tokenizer = Substitute.For<ITokenizerService>();
         var lifetime = Substitute.For<IHostApplicationLifetime>();
 
-        var catalogController = new DeleteController(lifetime, tokenizer, DeleteService, CatalogService, logger);
+        var catalogController = new DeleteController(lifetime, tokenizer, DeleteService, CatalogService);
 
         // act:
-        var responseDto = (await catalogController.DeleteNote(invalidPageId, invalidPageNumber)).Value;
+        var exception = await TestHelper.GetExpectedExceptionWithAsync<Exception>(() =>
+            catalogController.DeleteNote(invalidPageId, invalidPageNumber));
 
         // assert:
-        Assert.IsNull(responseDto.EnsureNotNull().CatalogPage);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be("Page number error");
     }
 
     [TestMethod]
-    public async Task CatalogController_ShouldLogError_OnUndefinedRequest()
+    public async Task CatalogController_ShouldThrow_OnUndefinedRequest()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<CatalogController>>();
-
-        var catalogController = new CatalogController(CatalogService, logger);
+        var catalogController = new CatalogController(CatalogService);
 
         // act:
-        _ = await catalogController.NavigateCatalog(null!, _token);
+        var exception =
+            await TestHelper.GetExpectedExceptionWithAsync<NullReferenceException>(() =>
+                catalogController.NavigateCatalog(null!, _token));
 
         // assert:
-        logger.Received().LogError(Arg.Any<Exception>(), ControllerErrorMessages.NavigateCatalogError);
+        exception.EnsureNotNull();
+        exception.Message.Should().Be("Object reference not set to an instance of an object.");
     }
 }

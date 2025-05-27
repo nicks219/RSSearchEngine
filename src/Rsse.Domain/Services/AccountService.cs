@@ -19,18 +19,18 @@ public class AccountService(IDataRepository repo)
     /// Попытаться войти в систему.
     /// </summary>
     /// <param name="credentialsRequest">Данные для авторизации.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Контейнер с подверждением идентичности.</returns>
     /// <exception cref="RsseUserNotFoundException">Пользователь не найден.</exception>
     /// <exception cref="RsseInvalidCredosException">Некорректные данные авторизации.</exception>
-    public async Task<ClaimsIdentity> TrySignInWith(CredentialsRequestDto credentialsRequest, CancellationToken ct)
+    public async Task<ClaimsIdentity> TrySignInWith(CredentialsRequestDto credentialsRequest, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(credentialsRequest.Email) || string.IsNullOrEmpty(credentialsRequest.Password))
         {
             throw new RsseInvalidCredosException(InvalidCredosError);
         }
 
-        var user = await repo.GetUser(credentialsRequest, ct);
+        var user = await repo.GetUser(credentialsRequest, cancellationToken);
 
         if (user == null)
         {
@@ -53,8 +53,8 @@ public class AccountService(IDataRepository repo)
     }
 
     /// <summary/> Обновить логин и пароль.
-    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate, CancellationToken ct)
+    public async Task UpdateCredos(UpdateCredosRequestDto credosForUpdate, CancellationToken cancellationToken)
     {
-        await repo.UpdateCredos(credosForUpdate, ct);
+        await repo.UpdateCredos(credosForUpdate, cancellationToken);
     }
 }

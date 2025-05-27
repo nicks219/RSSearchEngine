@@ -37,72 +37,77 @@ public sealed class MirrorRepository(
     private readonly IDataRepository _writerSecondary = writerSecondary;
 
     /// <inheritdoc/>
-    public async Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken ct)
+    public async Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
-        _ = await _writerPrimary.CreateNote(noteRequest, ct);
-        var secondary = await _writerSecondary.CreateNote(noteRequest, ct);
+        _ = await _writerPrimary.CreateNote(noteRequest, stoppingToken);
+        var secondary = await _writerSecondary.CreateNote(noteRequest, stoppingToken);
         return secondary;
     }
 
     /// <inheritdoc/>
-    public Task<TextResultDto?> ReadNote(int noteId, CancellationToken ct) => _reader.ReadNote(noteId, ct);
+    public Task<TextResultDto?> ReadNote(int noteId, CancellationToken cancellationToken) =>
+        _reader.ReadNote(noteId, cancellationToken);
 
     /// <inheritdoc/>
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken ct)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
         // todo: можно сразу принимать IList
         var enumerable = initialTags.ToList();
-        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest, ct),
-            _writerSecondary.UpdateNote(enumerable, noteRequest, ct));
+        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest, stoppingToken),
+            _writerSecondary.UpdateNote(enumerable, noteRequest, stoppingToken));
     }
 
     /// <inheritdoc/>
-    public Task UpdateCredos(UpdateCredosRequestDto credosRequest, CancellationToken ct)
+    public Task UpdateCredos(UpdateCredosRequestDto credosRequest, CancellationToken cancellationToken)
     {
-        return Task.WhenAll(_writerPrimary.UpdateCredos(credosRequest, ct),
-            _writerSecondary.UpdateCredos(credosRequest, ct));
+        return Task.WhenAll(_writerPrimary.UpdateCredos(credosRequest, cancellationToken),
+            _writerSecondary.UpdateCredos(credosRequest, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public async Task<int> DeleteNote(int noteId, CancellationToken ct)
+    public async Task<int> DeleteNote(int noteId, CancellationToken stoppingToken)
     {
-        _ = await _writerPrimary.DeleteNote(noteId, ct);
-        var secondary = await _writerSecondary.DeleteNote(noteId, ct);
+        _ = await _writerPrimary.DeleteNote(noteId, stoppingToken);
+        var secondary = await _writerSecondary.DeleteNote(noteId, stoppingToken);
         return secondary;
     }
 
     /// <inheritdoc/>
-    public Task CreateTagIfNotExists(string tag, CancellationToken ct)
+    public Task CreateTagIfNotExists(string tag, CancellationToken stoppingToken)
     {
-        return Task.WhenAll(_writerPrimary.CreateTagIfNotExists(tag, ct),
-            _writerSecondary.CreateTagIfNotExists(tag, ct));
+        return Task.WhenAll(_writerPrimary.CreateTagIfNotExists(tag, stoppingToken),
+            _writerSecondary.CreateTagIfNotExists(tag, stoppingToken));
     }
 
     /// <inheritdoc/>
-    public Task<List<string>> ReadEnrichedTagList(CancellationToken ct) => _reader.ReadEnrichedTagList(ct);
+    public Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken) =>
+        _reader.ReadEnrichedTagList(cancellationToken);
 
     /// <inheritdoc/>
-    public Task<int> ReadNotesCount(CancellationToken ct) => _reader.ReadNotesCount(ct);
+    public Task<int> ReadNotesCount(CancellationToken cancellationToken) => _reader.ReadNotesCount(cancellationToken);
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct) =>
-        _reader.ReadAllNotes(ct);
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken) =>
+        _reader.ReadAllNotes(cancellationToken);
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken ct) =>
-        _reader.ReadTaggedNotesIds(checkedTags, ct);
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken cancellationToken) =>
+        _reader.ReadTaggedNotesIds(checkedTags, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<string?> ReadNoteTitle(int noteId, CancellationToken ct) => _reader.ReadNoteTitle(noteId, ct);
+    public Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken) =>
+        _reader.ReadNoteTitle(noteId, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken ct) => _reader.ReadNoteTagIds(noteId, ct);
+    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken) =>
+        _reader.ReadNoteTagIds(noteId, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize, CancellationToken ct) =>
-        _reader.ReadCatalogPage(pageNumber, pageSize, ct);
+    public Task<List<CatalogItemDto>>
+        ReadCatalogPage(int pageNumber, int pageSize, CancellationToken cancellationToken) =>
+        _reader.ReadCatalogPage(pageNumber, pageSize, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken ct) =>
-        _reader.GetUser(credentialsRequest, ct);
+    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken cancellationToken) =>
+        _reader.GetUser(credentialsRequest, cancellationToken);
 }

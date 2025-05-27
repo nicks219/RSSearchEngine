@@ -198,13 +198,13 @@ public class IntegrationTests
     public async Task Integration_PKSequencesAreValid_AfterDatabaseRestoreViaAPI(string uri, Request requestMethod,
         int? idExpected, string? textExpected, NoteRequest? content)
     {
-        //очищаем базу на старте:
-        if (idExpected == 1) await TestHelper.CleanUpDatabases(_factory, ct: Token);
-
         // arrange:
         using var client = _factory.CreateClient(_options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
+
+        // Очищаем базу на старте теста.
+        if (idExpected == 1) await TestHelper.CleanUpDatabases(_factory, ct: Token);
 
         await client.TryAuthorizeToService("1@2", "12", ct: Token);
         using var jsonContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");

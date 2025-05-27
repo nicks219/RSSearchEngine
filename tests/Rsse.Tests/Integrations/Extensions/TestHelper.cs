@@ -13,6 +13,7 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Api;
 
@@ -24,6 +25,17 @@ namespace SearchEngine.Tests.Integrations.Extensions;
 // todo: отрефакторить
 public static class TestHelper
 {
+    // для сценарных тестов
+    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
+    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
+    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
+    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
+    public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
+    public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
+    public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
+    public static StringContent CatalogContent => new(JsonSerializer.Serialize(CatalogRequest), Encoding.UTF8, "application/json");
+    public static StringContent Empty => new("");
+
     // константы с результатами запросов
     internal const string TagListResponse = "[\"Авторские: 1\",\"Бардовские\",\"Блюз: 1\",\"Народный стиль\",\"Вальсы\",\"Военные\",\"Военные (ВОВ)\",\"Гранж\",\"Дворовые\",\"Детские\"," +
                                             "\"Джаз\",\"Дуэты\",\"Зарубежные\",\"Застольные\",\"Авторские (Павел)\",\"Из мюзиклов\",\"Из фильмов\",\"Кавказские\",\"Классика\",\"Лирика\"," +
@@ -120,17 +132,41 @@ public static class TestHelper
         return exception;
     }
 
+    /// <summary>
+    /// Добавить в запрос тестовую информацию и поменять токен отмены.
+    /// </summary>
+    /// <param name="httpRequest">Запрос.</param>
+    internal static void EnrichData(HttpRequestMessage httpRequest)
+    {
+        var uriStr = httpRequest.RequestUri?.OriginalString;
+        switch (uriStr)
+        {
+            case RouteConstants.CatalogNavigatePostUrl:
+                {
+                    var json = JsonSerializer.Serialize(new CatalogRequest(0, [1]));
+                    httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    return;
+                }
 
-    // для сценарных тестов
-    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
-    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
-    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
-    public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
-    public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
-    public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
-    public static StringContent CatalogContent => new(JsonSerializer.Serialize(CatalogRequest), Encoding.UTF8, "application/json");
-    public static StringContent Empty => new("");
+            case RouteConstants.MigrationUploadPostUrl:
+                {
+                    var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
+                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+                    var data = new MultipartFormDataContent();
+                    data.Add(fileContent, "file", "file.txt");
+                    httpRequest.Content = data;
+                    return;
+                }
+
+            case RouteConstants.CreateNotePostUrl:
+            case RouteConstants.UpdateNotePutUrl:
+                {
+                    var json = JsonSerializer.Serialize(new NoteRequest());
+                    httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    return;
+                }
+        }
+    }
 }
 
 // <summary/> тип http вызова

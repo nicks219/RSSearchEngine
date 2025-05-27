@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Configuration;
@@ -15,7 +12,6 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
-using static SearchEngine.Api.Messages.ControllerErrorMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -28,10 +24,9 @@ public class CreateController(
     IHostApplicationLifetime lifetime,
     ITokenizerService tokenizerService,
     CreateService createService,
-    IEnumerable<IDbMigrator> migrators,
+    IDbMigratorFactory migratorFactory,
     IOptions<CommonBaseOptions> options,
-    IOptionsSnapshot<DatabaseOptions> dbOptions,
-    ILogger<CreateController> logger) : ControllerBase
+    IOptionsSnapshot<DatabaseOptions> dbOptions) : ControllerBase
 {
 
     private const string BackupFileName = "db_last_dump";
@@ -46,51 +41,46 @@ public class CreateController(
     [HttpPost(RouteConstants.CreateNotePostUrl)]
     public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
     {
-        var ct = lifetime.ApplicationStopping;
-        var migratorToken = lifetime.ApplicationStopped;
-        try
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+
+        var noteRequestDto = request.MapToDto();
+
+        await createService.CreateTagFromTitle(noteRequestDto, stoppingToken);
+        var noteResultDto = await createService.CreateNote(noteRequestDto, stoppingToken);
+
+        if (!string.IsNullOrEmpty(noteResultDto.ErrorMessage))
         {
-            var noteRequestDto = request.MapToDto();
-
-            await createService.CreateTagFromTitle(noteRequestDto, ct);
-            var noteResultDto = await createService.CreateNote(noteRequestDto, ct);
-
-            if (!string.IsNullOrEmpty(noteResultDto.ErrorMessage))
+            return new NoteResponse
             {
-                return new NoteResponse
-                {
-                    Title = noteResultDto.Title,
-                    Text = noteResultDto.Text,
-                    StructuredTags = noteResultDto.EnrichedTags,
-                    ErrorMessage = noteResultDto.ErrorMessage
-                };
-            }
-
-            await tokenizerService.Create(
-                noteResultDto.NoteIdExchange,
-                new TextRequestDto
-                {
-                    Title = request.Title,
-                    Text = request.Text
-                }, ct);
-
-            var path = await CreateDumpAndGetFilePath(migratorToken);
-
-            var resultDto = noteResultDto with { Text = path };
-
-            return resultDto.MapFromDto();
+                Title = noteResultDto.Title,
+                Text = noteResultDto.Text,
+                StructuredTags = noteResultDto.EnrichedTags,
+                ErrorMessage = noteResultDto.ErrorMessage
+            };
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, CreateNoteError);
-            return new NoteResponse { ErrorMessage = CreateNoteError };
-        }
+
+        await tokenizerService.Create(
+            noteResultDto.NoteIdExchange,
+            new TextRequestDto
+            {
+                Title = request.Title,
+                Text = request.Text
+            }, stoppingToken);
+
+        var path = await CreateDumpAndGetFilePath(stoppingToken);
+
+        var resultDto = noteResultDto with { Text = path };
+
+        var noteResponse = resultDto.MapFromDto();
+
+        return Ok(noteResponse);
     }
 
     /// <summary>
     /// Зафиксировать дамп бд и вернуть путь к созданному файлу.
     /// </summary>
-    private async Task<string> CreateDumpAndGetFilePath(CancellationToken ct)
+    private async Task<string> CreateDumpAndGetFilePath(CancellationToken stoppingToken)
     {
         if (_baseOptions.CreateBackupForNewSong == false)
         {
@@ -99,11 +89,11 @@ public class CreateController(
 
         // Создаём дамп для читающей базы.
         var databaseType = _databaseOptions.ReaderContext;
-        var migrator = IDbMigrator.GetMigrator(migrators, databaseType);
+        var migrator = migratorFactory.CreateMigrator(databaseType);
 
         // Будут созданы незаархивированные файлы.
         // Создание полного дампа достаточно ресурсозатратно, переходи на инкрементальные миграции.
-        var path = await migrator.Create(BackupFileName, ct);
+        var path = await migrator.Create(BackupFileName, stoppingToken);
         return path;
     }
 }

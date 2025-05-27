@@ -19,9 +19,9 @@ public sealed class ComplianceSearchService(ITokenizerService tokenizer)
     /// Вычислить индексы соответствия заметок поисковому запросу.
     /// </summary>
     /// <param name="text">Текст для поиска совпадений.</param>
-    /// <param name="ct">Токен отмены.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken ct)
+    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -29,7 +29,7 @@ public sealed class ComplianceSearchService(ITokenizerService tokenizer)
         }
 
         // ReSharper disable once SuggestVarOrType_Elsewhere
-        Dictionary<int, double> searchIndexes = tokenizer.ComputeComplianceIndices(text, ct);
+        Dictionary<int, double> searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
         switch (searchIndexes.Count)
         {
             case 0:

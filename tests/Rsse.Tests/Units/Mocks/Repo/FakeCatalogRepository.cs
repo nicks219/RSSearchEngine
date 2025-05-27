@@ -52,7 +52,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken ct)
+    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken)
     {
         var notes = _notes
             .Select(keyValue => new NoteEntity
@@ -63,11 +63,11 @@ public sealed class FakeCatalogRepository : IDataRepository
             })
             .ToList();
 
-        return notes.ToAsyncEnumerable().WithCancellation(ct);
+        return notes.ToAsyncEnumerable().WithCancellation(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<string?> ReadNoteTitle(int noteId, CancellationToken _)
+    public Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -93,7 +93,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken _)
+    public Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
@@ -107,17 +107,17 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task UpdateCredos(UpdateCredosRequestDto _, CancellationToken __) => throw new NotImplementedException();
+    public Task UpdateCredos(UpdateCredosRequestDto _, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc/>
-    public Task<int> DeleteNote(int noteId, CancellationToken _)
+    public Task<int> DeleteNote(int noteId, CancellationToken stoppingToken)
     {
         var res = _notes.Remove(noteId);
         return Task.FromResult(Convert.ToInt32(res));
     }
 
     /// <inheritdoc/>
-    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken _)
+    public Task<UserEntity?> GetUser(CredentialsRequestDto credentialsRequest, CancellationToken cancellationToken)
     {
         var user = credentialsRequest.Password == "skip"
             ? null
@@ -127,7 +127,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize, CancellationToken _)
+    public Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -142,21 +142,21 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<List<string>> ReadEnrichedTagList(CancellationToken _)
+    public Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken)
     {
         var result = Task.FromResult(TagList);
         return result;
     }
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken _)
+    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken)
     {
         var tagList = new List<int> { 1, 2 };
         return Task.FromResult(tagList);
     }
 
     /// <inheritdoc/>
-    public Task<int> ReadNotesCount(CancellationToken _)
+    public Task<int> ReadNotesCount(CancellationToken cancellationToken)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");
 
@@ -164,14 +164,14 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<TextResultDto?> ReadNote(int noteId, CancellationToken _)
+    public Task<TextResultDto?> ReadNote(int noteId, CancellationToken cancellationToken)
     {
         var note = _notes[noteId];
         return Task.FromResult<TextResultDto?>(note);
     }
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken _)
+    public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
     {
         var ids = checkedTags as List<int> ?? checkedTags.ToList();
         if (ids.First() == ReadTests.ElectionTestCheckedTag)
@@ -192,7 +192,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken _)
+    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {
@@ -205,5 +205,5 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task CreateTagIfNotExists(string _, CancellationToken __) => throw new NotImplementedException(nameof(FakeCatalogRepository));
+    public Task CreateTagIfNotExists(string _, CancellationToken stoppingToken) => throw new NotImplementedException(nameof(FakeCatalogRepository));
 }

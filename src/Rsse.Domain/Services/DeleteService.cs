@@ -13,9 +13,9 @@ public class DeleteService(IDataRepository repo)
     /// Удалить заметку.
     /// </summary>
     /// <param name="noteId">Идентификатор заметки.</param>
-    /// <param name="ct">Токен отмены.</param>
-    public async Task DeleteNote(int noteId, CancellationToken ct)
+    /// <param name="stoppingToken">Токен отмены.</param>
+    public async Task DeleteNote(int noteId, CancellationToken stoppingToken)
     {
-        await repo.DeleteNote(noteId, ct);
+        await repo.DeleteNote(noteId, stoppingToken);
     }
 }

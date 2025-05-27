@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Configuration;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling;
 
@@ -40,13 +42,13 @@ internal class ActivatorService(
             {
                 logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(ActivatorService), _count.ToString());
 
-                _count++;
-
                 await tokenizer.Initialize(stoppingToken);
 
                 logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 
                 await Task.Delay(WaitMs, stoppingToken);
+
+                _count++;
             }
         }
         finally
@@ -61,23 +63,22 @@ internal class ActivatorService(
     /// <param name="stoppingToken">Токен начала остановки хоста.</param>
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
-        if (migratorState.IsMigrating)
-        {
-            logger.LogWarning("{Reporter} | graceful shutdown: waiting for migration to complete...", nameof(ActivatorService));
-        }
-        else
+        if (!migratorState.IsMigrating)
         {
             return;
         }
 
+        logger.LogWarning("{Reporter} | graceful shutdown: waiting for migration to complete...",
+            nameof(ActivatorService));
+
         try
         {
-            const int totalWaitSeconds = 25;
+
             var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-            timeoutCts.CancelAfter(TimeSpan.FromSeconds(totalWaitSeconds));
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(AppConstants.WaitMigratorTotalSeconds));
             while (migratorState.IsMigrating && !timeoutCts.IsCancellationRequested)
             {
-                await Task.Delay(500, timeoutCts.Token);
+                await Task.Delay(AppConstants.WaitMigratorNextCheckMs, timeoutCts.Token);
             }
         }
         finally
