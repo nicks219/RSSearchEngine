@@ -81,7 +81,8 @@ public abstract class Docker
         process.Start();
         var processOut = await process.StandardOutput.ReadToEndAsync(cancellationToken);
         Console.WriteLine($"{nameof(InitializeContainer)} | {processOut}");
-        Console.WriteLine(await process.StandardError.ReadToEndAsync(cancellationToken));
+        var errorMessage = await process.StandardError.ReadToEndAsync(cancellationToken);
+        Console.WriteLine(errorMessage);
         await process.WaitForExitAsync(cancellationToken);
 
         if (!shouldWait) return;

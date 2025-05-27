@@ -311,6 +311,7 @@ public class ApiAccessControlTests
         [MigrationDownloadGetUrl+"?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404
         [AccountUpdateRequest, HttpMethod.Get, HttpStatusCode.ServiceUnavailable]
     ];
+
     [TestMethod]
     [DynamicData(nameof(CancellationAuthorizedTestData))]
     public async Task CancelledRequest_AuthorizedCall_ShouldProducesExpectedStatus(string uriString, HttpMethod method, HttpStatusCode expected)
@@ -330,11 +331,6 @@ public class ApiAccessControlTests
         statusCode.Should().Be(expected);
     }
 
-    // мигратор ловит исключения только для отката транзакций и отдает ответ ок (изменено на throw).
-    // при вызове restore мигратора исключение бросит токенайзер.
-    // репозиторий оборачивает эксепшны и перевыбрасывает (изменено на throw).
-    // delete выходит из транзакции на проверке условия до выброса исключения.
-    // для CatalogNavigatePostUrl не удалось написать на 100% стабильный тест.
     public static IEnumerable<object[]> CancellationHostTestData =>
     [
         [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
@@ -347,6 +343,7 @@ public class ApiAccessControlTests
         [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.ServiceUnavailable]
         // [CatalogNavigatePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
     ];
+
     [TestMethod]
     [DynamicData(nameof(CancellationHostTestData))]
     public async Task CancelledHost_AuthorizeCall_ShouldProducesExpectedStatus(string uriString, HttpMethod method, HttpStatusCode expected)
@@ -360,7 +357,7 @@ public class ApiAccessControlTests
         // act:
         var ct = CancellationToken.None;
         var request = new HttpRequestMessage(method, uri);
-        TestHelper.EnrichData(request);
+        TestHelper.EnrichDataIfNecessary(request);
         _ = factory.HostInternal.EnsureNotNull().StopAsync(CancellationToken.None);
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         var statusCode = response.StatusCode;

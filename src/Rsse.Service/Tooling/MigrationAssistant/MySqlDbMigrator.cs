@@ -156,11 +156,21 @@ internal class MySqlDbMigrator(
                 $"{nameof(MySqlDbMigrator)} | {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
 
         // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
-        var notes = mysqlCatalogContext.Notes.Select(note => note).ToList();
-        var tags = mysqlCatalogContext.Tags.Select(tag => tag).ToList();
-        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation.Select(relation => relation).ToList();
+        var notes = await mysqlCatalogContext.Notes
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
 
-        var users = mysqlCatalogContext.Users.Select(user => user).ToList();
+        var tags = await mysqlCatalogContext.Tags
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        var tagsToNotes = await mysqlCatalogContext.TagsToNotesRelation
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        var users = await mysqlCatalogContext.Users
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
 
         await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync(stoppingToken);
 

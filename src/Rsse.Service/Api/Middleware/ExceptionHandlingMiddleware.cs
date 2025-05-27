@@ -21,6 +21,7 @@ public class ExceptionHandlingMiddleware(
         }
         catch (RsseBaseException ex)
         {
+            logger.LogDebug("{Type} | {Source} | {Message}", typeof(RsseBaseException), ex.Source, ex.Message);
             context.Response.StatusCode = ex switch
             {
                 RsseUserNotFoundException or RsseInvalidCredosException => StatusCodes.Status401Unauthorized,
@@ -28,8 +29,9 @@ public class ExceptionHandlingMiddleware(
                 _ => context.Response.StatusCode
             };
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            logger.LogTrace("{Type} | {Source}", typeof(OperationCanceledException), ex.Source);
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         }
         catch (Exception ex)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -172,46 +171,37 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         // ID тегов и номера кнопок с фронта совпадают
         await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
 
-        try
+        var processedNote =
+            await context.Notes.FindAsync([noteRequest.NoteIdExchange], cancellationToken: stoppingToken);
+
+        if (processedNote == null)
         {
-            var processedNote =
-                await context.Notes.FindAsync([noteRequest.NoteIdExchange], cancellationToken: stoppingToken);
-
-            if (processedNote == null)
-            {
-                throw new RsseInvalidDataException($"[{nameof(UpdateNote)}] null note entity");
-            }
-
-            processedNote.Title = noteRequest.Title;
-
-            processedNote.Text = noteRequest.Text;
-
-            context.Notes.Update(processedNote);
-
-            context.TagsToNotesRelation
-                .RemoveRange(context.TagsToNotesRelation
-                    .Where(relation =>
-                        relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
-
-            await context.TagsToNotesRelation
-                .AddRangeAsync(forAddition
-                    .Select(id =>
-                        new TagsToNotesEntity
-                        {
-                            NoteId = noteRequest.NoteIdExchange,
-                            TagId = id
-                        }), stoppingToken);
-
-            await context.SaveChangesAsync(stoppingToken);
-
-            await transaction.CommitAsync(_noneToken);
+            throw new RsseInvalidDataException($"[{nameof(UpdateNote)}] null note entity");
         }
-        catch
-        {
-            await transaction.RollbackAsync(_noneToken);
 
-            throw;
-        }
+        processedNote.Title = noteRequest.Title;
+
+        processedNote.Text = noteRequest.Text;
+
+        context.Notes.Update(processedNote);
+
+        context.TagsToNotesRelation
+            .RemoveRange(context.TagsToNotesRelation
+                .Where(relation =>
+                    relation.NoteId == noteRequest.NoteIdExchange && forDelete.Contains(relation.TagId)));
+
+        await context.TagsToNotesRelation
+            .AddRangeAsync(forAddition
+                .Select(id =>
+                    new TagsToNotesEntity
+                    {
+                        NoteId = noteRequest.NoteIdExchange,
+                        TagId = id
+                    }), stoppingToken);
+
+        await context.SaveChangesAsync(stoppingToken);
+
+        await transaction.CommitAsync(_noneToken);
     }
 
     /// <inheritdoc/>
@@ -219,26 +209,17 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
-        try
-        {
-            var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
-                userEntity.Email == credosRequest.OldCredos.Email &&
-                userEntity.Password == credosRequest.OldCredos.Password, cancellationToken);
-            if (processed == null)
-                throw new RsseInvalidDataException(
-                    $"[{nameof(UpdateCredos)}] credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
-            processed.Email = credosRequest.NewCredos.Email;
-            processed.Password = credosRequest.NewCredos.Password;
-            context.Users.Update(processed);
-            await context.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(_noneToken);
-        }
-        catch
-        {
-            await transaction.RollbackAsync(_noneToken);
-
-            throw;
-        }
+        var processed = await context.Users.FirstOrDefaultAsync(userEntity =>
+            userEntity.Email == credosRequest.OldCredos.Email &&
+            userEntity.Password == credosRequest.OldCredos.Password, cancellationToken);
+        if (processed == null)
+            throw new RsseInvalidDataException(
+                $"[{nameof(UpdateCredos)}] credos '{credosRequest.OldCredos.Email}:{credosRequest.OldCredos.Password}' are invalid");
+        processed.Email = credosRequest.NewCredos.Email;
+        processed.Password = credosRequest.NewCredos.Password;
+        context.Users.Update(processed);
+        await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(_noneToken);
     }
 
     /// <inheritdoc/>
@@ -253,35 +234,26 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var createdId = 0;
         await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
 
-        try
-        {
-            var forAddition = new NoteEntity { Title = noteRequest.Title, Text = noteRequest.Text };
+        var forAddition = new NoteEntity { Title = noteRequest.Title, Text = noteRequest.Text };
 
-            await context.Notes.AddAsync(forAddition, stoppingToken);
+        await context.Notes.AddAsync(forAddition, stoppingToken);
 
-            await context.SaveChangesAsync(stoppingToken);
+        await context.SaveChangesAsync(stoppingToken);
 
-            await context.TagsToNotesRelation
-                .AddRangeAsync(noteRequest.CheckedTags!
-                    .Select(id =>
-                        new TagsToNotesEntity
-                        {
-                            NoteId = forAddition.NoteId,
-                            TagId = id
-                        }), stoppingToken);
+        await context.TagsToNotesRelation
+            .AddRangeAsync(noteRequest.CheckedTags!
+                .Select(id =>
+                    new TagsToNotesEntity
+                    {
+                        NoteId = forAddition.NoteId,
+                        TagId = id
+                    }), stoppingToken);
 
-            await context.SaveChangesAsync(stoppingToken);
+        await context.SaveChangesAsync(stoppingToken);
 
-            await transaction.CommitAsync(_noneToken);
+        await transaction.CommitAsync(_noneToken);
 
-            createdId = forAddition.NoteId;
-        }
-        catch
-        {
-            await transaction.RollbackAsync(_noneToken);
-
-            throw;
-        }
+        createdId = forAddition.NoteId;
 
         return createdId;
     }
@@ -291,31 +263,22 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         await using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
 
-        try
+        var deletedEntries = 0;
+
+        var processedNote = await context.Notes.FindAsync([noteId], stoppingToken);
+
+        if (processedNote == null)
         {
-            var deletedEntries = 0;
-
-            var processedNote = await context.Notes.FindAsync([noteId], stoppingToken);
-
-            if (processedNote == null)
-            {
-                return deletedEntries;
-            }
-
-            context.Notes.Remove(processedNote);
-
-            deletedEntries = await context.SaveChangesAsync(stoppingToken);
-
-            await transaction.CommitAsync(_noneToken);
-
             return deletedEntries;
         }
-        catch
-        {
-            await transaction.RollbackAsync(_noneToken);
 
-            throw;
-        }
+        context.Notes.Remove(processedNote);
+
+        deletedEntries = await context.SaveChangesAsync(stoppingToken);
+
+        await transaction.CommitAsync(_noneToken);
+
+        return deletedEntries;
     }
 
     private async Task<bool> VerifyTitleNotExists(string title, CancellationToken ct)

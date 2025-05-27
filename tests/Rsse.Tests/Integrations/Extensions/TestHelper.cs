@@ -133,10 +133,10 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Добавить в запрос тестовую информацию и поменять токен отмены.
+    /// Добавить в запрос тестовую информацию при необходимости.
     /// </summary>
     /// <param name="httpRequest">Запрос.</param>
-    internal static void EnrichData(HttpRequestMessage httpRequest)
+    internal static void EnrichDataIfNecessary(HttpRequestMessage httpRequest)
     {
         var uriStr = httpRequest.RequestUri?.OriginalString;
         switch (uriStr)
@@ -165,6 +165,8 @@ public static class TestHelper
                     httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     return;
                 }
+
+            default: return;
         }
     }
 }

@@ -54,7 +54,9 @@ public class ReadService(IDataRepository repo)
         if (request?.CheckedTags?.Count == 0)
         {
             // Для пустого запроса считаем все теги отмеченными.
-            var allTags = await GetAllTags();
+            var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
+            var maxTagNumber = totalTags.Count;
+            var allTags = GetAllTagsCollection(maxTagNumber);
             request = request with { CheckedTags = allTags };
         }
 
@@ -91,11 +93,8 @@ public class ReadService(IDataRepository repo)
 
         bool IsSpecific() => int.TryParse(id, out noteId);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        async Task<List<int>> GetAllTags()
+        List<int> GetAllTagsCollection(int maxTagNumber)
         {
-            var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
-            var maxTagNumber = totalTags.Count;
             var allTags = Enumerable.Range(AppConstants.MinTagNumber, maxTagNumber).ToList();
             return allTags;
         }

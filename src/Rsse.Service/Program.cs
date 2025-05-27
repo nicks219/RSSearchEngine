@@ -20,6 +20,7 @@ TaskScheduler.UnobservedTaskException += (_, e) =>
     Log.Error("{Reporter} | unobserved:\r\n{Exception}", nameof(Program), e.Exception);
     e.SetObserved();
 };
+
 AppDomain.CurrentDomain.UnhandledException += (_, e) =>
 {
     var ex = e.ExceptionObject as Exception;
