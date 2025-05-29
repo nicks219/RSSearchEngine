@@ -29,13 +29,11 @@ services:
       - compose-pg-volume:/var/lib/postgresql/data
 
   tagit:
-    build:
-      context: .
-      dockerfile: Dockerfile-net-react
+    image: nick219nick/rsse-app:latest
     container_name: rsse
     restart: always
     ports:
-      - 5001:5000
+      - 5100:5000
 
 volumes:
   compose-mysql-volume:
