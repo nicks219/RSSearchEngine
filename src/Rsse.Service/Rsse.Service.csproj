@@ -31,6 +31,9 @@
         <PackageReference Include="MySqlBackup.NET" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
     </ItemGroup>
     <ItemGroup Label="Observability">
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
