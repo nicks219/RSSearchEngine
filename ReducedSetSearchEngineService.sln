@@ -81,9 +81,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE
 	ProjectSection(SolutionItems) = preProject
 		src\.dockerignore = src\.dockerignore
 		src\docker-compose-build.yml = src\docker-compose-build.yml
-		src\docker-compose.yml = src\docker-compose.yml
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
+		src\docker-compose-latest.yml = src\docker-compose-latest.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"

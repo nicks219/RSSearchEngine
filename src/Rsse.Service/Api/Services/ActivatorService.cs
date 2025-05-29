@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +41,10 @@ internal class ActivatorService(
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(ActivatorService), _count.ToString());
+                var currentDateTime = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time | {Date}",
+                    nameof(ActivatorService), _count.ToString(), currentDateTime);
 
                 await tokenizer.Initialize(stoppingToken);
 
