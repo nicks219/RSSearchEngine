@@ -9,11 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-// DataProtection не удалять, используется для tracing
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,9 +26,9 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
 using Serilog;
+// Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
+using Microsoft.AspNetCore.DataProtection;
 
 [assembly: InternalsVisibleTo("Rsse.Tests")]
 namespace SearchEngine.Api.Startup;
@@ -45,8 +42,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     internal const string AdditionalConnectionKey = "AdditionalConnection";
 
     private const string LogFileName = "service.log";
-
-    private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
     private readonly string[] _allowedOrigins =
     [
@@ -90,16 +85,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
+        services.TryAddCatalogStores(configuration, env);
 
-        var mysqlConnectionString = GetDefaultConnectionString();
-        var npgsqlConnectionString = GetAdditionalConnectionString();
-        if (string.IsNullOrEmpty(mysqlConnectionString) || string.IsNullOrEmpty(npgsqlConnectionString))
-        {
-            throw new NullReferenceException("Invalid connection string");
-        }
-
-        services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
-        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
         services.AddToolingDependencies();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
@@ -151,7 +138,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddRateLimiterInternal();
 #if TRACING_ENABLE
         services.AddTracingInternal();
-        services.AddDataProtection()
+        services
+            .AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "rsse-keys")))
             .SetApplicationName("rsse-app");
 #endif
@@ -221,7 +209,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
         });
 
-        AddLogging(loggerFactory);
+        // AddLogging(loggerFactory);
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 

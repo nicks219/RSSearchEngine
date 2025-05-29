@@ -16,8 +16,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
@@ -29,7 +28,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadService ReadService;
-    public required ServiceProviderStub Stub;
+    public required StubServiceProvider Stub;
 
     private readonly CancellationToken _token = CancellationToken.None;
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -37,7 +36,7 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new ServiceProviderStub();
+        Stub = new StubServiceProvider();
         var repo = Stub.Provider.GetRequiredService<IDataRepository>();
 
         ReadService = new ReadService(repo);
@@ -113,7 +112,7 @@ public class ReadTests
     public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
-        using var host = new ServiceProviderStub();
+        using var host = new StubServiceProvider();
         var readManager = Stub.Provider.GetRequiredService<ReadService>();
         var updateManager = Stub.Provider.GetRequiredService<UpdateService>();
 

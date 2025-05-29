@@ -12,7 +12,7 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Integrations.Api;
 

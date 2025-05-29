@@ -6,8 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
@@ -15,7 +14,7 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateService CreateService;
-    public required ServiceProviderStub Stub;
+    public required StubServiceProvider Stub;
     public required IDataRepository Repository;
 
     private readonly CancellationToken _token = CancellationToken.None;
@@ -23,7 +22,7 @@ public class CreateTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new ServiceProviderStub();
+        Stub = new StubServiceProvider();
         Repository = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         CreateService = new CreateService(Repository);
     }

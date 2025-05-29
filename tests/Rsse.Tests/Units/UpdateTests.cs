@@ -6,15 +6,14 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class UpdateTests
 {
-    public required ServiceProviderStub Stub;
+    public required StubServiceProvider Stub;
     public required UpdateService UpdateService;
 
     private const string Title = "0: key";
@@ -27,7 +26,7 @@ public class UpdateTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new ServiceProviderStub();
+        Stub = new StubServiceProvider();
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(10, _token);

@@ -6,17 +6,16 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tests.Units.Mocks.Repo;
 
-namespace SearchEngine.Tests.Units.Mocks;
+namespace SearchEngine.Tests.Units.Infra;
 
 /// <summary/> Для тестов, с двумя логгерами.
-public sealed class ServiceProviderStub : IDisposable
+public sealed class StubServiceProvider : IDisposable
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub()
+    public StubServiceProvider()
     {
         var services = new ServiceCollection();
 

@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Service.ApiModels;
-using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
@@ -22,7 +21,7 @@ using static SearchEngine.Service.Configuration.RouteConstants;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 [assembly: Parallelize(Workers = 4, Scope = ExecutionScope.ClassLevel)]
-namespace SearchEngine.Tests.Integrations;
+namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 [TestClass]
 public class IntegrationTests
@@ -30,7 +29,7 @@ public class IntegrationTests
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static readonly CancellationToken Token = CancellationToken.None;
 
-    private static CustomWebAppFactory<IntegrationStartup> _factory;
+    private static IntegrationWebAppFactory<IntegrationStartup> _factory;
     private static WebApplicationFactoryClientOptions _cookiesOptions;
     private static WebApplicationFactoryClientOptions _options;
 
@@ -63,12 +62,10 @@ public class IntegrationTests
             BaseAddress = BaseAddress,
             HandleCookies = true
         };
-
-        _factory = new CustomWebAppFactory<IntegrationStartup>();
     }
 
     [TestInitialize]
-    public void IntegrationTestsSetup() => _factory = new CustomWebAppFactory<IntegrationStartup>();
+    public void IntegrationTestsSetup() => _factory = new IntegrationWebAppFactory<IntegrationStartup>();
 
     [TestCleanup]
     public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();

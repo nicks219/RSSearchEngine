@@ -14,15 +14,14 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class CatalogTests
 {
-    public required ServiceProviderStub Stub;
+    public required StubServiceProvider Stub;
     public required CatalogService CatalogService;
     public required DeleteService DeleteService;
     public required FakeCatalogRepository Repo;
@@ -34,7 +33,7 @@ public class CatalogTests
     [TestInitialize]
     public async Task Initialize()
     {
-        Stub = new ServiceProviderStub();
+        Stub = new StubServiceProvider();
         var repo = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
 
         CatalogService = new CatalogService(repo);

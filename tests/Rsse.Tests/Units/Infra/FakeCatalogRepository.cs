@@ -8,7 +8,7 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 
-namespace SearchEngine.Tests.Units.Mocks.Repo;
+namespace SearchEngine.Tests.Units.Infra;
 
 /// <summary>
 /// Тестовый репозиторий.

@@ -4,11 +4,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.Scripts;
@@ -18,9 +16,8 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// <summary>
 /// Функционал работы с миграциями MySql.
 /// </summary>
-/// <param name="configuration">Конфигурация.</param>
 public class NpgsqlDbMigrator(
-    IConfiguration configuration,
+    NpgsqlDataSource npgsqlDataSource,
     ILogger<NpgsqlDbMigrator> logger,
     MigratorState migratorState) : IDbMigrator
 {
@@ -45,8 +42,6 @@ public class NpgsqlDbMigrator(
 
         logger.LogInformation("[{Reporter}] | {Method} start", nameof(NpgsqlDbMigrator), nameof(Create));
 
-        var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
-
         // файлы с версиями являются "историей" дампов, создание дампа также может запросить CreateNoteAndDumpAsync
         var backupFilesPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(ArchiveDirectory, $"{NpgsqlDumpPrefix}_backup_{_version}.txt")
@@ -69,7 +64,7 @@ public class NpgsqlDbMigrator(
         try
         {
             migratorState.Start();
-            await using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = npgsqlDataSource.CreateConnection();
 
             await connection.OpenAsync(stoppingToken);
             await using (var cmd = new NpgsqlCommand(NpgsqlScript.CreateDdl, connection))
@@ -164,8 +159,6 @@ public class NpgsqlDbMigrator(
 
         logger.LogInformation("[{Reporter}] | {Method} start", nameof(NpgsqlDbMigrator), nameof(Restore));
 
-        var connectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
-
         // в архиве всегда снимок последнего дампа
         var archiveTempPath = string.IsNullOrEmpty(fileName)
             ? Path.Combine(ArchiveTempDirectory, $"{NpgsqlDumpPrefix}_backup_.txt")
@@ -184,7 +177,7 @@ public class NpgsqlDbMigrator(
             var allTags = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlTagsSuffix}", stoppingToken);
             var allUsers = await File.ReadAllTextAsync($"{archiveTempPath}{NpgsqlUsersSuffix}", stoppingToken);
 
-            await using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = npgsqlDataSource.CreateConnection();
             await connection.OpenAsync(stoppingToken);
             await using var transaction = await connection.BeginTransactionAsync(stoppingToken);
 

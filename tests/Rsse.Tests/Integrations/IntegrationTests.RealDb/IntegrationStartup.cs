@@ -17,10 +17,9 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integrations.Api;
+namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.
@@ -30,7 +29,7 @@ public class IntegrationStartup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbsTestEnvironment();
+        services.AddDbsIntegrationTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options =>

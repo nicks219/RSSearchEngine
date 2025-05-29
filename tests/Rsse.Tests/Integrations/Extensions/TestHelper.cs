@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
@@ -16,6 +17,7 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Api;
+using SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -73,7 +75,7 @@ public static class TestHelper
     /// <param name="factory">Хост.</param>
     /// <param name="ct">Токен отмены.</param>
     // todo: перенести в сид если требуется очистка
-    internal static async Task CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory, CancellationToken ct)
+    internal static async Task CleanUpDatabases(WebApplicationFactory<IntegrationStartup> factory, CancellationToken ct)
     {
         var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);

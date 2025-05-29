@@ -11,7 +11,7 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
@@ -25,7 +25,7 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        using var stub = new ServiceProviderStub();
+        using var stub = new StubServiceProvider();
         var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
         var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 

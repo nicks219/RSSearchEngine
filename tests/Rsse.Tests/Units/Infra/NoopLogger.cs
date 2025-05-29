@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace SearchEngine.Tests.Units.Mocks;
+namespace SearchEngine.Tests.Units.Infra;
 
 /// <summary/> Для тестов
 public class NoopLogger<TModel> : ILogger<TModel>

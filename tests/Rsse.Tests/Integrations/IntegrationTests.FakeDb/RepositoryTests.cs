@@ -16,7 +16,7 @@ using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.Extensions;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
-namespace SearchEngine.Tests.Integrations;
+namespace SearchEngine.Tests.Integrations.IntegrationTests.FakeDb;
 
 [TestClass]
 public class RepositoryTests

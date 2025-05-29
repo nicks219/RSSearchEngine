@@ -12,15 +12,14 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class TokenizerTests
 {
-    public required ServiceProviderStub Stub;
+    public required StubServiceProvider Stub;
     public required IServiceScopeFactory ScopeFactory;
     public required ITokenizerProcessorFactory ProcessorFactory;
 
@@ -50,7 +49,7 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new ServiceProviderStub();
+        Stub = new StubServiceProvider();
         ScopeFactory = Stub.Provider.GetRequiredService<IServiceScopeFactory>();
         ProcessorFactory = Stub.Provider.GetRequiredService<ITokenizerProcessorFactory>();
         var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
