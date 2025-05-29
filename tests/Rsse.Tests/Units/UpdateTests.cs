@@ -1,50 +1,58 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
 [TestClass]
 public class UpdateTests
 {
+    public required ServiceProviderStub ServiceProviderStub;
     public required UpdateService UpdateService;
 
     private const string Title = "0: key";
     private const string Text = "test text text";
+
+    private readonly CancellationToken _token = CancellationToken.None;
+
     private int? _testNoteId;
 
     [TestInitialize]
     public void Initialize()
     {
-        var host = new ServiceProviderStub();
-        var repo = (FakeCatalogRepository)host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = host.Provider.GetRequiredService<ILogger<UpdateService>>();
+        ServiceProviderStub = new ServiceProviderStub();
+        var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
-        repo.CreateStubData(10);
-        _testNoteId = repo.ReadNoteId(Title);
+        repo.CreateStubData(10, _token);
+        _testNoteId = repo.ReadNoteId(Title, _token);
 
-        UpdateService = new UpdateService(repo, managerLogger);
+        UpdateService = new UpdateService(repo);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        ServiceProviderStub.Dispose();
     }
 
     [TestMethod]
-    public async Task UpdateManager_ShouldReports_ExpectedTagsCount()
+    public async Task UpdateService_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1);
+        var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1, _token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.EnrichedTags?.Count);
     }
 
     [TestMethod]
-    public async Task UpdateManager_ShouldUpdateNoteToExpected()
+    public async Task UpdateService_ShouldUpdateNote_Correctly()
     {
         // arrange:
         var requestDto = new NoteRequestDto
@@ -56,7 +64,7 @@ public class UpdateTests
         );
 
         // act:
-        var responseDto = await UpdateService.UpdateNote(requestDto);
+        var responseDto = await UpdateService.UpdateNote(requestDto, _token);
 
         // assert:
         Assert.AreEqual(Text, responseDto.Text);

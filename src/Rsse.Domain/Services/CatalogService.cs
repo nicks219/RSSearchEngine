@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using static SearchEngine.Service.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Services;
 
 /// <summary>
 /// Функционал каталога.
 /// </summary>
-public class CatalogService(IDataRepository repo, ILogger<CatalogService> logger)
+public class CatalogService(IDataRepository repo)
 {
     /// <summary/> Направление навигации по каталогу.
     public enum Direction
@@ -28,52 +27,36 @@ public class CatalogService(IDataRepository repo, ILogger<CatalogService> logger
     /// Получить страницу каталога по номеру.
     /// </summary>
     /// <param name="pageNumber">Номер страницы.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> ReadPage(int pageNumber)
+    public async Task<CatalogResultDto> ReadPage(int pageNumber, CancellationToken cancellationToken)
     {
-        try
-        {
-            var notesCount = await repo.ReadNotesCount();
+        var notesCount = await repo.ReadNotesCount(cancellationToken);
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, cancellationToken);
 
-            return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, ReadCatalogPageError);
-
-            return new CatalogResultDto { ErrorMessage = ReadCatalogPageError };
-        }
+        return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }
 
     /// <summary>
     /// Перейти на другую страницу.
     /// </summary>
     /// <param name="catalogRequest">Данные для навигации.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Страница каталога.</returns>
-    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest)
+    public async Task<CatalogResultDto> NavigateCatalog(CatalogRequestDto catalogRequest, CancellationToken cancellationToken)
     {
-        try
-        {
-            var direction = GetDirection(catalogRequest.Direction);
+        var direction = GetDirection(catalogRequest.Direction);
 
-            var pageNumber = catalogRequest.PageNumber;
+        var pageNumber = catalogRequest.PageNumber;
 
-            var notesCount = await repo.ReadNotesCount();
+        var notesCount = await repo.ReadNotesCount(cancellationToken);
 
-            pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
+        pageNumber = NavigateCatalogPages(direction, pageNumber, notesCount);
 
-            var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize);
+        var catalogPage = await repo.ReadCatalogPage(pageNumber, PageSize, cancellationToken);
 
-            return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, NavigateCatalogError);
-
-            return new CatalogResultDto { ErrorMessage = NavigateCatalogError };
-        }
+        return new CatalogResultDto { PageNumber = pageNumber, NotesCount = notesCount, CatalogPage = catalogPage };
     }
 
     /// <summary>

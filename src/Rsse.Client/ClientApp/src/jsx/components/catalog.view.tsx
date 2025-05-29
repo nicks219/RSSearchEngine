@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import {CatalogResponseDto} from "../dto/request.response.dto";
+import {CatalogResponseDto} from "../dto/catalog.response.dto.tsx";
 import {getNotesCount, getPageNumber} from "../common/dto.handlers";
 import {Doms} from "../dto/doms.tsx";
 import {JSX} from "react";

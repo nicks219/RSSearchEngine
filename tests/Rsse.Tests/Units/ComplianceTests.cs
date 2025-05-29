@@ -1,18 +1,17 @@
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 using SearchEngine.Api.Controllers;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Dto;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
@@ -20,29 +19,30 @@ namespace SearchEngine.Tests.Units;
 public class ComplianceTests
 {
     private const string Text = "чорт з ным зо сталом";
+    private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        var logger = Substitute.For<ILogger<ComplianceSearchController>>();
-        var sp = new ServiceProviderStub();
-        var tokenizer = sp.Provider.GetRequiredService<ITokenizerService>();
-        var complianceManager = sp.Provider.GetRequiredService<ComplianceSearchService>();
+        using var stub = new ServiceProviderStub();
+        var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+        var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
-        var complianceController = new ComplianceSearchController(complianceManager, logger);
-        complianceController.AddHttpContext(sp.Provider);
+        var complianceController = new ComplianceSearchController(complianceManager);
+        complianceController.AddHttpContext(stub.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        await tokenizer.Initialize();
+        await tokenizer.Initialize(CancellationToken.None);
 
         // act:
-        var actionResult = complianceController.GetComplianceIndices(Text);
-        var anonymousTypeAsResult = ((OkObjectResult)actionResult).Value;
-        var serialized = JsonSerializer.Serialize(anonymousTypeAsResult);
-        var deserialized = JsonSerializer.Deserialize<ComplianceResponseTestDto>(serialized);
+        var actionResult = complianceController.GetComplianceIndices(Text, _token);
+        var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+        var serialized = JsonSerializer.Serialize(okObjectResult);
+        var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
         // assert:
+        serialized.Should().Be("""{"res":{"1":2.3529411764705883},"error":null}""");
         deserialized.Should().NotBeNull();
         deserialized.Res.Should().NotBeNull();
 
@@ -50,7 +50,7 @@ public class ComplianceTests
             .Keys
             .ElementAt(0)
             .Should()
-            .Be("1");
+            .Be(1);
 
         deserialized.Res
             .Values

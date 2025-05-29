@@ -1,13 +1,12 @@
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
-using SearchEngine.Tests.Units.Mocks;
-using SearchEngine.Tests.Units.Mocks.Repo;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
 
@@ -15,29 +14,37 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateService CreateService;
-    public required ServiceProviderStub Host;
+    public required ServiceProviderStub ServiceProviderStub;
+    public required IDataRepository Repository;
+
+    private readonly CancellationToken _token = CancellationToken.None;
 
     [TestInitialize]
     public void Initialize()
     {
-        Host = new ServiceProviderStub();
-        var repo = Host.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Scope.ServiceProvider.GetRequiredService<ILogger<CreateService>>();
-        CreateService = new CreateService(repo, managerLogger);
+        ServiceProviderStub = new ServiceProviderStub();
+        Repository = ServiceProviderStub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        CreateService = new CreateService(Repository);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        ServiceProviderStub.Dispose();
     }
 
     [TestMethod]
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await CreateService.ReadEnrichedTagList();
+        var resultDto = await Repository.ReadEnrichedTagList(_token);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.EnrichedTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.Count);
     }
 
     [TestMethod]
-    public async Task CreateManager_ShouldCreatValidNote_Correctly()
+    public async Task CreateService_ShouldCreatValidNote_Correctly()
     {
         // arrange:
         var requestDto = new NoteRequestDto
@@ -49,16 +56,14 @@ public class CreateTests
         );
 
         // act:
-        var responseDto = await CreateService.CreateNote(requestDto);
-        var repo = Host.Provider.GetRequiredService<IDataRepository>();
-        var managerLogger = Host.Provider.GetRequiredService<ILogger<UpdateService>>();
+        var responseDto = await CreateService.CreateNote(requestDto, _token);
+        var repo = ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
-        var actualDto = await new UpdateService(repo, managerLogger).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange);
+        var actualDto = await new UpdateService(repo).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange, _token);
 
         // assert:
         responseDto.ErrorMessage.Should().BeNull();
         responseDto.Title.Should().Be("[OK]");
-        // todo: меняй таплы на нормальные контейнеры - начни со слоя репозитория
         Assert.AreEqual(requestDto.Title, actualDto.Title);
     }
 }

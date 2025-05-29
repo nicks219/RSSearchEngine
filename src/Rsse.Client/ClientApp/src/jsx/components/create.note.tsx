@@ -1,5 +1,5 @@
 ﻿import {useReducer} from "react";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {getTextResponse, getTitleResponse, setTextResponse, setTitleResponse} from "../common/dto.handlers";
 import {Doms} from "../dto/doms.tsx";
 

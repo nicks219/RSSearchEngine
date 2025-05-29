@@ -8,9 +8,9 @@ namespace SearchEngine.Data.Dto;
 public record NoteResultDto
 {
     /// <summary>
-    /// Представление списка тегов в виде строк "отмечено-не отмечено" в ответе.
+    /// Представление списка тегов в ответе в виде флагов:<br/><b>true</b> - отмечен | <b>false</b> - не отмечен.
     /// </summary>
-    public List<string>? CheckedUncheckedTags { get; }
+    public List<bool>? CheckedUncheckedTags { get; }
 
     /// <summary>
     /// Именование заметки в ответе.
@@ -49,11 +49,11 @@ public record NoteResultDto
         int noteIdExchange = 0,
         string text = "",
         string title = "",
-        List<string>? tagsCheckedUncheckedResponse = null)
+        List<bool>? checkedUncheckedTags = null)
     {
         Text = text;
         Title = title;
-        CheckedUncheckedTags = tagsCheckedUncheckedResponse ?? [];
+        CheckedUncheckedTags = checkedUncheckedTags ?? [];
         EnrichedTags = enrichedTags;
         NoteIdExchange = noteIdExchange;
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,14 @@ public static class HttpClientExtensions
     /// <summary>
     /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха
     /// </summary>
-    internal static async Task TryAuthorizeToService(this HttpClient client, string login = "admin", string password = "admin")
+    internal static async Task TryAuthorizeToService(
+        this HttpClient client,
+        string login = "admin",
+        string password = "admin",
+        CancellationToken ct = default)
     {
         var uri = new Uri($"{AccountLoginGetUrl}?email={login}&password={password}", UriKind.Relative);
-        using var authResponse = await client.GetAsync(uri);
+        using var authResponse = await client.GetAsync(uri, ct);
         authResponse.EnsureSuccessStatusCode();
         var headers = authResponse.Headers;
         var cookie = headers.FirstOrDefault(e => e.Key == "Set-Cookie").Value.First();
@@ -44,23 +49,24 @@ public static class HttpClientExtensions
     }
 
     /// <summary>
-    /// Выполнить вызов на ручку для тестов, вернуть результат запроса
+    /// Выполнить вызов на ручку для тестов, вернуть результат запроса.
     /// </summary>
-    /// <param name="client">клиент</param>
-    /// <param name="method">HTTP глагол</param>
-    /// <param name="uri">строка запроса</param>
-    /// <param name="content">содержимое запроса</param>
-    /// <param name="verify">проверять ли успешность вызова</param>
-    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Request method, Uri uri,
-        HttpContent? content = null, bool verify = true)
+    /// <param name="client">Клиент.</param>
+    /// <param name="method">HTTP глагол.</param>
+    /// <param name="uri">Строка запроса.</param>
+    /// <param name="content">Содержимое запроса.</param>
+    /// <param name="verify">Проверять ли успешность вызова.</param>
+    /// <param name="ct">Токен отмены.</param>
+    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Method method, Uri uri,
+        HttpContent? content = null, bool verify = true, CancellationToken ct = default)
     {
         //HttpMethod httpMethod = HttpMethod.Post;
         var response = method switch
         {
-            Request.Get => await client.GetAsync(uri),
-            Request.Post => await client.PostAsync(uri, content),
-            Request.Put => await client.PutAsync(uri, content),
-            Request.Delete => await client.DeleteAsync(uri),
+            Method.Get => await client.GetAsync(uri, ct),
+            Method.Post => await client.PostAsync(uri, content, ct),
+            Method.Put => await client.PutAsync(uri, content, ct),
+            Method.Delete => await client.DeleteAsync(uri, ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
 

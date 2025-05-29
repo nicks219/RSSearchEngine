@@ -2,7 +2,7 @@
 import {useContext, useEffect, useRef, useState} from "react";
 import {Loader} from "../common/loader";
 import {getStructuredTagsListResponse, getTextResponse,} from "../common/dto.handlers";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {UpdateSubmitButton} from "./update.submit";

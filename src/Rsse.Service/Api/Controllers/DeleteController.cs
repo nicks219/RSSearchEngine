@@ -1,14 +1,12 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
-using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -18,12 +16,13 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
-    ITokenizerService tokenizer,
+    IHostApplicationLifetime lifetime,
+    ITokenizerService tokenizerService,
     DeleteService deleteService,
-    ILogger<DeleteController> logger) : ControllerBase
+    CatalogService catalogService) : ControllerBase
 {
     /// <summary>
-    /// Удалить заметку.
+    /// Удалить заметку и вернуть обновленную страницу каталога.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
     /// <param name="pg">Номер страницы каталога с удаляемой заметкой.</param>
@@ -32,16 +31,13 @@ public class DeleteController(
     [Authorize(Constants.FullAccessPolicyName)]
     public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
     {
-        try
-        {
-            var response = await deleteService.DeleteNote(id, pg);
-            await tokenizer.Delete(id);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, DeleteNoteError);
-            return new CatalogResponse { ErrorMessage = DeleteNoteError };
-        }
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+
+        await deleteService.DeleteNote(id, stoppingToken);
+        await tokenizerService.Delete(id, stoppingToken);
+        var catalogResultDto = await catalogService.ReadPage(pg, stoppingToken);
+        var catalogResponse = catalogResultDto.MapFromDto();
+        return Ok(catalogResponse);
     }
 }

@@ -1,17 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository.Exceptions;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
-using Serilog;
 
 namespace SearchEngine.Tooling.MigrationAssistant;
 
@@ -20,16 +22,23 @@ namespace SearchEngine.Tooling.MigrationAssistant;
 /// </summary>
 /// <param name="configuration">Конфигурация.</param>
 /// <param name="factory">Из фабрики однократко получаем контексты бд для копирования данных.</param>
-internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactory factory) : IDbMigrator
+internal class MySqlDbMigrator(
+    IConfiguration configuration,
+    ILogger<MySqlDbMigrator> logger,
+    IServiceScopeFactory factory,
+    MigratorState migratorState) : IDbMigrator
 {
     private const int MaxVersion = 10;
+    private readonly CancellationToken _noneToken = CancellationToken.None;
     private int _version;
     private int _perSongVersion;
 
     /// <inheritdoc/>
-    public string Create(string? fileName)
+    public async Task<string> Create(string? fileName, CancellationToken stoppingToken)
     {
-        Log.Information("mysql migrator on create");
+        if (stoppingToken.IsCancellationRequested) return string.Empty;
+
+        logger.LogInformation("[{Reporter}] | {Method} started", nameof(MySqlDbMigrator), nameof(Create));
 
         var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
@@ -42,19 +51,26 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
             ? ref _version
             : ref _perSongVersion);
 
-        using var conn = new MySqlConnection(connectionString);
+        await using var conn = new MySqlConnection(connectionString);
 
-        using var cmd = new MySqlCommand();
+        await using var cmd = new MySqlCommand();
 
         using var mb = new MySqlBackup(cmd);
 
         cmd.Connection = conn;
 
-        conn.Open();
+        // уточнить необходимость открывать соединение перед вызовом import и отметить в комментарии
+        await conn.OpenAsync(stoppingToken);
 
-        mb.ExportToFile(fileWithPath);
-
-        conn.Close();
+        try
+        {
+            migratorState.Start();
+            mb.ExportToFile(fileWithPath);
+        }
+        finally
+        {
+            migratorState.End();
+        }
 
         return fileWithPath;
 
@@ -63,9 +79,11 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
     }
 
     /// <inheritdoc/>
-    public string Restore(string? fileName)
+    public async Task<string> Restore(string? fileName, CancellationToken stoppingToken)
     {
-        Log.Information("mysql migrator on restore");
+        if (stoppingToken.IsCancellationRequested) return string.Empty;
+
+        logger.LogInformation("[{Reporter}] | {Method} started", nameof(MySqlDbMigrator), nameof(Restore));
 
         var connectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
 
@@ -80,107 +98,157 @@ internal class MySqlDbMigrator(IConfiguration configuration, IServiceScopeFactor
             ? Path.Combine(Constants.StaticDirectory, $"backup_{version}{Constants.MySqlDumpExt}")
             : Path.Combine(Constants.StaticDirectory, $"_{fileName}_{Constants.MySqlDumpExt}");
 
-        using var conn = new MySqlConnection(connectionString);
+        await using var conn = new MySqlConnection(connectionString);
 
-        using var cmd = new MySqlCommand();
+        await using var cmd = new MySqlCommand();
 
         using var mb = new MySqlBackup(cmd);
 
+        // уточнить необходимость открывать соединение перед вызовом import и отметить в комментарии
         cmd.Connection = conn;
 
-        conn.Open();
+        await conn.OpenAsync(stoppingToken);
 
-        mb.ImportFromFile(fileWithPath);
-
-        conn.Close();
+        try
+        {
+            migratorState.Start();
+            mb.ImportFromFile(fileWithPath);
+        }
+        finally
+        {
+            migratorState.End();
+        }
 
         return fileWithPath;
     }
 
     /// <inheritdoc/>
-    public async Task CopyDbFromMysqlToNpgsql()
+    public async Task CopyDbFromMysqlToNpgsql(CancellationToken stoppingToken)
     {
+        if (stoppingToken.IsCancellationRequested) return;
+        logger.LogInformation("[{Reporter}] | {Method} started", nameof(MySqlDbMigrator), nameof(CopyDbFromMysqlToNpgsql));
+
         using var scope = factory.CreateScope();
-        await using var mysqlCatalogContext = (MysqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
-        await using var npgsqlCatalogContext = (NpgsqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
-        await CopyDbFromMysqlToNpgsql(mysqlCatalogContext, npgsqlCatalogContext);
-    }
-
-    // todo: методу миграции не место в проксирующем репо
-    // завязан на резолве контекстов в конструкторах, добавлена compile-time проверка
-    public async Task CopyDbFromMysqlToNpgsql(MysqlCatalogContext mysqlCatalogContext, NpgsqlCatalogContext npgsqlCatalogContext)
-    {
-        // todo: какое время жизни контекста? блокировать остальные операции с контекстом и выполнять данную только по завершению остальных?
-        //var mysqlCatalogContext = (writerPrimary as CatalogRepository<MysqlCatalogContext>).GetReaderContext();
-        //var npgsqlCatalogContext = (writerSecondary as CatalogRepository<NpgsqlCatalogContext>).GetReaderContext();
-        if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
-            throw new InvalidOperationException($"[Warning] {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
-
-        // пересоздаём базу перед копированием данных
-        await npgsqlCatalogContext.Database.EnsureDeletedAsync();
-        await npgsqlCatalogContext.Database.EnsureCreatedAsync();
-
-        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
-        var notes = mysqlCatalogContext.Notes.Select(note => note).ToList();
-        var tags = mysqlCatalogContext.Tags.Select(tag => tag).ToList();
-        var tagsToNotes = mysqlCatalogContext.TagsToNotesRelation.Select(relation => relation).ToList();
-
-        var users = mysqlCatalogContext.Users.Select(user => user).ToList();
-
-        await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync();
+        var mysqlCatalogContext = (MysqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(MysqlCatalogContext));
+        var npgsqlCatalogContext = (NpgsqlCatalogContext)scope.ServiceProvider.GetRequiredService(typeof(NpgsqlCatalogContext));
 
         try
         {
-            // notes, tags, relations:
-            await npgsqlCatalogContext.Notes.AddRangeAsync(notes);
-            await npgsqlCatalogContext.Tags.AddRangeAsync(tags);
-            await npgsqlCatalogContext.TagsToNotesRelation.AddRangeAsync(tagsToNotes);
-
-            // users:
-            await npgsqlCatalogContext.Users.ExecuteDeleteAsync();
-            await npgsqlCatalogContext.Users.AddRangeAsync(users);
-
-            await npgsqlCatalogContext.SaveChangesAsync();
-
-            // мы заполнили значение ключей "вручную" и EF не изменил identity
-            await PgSetVals(npgsqlCatalogContext);
-
-            await transaction.CommitAsync();
+            migratorState.Start();
+            await CopyDbFromMysqlToNpgsql(mysqlCatalogContext, npgsqlCatalogContext, stoppingToken);
         }
-        catch (DataExistsException)
+        finally
         {
-            await transaction.RollbackAsync();
-        }
-        catch (Exception ex)
-        {
-            // include error detail:
-            await transaction.RollbackAsync();
-            Console.WriteLine(ex.Message);
-            throw new Exception($"[{nameof(CopyDbFromMysqlToNpgsql)}: Repo]", ex);
+            migratorState.End();
         }
     }
 
-    // <summary/> Выставить актуальные значения ключей для postgres.
-    private static async Task PgSetVals(BaseCatalogContext dbContext)
+    /// <summary>
+    /// Копировать данные из MySql в Postgres.
+    /// </summary>
+    private async Task CopyDbFromMysqlToNpgsql(
+        MysqlCatalogContext mysqlCatalogContext,
+        NpgsqlCatalogContext npgsqlCatalogContext,
+        CancellationToken stoppingToken)
+    {
+        if (mysqlCatalogContext == null || npgsqlCatalogContext == null)
+            throw new InvalidOperationException(
+                $"{nameof(MySqlDbMigrator)} | {nameof(CopyDbFromMysqlToNpgsql)} | null context(s).");
+
+        // AddRangeAsync вместе с таблицей Notes подхватит селектнутые отношения, на это поведение нельзя полагаться
+        var notes = await mysqlCatalogContext.Notes
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        var tags = await mysqlCatalogContext.Tags
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        var tagsToNotes = await mysqlCatalogContext.TagsToNotesRelation
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        var users = await mysqlCatalogContext.Users
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: stoppingToken);
+
+        await using var transaction = await npgsqlCatalogContext.Database.BeginTransactionAsync(stoppingToken);
+
+        // очищаем таблицы postgres:
+        await CleanUpDb(npgsqlCatalogContext, stoppingToken);
+
+        // notes, tags, relations:
+        await npgsqlCatalogContext.Notes.AddRangeAsync(notes, stoppingToken);
+        await npgsqlCatalogContext.Tags.AddRangeAsync(tags, stoppingToken);
+        await npgsqlCatalogContext.TagsToNotesRelation.AddRangeAsync(tagsToNotes, stoppingToken);
+
+        // users:
+        await npgsqlCatalogContext.Users.ExecuteDeleteAsync(cancellationToken: stoppingToken);
+        await npgsqlCatalogContext.Users.AddRangeAsync(users, stoppingToken);
+
+        await npgsqlCatalogContext.SaveChangesAsync(stoppingToken);
+
+        // мы заполнили значение ключей "вручную" и EF не изменил identity
+        await PgSetVals(npgsqlCatalogContext, stoppingToken);
+
+        await transaction.CommitAsync(_noneToken);
+    }
+
+    /// <summary>
+    /// Очистить таблицы Postgres.
+    /// </summary>
+    /// <param name="dbContext">Контекст, представляющий доступ к бд.</param>
+    /// <param name="stoppingToken">Токен отмены.</param>
+    private async Task CleanUpDb(BaseCatalogContext dbContext, CancellationToken stoppingToken)
+    {
+        CheckIfProviderSupported(dbContext);
+
+        logger.LogInformation("[{Reporter}] | {Method} started", nameof(MySqlDbMigrator), nameof(CleanUpDb));
+        var commands = new List<string>
+        {
+            """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
+            """TRUNCATE TABLE "TagsToNotes" RESTART IDENTITY CASCADE;""",
+            """TRUNCATE TABLE "Tag" RESTART IDENTITY CASCADE;""",
+            """TRUNCATE TABLE "Note" RESTART IDENTITY CASCADE;"""
+        };
+        foreach (var command in commands)
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(command, cancellationToken: stoppingToken);
+        }
+    }
+
+    /// <summary>
+    /// Выставить актуальные значения ключей для Postgres.
+    /// </summary>
+    private async Task PgSetVals(BaseCatalogContext dbContext, CancellationToken stoppingToken)
+    {
+        CheckIfProviderSupported(dbContext);
+
+        logger.LogInformation("[{Reporter}] | {Method} started", nameof(MySqlDbMigrator), nameof(CleanUpDb));
+        var commands = new List<string>
+        {
+            """SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""",
+            """SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""",
+            """SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));"""
+        };
+        foreach (var command in commands)
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(command, cancellationToken: stoppingToken);
+        }
+    }
+
+    /// <summary>
+    /// Удостовериться в том, что провайдер бд поддерживается.
+    /// </summary>
+    /// <param name="dbContext">Контекст бд.</param>
+    /// <exception cref="NotSupportedException">Провайдер не поддерживается.</exception>
+    private static void CheckIfProviderSupported(BaseCatalogContext dbContext)
     {
         if (dbContext.Database.ProviderName != "Npgsql.EntityFrameworkCore.PostgreSQL")
         {
-            throw new NotSupportedException($"{nameof(PgSetVals)} | '{dbContext.Database.ProviderName}' provider is not supported.");
+            throw new NotSupportedException(
+                $"[{nameof(CheckIfProviderSupported)}] | '{dbContext.Database.ProviderName}' provider is not supported.");
         }
-
-        var noteRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Note"', 'NoteId'),(SELECT MAX("NoteId") FROM "Note"));""");
-        var tagRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Tag"', 'TagId'),(SELECT MAX("TagId") FROM "Tag"));""");
-        var userRows = await dbContext.Database.ExecuteSqlRawAsync("""SELECT setval(pg_get_serial_sequence('"Users"', 'Id'),(SELECT MAX("Id") FROM "Users"));""");
-        Console.WriteLine($"repo set val | noteRows : {noteRows} | tagRows : {tagRows} | userRows : {userRows}");
     }
 }
 
-// TODO: миграции можно реализовать средствами какой-либо утилиты, например:
-
-// export DOTNET_ROLL_FORWARD=LatestMajor
-// Microsoft.EntityFrameworkCore.Design
-// dotnet new tool-manifest
-// dotnet tool update dotnet-ef (7.0.1)
-// dotnet ef dbcontext list
-// dotnet ef migrations list
-// создаём миграцию из папки RsseBase: dotnet ef migrations add Init -s "./" -p "../Rsse.Data"

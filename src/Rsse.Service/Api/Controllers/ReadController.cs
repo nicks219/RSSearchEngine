@@ -1,14 +1,12 @@
 using System;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -19,8 +17,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
     ReadService readService,
-    UpdateService updateService,
-    ILogger<ReadController> logger) : ControllerBase
+    UpdateService updateService) : ControllerBase
 {
     private static bool _randomElection = true;
 
@@ -28,29 +25,28 @@ public class ReadController(
     /// Переключить режим выбора следующей заметки.
     /// </summary>
     [HttpGet(RouteConstants.ReadElectionGetUrl)]
-    public ActionResult SwitchNodeElectionMode()
+    public ActionResult<RandomElectionResponse> SwitchNodeElectionMode(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         _randomElection = !_randomElection;
-        return Ok(new { RandomElection = _randomElection });
+        var response = new RandomElectionResponse(RandomElection: _randomElection);
+        return Ok(response);
     }
 
     /// <summary>
     /// Прочитать заголовок заметки по её идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
-    public async Task<ActionResult> ReadTitleByNoteId(string id)
+    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(string id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var res = await readService.ReadTitleByNoteId(int.Parse(id));
-            return Ok(new { res });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, ReadTitleByNoteIdError);
-            return BadRequest(ReadTitleByNoteIdError);
-        }
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
+        var title = await readService.ReadTitleByNoteId(int.Parse(id), cancellationToken);
+        var response = new StringResponse(Res: title);
+        return Ok(response);
     }
 
     /// <summary>
@@ -58,86 +54,65 @@ public class ReadController(
     /// </summary>
     /// <param name="request">Контейнер с отмеченными тегами.</param>
     /// <param name="id">Строка с идентификатором, если требуется.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
     [HttpPost(RouteConstants.ReadNotePostUrl)]
-    public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote([FromBody] NoteRequest? request, [FromQuery] string? id)
+    public async Task<ActionResult<NoteResponse>> GetNextOrSpecificNote(
+        [FromBody] NoteRequest? request,
+        [FromQuery] string? id,
+        CancellationToken cancellationToken)
     {
-        try
-        {
-            var noteRequestDto = request?.MapToDto();
-            if (noteRequestDto?.CheckedTags?.Count == 0)
-            {
-                // для пустого запроса считаем все теги отмеченными
-                // todo: перенести в маппер
-                noteRequestDto = noteRequestDto with { CheckedTags = Enumerable.Range(1, 44).ToList() };
-            }
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 
-            var response = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            logger.LogError(ex, ElectNoteError);
-            return new NoteResponse { ErrorMessage = ElectNoteError };
-        }
+        var noteRequestDto = request?.MapToDto();
+        var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection, cancellationToken);
+        var noteResponse = noteResultDto.MapFromDto();
+        return Ok(noteResponse);
     }
 
     /// <summary>
     /// Получить полный список тегов.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.ReadTagsGetUrl)]
-    public async Task<ActionResult<NoteResponse>> ReadTagList()
+    public async Task<ActionResult<NoteResponse>> ReadTagList(CancellationToken cancellationToken)
     {
-        try
-        {
-            var response = await readService.ReadEnrichedTagList();
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, ReadTagListError);
-            return new NoteResponse { ErrorMessage = ReadTagListError };
-        }
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
+        var noteResultDto = await readService.ReadEnrichedTagList(cancellationToken);
+        var response = noteResultDto.MapFromDto();
+        return Ok(response);
     }
 
     /// <summary>
     /// Получить список тегов, под авторизацией.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [Authorize, HttpGet(RouteConstants.ReadTagsForCreateAuthGetUrl)]
     [Obsolete("используйте ReadController.ReadTagList")]
     // todo: неудачный рефакторинг, исправить
-    public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate()
+    public async Task<ActionResult<NoteResponse>> GetStructuredTagListForCreate(CancellationToken cancellationToken)
     {
-        try
-        {
-            var response = await ReadTagList();
-            return response;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetTagListForCreateError);
-            return new NoteResponse { ErrorMessage = GetTagListForCreateError };
-        }
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
+        // Отдаётся ответ, полученный из ручки, а не из сервиса.
+        var actionNoteResponse = await ReadTagList(cancellationToken);
+        return actionNoteResponse;
     }
 
     /// <summary>
     /// Получить обновляемую заметку.
     /// </summary>
     /// <param name="id">Идентификатор обновляемой заметки.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [Authorize, HttpGet(RouteConstants.ReadNoteWithTagsForUpdateAuthGetUrl)]
     // todo: неудачный рефакторинг, исправить
-    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id)
+    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var response = await updateService.GetNoteWithTagsForUpdate(id);
-            return response.MapFromDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, GetNoteWithTagsForUpdateError);
-            return new NoteResponse { ErrorMessage = GetNoteWithTagsForUpdateError };
-        }
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
+        var noteResultDto = await updateService.GetNoteWithTagsForUpdate(id, cancellationToken);
+        var noteResponse = noteResultDto.MapFromDto();
+        return Ok(noteResponse);
     }
 }

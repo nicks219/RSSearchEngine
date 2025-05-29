@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Rsse.Generator;
 
@@ -13,11 +14,11 @@ namespace Rsse.Generator;
 [ExcludeFromCodeCoverage]
 internal abstract class Generator
 {
-    private static int Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
         if (args.Length != 3)
         {
-            Console.Error.WriteLine("Usage: Rsse.Generator <dllPath> <className> <outputFile>");
+            await Console.Error.WriteLineAsync("Usage: Rsse.Generator <dllPath> <className> <outputFile>");
             return 1;
         }
 
@@ -42,32 +43,32 @@ internal abstract class Generator
                 .Where(f => f is { IsLiteral: true, IsInitOnly: false })
                 .ToDictionary(f => f.Name, f => f.GetRawConstantValue());
 
-            using var sw = new StreamWriter(outputFile);
+            await using var sw = new StreamWriter(outputFile);
             if (isJson)
             {
-                sw.WriteLine("{");
+                await sw.WriteLineAsync("{");
                 var last = fields.Last();
                 foreach (var pair in fields)
                 {
                     var comma = pair.Key == last.Key ? "" : ",";
-                    sw.WriteLine($"  \"{char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}\": \"{pair.Value}\"{comma}");
+                    await sw.WriteLineAsync($"  \"{char.ToLower(pair.Key[0])}{pair.Key[1..]}\": \"{pair.Value}\"{comma}");
                 }
 
-                sw.WriteLine("}");
+                await sw.WriteLineAsync("}");
                 return 1;
             }
 
             if (!isTsx) return 0;
 
-            sw.WriteLine("export const RouteConstants = {");
+            await sw.WriteLineAsync("export const RouteConstants = {");
             var lastKvp = fields.Last();
             foreach (var pair in fields)
             {
                 var comma = pair.Key == lastKvp.Key ? "" : ",";
-                sw.WriteLine($"  {char.ToLower(pair.Key[0])}{pair.Key.Substring(1)}: \"{pair.Value}\"{comma}");
+                await sw.WriteLineAsync($"  {char.ToLower(pair.Key[0])}{pair.Key[1..]}: \"{pair.Value}\"{comma}");
             }
 
-            sw.WriteLine("} as const;");
+            await sw.WriteLineAsync("} as const;");
             return 0;
         }
         catch (Exception ex)

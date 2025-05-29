@@ -1,8 +1,12 @@
+using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Configuration;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling;
 
@@ -12,6 +16,7 @@ namespace SearchEngine.Api.Services;
 /// Сервис запуска по расписанию инициализации функционала токенизатора.
 /// </summary>
 internal class ActivatorService(
+    MigratorState migratorState,
     ITokenizerService tokenizer,
     IServiceScopeFactory factory,
     ILogger<ActivatorService> logger) : BackgroundService
@@ -30,26 +35,68 @@ internal class ActivatorService(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        DatabaseInitializer.CreateAndSeed(factory, logger);
+        await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
 
         try
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time", nameof(ActivatorService), _count.ToString());
+                var currentDateTime = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-                _count++;
+                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time | {Date}",
+                    nameof(ActivatorService), _count.ToString(), currentDateTime);
 
-                await tokenizer.Initialize();
+                await tokenizer.Initialize(stoppingToken);
 
                 logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 
                 await Task.Delay(WaitMs, stoppingToken);
+
+                _count++;
             }
         }
         finally
         {
             logger.LogInformation("[{Reporter}] graceful shutdown, cycles counter: '{Count}'", nameof(ActivatorService), _count.ToString());
         }
+    }
+
+    /// <summary>
+    /// Попытаться дождаться завершения миграций при инициализации процесса остановки хоста.
+    /// </summary>
+    /// <param name="stoppingToken">Токен начала остановки хоста.</param>
+    public override async Task StopAsync(CancellationToken stoppingToken)
+    {
+        if (!migratorState.IsMigrating)
+        {
+            return;
+        }
+
+        logger.LogWarning("{Reporter} | graceful shutdown: waiting for migration to complete...",
+            nameof(ActivatorService));
+
+        try
+        {
+
+            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(AppConstants.WaitMigratorTotalSeconds));
+            while (migratorState.IsMigrating && !timeoutCts.IsCancellationRequested)
+            {
+                await Task.Delay(AppConstants.WaitMigratorNextCheckMs, timeoutCts.Token);
+            }
+        }
+        finally
+        {
+            if (migratorState.IsMigrating)
+            {
+                logger.LogError("{Reporter} | shutdown timeout: migration not finished...", nameof(ActivatorService));
+            }
+            else
+            {
+                logger.LogInformation("{Reporter} | shutdown timeout: migration finished", nameof(ActivatorService));
+            }
+        }
+
+        await base.StopAsync(stoppingToken);
     }
 }

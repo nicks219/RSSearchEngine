@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,7 +18,7 @@ public abstract class DatabaseInitializer
     /// <summary>
     /// Инициализировать две базы данных, вызывается однократно.
     /// </summary>
-    public static void CreateAndSeed(IServiceScopeFactory factory, ILogger logger)
+    public static async Task CreateAndSeedAsync(IServiceScopeFactory factory, ILogger logger, CancellationToken ct)
     {
         // чтобы не закрывать контекст в корневом scope провайдера
         using var scope = factory.CreateScope();
@@ -25,18 +27,19 @@ public abstract class DatabaseInitializer
 
         try
         {
-            var readerCreated = mysqlContext.Database.EnsureCreated();
-            var writerCreated = npgsqlContext.Database.EnsureCreated();
+            var readerCreated = await mysqlContext.Database.EnsureCreatedAsync(ct);
+            var writerCreated = await npgsqlContext.Database.EnsureCreatedAsync(ct);
 
-            SeedDatabase(mysqlContext, readerCreated);
-            SeedDatabase(npgsqlContext, writerCreated);
+            await SeedDatabase(mysqlContext, readerCreated, ct);
+            await SeedDatabase(npgsqlContext, writerCreated, ct);
 
             logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
                 nameof(DatabaseInitializer), readerCreated, writerCreated);
         }
         catch (Exception ex)
         {
-            logger.LogError("[{Reporter}] error | source: {Source} | ensure created error: '{Message}'", nameof(DatabaseInitializer), ex.Source, ex.Message);
+            logger.LogError("[{Reporter}] error | source: {Source} | ensure created error: '{Message}'",
+                nameof(DatabaseInitializer), ex.Source, ex.Message);
         }
     }
 
@@ -45,7 +48,8 @@ public abstract class DatabaseInitializer
     /// </summary>
     /// <param name="context">Контекст базы данных.</param>
     /// <param name="created">Была ли база создана.</param>
-    private static void SeedDatabase(BaseCatalogContext context, bool created)
+    /// <param name="ct"></param>
+    private static async Task SeedDatabase(BaseCatalogContext context, bool created, CancellationToken ct)
     {
         var database = context.Database;
         switch (database.ProviderName)
@@ -53,7 +57,7 @@ public abstract class DatabaseInitializer
             case "Npgsql.EntityFrameworkCore.PostgreSQL":
                 if (created)
                 {
-                    var raws = database.ExecuteSqlRaw(NpgsqlScript.CreateUserOnlyData);
+                    var raws = await database.ExecuteSqlRawAsync(NpgsqlScript.CreateUserOnlyData, ct);
                     Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
                 }
 
@@ -62,7 +66,7 @@ public abstract class DatabaseInitializer
             case "Pomelo.EntityFrameworkCore.MySql":
                 if (created)
                 {
-                    var raws = database.ExecuteSqlRaw(MySqlScript.CreateStubData);
+                    var raws = await database.ExecuteSqlRawAsync(MySqlScript.CreateStubData, ct);
                     Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
                 }
 
@@ -73,13 +77,13 @@ public abstract class DatabaseInitializer
 
                 if (!created)
                 {
-                    database.EnsureDeleted();
-                    created = database.EnsureCreated();
+                    await database.EnsureDeletedAsync(ct);
+                    created = await database.EnsureCreatedAsync(ct);
                 }
 
                 if (created)
                 {
-                    var rows = database.ExecuteSqlRaw(SQLiteIntegrationTestScript.CreateTestData);
+                    var rows = await database.ExecuteSqlRawAsync(SQLiteIntegrationTestScript.CreateTestData, ct);
                     Console.WriteLine($"[Sqlite] [ROWS AFFECTED] {rows}");
                 }
 
@@ -88,7 +92,7 @@ public abstract class DatabaseInitializer
             case "Microsoft.EntityFrameworkCore.SqlServer":
                 if (created)
                 {
-                    var raws = database.ExecuteSqlRaw(MsSqlScript.CreateStubData);
+                    var raws = await database.ExecuteSqlRawAsync(MsSqlScript.CreateStubData, ct);
                     Console.WriteLine($"[SqlServer] [ROWS AFFECTED] {raws}");
                 }
 

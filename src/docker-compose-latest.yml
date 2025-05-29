@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+
+  mysql:
+    image: mysql:8.0.31-debian
+    container_name: mysql_rsse
+    environment:
+      - MYSQL_USER=1
+      - MYSQL_PASSWORD=1
+      - MYSQL_DATABASE=tagit
+      - MYSQL_ROOT_PASSWORD=1
+    restart: always
+    expose:
+      - 3306
+    volumes:
+      - compose-mysql-volume:/var/lib/mysql
+
+  postgres:
+    image: postgres:17.4-alpine3.21
+    container_name: postgres_rsse
+    environment:
+      POSTGRES_PASSWORD: 1
+      POSTGRES_USER: 1
+      POSTGRES_DB: tagit
+    expose:
+      - 5432
+    volumes:
+      - compose-pg-volume:/var/lib/postgresql/data
+
+  tagit:
+    image: nick219nick/rsse-app:latest
+    container_name: rsse
+    restart: always
+    ports:
+      - 5100:5000
+
+volumes:
+  compose-mysql-volume:
+  compose-pg-volume:

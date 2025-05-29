@@ -1,97 +1,70 @@
-using System;
-using System.Collections.Generic;
+
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using static SearchEngine.Service.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Services;
 
 /// <summary>
 /// Функционал обновления заметок.
 /// </summary>
-public class UpdateService(IDataRepository repo, ILogger<UpdateService> logger)
+public class UpdateService(IDataRepository repo)
 {
     /// <summary>
     /// Обновить заметку.
     /// </summary>
     /// <param name="updatedNoteRequest">Данные для обновления.</param>
+    /// <param name="stoppingToken">Токен отмены.</param>
     /// <returns>Обновленная заметка.</returns>
-    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest)
+    public async Task<NoteResultDto> UpdateNote(NoteRequestDto updatedNoteRequest, CancellationToken stoppingToken)
     {
-        try
+        if (updatedNoteRequest.CheckedTags == null
+            || string.IsNullOrEmpty(updatedNoteRequest.Text)
+            || string.IsNullOrEmpty(updatedNoteRequest.Title)
+            || updatedNoteRequest.CheckedTags.Count == 0)
         {
-            if (updatedNoteRequest.CheckedTags == null
-                || string.IsNullOrEmpty(updatedNoteRequest.Text)
-                || string.IsNullOrEmpty(updatedNoteRequest.Title)
-                || updatedNoteRequest.CheckedTags.Count == 0)
-            {
-                return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange);
-            }
-
-            var initialNoteTags = await repo
-                .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange);
-
-            await repo.UpdateNote(initialNoteTags, updatedNoteRequest);
-
-            return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange);
+            return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, UpdateNoteError);
 
-            return new NoteResultDto { ErrorMessage = UpdateNoteError };
-        }
+        var initialNoteTags = await repo
+            .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange, stoppingToken);
+
+        await repo.UpdateNote(initialNoteTags, updatedNoteRequest, stoppingToken);
+
+        return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
     }
 
     /// <summary>
     /// Прочитать обновляемую заметку.
     /// </summary>
     /// <param name="originalNoteId">Идентификатор обновляемой заметки.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
-    public async Task<NoteResultDto> GetNoteWithTagsForUpdate(int originalNoteId)
+    public async Task<NoteResultDto> GetNoteWithTagsForUpdate(int originalNoteId, CancellationToken cancellationToken)
     {
-        try
+        string text;
+        var title = string.Empty;
+
+        var note = await repo.ReadNote(originalNoteId, cancellationToken);
+
+        if (note != null)
         {
-            string text;
-            var title = string.Empty;
+            text = note.Text;
 
-            var note = await repo.ReadNote(originalNoteId);
-
-            if (note != null)
-            {
-                text = note.Text;
-
-                title = note.Title;
-            }
-            else
-            {
-                text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
-            }
-
-            var tagList = await repo.ReadEnrichedTagList();
-
-            var noteTags = await repo.ReadNoteTagIds(originalNoteId);
-
-            var checkboxes = new List<string>();
-
-            for (var i = 0; i < tagList.Count; i++)
-            {
-                checkboxes.Add("unchecked");
-            }
-
-            foreach (var i in noteTags)
-            {
-                checkboxes[i - 1] = "checked";
-            }
-
-            return new NoteResultDto(tagList, originalNoteId, text, title, checkboxes);
+            title = note.Title;
         }
-        catch (Exception ex)
+        else
         {
-            logger.LogError(ex, GetOriginalNoteError);
-            return new NoteResultDto { ErrorMessage = GetOriginalNoteError };
+            text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
         }
+
+        var tagsBeforeUpdate = await repo.ReadEnrichedTagList(cancellationToken);
+        var totalTagsCount = tagsBeforeUpdate.Count;
+        var noteTagIds = await repo.ReadNoteTagIds(originalNoteId, cancellationToken);
+
+        var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
+
+        return new NoteResultDto(tagsBeforeUpdate, originalNoteId, text, title, checkboxes);
     }
 }

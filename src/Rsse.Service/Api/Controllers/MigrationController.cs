@@ -1,19 +1,16 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using SearchEngine.Data.Configuration;
+using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
 using Swashbuckle.AspNetCore.Annotations;
-using static SearchEngine.Api.Messages.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -23,32 +20,26 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
-    IEnumerable<IDbMigrator> migrators,
-    ITokenizerService tokenizer,
-    ILogger<MigrationController> logger) : ControllerBase
+    IHostApplicationLifetime lifetime,
+    IDbMigratorFactory migratorFactory,
+    ITokenizerService tokenizerService) : ControllerBase
 {
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
-    // todo: удалить после переходя на Postgres
     [HttpGet(RouteConstants.MigrationCopyGetUrl)]
     [SwaggerOperation(Summary = "копировать данные из mysql в postgres")]
-    public async Task<IActionResult> CopyFromMySqlToPostgres()
+    // todo: удалить после переходя на Postgres
+    public async Task<ActionResult<StringResponse>> CopyFromMySqlToPostgres()
     {
-        try
-        {
-            var mySqlMigrator = GetMigrator(migrators, DatabaseType.MySql);
-            await mySqlMigrator.CopyDbFromMysqlToNpgsql();
-            await tokenizer.Initialize();
-        }
-        catch (Exception exception)
-        {
-            const string copyError = $"[{nameof(MigrationController)}] {nameof(CopyFromMySqlToPostgres)} error";
-            logger.LogError(exception, copyError);
-            return BadRequest(copyError);
-        }
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
 
-        return new OkObjectResult(new { Res = "success" });
+        var mySqlMigrator = migratorFactory.CreateMigrator(DatabaseType.MySql);
+        await mySqlMigrator.CopyDbFromMysqlToNpgsql(stoppingToken);
+        await tokenizerService.Initialize(stoppingToken);
+        var response = new StringResponse { Res = "success" };
+        return Ok(response);
     }
 
     /// <summary>
@@ -57,21 +48,16 @@ public class MigrationController(
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
-    public IActionResult CreateDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public async Task<ActionResult<StringResponse>> CreateDump(string? fileName,
+        DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
 
-        try
-        {
-            var result = migrator.Create(fileName);
-
-            return new OkObjectResult(new { Res = Path.GetFileName(result) });
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, CreateError);
-            return BadRequest(CreateError);
-        }
+        var migrator = migratorFactory.CreateMigrator(databaseType);
+        var result = await migrator.Create(fileName, stoppingToken);
+        var response = new StringResponse { Res = Path.GetFileName(result) };
+        return Ok(response);
     }
 
     /// <summary>
@@ -81,22 +67,17 @@ public class MigrationController(
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<IActionResult> RestoreFromDump(string? fileName, DatabaseType databaseType = DatabaseType.Postgres)
+    public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName,
+        DatabaseType databaseType = DatabaseType.Postgres)
     {
-        var migrator = GetMigrator(migrators, databaseType);
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
 
-        try
-        {
-            var result = migrator.Restore(fileName);
-            await tokenizer.Initialize();
-
-            return new OkObjectResult(new { Res = Path.GetFileName(result) });
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, RestoreError);
-            return BadRequest(RestoreError);
-        }
+        var migrator = migratorFactory.CreateMigrator(databaseType);
+        var result = await migrator.Restore(fileName, stoppingToken);
+        await tokenizerService.Initialize(stoppingToken);
+        var response = new StringResponse { Res = Path.GetFileName(result) };
+        return Ok(response);
     }
 
     /// <summary>
@@ -104,12 +85,16 @@ public class MigrationController(
     /// </summary>
     [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
-    public IActionResult UploadFile(IFormFile file)
+    public async Task<ActionResult<StringResponse>> UploadFile(IFormFile file)
     {
+        var stoppingToken = lifetime.ApplicationStopping;
+        if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+
         var path = Path.Combine(Constants.StaticDirectory, file.FileName);
-        using var stream = new FileStream(path, FileMode.Create);
-        file.CopyTo(stream);
-        return Ok($"Файл сохранён: {path}");
+        await using var stream = new FileStream(path, FileMode.Create);
+        await file.CopyToAsync(stream, stoppingToken);
+        var response = new StringResponse { Res = $"Файл сохранён: {path}" };
+        return Ok(response);
     }
 
     /// <summary>
@@ -118,29 +103,19 @@ public class MigrationController(
     [HttpGet(RouteConstants.MigrationDownloadGetUrl)]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult DownloadFile([FromQuery] string filename)
+    public ActionResult DownloadFile([FromQuery] string filename, CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         // const string mimeType = "application/octet-stream";
         const string mimeType = "application/zip";
         var path = Path.Combine(Directory.GetCurrentDirectory(), Constants.StaticDirectory, filename);
-        if (!System.IO.File.Exists(path)) return NotFound("Файл не найден");
-
-        return PhysicalFile(path, mimeType, Path.GetFileName(path));
-    }
-
-    /// <summary>
-    /// Получить мигратор требуемого типа из списка зависимостей.
-    /// </summary>
-    internal static IDbMigrator GetMigrator(IEnumerable<IDbMigrator> migrators, DatabaseType databaseType)
-    {
-        var migrator = databaseType switch
+        if (System.IO.File.Exists(path))
         {
-            DatabaseType.MySql => migrators.First(m => m.GetType() == typeof(MySqlDbMigrator)),
-            DatabaseType.Postgres => migrators.First(m => m.GetType() == typeof(NpgsqlDbMigrator)),
-            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, "unknown database type")
-        };
+            return PhysicalFile(path, mimeType, Path.GetFileName(path));
+        }
 
-        return migrator;
+        var response = new StringResponse { Res = "Файл не найден" };
+        return NotFound(response);
     }
 }
-

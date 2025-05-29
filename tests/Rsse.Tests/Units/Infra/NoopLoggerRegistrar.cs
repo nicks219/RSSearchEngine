@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Services;
 using SearchEngine.Services;
 
-namespace SearchEngine.Tests.Units.Mocks;
+namespace SearchEngine.Tests.Units.Infra;
 
 /// <summary>
 /// Регистратор логгеров для тестов.

@@ -1,17 +1,22 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.Api;
+using SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -55,15 +60,16 @@ public static class TestHelper
     /// <summary>
     /// Очистить таблицы двух баз данных
     /// </summary>
-    /// <param name="factory"></param>
+    /// <param name="factory">Хост.</param>
+    /// <param name="ct">Токен отмены.</param>
     // todo: перенести в сид если требуется очистка
-    internal static void CleanUpDatabases(CustomWebAppFactory<IntegrationStartup> factory)
+    internal static async Task CleanUpDatabases(WebApplicationFactory<Startup> factory, CancellationToken ct)
     {
         var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
 
-        using var pgConnection = new NpgsqlConnection(pgConnectionString);
-        pgConnection.Open();
+        await using var pgConnection = new NpgsqlConnection(pgConnectionString);
+        await pgConnection.OpenAsync(ct);
         var commands = new List<string>
         {
             // """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
@@ -73,13 +79,12 @@ public static class TestHelper
         };
         foreach (var command in commands)
         {
-            using var cmd = new NpgsqlCommand(command, pgConnection);
-            cmd.ExecuteNonQuery();
+            await using var cmd = new NpgsqlCommand(command, pgConnection);
+            await cmd.ExecuteNonQueryAsync(ct);
         }
-        pgConnection.Close();
 
-        using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
-        mysqlConnection.Open();
+        await using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
+        await mysqlConnection.OpenAsync(ct);
         commands =
         [
             "SET FOREIGN_KEY_CHECKS = 0;",
@@ -91,27 +96,75 @@ public static class TestHelper
         ];
         foreach (var command in commands)
         {
-            using var cmd = new MySqlCommand(command, mysqlConnection);
-            cmd.ExecuteNonQuery();
+            await using var cmd = new MySqlCommand(command, mysqlConnection);
+            await cmd.ExecuteNonQueryAsync(ct);
         }
-        mysqlConnection.Close();
     }
 
+    /// <summary>
+    /// Вернуть ожидаемое исключение, которое вызовет выполнение асинхронного метода.
+    /// </summary>
+    /// <param name="action">Асинхронный метод.</param>
+    /// <typeparam name="T">Тип исключения.</typeparam>
+    /// <returns>Исключение либо <b>null</b></returns>
+    internal static async Task<T?> GetExpectedExceptionWithAsync<T>(Func<Task> action) where T : Exception
+    {
+        T? exception = null;
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        catch (T ex)
+        {
+            exception = ex;
+        }
 
-    // для сценарных тестов
-    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
-    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
-    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
-    public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
-    public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
-    public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
-    public static StringContent CatalogContent => new(JsonSerializer.Serialize(CatalogRequest), Encoding.UTF8, "application/json");
-    public static StringContent Empty => new("");
+        return exception;
+    }
+
+    /// <summary>
+    /// Добавить в запрос тестовую информацию при необходимости.
+    /// </summary>
+    /// <param name="httpRequest">Запрос.</param>
+    internal static void EnrichDataIfNecessary(HttpRequestMessage httpRequest)
+    {
+        var uriStr = httpRequest.RequestUri?.OriginalString;
+        switch (uriStr)
+        {
+            case RouteConstants.CatalogNavigatePostUrl:
+                {
+                    var json = JsonSerializer.Serialize(new CatalogRequest(0, [1]));
+                    httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    return;
+                }
+
+            case RouteConstants.MigrationUploadPostUrl:
+                {
+                    var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
+                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+                    var data = new MultipartFormDataContent();
+                    data.Add(fileContent, "file", "file.txt");
+                    httpRequest.Content = data;
+                    return;
+                }
+
+            case RouteConstants.CreateNotePostUrl:
+            case RouteConstants.UpdateNotePutUrl:
+                {
+                    var json = JsonSerializer.Serialize(new NoteRequest());
+                    httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    return;
+                }
+
+            default: return;
+        }
+    }
 }
 
-// <summary/> тип http вызова
-public enum Request
+/// <summary>
+/// Глагол http вызова.
+/// </summary>
+public enum Method
 {
     Get = 0,
     Post = 1,

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
@@ -16,10 +17,9 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integrations.Api;
+namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.
@@ -29,7 +29,8 @@ public class IntegrationStartup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbsTestEnvironment();
+        // перенесено в IntegrationWebAppFactory
+        // services.AddDbsIntegrationTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options =>
@@ -45,6 +46,7 @@ public class IntegrationStartup(IConfiguration configuration)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
+        services.AddToolingDependencies();
 
         services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -81,6 +83,7 @@ public class IntegrationStartup(IConfiguration configuration)
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
 

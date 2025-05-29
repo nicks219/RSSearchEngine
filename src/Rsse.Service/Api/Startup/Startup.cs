@@ -9,18 +9,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-// DataProtection не удалять, используется для tracing
+// Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
 using SearchEngine.Api.Logger;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Contracts;
@@ -29,8 +29,6 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
 using Serilog;
 
 [assembly: InternalsVisibleTo("Rsse.Tests")]
@@ -46,9 +44,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
     private const string LogFileName = "service.log";
 
-    private readonly ServerVersion _mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
-
-    private readonly string[] _allowedOrigins = {
+    private readonly string[] _allowedOrigins =
+    [
         // dev сервер для JS:
         "https://localhost:5173",
         "http://localhost:5173",
@@ -56,7 +53,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         "http://127.0.0.1:5173",
         // same-origin на проде:
         "http://188.120.235.243:5000"
-    };
+    ];
 
     /// <summary>
     /// Настроить зависимости сервиса.
@@ -89,18 +86,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
+        services.TryAddCatalogStores(configuration, env);
 
-        var mysqlConnectionString = GetDefaultConnectionString();
-        var npgsqlConnectionString = GetAdditionalConnectionString();
-        if (string.IsNullOrEmpty(mysqlConnectionString) || string.IsNullOrEmpty(npgsqlConnectionString))
-        {
-            throw new NullReferenceException("Invalid connection string");
-        }
-
-        services.AddDbContext<MysqlCatalogContext>(options => options.UseMySql(mysqlConnectionString, _mySqlVersion));
-        services.AddDbContext<NpgsqlCatalogContext>(options => options.UseNpgsql(npgsqlConnectionString));
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
-        services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
+        services.AddToolingDependencies();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
@@ -117,7 +105,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 options.LogoutPath = new PathString("/account/logout");
                 options.AccessDeniedPath = new PathString("/account/accessDenied");
                 options.ReturnUrlParameter = "returnUrl";
-                // todo уточнить коды ответа челенджа
+                // todo: уточнить коды ответа челенджа
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnRedirectToLogin = context =>
@@ -151,7 +139,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddRateLimiterInternal();
 #if TRACING_ENABLE
         services.AddTracingInternal();
-        services.AddDataProtection()
+        services
+            .AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "rsse-keys")))
             .SetApplicationName("rsse-app");
 #endif
@@ -200,6 +189,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         });
 
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseCors(Constants.DevelopmentCorsPolicy);
 
@@ -220,7 +210,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
         });
 
-        AddLogging(loggerFactory);
+        // AddLogging(loggerFactory);
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 

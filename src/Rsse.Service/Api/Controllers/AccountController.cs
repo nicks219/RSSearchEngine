@@ -1,5 +1,5 @@
-using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using static SearchEngine.Api.Messages.ControllerMessages;
+using static SearchEngine.Api.Configuration.ControllerErrorMessages;
+using static SearchEngine.Api.Configuration.ControllerMessages;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -23,8 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiController]
 public class AccountController(
     IWebHostEnvironment env,
-    AccountService accountService,
-    ILogger<AccountController> logger) : ControllerBase
+    AccountService accountService) : ControllerBase
 {
     private const string SameSiteLax = "samesite=lax";
     private const string SameSiteNone = "samesite=none; secure; partitioned";
@@ -34,36 +33,44 @@ public class AccountController(
     /// </summary>
     /// <param name="email">Электронная почта.</param>
     /// <param name="password">Пароль.</param>
-    /// <param name="returnUrl">Артефакты легаси-фронта.</param>
+    /// <param name="returnUrl">Параметр челенджа авторизации, разобраться с необходимостью.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
-    public async Task<ActionResult<string>> Login([FromQuery] string? email, string? password, string? returnUrl)
+    public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password,
+        string? returnUrl, CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         if (returnUrl != null)
         {
-            return Unauthorized("Authorize please: redirect detected");
+            var redirect = new StringResponse(Res: RedirectError);
+            return Unauthorized(redirect);
         }
 
-        if (email == null || password == null)
-        {
-            return Unauthorized("Authorize please: empty credentials detected");
-        }
+        var credentialsRequestDto = new CredentialsRequestDto { Email = email, Password = password };
 
-        var loginDto = new CredentialsRequestDto { Email = email, Password = password };
-        var response = await TryLogin(loginDto);
-        return response == "[Ok]" ? LoginOkMessage : Unauthorized(response);
+        var identity = await accountService.TrySignInWith(credentialsRequestDto, cancellationToken);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(identity));
+
+        ModifyCookie();
+
+        return Ok(new StringResponse(Res: LoginOkMessage));
     }
 
     /// <summary>
     /// Выйти из системы.
     /// </summary>
     [HttpGet(RouteConstants.AccountLogoutGetUrl)]
-    public async Task<ActionResult<string>> Logout()
+    public async Task<ActionResult<StringResponse>> Logout(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
         ModifyCookie();
-
-        return LogOutMessage;
+        var result = new StringResponse(Res: LogOutMessage);
+        return Ok(result);
     }
 
     /// <summary>
@@ -71,66 +78,42 @@ public class AccountController(
     /// </summary>
     [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
     [HttpGet(RouteConstants.AccountCheckGetUrl), Authorize]
-    public ActionResult CheckAuth()
+    public ActionResult<StringResponse> CheckAuth(CancellationToken cancellationToken)
     {
-        return Ok(new
-        {
-            Username = User.Identity?.Name
-        });
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
+        var result = new StringResponse(Res: User.Identity?.Name);
+        return Ok(result);
     }
 
     /// <summary>
     /// Обновить логин и пароль.
     /// </summary>
     /// <param name="credentials">Данные для обновления.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
-    public async Task<ActionResult> UpdateCredos([FromQuery] UpdateCredentialsRequest credentials)
+    public async Task<ActionResult<StringResponse>> UpdateCredos(
+        [FromQuery] UpdateCredentialsRequest credentials,
+        CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return StatusCode(503);
+
         var credosForUpdate = credentials.MapToDto();
-        await accountService.UpdateCredos(credosForUpdate);
-        await Logout();
-        return Ok("updated");
-    }
-
-    /// <summary>
-    /// Вход в систему, аутентификация на основе кук.
-    /// </summary>
-    /// <param name="credentialsRequestDto">Данные для авторизации.</param>
-    private async Task<string> TryLogin(CredentialsRequestDto credentialsRequestDto)
-    {
-        try
-        {
-            var identity = await accountService.TrySignInWith(credentialsRequestDto);
-
-            if (identity == null)
-            {
-                return DataError;
-            }
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
-
-            ModifyCookie();
-
-            return "[Ok]";
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, LoginError);
-            return LoginError;
-        }
+        await accountService.UpdateCredos(credosForUpdate, cancellationToken);
+        await Logout(cancellationToken);
+        var result = new StringResponse(Res: "updated");
+        return Ok(result);
     }
 
     /// <summary>
     /// Модифицировать куки на разработке.
     /// </summary>
-    internal void ModifyCookie()
+    private void ModifyCookie()
     {
         if (env.IsProduction())
         {
             return;
         }
-
-        logger.LogInformation(ModifyCookieMessage);
 
         var setCookie = HttpContext.Response.Headers.SetCookie;
         var asString = setCookie.ToString();

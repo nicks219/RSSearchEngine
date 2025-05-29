@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
@@ -11,7 +12,7 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Units.Mocks;
+using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Integrations.Api;
 
@@ -35,6 +36,7 @@ internal class SqliteStartup(IConfiguration configuration)
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();
+        services.AddSingleton<MigratorState>();
 
         services.AddDomainLayerDependencies();
     }
@@ -42,6 +44,7 @@ internal class SqliteStartup(IConfiguration configuration)
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
         app.UseRouting();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.UseEndpoints(ep => ep.MapControllers());
     }
 }

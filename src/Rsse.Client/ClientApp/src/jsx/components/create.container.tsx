@@ -5,7 +5,7 @@ import {
     getCommonNoteId, getStructuredTagsListResponse, getTextResponse,
     getTitleResponse, setTextResponse, setTitleResponse
 } from "../common/dto.handlers";
-import {NoteResponseDto} from "../dto/request.response.dto";
+import {NoteResponseDto} from "../dto/note.response.dto.tsx";
 import {FunctionComponentStateWrapper} from "../common/state.handlers";
 import {CommonContext, RecoveryContext} from "../common/context.provider";
 import {CreateNote} from "./create.note";
