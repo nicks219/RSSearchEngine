@@ -29,7 +29,8 @@ public class IntegrationStartup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbsIntegrationTestEnvironment();
+        // перенесено в IntegrationWebAppFactory
+        // services.AddDbsIntegrationTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
         services.Configure<CommonBaseOptions>(options =>

@@ -28,7 +28,7 @@ public class ReadTests
     public const int ElectionTestCheckedTag = 2;
 
     public required ReadService ReadService;
-    public required StubServiceProvider Stub;
+    public required ServiceProviderStub ServiceProviderStub;
 
     private readonly CancellationToken _token = CancellationToken.None;
     private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
@@ -36,8 +36,8 @@ public class ReadTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new StubServiceProvider();
-        var repo = Stub.Provider.GetRequiredService<IDataRepository>();
+        ServiceProviderStub = new ServiceProviderStub();
+        var repo = ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
         ReadService = new ReadService(repo);
     }
@@ -45,7 +45,7 @@ public class ReadTests
     [TestCleanup]
     public void Cleanup()
     {
-        Stub.Dispose();
+        ServiceProviderStub.Dispose();
     }
 
     [TestMethod]
@@ -96,8 +96,8 @@ public class ReadTests
     {
         // arrange:
         var noteRequest = new NoteRequest { CheckedTags = [ElectionTestCheckedTag] };
-        var readManager = Stub.Provider.GetRequiredService<ReadService>();
-        var updateManager = Stub.Provider.GetRequiredService<UpdateService>();
+        var readManager = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
+        var updateManager = ServiceProviderStub.Provider.GetRequiredService<UpdateService>();
 
         // act:
         var readController = new ReadController(readManager, updateManager);
@@ -112,9 +112,9 @@ public class ReadTests
     public async Task ReadController_ShouldReturnEmptyNote_OnRequestWithoutTags()
     {
         // arrange:
-        using var host = new StubServiceProvider();
-        var readManager = Stub.Provider.GetRequiredService<ReadService>();
-        var updateManager = Stub.Provider.GetRequiredService<UpdateService>();
+        using var host = new ServiceProviderStub();
+        var readManager = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
+        var updateManager = ServiceProviderStub.Provider.GetRequiredService<UpdateService>();
 
         var readController = new ReadController(readManager, updateManager);
         readController.AddHttpContext(host.Provider);
@@ -153,7 +153,7 @@ public class ReadTests
     // NB: в тч демонстрация распределения результатов алгоритме выбора
     public async Task ReadService_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
     {
-        var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
+        var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(ElectionTestNotesCount, _token);
 

@@ -16,7 +16,6 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.Api;
 using SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
@@ -27,17 +26,6 @@ namespace SearchEngine.Tests.Integrations.Extensions;
 // todo: отрефакторить
 public static class TestHelper
 {
-    // для сценарных тестов
-    private static readonly NoteRequest CreateRequest = new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
-    private static readonly NoteRequest UpdateRequest = new() { Title = "[1]", Text = "раз два три четыре", CheckedTags = [1], NoteIdExchange = 946 };
-    private static readonly NoteRequest ReadRequest = new() { CheckedTags = [1] };
-    private static readonly CatalogRequest CatalogRequest = new(PageNumber: 1, Direction: [(int)CatalogService.Direction.Forward]);
-    public static StringContent CreateContent => new(JsonSerializer.Serialize(CreateRequest), Encoding.UTF8, "application/json");
-    public static StringContent UpdateContent => new(JsonSerializer.Serialize(UpdateRequest), Encoding.UTF8, "application/json");
-    public static StringContent ReadContent => new(JsonSerializer.Serialize(ReadRequest), Encoding.UTF8, "application/json");
-    public static StringContent CatalogContent => new(JsonSerializer.Serialize(CatalogRequest), Encoding.UTF8, "application/json");
-    public static StringContent Empty => new("");
-
     // константы с результатами запросов
     internal const string TagListResponse = "[\"Авторские: 1\",\"Бардовские\",\"Блюз: 1\",\"Народный стиль\",\"Вальсы\",\"Военные\",\"Военные (ВОВ)\",\"Гранж\",\"Дворовые\",\"Детские\"," +
                                             "\"Джаз\",\"Дуэты\",\"Зарубежные\",\"Застольные\",\"Авторские (Павел)\",\"Из мюзиклов\",\"Из фильмов\",\"Кавказские\",\"Классика\",\"Лирика\"," +
@@ -75,7 +63,7 @@ public static class TestHelper
     /// <param name="factory">Хост.</param>
     /// <param name="ct">Токен отмены.</param>
     // todo: перенести в сид если требуется очистка
-    internal static async Task CleanUpDatabases(WebApplicationFactory<IntegrationStartup> factory, CancellationToken ct)
+    internal static async Task CleanUpDatabases(WebApplicationFactory<Startup> factory, CancellationToken ct)
     {
         var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
@@ -173,8 +161,10 @@ public static class TestHelper
     }
 }
 
-// <summary/> тип http вызова
-public enum Request
+/// <summary>
+/// Глагол http вызова.
+/// </summary>
+public enum Method
 {
     Get = 0,
     Post = 1,

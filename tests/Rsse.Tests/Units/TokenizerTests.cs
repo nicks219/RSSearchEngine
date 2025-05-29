@@ -19,7 +19,7 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class TokenizerTests
 {
-    public required StubServiceProvider Stub;
+    public required ServiceProviderStub ServiceProviderStub;
     public required IServiceScopeFactory ScopeFactory;
     public required ITokenizerProcessorFactory ProcessorFactory;
 
@@ -49,17 +49,17 @@ public class TokenizerTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new StubServiceProvider();
-        ScopeFactory = Stub.Provider.GetRequiredService<IServiceScopeFactory>();
-        ProcessorFactory = Stub.Provider.GetRequiredService<ITokenizerProcessorFactory>();
-        var repo = (FakeCatalogRepository)Stub.Provider.GetRequiredService<IDataRepository>();
+        ServiceProviderStub = new ServiceProviderStub();
+        ScopeFactory = ServiceProviderStub.Provider.GetRequiredService<IServiceScopeFactory>();
+        ProcessorFactory = ServiceProviderStub.Provider.GetRequiredService<ITokenizerProcessorFactory>();
+        var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400, _token);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        Stub.Dispose();
+        ServiceProviderStub.Dispose();
     }
 
     [TestMethod]

@@ -14,7 +14,7 @@ namespace SearchEngine.Tests.Units;
 public class CreateTests
 {
     public required CreateService CreateService;
-    public required StubServiceProvider Stub;
+    public required ServiceProviderStub ServiceProviderStub;
     public required IDataRepository Repository;
 
     private readonly CancellationToken _token = CancellationToken.None;
@@ -22,15 +22,15 @@ public class CreateTests
     [TestInitialize]
     public void Initialize()
     {
-        Stub = new StubServiceProvider();
-        Repository = Stub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
+        ServiceProviderStub = new ServiceProviderStub();
+        Repository = ServiceProviderStub.Scope.ServiceProvider.GetRequiredService<IDataRepository>();
         CreateService = new CreateService(Repository);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        Stub.Dispose();
+        ServiceProviderStub.Dispose();
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class CreateTests
 
         // act:
         var responseDto = await CreateService.CreateNote(requestDto, _token);
-        var repo = Stub.Provider.GetRequiredService<IDataRepository>();
+        var repo = ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
         var actualDto = await new UpdateService(repo).GetNoteWithTagsForUpdate(responseDto.NoteIdExchange, _token);
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using MySqlConnector;
 using Npgsql;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
@@ -35,7 +35,7 @@ public static class CatalogDbExtensions
             throw new NullReferenceException("Invalid connection string");
         }
 
-        services.AddSingleton(sp =>
+        services.AddSingleton<NpgsqlDataSource>(sp =>
         {
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var npgsqlDataSource = new NpgsqlDataSourceBuilder(npgsqlConnectionString)
@@ -48,14 +48,29 @@ public static class CatalogDbExtensions
         services.AddDbContext<NpgsqlCatalogContext>((sp, options) =>
         {
             // логирование data source не зависит от environment
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var npgsqlDataSource = sp.GetRequiredService<NpgsqlDataSource>();
             options.UseNpgsql(npgsqlDataSource);
-            options.UseLoggerFactory(NullLoggerFactory.Instance);
+            options.UseLoggerFactory(loggerFactory);
         });
 
-        services.AddDbContext<MysqlCatalogContext>(options =>
+        services.AddSingleton<MySqlDataSource>(sp =>
         {
-            options.UseMySql(mysqlConnectionString, MySqlVersion);
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            var npgsqlDataSource = new MySqlDataSourceBuilder(mysqlConnectionString)
+                .UseLoggerFactory(loggerFactory)
+                .Build();
+
+            return npgsqlDataSource;
+        });
+
+        services.AddDbContext<MysqlCatalogContext>((sp, options) =>
+        {
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            // логирование data source не зависит от environment
+            var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
+            options.UseMySql(mySqlDataSource, MySqlVersion);
+            options.UseLoggerFactory(loggerFactory);
         });
     }
 }

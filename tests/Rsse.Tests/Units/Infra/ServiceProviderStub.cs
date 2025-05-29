@@ -10,12 +10,12 @@ using SearchEngine.Service.Tokenizer;
 namespace SearchEngine.Tests.Units.Infra;
 
 /// <summary/> Для тестов, с двумя логгерами.
-public sealed class StubServiceProvider : IDisposable
+public sealed class ServiceProviderStub : IDisposable
 {
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public StubServiceProvider()
+    public ServiceProviderStub()
     {
         var services = new ServiceCollection();
 

@@ -57,16 +57,16 @@ public static class HttpClientExtensions
     /// <param name="content">Содержимое запроса.</param>
     /// <param name="verify">Проверять ли успешность вызова.</param>
     /// <param name="ct">Токен отмены.</param>
-    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Request method, Uri uri,
+    internal static async Task<HttpResponseMessage> SendTestRequest(this HttpClient client, Method method, Uri uri,
         HttpContent? content = null, bool verify = true, CancellationToken ct = default)
     {
         //HttpMethod httpMethod = HttpMethod.Post;
         var response = method switch
         {
-            Request.Get => await client.GetAsync(uri, ct),
-            Request.Post => await client.PostAsync(uri, content, ct),
-            Request.Put => await client.PutAsync(uri, content, ct),
-            Request.Delete => await client.DeleteAsync(uri, ct),
+            Method.Get => await client.GetAsync(uri, ct),
+            Method.Post => await client.PostAsync(uri, content, ct),
+            Method.Put => await client.PutAsync(uri, content, ct),
+            Method.Delete => await client.DeleteAsync(uri, ct),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
 

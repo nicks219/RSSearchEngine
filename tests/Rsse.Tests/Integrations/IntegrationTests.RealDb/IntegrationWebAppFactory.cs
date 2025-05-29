@@ -4,8 +4,8 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integrations.Infra;
 
 namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
@@ -21,18 +21,23 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
         {
             ["ConnectionStrings:DefaultConnection"] = mysqlConnectionString,
             ["ConnectionStrings:AdditionalConnection"] = pgConnectionString,
+            ["CommonBaseOptions:CreateBackupForNewSong"] = "true"
         };
 
         var builder = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.TestingEnvironment);
+                webBuilder.UseStartup<T>();
+            })
             .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddInMemoryCollection(initialData);
             })
-            .ConfigureWebHostDefaults(webBuilder =>
+            .ConfigureServices(services =>
             {
-                webBuilder.UseStartup<T>();
-            })
-            .ConfigureServices(TryReplaceStartupDatabaseProviders);
+                services.AddDbsIntegrationTestEnvironment();
+            });
 
         return builder;
     }
@@ -44,15 +49,14 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
         return host;
     }
 
-    private static void TryReplaceStartupDatabaseProviders(IServiceCollection services) { }
-
     private static string GetMysqlConnectionString()
     {
         // integrations: runs on pipelined services or runs locally on docker
         var host = Docker.IsGitHubAction() ? Docker.MySqlHostFromGitHub : Docker.Localhost;
         Console.WriteLine($"{nameof(GetMysqlConnectionString)} | host '{host}:{Docker.MySqlPort}'");
 
-        return $"Server={host};Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort};AllowUserVariables=True;UseAffectedRows=False";
+        return $"Server={host};Database=tagit;Uid=root;Pwd=1;Port={Docker.MySqlPort};" +
+               $"AllowUserVariables=True;UseAffectedRows=False";
     }
 
     private static string GetPgConnectionString()

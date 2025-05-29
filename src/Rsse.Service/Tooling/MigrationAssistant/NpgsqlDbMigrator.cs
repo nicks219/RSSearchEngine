@@ -70,7 +70,7 @@ public class NpgsqlDbMigrator(
             await using (var cmd = new NpgsqlCommand(NpgsqlScript.CreateDdl, connection))
             {
                 var tablesDdl = new List<string>();
-                await using var reader = cmd.ExecuteReader();
+                await using var reader = await cmd.ExecuteReaderAsync(stoppingToken);
                 while (await reader.ReadAsync(stoppingToken))
                 {
                     tablesDdl.Add(reader.GetString(0));

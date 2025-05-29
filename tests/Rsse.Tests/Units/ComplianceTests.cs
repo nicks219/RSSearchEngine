@@ -25,7 +25,7 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
     {
         // arrange:
-        using var stub = new StubServiceProvider();
+        using var stub = new ServiceProviderStub();
         var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
         var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 

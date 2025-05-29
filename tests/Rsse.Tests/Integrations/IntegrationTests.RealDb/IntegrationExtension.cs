@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using MySqlConnector;
 using Npgsql;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Startup;
@@ -26,7 +27,7 @@ public static class IntegrationExtension
     internal static void AddDbsIntegrationTestEnvironment(this IServiceCollection services)
     {
         // register data source:
-        var loggerFactory = LoggerFactory.Create(builder =>
+        var testLoggerFactory = LoggerFactory.Create(builder =>
         {
             // если требуются логи SQL на тестах:
             // builder.AddConsole();
@@ -39,9 +40,21 @@ public static class IntegrationExtension
             var npgConnectionString = config.GetConnectionString(Startup.AdditionalConnectionKey);
 
             var npgsqlDataSource = new NpgsqlDataSourceBuilder(npgConnectionString)
-                .UseLoggerFactory(loggerFactory)
+                .UseLoggerFactory(testLoggerFactory)
                 .Build();
             return npgsqlDataSource;
+        });
+
+        services.AddSingleton<MySqlDataSource>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var mysqlConnectionString = config.GetConnectionString(Startup.DefaultConnectionKey);
+
+            var mySqlDataSource = new MySqlDataSourceBuilder(mysqlConnectionString)
+                .UseLoggerFactory(testLoggerFactory)
+                .Build();
+
+            return mySqlDataSource;
         });
 
         // register databases:
@@ -55,9 +68,11 @@ public static class IntegrationExtension
         var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
         services.AddDbContext<MysqlCatalogContext>((sp, options) =>
         {
-            var config = sp.GetRequiredService<IConfiguration>();
-            var mysqlConnectionString = config.GetConnectionString(Startup.DefaultConnectionKey);
-            options.UseMySql(mysqlConnectionString, mySqlVersion);
+            var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
+            options.UseMySql(mySqlDataSource, mySqlVersion);
+            options.UseLoggerFactory(NullLoggerFactory.Instance);
+            // переполнение кэша EF ServiceProviderCache на тестах в итоге вызовет InvalidOperationException:
+            options.EnableServiceProviderCaching(false);
         });
 
         // other dependencies:

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+// Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -27,8 +29,6 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using Serilog;
-// Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
-using Microsoft.AspNetCore.DataProtection;
 
 [assembly: InternalsVisibleTo("Rsse.Tests")]
 namespace SearchEngine.Api.Startup;

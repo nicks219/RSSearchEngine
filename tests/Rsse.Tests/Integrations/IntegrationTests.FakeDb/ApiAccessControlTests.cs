@@ -143,10 +143,10 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow($"{MigrationUploadPostUrl}", Request.Post)]
-    [DataRow($"{CreateNotePostUrl}", Request.Post)]
-    [DataRow($"{UpdateNotePutUrl}", Request.Put)]
-    public async Task Unauthorized_PostAndPut_ShouldReturns401(string uriString, Request requestMethod)
+    [DataRow($"{MigrationUploadPostUrl}", Method.Post)]
+    [DataRow($"{CreateNotePostUrl}", Method.Post)]
+    [DataRow($"{UpdateNotePutUrl}", Method.Put)]
+    public async Task Unauthorized_PostAndPut_ShouldReturns401(string uriString, Method requestMethod)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -219,10 +219,10 @@ public class ApiAccessControlTests
     }
 
     [TestMethod]
-    [DataRow($"{MigrationUploadPostUrl}", Request.Post, true)]
-    [DataRow($"{CreateNotePostUrl}", Request.Post, false)]
-    [DataRow($"{UpdateNotePutUrl}", Request.Put, false)]
-    public async Task Authorized_PostAndPut_ShouldReturns200(string uriString, Request requestMethod, bool appendFile)
+    [DataRow($"{MigrationUploadPostUrl}", Method.Post, true)]
+    [DataRow($"{CreateNotePostUrl}", Method.Post, false)]
+    [DataRow($"{UpdateNotePutUrl}", Method.Put, false)]
+    public async Task Authorized_PostAndPut_ShouldReturns200(string uriString, Method requestMethod, bool appendFile)
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
@@ -232,7 +232,7 @@ public class ApiAccessControlTests
         using var content = TestHelper.GetRequestContent(appendFile);
 
         // act:
-        using var response = requestMethod == Request.Put
+        using var response = requestMethod == Method.Put
             ? await client.PutAsync(uri, content)
             : await client.PostAsync(uri, content);
 
@@ -281,7 +281,7 @@ public class ApiAccessControlTests
 
         // act:
         var ct = new CancellationToken(canceled: true);
-        var request = new HttpRequestMessage(method, uri);
+        using var request = new HttpRequestMessage(method, uri);
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         var statusCode = response.StatusCode;
 
@@ -323,7 +323,7 @@ public class ApiAccessControlTests
 
         // act:
         var ct = new CancellationToken(canceled: true);
-        var request = new HttpRequestMessage(method, uri);
+        using var request = new HttpRequestMessage(method, uri);
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         var statusCode = response.StatusCode;
 
@@ -356,7 +356,7 @@ public class ApiAccessControlTests
 
         // act:
         var ct = CancellationToken.None;
-        var request = new HttpRequestMessage(method, uri);
+        using var request = new HttpRequestMessage(method, uri);
         TestHelper.EnrichDataIfNecessary(request);
         _ = factory.HostInternal.EnsureNotNull().StopAsync(CancellationToken.None);
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
