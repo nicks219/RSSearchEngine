@@ -59,3 +59,9 @@ kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dum
 # install nano in alpine
 apk update && apk add nano
 вариант: sed -i 's/старый_текст/новый_текст/g' file_name.txt
+
+# kubectl create secret for otel.collector: auth.txt содержит строку `Basic base64(username:password)`
+kubectl create secret generic grafana-auth --from-file=authorization=./auth.txt
+
+# temporary pod for testing purpose
+kubectl run curlpod --rm -i -t --image=curlimages/curl --namespace=default --restart=Never -- sh

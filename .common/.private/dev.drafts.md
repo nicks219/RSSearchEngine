@@ -67,3 +67,16 @@ FROM information_schema.table_constraints tc
 JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name  
 JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name  
 WHERE tc.table_name = 'orders' AND tc.constraint_type = 'FOREIGN KEY';
+
+
+# k3s отладка DNS
+---
+перезапуск отеля: kubectl rollout restart deployment otel-collector -n default
+курлпод: kubectl run alpine --rm -i -t --image=alpine -- sh
+apk add curl
+
+изменение конфигурации core dns
+kubectl -n kube-system get configmap coredns -o yaml
+kubectl -n kube-system edit configmap coredns
+kubectl -n kube-system rollout restart deployment coredns
+вариант dns кубера: 10.43.0.10:53

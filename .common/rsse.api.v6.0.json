@@ -39,17 +39,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               }
             }
@@ -68,17 +68,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/StringResponse"
                 }
               }
             }
@@ -93,7 +93,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -135,7 +152,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -243,7 +277,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -351,7 +402,24 @@
         "summary": "копировать данные из mysql в postgres",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -379,7 +447,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -407,7 +492,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -439,7 +541,24 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -512,7 +631,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RandomElectionResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RandomElectionResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RandomElectionResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -533,7 +669,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -705,6 +858,29 @@
         }
       }
     },
+    "/system/warmup/wait": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "parameters": [
+          {
+            "name": "timeoutMs",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/v6/note/update": {
       "put": {
         "tags": [
@@ -756,11 +932,7 @@
   },
   "components": {
     "schemas": {
-      "CatalogItemDto": {
-        "required": [
-          "item1",
-          "item2"
-        ],
+      "CatalogItemResponse": {
         "type": "object",
         "properties": {
           "item1": {
@@ -795,22 +967,42 @@
       "CatalogResponse": {
         "type": "object",
         "properties": {
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
           "catalogPage": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CatalogItemDto"
+              "$ref": "#/components/schemas/CatalogItemResponse"
             },
             "nullable": true
           },
           "notesCount": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "pageNumber": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ComplianceResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
           },
-          "errorMessage": {
+          "error": {
             "type": "string",
             "nullable": true
           }
@@ -845,7 +1037,8 @@
           },
           "commonNoteID": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -877,7 +1070,8 @@
           },
           "commonNoteID": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "errorMessageResponse": {
             "type": "string",
@@ -912,6 +1106,29 @@
           }
         },
         "additionalProperties": { }
+      },
+      "RandomElectionResponse": {
+        "type": "object",
+        "properties": {
+          "randomElection": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
