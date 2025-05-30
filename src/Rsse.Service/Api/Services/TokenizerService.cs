@@ -166,6 +166,9 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
+    public bool IsInitialized() => _isActivated;
+
+    /// <inheritdoc/>
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)

@@ -51,10 +51,16 @@ public class ReadService(IDataRepository repo)
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
         bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
     {
-        if (request?.CheckedTags?.Count == 0)
+        var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
+        if (request?.CheckedTags == null)
+        {
+            // На невалидных входных данных вернём результат со списком тегов.
+            return new NoteResultDto(totalTags);
+        }
+
+        if (request.CheckedTags.Count == 0)
         {
             // Для пустого запроса считаем все теги отмеченными.
-            var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
             var maxTagNumber = totalTags.Count;
             var allTags = GetAllTagsCollection(maxTagNumber);
             request = request with { CheckedTags = allTags };
@@ -64,37 +70,42 @@ public class ReadService(IDataRepository repo)
         var title = string.Empty;
         var noteId = 0;
 
-        if (request is { CheckedTags: not null } && request.CheckedTags.Count != 0)
+        if (request.CheckedTags.Count == 0)
         {
-            if (IsSpecific() == false)
-            {
-                var checkedTags = request.CheckedTags;
-                // todo: вычитывается весь список
-                var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
-                noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
-            }
-
-            if (noteId != 0)
-            {
-                var note = await repo.ReadNote(noteId, cancellationToken);
-
-                if (note != null)
-                {
-                    text = note.Text;
-
-                    title = note.Title;
-                }
-            }
+            return new NoteResultDto(totalTags, noteId, text, title);
         }
 
-        var tagList = await repo.ReadEnrichedTagList(cancellationToken);
+        if (IsSpecific() == false)
+        {
+            var checkedTags = request.CheckedTags;
+            // todo: вычитывается весь список
+            var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
+            noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
+        }
 
-        return new NoteResultDto(tagList, noteId, text, title);
+        if (noteId == 0)
+        {
+            return new NoteResultDto(totalTags, noteId, text, title);
+        }
+
+        var note = await repo.ReadNote(noteId, cancellationToken);
+
+        if (note == null)
+        {
+            return new NoteResultDto(totalTags, noteId, text, title);
+        }
+
+        text = note.Text;
+
+        title = note.Title;
+
+        return new NoteResultDto(totalTags, noteId, text, title);
 
         bool IsSpecific() => int.TryParse(id, out noteId);
 
         List<int> GetAllTagsCollection(int maxTagNumber)
         {
+            // Можно закешировать тк список тегов меняется редко.
             var allTags = Enumerable.Range(AppConstants.MinTagNumber, maxTagNumber).ToList();
             return allTags;
         }
