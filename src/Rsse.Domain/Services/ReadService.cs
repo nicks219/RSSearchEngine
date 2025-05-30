@@ -62,68 +62,51 @@ public class ReadService(IDataRepository repo)
         bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
     {
         var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
-        var maxTagNumber = totalTags.Count;
-
-        if (request?.CheckedTags == null || maxTagNumber == 0)
+        if (request?.CheckedTags == null || totalTags.Count == 0)
         {
-            // На невалидных входных данных либо отсутствии тегов в бд возвращаем результат с имеющимся списком тегов.
             return new NoteResultDto(totalTags);
         }
 
+        // Если список тегов пуст, заполняем его полностью.
         if (request.CheckedTags.Count == 0)
         {
-            // Для пустого запроса считаем все теги отмеченными.
-            var allTagsRange = _allTagsRange ?? CreateAllTagsRange(maxTagNumber);
-            _allTagsRange = allTagsRange;
-            request = request with { CheckedTags = allTagsRange };
+            _allTagsRange ??= Enumerable.Range(AppConstants.MinTagNumber, totalTags.Count).ToList();
+            request = request with { CheckedTags = _allTagsRange };
         }
 
-        int noteId;
-
-        if (IsSpecificNoteRequired() == false)
+        // Если указан конкретный id, пробуем получить заметку по нему.
+        if (int.TryParse(id, out var specificNoteId))
         {
-            var checkedTags = request.CheckedTags;
-
-            if (randomElectionEnabled)
-            {
-                // Получаем случайную заметку средствами SQL.
-                var noteEntity = await repo.TryGetRandomNoteId(checkedTags, cancellationToken);
-                return noteEntity == null
-                    ? new NoteResultDto(totalTags)
-                    : new NoteResultDto(totalTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
-            }
-
-            // Получаем идентификатор заметки с round robin.
-            var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
-            noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
+            return await GetNoteOrEmpty(totalTags, specificNoteId, cancellationToken);
         }
 
-        // Заметка по данным тегам или запрошенному id может отсутствовать либо быть удалена во время выбора.
+        // Выбираем заметку по тегам, средствами SQL.
+        if (randomElectionEnabled)
+        {
+            var noteEntity = await repo.GetRandomNoteOrDefault(request.CheckedTags, cancellationToken);
+            return noteEntity == null
+                ? new NoteResultDto(totalTags)
+                : new NoteResultDto(totalTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
+        }
+
+        // Выбираем заметку по тегам с round robin.
+        var electableNoteIds = await repo.ReadTaggedNotesIds(request.CheckedTags, cancellationToken);
+        var electedNoteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
+
+        return await GetNoteOrEmpty(totalTags, electedNoteId, cancellationToken);
+    }
+
+    private async Task<NoteResultDto> GetNoteOrEmpty(List<string> totalTags, int noteId,
+        CancellationToken cancellationToken)
+    {
         if (noteId < MinIdValue)
         {
             return new NoteResultDto(totalTags);
         }
 
-        // Заметка запрошена по id либо с round robin.
         var note = await repo.ReadNote(noteId, cancellationToken);
-
-        if (note == null)
-        {
-            return new NoteResultDto(totalTags);
-        }
-
-        var text = note.Text;
-
-        var title = note.Title;
-
-        return new NoteResultDto(totalTags, noteId, text, title);
-
-        bool IsSpecificNoteRequired() => int.TryParse(id, out noteId);
-
-        List<int> CreateAllTagsRange(int maxTagValue)
-        {
-            var allTagsRange = Enumerable.Range(AppConstants.MinTagNumber, maxTagValue).ToList();
-            return allTagsRange;
-        }
+        return note == null
+            ? new NoteResultDto(totalTags)
+            : new NoteResultDto(totalTags, noteId, note.Text, note.Title);
     }
 }

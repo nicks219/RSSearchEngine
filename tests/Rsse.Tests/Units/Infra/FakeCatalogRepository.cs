@@ -156,7 +156,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<NoteEntity?> TryGetRandomNoteId(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
+    public Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
     {
         var note = _notes[TestNoteId];
         var noteEntity = new NoteEntity { Text = note.Text, Title = note.Title };

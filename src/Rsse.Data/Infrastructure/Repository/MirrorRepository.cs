@@ -95,8 +95,8 @@ public sealed class MirrorRepository(
         _reader.ReadTaggedNotesIds(checkedTags, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<NoteEntity?> TryGetRandomNoteId(IEnumerable<int> checkedTags, CancellationToken cancellationToken) =>
-        _reader.TryGetRandomNoteId(checkedTags, cancellationToken);
+    public Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken) =>
+        _reader.GetRandomNoteOrDefault(checkedTags, cancellationToken);
 
     /// <inheritdoc/>
     public Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken) =>

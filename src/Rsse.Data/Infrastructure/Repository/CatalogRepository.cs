@@ -86,7 +86,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task<NoteEntity?> TryGetRandomNoteId(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
+    public async Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
     {
         return await context.Notes
             .AsNoTracking()

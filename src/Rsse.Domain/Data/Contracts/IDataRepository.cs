@@ -18,7 +18,7 @@ public interface IDataRepository
     /// <param name="checkedTags">Идентификаторы тегов для выбора заметок.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Случайная заметка.</returns>
-    Task<NoteEntity?> TryGetRandomNoteId(IEnumerable<int> checkedTags, CancellationToken cancellationToken);
+    Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken);
 
     /// <summary>
     /// Создать заметку.

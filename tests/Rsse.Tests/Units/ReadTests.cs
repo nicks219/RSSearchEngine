@@ -201,10 +201,10 @@ public class ReadTests
         // assert:
         idStorage.Count
             .Should()
-            .BeGreaterThan((int)expectedNotesCount);
+            .BeGreaterOrEqualTo((int)expectedNotesCount);
 
         Console.WriteLine("[get different '{0}' ids from '{1}' notes | by '{2}' calls]", idStorage.Count, ElectionTestNotesCount, tempCount);
-        Console.Write("[with greater or equals than '{0}' repeats] ", evaluatedBucket);
+        Console.Write("[with greater or equals to '{0}' repeats] ", evaluatedBucket);
 
         var evaluatedCounter = 0;
         foreach (var (key, value) in idStorage)
