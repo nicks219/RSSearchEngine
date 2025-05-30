@@ -52,62 +52,59 @@ public class ReadService(IDataRepository repo)
         bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
     {
         var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
-        if (request?.CheckedTags == null)
+        var maxTagNumber = totalTags.Count;
+
+        if (request?.CheckedTags == null || maxTagNumber == 0)
         {
-            // На невалидных входных данных вернём результат со списком тегов.
+            // На невалидных входных данных либо отсутствии тегов в бд: возвращаем результат с имеющимся списком тегов.
             return new NoteResultDto(totalTags);
         }
 
         if (request.CheckedTags.Count == 0)
         {
             // Для пустого запроса считаем все теги отмеченными.
-            var maxTagNumber = totalTags.Count;
-            var allTags = GetAllTagsCollection(maxTagNumber);
-            request = request with { CheckedTags = allTags };
+            var allTagsRange = CreateAllTagsRange(maxTagNumber);
+            request = request with { CheckedTags = allTagsRange };
         }
 
-        var text = string.Empty;
-        var title = string.Empty;
-        var noteId = 0;
+        int noteId;
 
-        if (request.CheckedTags.Count == 0)
-        {
-            return new NoteResultDto(totalTags, noteId, text, title);
-        }
-
-        if (IsSpecific() == false)
+        if (IsSpecificNoteRequired() == false)
         {
             var checkedTags = request.CheckedTags;
             // todo: вычитывается весь список
             var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
+            // Получаем случайный либо round robin идентификатор.
             noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
         }
 
         if (noteId == 0)
         {
-            return new NoteResultDto(totalTags, noteId, text, title);
+            // Заметка была удалена в процессе её выбора либо запросили заметку с id = 0.
+            return new NoteResultDto(totalTags);
         }
 
         var note = await repo.ReadNote(noteId, cancellationToken);
 
         if (note == null)
         {
-            return new NoteResultDto(totalTags, noteId, text, title);
+            // Заметка была удалена в процессе её выбора.
+            return new NoteResultDto(totalTags);
         }
 
-        text = note.Text;
+        var text = note.Text;
 
-        title = note.Title;
+        var title = note.Title;
 
         return new NoteResultDto(totalTags, noteId, text, title);
 
-        bool IsSpecific() => int.TryParse(id, out noteId);
+        bool IsSpecificNoteRequired() => int.TryParse(id, out noteId);
 
-        List<int> GetAllTagsCollection(int maxTagNumber)
+        List<int> CreateAllTagsRange(int maxTagValue)
         {
             // Можно закешировать тк список тегов меняется редко.
-            var allTags = Enumerable.Range(AppConstants.MinTagNumber, maxTagNumber).ToList();
-            return allTags;
+            var allTagsRange = Enumerable.Range(AppConstants.MinTagNumber, maxTagValue).ToList();
+            return allTagsRange;
         }
     }
 }
