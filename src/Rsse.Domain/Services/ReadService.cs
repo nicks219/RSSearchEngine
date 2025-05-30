@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
@@ -15,6 +14,17 @@ namespace SearchEngine.Services;
 /// </summary>
 public class ReadService(IDataRepository repo)
 {
+    /// <summary>
+    /// Кэшируем диапазон идентификаторов тегов тк сами теги добавляются редко.
+    /// В данной реализации кэш будет обновлён только при перезапуске сервиса.
+    /// </summary>
+    private static List<int>? _allTagsRange;
+
+    /// <summary>
+    /// Минимальное значение идентфикатора в бд.
+    /// </summary>
+    private const int MinIdValue = 1;
+
     /// <summary>
     /// Прочитать название заметки по её идентификатору.
     /// </summary>
@@ -56,14 +66,15 @@ public class ReadService(IDataRepository repo)
 
         if (request?.CheckedTags == null || maxTagNumber == 0)
         {
-            // На невалидных входных данных либо отсутствии тегов в бд: возвращаем результат с имеющимся списком тегов.
+            // На невалидных входных данных либо отсутствии тегов в бд возвращаем результат с имеющимся списком тегов.
             return new NoteResultDto(totalTags);
         }
 
         if (request.CheckedTags.Count == 0)
         {
             // Для пустого запроса считаем все теги отмеченными.
-            var allTagsRange = CreateAllTagsRange(maxTagNumber);
+            var allTagsRange = _allTagsRange ?? CreateAllTagsRange(maxTagNumber);
+            _allTagsRange = allTagsRange;
             request = request with { CheckedTags = allTagsRange };
         }
 
@@ -72,23 +83,32 @@ public class ReadService(IDataRepository repo)
         if (IsSpecificNoteRequired() == false)
         {
             var checkedTags = request.CheckedTags;
-            // todo: вычитывается весь список
+
+            if (randomElectionEnabled)
+            {
+                // Получаем случайную заметку средствами SQL.
+                var noteEntity = await repo.TryGetRandomNoteId(checkedTags, cancellationToken);
+                return noteEntity == null
+                    ? new NoteResultDto(totalTags)
+                    : new NoteResultDto(totalTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
+            }
+
+            // Получаем идентификатор заметки с round robin.
             var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
-            // Получаем случайный либо round robin идентификатор.
-            noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
+            noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
         }
 
-        if (noteId == 0)
+        // Заметка по данным тегам или запрошенному id может отсутствовать либо быть удалена во время выбора.
+        if (noteId < MinIdValue)
         {
-            // Заметка была удалена в процессе её выбора либо запросили заметку с id = 0.
             return new NoteResultDto(totalTags);
         }
 
+        // Заметка запрошена по id либо с round robin.
         var note = await repo.ReadNote(noteId, cancellationToken);
 
         if (note == null)
         {
-            // Заметка была удалена в процессе её выбора.
             return new NoteResultDto(totalTags);
         }
 
@@ -102,7 +122,6 @@ public class ReadService(IDataRepository repo)
 
         List<int> CreateAllTagsRange(int maxTagValue)
         {
-            // Можно закешировать тк список тегов меняется редко.
             var allTagsRange = Enumerable.Range(AppConstants.MinTagNumber, maxTagValue).ToList();
             return allTagsRange;
         }
