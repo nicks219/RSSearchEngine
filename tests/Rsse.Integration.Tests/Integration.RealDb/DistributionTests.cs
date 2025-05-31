@@ -13,9 +13,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
 public class DistributionTests : TestBase
@@ -38,6 +38,7 @@ public class DistributionTests : TestBase
         using var client = Factory.CreateClient(Options);
 
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
+        await TestHelper.CleanUpDatabases(Factory, Token);
         await client.TryAuthorizeToService("1@2", "12", ct: Token);
         await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
         await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);

@@ -16,6 +16,7 @@ using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integrations.Extensions;
 using SearchEngine.Tests.Integrations.Infra;
+using Serilog;
 
 namespace SearchEngine.Tests.Integrations.Api;
 
@@ -25,6 +26,11 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 
     protected override IHostBuilder CreateHostBuilder()
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Warning()
+            .WriteTo.Console()
+            .CreateLogger();
+
         var mysqlConnectionString = GetMysqlConnectionString();
         var pgConnectionString = GetPgConnectionString();
 
@@ -46,6 +52,7 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             })
             .ConfigureServices(TryReplaceStartupDatabaseProviders);
 
+        builder.UseSerilog();
         return builder;
     }
 

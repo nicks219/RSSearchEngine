@@ -11,13 +11,12 @@ using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Service.ApiModels;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-[assembly: Parallelize(Workers = 4, Scope = ExecutionScope.ClassLevel)]
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
 public class IntegrationTests : TestBase

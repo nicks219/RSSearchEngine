@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb;
 
 public class TestBase : IDisposable
 {
