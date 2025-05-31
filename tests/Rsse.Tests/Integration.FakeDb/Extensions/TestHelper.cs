@@ -11,7 +11,7 @@ using SearchEngine.Service.Configuration;
 namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
-/// Контейнер с потрохами из тестов
+/// Контейнер с вспомогательным функционалом для тестов.
 /// </summary>
 // todo: отрефакторить
 public static class TestHelper

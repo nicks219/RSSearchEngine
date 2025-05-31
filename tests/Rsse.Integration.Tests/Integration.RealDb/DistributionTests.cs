@@ -14,19 +14,15 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integration.RealDb.Extensions;
-using SearchEngine.Tests.Integration.RealDb.Infra;
 
 namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
 public class DistributionTests : TestBase
 {
-    [ClassInitialize]
-    public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
-
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void CleanUp() => Semaphore.Release();
-
+    /// <summary>
+    /// Тест оценивает распределение запросов на получение случайной заметки.
+    /// </summary>
     [TestMethod]
     public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRandomElection()
     {

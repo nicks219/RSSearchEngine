@@ -10,9 +10,12 @@ using SearchEngine.Tests.Integration.RealDb.Infra;
 
 namespace SearchEngine.Tests.Integration.RealDb;
 
+/// <summary>
+/// Базовый класс для тестов.
+/// Обеспечивает однократный подъём докера на локальной разработке, "прогрев" и очистку хоста.
+/// </summary>
 public class TestBase : IDisposable
 {
-    protected static readonly SemaphoreSlim Semaphore = new(1, 1);
     protected static readonly CancellationToken Token = CancellationToken.None;
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static volatile bool _initialized;
@@ -35,17 +38,20 @@ public class TestBase : IDisposable
 
         var ct = CancellationToken.None;
         var isGitHubAction = Docker.IsGitHubAction();
-        if (isGitHubAction)
+        switch (isGitHubAction)
         {
-            Console.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
-        }
+            case true:
+                Console.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
+                break;
 
-        var sw = Stopwatch.StartNew();
-        if (!isGitHubAction)
-        {
-            await Docker.CleanUpDbContainers(ct);
-            await Docker.InitializeDbContainers(ct);
-            Console.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
+            case false:
+                {
+                    var sw = Stopwatch.StartNew();
+                    await Docker.CleanUpDbContainers(ct);
+                    await Docker.InitializeDbContainers(ct);
+                    Console.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
+                    break;
+                }
         }
 
         using var client = Factory.CreateClient(Options);

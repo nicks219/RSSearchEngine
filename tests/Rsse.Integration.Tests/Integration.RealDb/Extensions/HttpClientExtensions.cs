@@ -9,12 +9,12 @@ using static SearchEngine.Service.Configuration.RouteConstants;
 namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
-/// Расширения для запросов на различные ручки сервиса
+/// Расширения для запросов на различные ручки сервиса.
 /// </summary>
 public static class HttpClientExtensions
 {
     /// <summary>
-    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха
+    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха.
     /// </summary>
     internal static async Task TryAuthorizeToService(
         this HttpClient client,

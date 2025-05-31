@@ -10,6 +10,9 @@ using SearchEngine.Api.Startup;
 
 namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 
+/// <summary>
+/// Контейнер с вспомогательным функционалом для тестов.
+/// </summary>
 public static class TestHelper
 {
     /// <summary>

@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Tests.Integration.RealDb.Extensions;
-using SearchEngine.Tests.Integration.RealDb.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -22,12 +21,6 @@ namespace SearchEngine.Tests.Integration.RealDb;
 [TestClass]
 public class IntegrationTests : TestBase
 {
-    [ClassInitialize]
-    public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
-
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void CleanUp() => Semaphore.Release();
-
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
     [DataRow($"{MigrationCreateGetUrl}?databaseType=MySql")]
@@ -160,6 +153,7 @@ public class IntegrationTests : TestBase
         Func<HttpResponseMessage, Task> responseValidator)
     {
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
+        // Очищаем бд для первого тестового кейса.
         if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(Factory, ct: Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
