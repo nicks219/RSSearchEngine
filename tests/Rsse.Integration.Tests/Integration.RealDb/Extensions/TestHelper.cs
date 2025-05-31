@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using SearchEngine.Api.Startup;
 
-namespace SearchEngine.Tests.Integration.RealDb.Infra;
+namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 
 public static class TestHelper
 {

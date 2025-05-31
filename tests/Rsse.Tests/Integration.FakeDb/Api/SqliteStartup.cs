@@ -11,10 +11,10 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integrations.Api;
+namespace SearchEngine.Tests.Integration.FakeDb.Api;
 
 /// <summary>
 /// Используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html

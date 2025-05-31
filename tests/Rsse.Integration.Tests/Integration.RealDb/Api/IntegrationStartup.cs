@@ -18,7 +18,7 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.

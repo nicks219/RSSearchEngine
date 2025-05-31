@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using SearchEngine.Tests.Integration.RealDb.Extensions;
 
 namespace SearchEngine.Tests.Integration.RealDb.Infra;
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Контейнер с потрохами из тестов
@@ -105,15 +105,4 @@ public static class TestHelper
             default: return;
         }
     }
-}
-
-/// <summary>
-/// Глагол http вызова.
-/// </summary>
-public enum Method
-{
-    Get = 0,
-    Post = 1,
-    Delete = 2,
-    Put = 3
 }

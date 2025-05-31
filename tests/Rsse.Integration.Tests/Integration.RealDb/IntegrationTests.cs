@@ -11,6 +11,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Service.ApiModels;
+using SearchEngine.Tests.Integration.RealDb.Extensions;
 using SearchEngine.Tests.Integration.RealDb.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
@@ -25,7 +26,7 @@ public class IntegrationTests : TestBase
     public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void CleanUp() =>  Semaphore.Release();
+    public static void CleanUp() => Semaphore.Release();
 
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
@@ -36,7 +37,6 @@ public class IntegrationTests : TestBase
     [DataRow($"{MigrationCreateGetUrl}?fileName=123&databaseType=MySql")]
     public async Task Migration_Requests_ShouldApplyCorrectly(string uriString)
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         var emptyRequestContent = new StringContent(string.Empty);
         await ExecuteTest(uriString, HttpMethod.Get, emptyRequestContent, ResponseValidator);
 
@@ -112,7 +112,6 @@ public class IntegrationTests : TestBase
         NoteRequest? content,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         if (content != null) content = content with { NoteIdExchange = _processedId };
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
@@ -160,7 +159,6 @@ public class IntegrationTests : TestBase
         NoteRequest? content,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(Factory, ct: Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
@@ -249,7 +247,6 @@ public class IntegrationTests : TestBase
         StringContent requestContent,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
@@ -399,14 +396,12 @@ public class IntegrationTests : TestBase
         StringContent requestContent,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
     [TestMethod]
     public async Task UpdateCredos_Request_ShouldChangePassword()
     {
-        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         // arrange:
         const string oldEmail = "1@2";
         const string oldPassword = "12";

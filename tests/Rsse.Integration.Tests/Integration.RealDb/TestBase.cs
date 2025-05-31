@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
+using SearchEngine.Tests.Integration.RealDb.Api;
 using SearchEngine.Tests.Integration.RealDb.Infra;
 
 namespace SearchEngine.Tests.Integration.RealDb;
@@ -16,7 +17,7 @@ public class TestBase : IDisposable
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static volatile bool _initialized;
 
-    protected readonly IntegrationWebAppFactory<Startup> Factory = new ();
+    protected readonly IntegrationWebAppFactory<Startup> Factory = new();
     protected readonly WebApplicationFactoryClientOptions Options = new()
     {
         BaseAddress = BaseAddress,

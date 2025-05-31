@@ -14,11 +14,11 @@ using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integrations.Api;
+namespace SearchEngine.Tests.Integration.FakeDb.Api;
 
 public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {

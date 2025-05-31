@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 
-namespace SearchEngine.Tests.Integrations.Infra;
+namespace SearchEngine.Tests.Integration.FakeDb.Infra;
 
 /// <summary>
 /// Функционал для хранения имен файлов баз sqlite для их последующего удаления

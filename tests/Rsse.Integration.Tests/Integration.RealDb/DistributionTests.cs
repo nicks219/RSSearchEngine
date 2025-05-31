@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
+using SearchEngine.Tests.Integration.RealDb.Extensions;
 using SearchEngine.Tests.Integration.RealDb.Infra;
 
 namespace SearchEngine.Tests.Integration.RealDb;
@@ -24,7 +25,7 @@ public class DistributionTests : TestBase
     public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void CleanUp() =>  Semaphore.Release();
+    public static void CleanUp() => Semaphore.Release();
 
     [TestMethod]
     public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRandomElection()

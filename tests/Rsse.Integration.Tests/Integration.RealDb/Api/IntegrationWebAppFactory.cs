@@ -9,7 +9,7 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integration.RealDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Api;
 
 public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {

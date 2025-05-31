@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Расширения для запросов на различные ручки сервиса
