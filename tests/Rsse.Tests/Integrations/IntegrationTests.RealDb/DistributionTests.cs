@@ -9,9 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
@@ -22,37 +20,24 @@ namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 [TestClass]
 public class DistributionTests : TestBase
 {
-    /*private static readonly Uri BaseAddress = new("http://localhost:5000/");
-    private static readonly CancellationToken Token = CancellationToken.None;
+    [ClassInitialize]
+    public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
 
-    private readonly WebApplicationFactoryClientOptions _options = new()
-    {
-        BaseAddress = BaseAddress,
-        HandleCookies = true
-    };
-
-    public required IntegrationWebAppFactory<Startup> _factory;*/
-
-    [TestInitialize]
-    public void IntegrationTestsSetup() => _factory = new IntegrationWebAppFactory<Startup>();
-
-    [TestCleanup]
-    public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void CleanUp() =>  Semaphore.Release();
 
     [TestMethod]
     public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRandomElection()
     {
         var token = CancellationToken.None;
-        using var __ = await lok.AcquireExclusiveLockAsync(token);
 
         const int electionTestNotesCount = 900;
         const int electionTestTagsCount = 44;
 
         const double expectedCoefficient = 0.7D;
-        using var client = _factory.CreateClient(_options);
+        using var client = Factory.CreateClient(Options);
 
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
-        //await TestHelper.CleanUpDatabases(_factory, token);
         await client.TryAuthorizeToService("1@2", "12", ct: Token);
         await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
         await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);

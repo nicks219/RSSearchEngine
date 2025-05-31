@@ -1,22 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -27,43 +22,11 @@ namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 [TestClass]
 public class IntegrationTests : TestBase
 {
-    /*private static readonly Uri BaseAddress = new("http://localhost:5000/");
-    private static readonly CancellationToken Token = CancellationToken.None;
+    [ClassInitialize]
+    public static async Task Init(TestContext _) => await Semaphore.WaitAsync();
 
-    private readonly WebApplicationFactoryClientOptions _options = new()
-    {
-        BaseAddress = BaseAddress,
-        HandleCookies = true
-    };
-
-    private IntegrationWebAppFactory<Startup> _factory;*/
-
-    /*[AssemblyInitialize]
-    // при инициализации на сборку юнит-тесты надо выносить в отдельный проект
-    public static async Task IntegrationTestsSetup(TestContext context)
-    {
-        var ct = context.CancellationTokenSource.Token;
-        var isGitHubAction = Docker.IsGitHubAction();
-        if (isGitHubAction)
-        {
-            context.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
-        }
-
-        var sw = Stopwatch.StartNew();
-        if (!isGitHubAction)
-        {
-            await Docker.CleanUpDbContainers(ct);
-            await Docker.InitializeDbContainers(ct);
-        }
-
-        context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
-    }*/
-
-    [TestInitialize]
-    public void IntegrationTestsSetup() => _factory = new IntegrationWebAppFactory<Startup>();
-
-    [TestCleanup]
-    public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void CleanUp() =>  Semaphore.Release();
 
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
@@ -74,12 +37,12 @@ public class IntegrationTests : TestBase
     [DataRow($"{MigrationCreateGetUrl}?fileName=123&databaseType=MySql")]
     public async Task Migration_Requests_ShouldApplyCorrectly(string uriString)
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         var emptyRequestContent = new StringContent(string.Empty);
         await ExecuteTest(uriString, HttpMethod.Get, emptyRequestContent, ResponseValidator);
 
         // clean up:
-        await TestHelper.CleanUpDatabases(_factory, ct: Token);
+        await TestHelper.CleanUpDatabases(Factory, ct: Token);
         return;
 
         // assert:
@@ -150,7 +113,7 @@ public class IntegrationTests : TestBase
         NoteRequest? content,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         if (content != null) content = content with { NoteIdExchange = _processedId };
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
@@ -198,9 +161,9 @@ public class IntegrationTests : TestBase
         NoteRequest? content,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(_factory, ct: Token);
+        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(Factory, ct: Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
@@ -287,7 +250,7 @@ public class IntegrationTests : TestBase
         StringContent requestContent,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
@@ -437,20 +400,20 @@ public class IntegrationTests : TestBase
         StringContent requestContent,
         Func<HttpResponseMessage, Task> responseValidator)
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
     [TestMethod]
     public async Task UpdateCredos_Request_ShouldChangePassword()
     {
-        using var __ = await lok.AcquireExclusiveLockAsync(Token);
+        //using var __ = await lok2.AcquireExclusiveLockAsync(Token);
         // arrange:
         const string oldEmail = "1@2";
         const string oldPassword = "12";
         const string newEmail = "1@3";
         const string newPassword = "13";
-        using var client = _factory.CreateClient(_options);
+        using var client = Factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 
@@ -499,7 +462,7 @@ public class IntegrationTests : TestBase
         Func<HttpResponseMessage, Task> responseValidator)
     {
         // arrange:
-        using var client = _factory.CreateClient(_options);
+        using var client = Factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 

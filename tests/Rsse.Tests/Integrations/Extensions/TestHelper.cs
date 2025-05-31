@@ -10,13 +10,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+using MySqlCommand = MySql.Data.MySqlClient.MySqlCommand;
+using MySqlConnection = MySql.Data.MySqlClient.MySqlConnection;
 
 namespace SearchEngine.Tests.Integrations.Extensions;
 
@@ -65,11 +67,11 @@ public static class TestHelper
     // todo: перенести в сид если требуется очистка
     internal static async Task CleanUpDatabases(WebApplicationFactory<Startup> factory, CancellationToken ct)
     {
-        var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
-        var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
+        var pgDataSource = factory.Services.GetRequiredService<NpgsqlDataSource>();
+        var mysqlConnectionString = factory.Services
+            .GetRequiredService<IConfiguration>()
+            .GetConnectionString(Startup.DefaultConnectionKey);
 
-        await using var pgConnection = new NpgsqlConnection(pgConnectionString);
-        await pgConnection.OpenAsync(ct);
         var commands = new List<string>
         {
             // """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
@@ -79,7 +81,7 @@ public static class TestHelper
         };
         foreach (var command in commands)
         {
-            await using var cmd = new NpgsqlCommand(command, pgConnection);
+            await using var cmd = pgDataSource.CreateCommand(command);
             await cmd.ExecuteNonQueryAsync(ct);
         }
 
