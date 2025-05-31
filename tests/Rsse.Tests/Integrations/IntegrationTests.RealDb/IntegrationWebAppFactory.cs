@@ -16,7 +16,7 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
     protected override IHostBuilder CreateHostBuilder()
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Error()
+            .MinimumLevel.Information()
             .WriteTo.Console()
             .CreateLogger();
 
