@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,9 @@ public class AccountController(
     /// <param name="returnUrl">Параметр челенджа авторизации, разобраться с необходимостью.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountLoginGetUrl)]
-    public async Task<ActionResult<StringResponse>> Login([FromQuery] string? email, string? password,
+    public async Task<ActionResult<StringResponse>> Login(
+        [FromQuery][Required(AllowEmptyStrings = false)] string email,
+        [FromQuery][Required(AllowEmptyStrings = false)] string password,
         string? returnUrl, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
@@ -93,7 +96,7 @@ public class AccountController(
     /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.AccountUpdateGetUrl), Authorize]
     public async Task<ActionResult<StringResponse>> UpdateCredos(
-        [FromQuery] UpdateCredentialsRequest credentials,
+        [FromQuery][Required(AllowEmptyStrings = false)] UpdateCredentialsRequest credentials,
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);

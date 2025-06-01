@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,9 @@ public class CatalogController(CatalogService catalogService) : ControllerBase
     /// <param name="id">Номер страницы.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.CatalogPageGetUrl)]
-    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<CatalogResponse>> ReadCatalogPage(
+        [FromQuery][Required(AllowEmptyStrings = false)] int id,
+        CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 
@@ -37,7 +40,7 @@ public class CatalogController(CatalogService catalogService) : ControllerBase
     /// <param name="cancellationToken">Токен отмены.</param>
     [HttpPost(RouteConstants.CatalogNavigatePostUrl)]
     public async Task<ActionResult<CatalogResponse>> NavigateCatalog(
-        [FromBody] CatalogRequest request,
+        [FromBody][Required(AllowEmptyStrings = false)] CatalogRequest request,
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);

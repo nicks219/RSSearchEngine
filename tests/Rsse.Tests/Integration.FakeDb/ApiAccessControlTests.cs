@@ -259,10 +259,10 @@ public class ApiAccessControlTests
         [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.Unauthorized],
         [UpdateNotePutUrl, HttpMethod.Put, HttpStatusCode.Unauthorized],
 
-        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{AccountLoginGetUrl}?email=.&password=.", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [AccountLogoutGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [CatalogPageGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ComplianceIndicesGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{CatalogPageGetUrl}?id=0", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ComplianceIndicesGetUrl}?text=.", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
@@ -296,19 +296,19 @@ public class ApiAccessControlTests
     public static IEnumerable<object[]> CancellationAuthorizedTestData =>
     [
         [AccountLogoutGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// exc -> middleware 401
+        [$"{AccountLoginGetUrl}?email=.&password=.", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// exc -> middleware 401
         [AccountCheckGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsForCreateAuthGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ReadNoteWithTagsForUpdateAuthGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [CatalogPageGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ComplianceIndicesGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadNoteWithTagsForUpdateAuthGetUrl}?id=0", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{CatalogPageGetUrl}?id=0", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ComplianceIndicesGetUrl}?text=.", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
-        [MigrationDownloadGetUrl+"?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404
+        [$"{MigrationDownloadGetUrl}?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404
         [AccountUpdateRequest, HttpMethod.Get, HttpStatusCode.ServiceUnavailable]
     ];
 
@@ -333,15 +333,14 @@ public class ApiAccessControlTests
 
     public static IEnumerable<object[]> CancellationHostTestData =>
     [
-        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.Unauthorized],
+        [$"{AccountLoginGetUrl}?email=.&password=.", HttpMethod.Get, HttpStatusCode.Unauthorized],
         [MigrationCreateGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [MigrationCopyGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 500: sqlite not supported
         [MigrationRestoreGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [MigrationUploadPostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
         [CreateNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
         [UpdateNotePutUrl, HttpMethod.Put, HttpStatusCode.ServiceUnavailable],
-        [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.ServiceUnavailable]
-        // [CatalogNavigatePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
+        [$"{DeleteNoteUrl}?id=0&pg=0", HttpMethod.Delete, HttpStatusCode.ServiceUnavailable]
     ];
 
     [TestMethod]
@@ -359,6 +358,56 @@ public class ApiAccessControlTests
         using var request = new HttpRequestMessage(method, uri);
         TestHelper.EnrichDataIfNecessary(request);
         _ = factory.HostInternal.EnsureNotNull().StopAsync(CancellationToken.None);
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        var statusCode = response.StatusCode;
+
+        // assert:
+        statusCode.Should().Be(expected);
+    }
+
+    // 400: закрыты [Required(AllowEmptyStrings = false)]
+    // [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest], // ?email=&password= тож 400
+    // [AccountUpdateGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest]
+    // [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.BadRequest]
+    // [CatalogPageGetUrl] [CatalogNavigatePostUrl] [ComplianceIndicesGetUrl]
+    // [MigrationDownloadGetUrl] [ReadTitleGetUrl] [ReadNoteWithTagsForUpdateAuthGetUrl]
+
+    // [CreateNotePostUrl] [UpdateNotePutUrl] [MigrationUploadPostUrl]
+    // - хз как пост и пуи без нагрузки ответят
+
+    // [MigrationCreateGetUrl] [MigrationRestoreGetUrl] [GetNextOrSpecificNote] (подумать)
+    // - не трогаем, на пустой строке завязана логика
+
+    public static IEnumerable<object[]> BadRequestTestData =>
+    [
+        [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [AccountUpdateGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.BadRequest],
+        [CatalogPageGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [ComplianceIndicesGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [MigrationDownloadGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [ReadTitleGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [ReadNoteWithTagsForUpdateAuthGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],
+        [MigrationUploadPostUrl, HttpMethod.Post, HttpStatusCode.BadRequest],
+        [CatalogNavigatePostUrl, HttpMethod.Post, HttpStatusCode.BadRequest],
+        [CreateNotePostUrl, HttpMethod.Post, HttpStatusCode.BadRequest],
+        [UpdateNotePutUrl, HttpMethod.Put, HttpStatusCode.BadRequest],
+    ];
+
+    [TestMethod]
+    [DynamicData(nameof(BadRequestTestData))]
+    public async Task EmptyParameters_AuthorizeCall_ShouldProduceBadRequests(string uriString, HttpMethod method, HttpStatusCode expected)
+    {
+        // arrange:
+        await using var factory = new CustomWebAppFactory<Startup>();
+        using var client = factory.CreateClient(_options);
+        await client.TryAuthorizeToService(ct: Token);
+        var uri = new Uri(uriString, UriKind.Relative);
+
+        // act:
+        var ct = CancellationToken.None;
+        using var request = new HttpRequestMessage(method, uri);
+        TestHelper.EnrichDataIfNecessary(request, mediaTypeOnly: true);
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         var statusCode = response.StatusCode;
 

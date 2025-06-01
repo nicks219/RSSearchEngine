@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +41,9 @@ public class ReadController(
     /// <param name="id">Идентификатор заметки.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     [HttpGet(RouteConstants.ReadTitleGetUrl)]
-    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<StringResponse>> ReadTitleByNoteId(
+        [FromQuery][Required(AllowEmptyStrings = false)] string id,
+        CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 
@@ -107,7 +110,8 @@ public class ReadController(
     /// <param name="cancellationToken">Токен отмены.</param>
     [Authorize, HttpGet(RouteConstants.ReadNoteWithTagsForUpdateAuthGetUrl)]
     // todo: неудачный рефакторинг, исправить
-    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<NoteResponse>> GetNoteWithTagsForUpdate(
+        [FromQuery][Required] int id, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 

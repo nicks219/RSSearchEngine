@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -39,7 +40,8 @@ public class CreateController(
     /// <param name="request">Контрейнер с запросом создания заметки.</param>
     /// <returns>Контейнер с информацией по созданной заметке, либо с ошибкой.</returns>
     [HttpPost(RouteConstants.CreateNotePostUrl)]
-    public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync([FromBody] NoteRequest request)
+    public async Task<ActionResult<NoteResponse>> CreateNoteAndDumpAsync(
+        [FromBody][Required(AllowEmptyStrings = false)] NoteRequest request)
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);

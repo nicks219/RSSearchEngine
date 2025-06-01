@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.4",
+  "openapi": "3.0.3",
   "info": {
     "title": "RSSearchEngine API",
     "version": "6.0"
@@ -14,6 +14,7 @@
           {
             "name": "email",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -21,6 +22,7 @@
           {
             "name": "password",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -183,6 +185,7 @@
           {
             "name": "id",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -235,7 +238,8 @@
                 "$ref": "#/components/schemas/CatalogRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -270,6 +274,7 @@
           {
             "name": "text",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -321,7 +326,8 @@
                 "$ref": "#/components/schemas/NoteRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -356,6 +362,7 @@
           {
             "name": "id",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -364,6 +371,7 @@
           {
             "name": "pg",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -523,6 +531,9 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "file"
+                ],
                 "type": "object",
                 "properties": {
                   "file": {
@@ -572,6 +583,7 @@
           {
             "name": "filename",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -662,6 +674,7 @@
           {
             "name": "id",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -816,6 +829,7 @@
           {
             "name": "id",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -903,7 +917,8 @@
                 "$ref": "#/components/schemas/NoteRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {

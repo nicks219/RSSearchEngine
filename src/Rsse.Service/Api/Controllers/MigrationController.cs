@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,8 @@ public class MigrationController(
     /// <param name="fileName">Имя файла с дампом, либо выбор имени из ротации.</param>
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationCreateGetUrl)]
-    public async Task<ActionResult<StringResponse>> CreateDump(string? fileName,
+    public async Task<ActionResult<StringResponse>> CreateDump(
+        [FromQuery] string? fileName,
         DatabaseType databaseType = DatabaseType.Postgres)
     {
         var stoppingToken = lifetime.ApplicationStopping;
@@ -67,7 +69,8 @@ public class MigrationController(
     /// <param name="databaseType">Тип мигратора.</param>
     [HttpGet(RouteConstants.MigrationRestoreGetUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<ActionResult<StringResponse>> RestoreFromDump(string? fileName,
+    public async Task<ActionResult<StringResponse>> RestoreFromDump(
+        [FromQuery] string? fileName,
         DatabaseType databaseType = DatabaseType.Postgres)
     {
         var stoppingToken = lifetime.ApplicationStopping;
@@ -85,7 +88,9 @@ public class MigrationController(
     /// </summary>
     [HttpPost(RouteConstants.MigrationUploadPostUrl)]
     [RequestSizeLimit(10_000_000)]
-    public async Task<ActionResult<StringResponse>> UploadFile(IFormFile file)
+    // [FromForm] см https://github.com/domaindrivendev/Swashbuckle.AspNetCore/blob/master/docs/configure-and-customize-swaggergen.md#handle-forms-and-file-uploads
+    public async Task<ActionResult<StringResponse>> UploadFile(
+        [Required(AllowEmptyStrings = false)] IFormFile file)
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
@@ -103,7 +108,9 @@ public class MigrationController(
     [HttpGet(RouteConstants.MigrationDownloadGetUrl)]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult DownloadFile([FromQuery] string filename, CancellationToken cancellationToken)
+    public ActionResult DownloadFile(
+        [FromQuery][Required(AllowEmptyStrings = false)] string filename,
+        CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 

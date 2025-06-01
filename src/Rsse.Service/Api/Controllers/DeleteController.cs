@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,9 @@ public class DeleteController(
     /// <returns>Актуализированная страница каталога.</returns>
     [Authorize, HttpDelete(RouteConstants.DeleteNoteUrl)]
     [Authorize(Constants.FullAccessPolicyName)]
-    public async Task<ActionResult<CatalogResponse>> DeleteNote(int id, int pg)
+    public async Task<ActionResult<CatalogResponse>> DeleteNote(
+        [FromQuery][Required(AllowEmptyStrings = false)] int id,
+        [FromQuery][Required(AllowEmptyStrings = false)] int pg)
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);

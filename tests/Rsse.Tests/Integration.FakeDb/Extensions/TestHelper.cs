@@ -72,14 +72,15 @@ public static class TestHelper
     /// Добавить в запрос тестовую информацию при необходимости.
     /// </summary>
     /// <param name="httpRequest">Запрос.</param>
-    internal static void EnrichDataIfNecessary(HttpRequestMessage httpRequest)
+    /// <param name="mediaTypeOnly">Добавить только тип контента.</param>
+    internal static void EnrichDataIfNecessary(HttpRequestMessage httpRequest, bool mediaTypeOnly = false)
     {
         var uriStr = httpRequest.RequestUri?.OriginalString;
         switch (uriStr)
         {
             case RouteConstants.CatalogNavigatePostUrl:
                 {
-                    var json = JsonSerializer.Serialize(new CatalogRequest(0, [1]));
+                    var json = mediaTypeOnly ? "" : JsonSerializer.Serialize(new CatalogRequest(0, [1]));
                     httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     return;
                 }
@@ -88,16 +89,16 @@ public static class TestHelper
                 {
                     var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
                     fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-                    var data = new MultipartFormDataContent();
-                    data.Add(fileContent, "file", "file.txt");
-                    httpRequest.Content = data;
+                    var multipartFormDataContent = new MultipartFormDataContent();
+                    if (!mediaTypeOnly) multipartFormDataContent.Add(fileContent, "file", "file.txt");
+                    httpRequest.Content = multipartFormDataContent;
                     return;
                 }
 
             case RouteConstants.CreateNotePostUrl:
             case RouteConstants.UpdateNotePutUrl:
                 {
-                    var json = JsonSerializer.Serialize(new NoteRequest());
+                    var json = mediaTypeOnly ? "" : JsonSerializer.Serialize(new NoteRequest());
                     httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     return;
                 }
