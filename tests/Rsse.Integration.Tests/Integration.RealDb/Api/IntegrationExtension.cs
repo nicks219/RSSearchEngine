@@ -14,7 +14,7 @@ using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 using Serilog;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов на контейнеризованных бд.

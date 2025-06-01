@@ -4,7 +4,7 @@ using System.Text.Json;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Services;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Коллекция контента для тестовых запросов.

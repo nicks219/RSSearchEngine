@@ -1,76 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Execution;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Testing.Platform.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
-using Serilog.Core;
-using Serilog.Events;
+using SearchEngine.Tests.Integration.RealDb.Extensions;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-[assembly: Parallelize(Workers = 4, Scope = ExecutionScope.ClassLevel)]
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
-public class IntegrationTests
+public class IntegrationTests : TestBase
 {
-    private static readonly Uri BaseAddress = new("http://localhost:5000/");
-    private static readonly CancellationToken Token = CancellationToken.None;
-
-    private readonly WebApplicationFactoryClientOptions _cookiesOptions = new() { BaseAddress = BaseAddress };
-    private readonly WebApplicationFactoryClientOptions _options = new()
-    {
-        BaseAddress = BaseAddress,
-        HandleCookies = true
-    };
-
-    private IntegrationWebAppFactory<Startup> _factory;
-
-    [ClassInitialize]
-    public static async Task IntegrationTestsSetup(TestContext context)
-    {
-        var ct = context.CancellationTokenSource.Token;
-        var isGitHubAction = Docker.IsGitHubAction();
-        if (isGitHubAction)
-        {
-            context.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
-        }
-
-        var sw = Stopwatch.StartNew();
-        if (!isGitHubAction)
-        {
-            await Docker.CleanUpDbContainers(ct);
-            await Docker.InitializeDbContainers(ct);
-        }
-
-        context.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
-    }
-
-    [TestInitialize]
-    public void IntegrationTestsSetup() => _factory = new IntegrationWebAppFactory<Startup>();
-
-    [TestCleanup]
-    public async Task IntegrationTestsCleanup() => await _factory.DisposeAsync();
-
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
     [DataRow($"{MigrationCreateGetUrl}?databaseType=MySql")]
@@ -84,7 +34,7 @@ public class IntegrationTests
         await ExecuteTest(uriString, HttpMethod.Get, emptyRequestContent, ResponseValidator);
 
         // clean up:
-        await TestHelper.CleanUpDatabases(_factory, ct: Token);
+        await TestHelper.CleanUpDatabases(Factory, ct: Token);
         return;
 
         // assert:
@@ -203,7 +153,8 @@ public class IntegrationTests
         Func<HttpResponseMessage, Task> responseValidator)
     {
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(_factory, ct: Token);
+        // Очищаем бд для первого тестового кейса.
+        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(Factory, ct: Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
@@ -288,8 +239,10 @@ public class IntegrationTests
         string uriString,
         HttpMethod requestMethod,
         StringContent requestContent,
-        Func<HttpResponseMessage, Task> responseValidator) =>
+        Func<HttpResponseMessage, Task> responseValidator)
+    {
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
+    }
 
     private const string ReadCatalogPageTestText = "пасчитаим читырех";
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
@@ -435,8 +388,10 @@ public class IntegrationTests
         string uriString,
         HttpMethod requestMethod,
         StringContent requestContent,
-        Func<HttpResponseMessage, Task> responseValidator) =>
+        Func<HttpResponseMessage, Task> responseValidator)
+    {
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
+    }
 
     [TestMethod]
     public async Task UpdateCredos_Request_ShouldChangePassword()
@@ -446,7 +401,7 @@ public class IntegrationTests
         const string oldPassword = "12";
         const string newEmail = "1@3";
         const string newPassword = "13";
-        using var client = _factory.CreateClient(_cookiesOptions);
+        using var client = Factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 
@@ -495,7 +450,7 @@ public class IntegrationTests
         Func<HttpResponseMessage, Task> responseValidator)
     {
         // arrange:
-        using var client = _factory.CreateClient(_options);
+        using var client = Factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 
@@ -512,97 +467,5 @@ public class IntegrationTests
 
         // clean up:
         requestContent.Dispose();
-    }
-
-    [TestMethod]
-    public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRandomElection()
-    {
-        var token = CancellationToken.None;
-        const int electionTestNotesCount = 900;
-        const int electionTestTagsCount = 44;
-
-        const double expectedCoefficient = 0.7D;
-        using var client = _factory.CreateClient(_options!);
-
-        await client.GetAsync(SystemWaitWarmUpGetUrl, token);
-        // await client.TryAuthorizeToService("1@2", "12", ct: Token);
-        // await client.GetAsync($"{MigrationRestoreGetUrl}?databaseType=MySql", token);
-        // await client.GetAsync(MigrationCopyGetUrl, token);
-
-        var requestCount = 250;
-
-        var tempCount = requestCount;
-
-        var expectedNotesCount = Math.Min(electionTestNotesCount, requestCount) * expectedCoefficient;
-
-        var checkedTags = Enumerable.Range(1, electionTestTagsCount).ToList();
-        var noteRequestDto = new NoteRequest
-        (
-            CheckedTags: checkedTags,
-            Title: default,
-            Text: default,
-            NoteIdExchange: default
-        );
-
-        var idStorage = new Dictionary<int, int>();
-
-        while (requestCount-- > 0)
-        {
-            var uri = new Uri(ReadNotePostUrl, UriKind.Relative);
-            using var content = new StringContent(JsonSerializer.Serialize(noteRequestDto), Encoding.UTF8, "application/json");
-            using var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            request.Content = content;
-            using var message = await client.SendAsync(request, cancellationToken: token);
-            var resp = await message.Content.ReadFromJsonAsync<NoteResponse>(token);
-            var noteResultDto = new NoteResultDto([], resp.NoteIdExchange.Value);
-
-            var id = noteResultDto.NoteIdExchange;
-
-            if (!idStorage.TryAdd(id, 1))
-            {
-                idStorage[id] += 1;
-            }
-        }
-
-        using var _ = new AssertionScope();
-
-        const int buckets = 10;
-
-        const int evaluatedBucket = 2;
-
-        var bucket = new int[buckets];
-
-        // assert:
-        idStorage.Count
-            .Should()
-            .BeGreaterOrEqualTo((int)expectedNotesCount);
-
-        Console.WriteLine("[get different '{0}' ids from '{1}' notes | by '{2}' calls]", idStorage.Count, electionTestNotesCount, tempCount);
-        Console.Write("[with greater or equals to '{0}' repeats] ", evaluatedBucket);
-
-        var evaluatedCounter = 0;
-        foreach (var (key, value) in idStorage)
-        {
-            if (value >= evaluatedBucket)
-            {
-                evaluatedCounter++;
-            }
-
-            for (var i = 0; i < bucket.Length; i++)
-            {
-                if (value > i)
-                {
-                    bucket[i] += 1;
-                }
-            }
-        }
-
-        Console.Write($"{evaluatedCounter} unique notes");
-        Console.WriteLine("\n[repeat histogram: 1 - {0}]", buckets);
-
-        foreach (var i in bucket)
-        {
-            Console.Write(i + " ");
-        }
     }
 }

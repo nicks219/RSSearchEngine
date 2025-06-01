@@ -10,7 +10,7 @@ using SearchEngine.Api.Controllers;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;

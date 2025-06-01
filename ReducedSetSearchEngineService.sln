@@ -111,6 +111,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Generator", "src\Rsse.Generator\Rsse.Generator.csproj", "{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Integration.Tests", "tests\Rsse.Integration.Tests\Rsse.Integration.Tests.csproj", "{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,14 @@ Global
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Debug|x64.Build.0 = Debug|x64
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|x64.ActiveCfg = Release|x64
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}.Release|x64.Build.0 = Release|x64
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Debug|x64.Build.0 = Debug|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Release|x64.ActiveCfg = Release|Any CPU
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -182,6 +192,7 @@ Global
 		{4FD34D03-D220-4406-AAC5-846D83DBFB73} = {AA1D7723-7C28-4EC4-8E9B-4E65D5ECDA7B}
 		{069738D5-AFF8-431B-ADDB-B1C8F79E3E39} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}

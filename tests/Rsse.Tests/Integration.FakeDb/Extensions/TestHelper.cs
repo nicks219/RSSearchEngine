@@ -1,27 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using MySql.Data.MySqlClient;
-using Npgsql;
-using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
-/// Контейнер с потрохами из тестов
+/// Контейнер с вспомогательным функционалом для тестов.
 /// </summary>
 // todo: отрефакторить
 public static class TestHelper
@@ -55,50 +45,6 @@ public static class TestHelper
         var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         return jsonContent;
-    }
-
-    /// <summary>
-    /// Очистить таблицы двух баз данных
-    /// </summary>
-    /// <param name="factory">Хост.</param>
-    /// <param name="ct">Токен отмены.</param>
-    // todo: перенести в сид если требуется очистка
-    internal static async Task CleanUpDatabases(WebApplicationFactory<Startup> factory, CancellationToken ct)
-    {
-        var pgConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.AdditionalConnectionKey);
-        var mysqlConnectionString = factory.Services.GetRequiredService<IConfiguration>().GetConnectionString(Startup.DefaultConnectionKey);
-
-        await using var pgConnection = new NpgsqlConnection(pgConnectionString);
-        await pgConnection.OpenAsync(ct);
-        var commands = new List<string>
-        {
-            // """TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "TagsToNotes" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "Tag" RESTART IDENTITY CASCADE;""",
-            """TRUNCATE TABLE "Note" RESTART IDENTITY CASCADE;"""
-        };
-        foreach (var command in commands)
-        {
-            await using var cmd = new NpgsqlCommand(command, pgConnection);
-            await cmd.ExecuteNonQueryAsync(ct);
-        }
-
-        await using var mysqlConnection = new MySqlConnection(mysqlConnectionString);
-        await mysqlConnection.OpenAsync(ct);
-        commands =
-        [
-            "SET FOREIGN_KEY_CHECKS = 0;",
-            // "TRUNCATE TABLE `Users`;",
-            "TRUNCATE TABLE `Tag`;",
-            "TRUNCATE TABLE `Note`;",
-            "TRUNCATE TABLE `TagsToNotes`;",
-            "SET FOREIGN_KEY_CHECKS = 1;",
-        ];
-        foreach (var command in commands)
-        {
-            await using var cmd = new MySqlCommand(command, mysqlConnection);
-            await cmd.ExecuteNonQueryAsync(ct);
-        }
     }
 
     /// <summary>
@@ -159,15 +105,4 @@ public static class TestHelper
             default: return;
         }
     }
-}
-
-/// <summary>
-/// Глагол http вызова.
-/// </summary>
-public enum Method
-{
-    Get = 0,
-    Post = 1,
-    Delete = 2,
-    Put = 3
 }

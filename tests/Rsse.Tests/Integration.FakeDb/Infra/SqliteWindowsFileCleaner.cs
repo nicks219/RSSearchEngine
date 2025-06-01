@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 
-namespace SearchEngine.Tests.Integrations.Infra;
+namespace SearchEngine.Tests.Integration.FakeDb.Infra;
 
 /// <summary>
 /// Функционал для хранения имен файлов баз sqlite для их последующего удаления
@@ -17,7 +17,7 @@ internal abstract class SqliteFileCleaner
     /// </summary>
     internal static void ScheduleFileDeletionWindowsOnly()
     {
-        if (Docker.IsGitHubAction() || Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+        if (IsGitHubAction() || Environment.OSVersion.Platform != PlatformID.Win32NT) return;
 
         Console.WriteLine($"{nameof(SqliteFileCleaner)} | preparing to start deleting files".ToUpper());
         var args = string.Join(" ", Store.Select(f => $"\"{f}\""));
@@ -30,5 +30,8 @@ internal abstract class SqliteFileCleaner
             UseShellExecute = true,
             WindowStyle = ProcessWindowStyle.Hidden
         });
+        return;
+
+        bool IsGitHubAction() => Environment.GetEnvironmentVariable("DOTNET_CI") == "true";
     }
 }

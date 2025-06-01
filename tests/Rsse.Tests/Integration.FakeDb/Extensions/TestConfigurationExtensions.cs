@@ -6,7 +6,7 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов с использованием sqlite.

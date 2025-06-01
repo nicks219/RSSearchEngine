@@ -17,9 +17,8 @@ using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.
@@ -40,7 +39,7 @@ public class IntegrationStartup(IConfiguration configuration)
         });
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
-        services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
+        //services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
 
         services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 

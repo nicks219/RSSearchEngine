@@ -6,17 +6,17 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Api;
 
 public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {
     protected override IHostBuilder CreateHostBuilder()
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Error()
+            .MinimumLevel.Warning()
             .WriteTo.Console()
             .CreateLogger();
 

@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Обертка для проверочных делегатов в тестах.

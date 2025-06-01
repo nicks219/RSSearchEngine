@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.RealDb.Extensions;
 
-namespace SearchEngine.Tests.Integrations.Infra;
+namespace SearchEngine.Tests.Integration.RealDb.Infra;
 
 /// <summary/> Функционал для работы с контейнерами.
 public abstract class Docker

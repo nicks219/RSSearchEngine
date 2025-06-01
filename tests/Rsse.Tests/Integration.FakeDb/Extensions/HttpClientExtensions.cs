@@ -8,15 +8,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
-namespace SearchEngine.Tests.Integrations.Extensions;
+namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
-/// Расширения для запросов на различные ручки сервиса
+/// Расширения для запросов на различные ручки сервиса.
 /// </summary>
 public static class HttpClientExtensions
 {
     /// <summary>
-    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха
+    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха.
     /// </summary>
     internal static async Task TryAuthorizeToService(
         this HttpClient client,
@@ -33,7 +33,7 @@ public static class HttpClientExtensions
     }
 
     /// <summary>
-    /// Инициализировать контекст контроллера scoped контейнером со службами
+    /// Инициализировать контекст контроллера scoped контейнером со службами.
     /// </summary>
     /// <param name="controller"></param>
     /// <param name="serviceProvider"></param>

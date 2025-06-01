@@ -32,6 +32,7 @@ using SearchEngine.Service.Tokenizer;
 using Serilog;
 
 [assembly: InternalsVisibleTo("Rsse.Tests")]
+[assembly: InternalsVisibleTo("Rsse.Integration.Tests")]
 namespace SearchEngine.Api.Startup;
 
 /// <summary>

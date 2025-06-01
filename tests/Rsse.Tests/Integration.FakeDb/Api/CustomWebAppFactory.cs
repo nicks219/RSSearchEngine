@@ -14,10 +14,11 @@ using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integrations.Extensions;
-using SearchEngine.Tests.Integrations.Infra;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Infra;
+using Serilog;
 
-namespace SearchEngine.Tests.Integrations.Api;
+namespace SearchEngine.Tests.Integration.FakeDb.Api;
 
 public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {
@@ -25,6 +26,11 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 
     protected override IHostBuilder CreateHostBuilder()
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Warning()
+            .WriteTo.Console()
+            .CreateLogger();
+
         var mysqlConnectionString = GetMysqlConnectionString();
         var pgConnectionString = GetPgConnectionString();
 
@@ -46,6 +52,7 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             })
             .ConfigureServices(TryReplaceStartupDatabaseProviders);
 
+        builder.UseSerilog();
         return builder;
     }
 

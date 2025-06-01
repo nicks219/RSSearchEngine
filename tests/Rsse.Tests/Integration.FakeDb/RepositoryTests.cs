@@ -12,11 +12,11 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Tests.Integrations.Api;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Api;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
-namespace SearchEngine.Tests.Integrations.IntegrationTests.FakeDb;
+namespace SearchEngine.Tests.Integration.FakeDb;
 
 [TestClass]
 public class RepositoryTests
