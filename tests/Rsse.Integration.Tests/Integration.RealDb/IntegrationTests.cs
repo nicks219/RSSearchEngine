@@ -10,8 +10,11 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Api.Startup;
 using SearchEngine.Service.ApiModels;
+using SearchEngine.Tests.Integration.RealDb.Api;
 using SearchEngine.Tests.Integration.RealDb.Extensions;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 using static SearchEngine.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -19,8 +22,18 @@ using static SearchEngine.Service.Configuration.RouteConstants;
 namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
-public class IntegrationTests : TestBase
+public sealed class IntegrationTests : TestBase, IDisposable
 {
+    private readonly IntegrationWebAppFactory<Startup> _factory = new();
+
+    /// <summary>
+    /// Закрываем фабрику средствами шарпа.
+    /// </summary>
+    public void Dispose()
+    {
+        _factory.Dispose();
+    }
+
     [TestMethod]
     [DataRow($"{MigrationCopyGetUrl}")]
     [DataRow($"{MigrationCreateGetUrl}?databaseType=MySql")]
@@ -34,7 +47,7 @@ public class IntegrationTests : TestBase
         await ExecuteTest(uriString, HttpMethod.Get, emptyRequestContent, ResponseValidator);
 
         // clean up:
-        await TestHelper.CleanUpDatabases(Factory, ct: Token);
+        await TestHelper.CleanUpDatabases(_factory, ct: Token);
         return;
 
         // assert:
@@ -154,7 +167,7 @@ public class IntegrationTests : TestBase
     {
         var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
         // Очищаем бд для первого тестового кейса.
-        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(Factory, ct: Token);
+        if (content?.Title == "[1]") await TestHelper.CleanUpDatabases(_factory, ct: Token);
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
@@ -401,7 +414,7 @@ public class IntegrationTests : TestBase
         const string oldPassword = "12";
         const string newEmail = "1@3";
         const string newPassword = "13";
-        using var client = Factory.CreateClient(Options);
+        using var client = _factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 
@@ -450,7 +463,7 @@ public class IntegrationTests : TestBase
         Func<HttpResponseMessage, Task> responseValidator)
     {
         // arrange:
-        using var client = Factory.CreateClient(Options);
+        using var client = _factory.CreateClient(Options);
         var warmupResult = await client.GetAsync(SystemWaitWarmUpGetUrl);
         warmupResult.EnsureSuccessStatusCode();
 

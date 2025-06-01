@@ -5,58 +5,44 @@ namespace SearchEngine.Tooling.Scripts;
 /// </summary>
 public static class NpgsqlScript
 {
-    public const string CreateUserOnlyData = """INSERT INTO public."Users" VALUES (1, '1@2', '12');""";
-    public const string CreateStubData = """
-                                          INSERT INTO public."Users" VALUES (1, '1@2', '12');
-
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (1, 'Авторские');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (2, 'Авторские (Павел)');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (3, 'Бардовские');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (4, 'Блюз');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (5, 'Вальсы');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (6, 'Военные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (7, 'Военные (ВОВ)');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (8, 'Гранж');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (9, 'Дворовые');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (10, 'Детские');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (11, 'Джаз');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (12, 'Дуэты');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (13, 'Зарубежные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (14, 'Застольные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (15, 'Из мюзиклов');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (16, 'Из фильмов');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (17, 'Кавказские');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (18, 'Классика');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (19, 'Лирика');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (20, 'Медленные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (21, 'На стихи Есенина');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (22, 'Народные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (23, 'Народный стиль');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (24, 'Новогодние');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (25, 'Новые');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (26, 'Панк');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (27, 'Патриотические');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (28, 'Песни 30х-60х');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (29, 'Песни 60х-70х');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (30, 'Поп-музыка');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (31, 'Походные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (32, 'Про водителей');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (33, 'Про ГИБДД');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (34, 'Про космонавтов');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (35, 'Про милицию');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (36, 'Ретро хиты');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (37, 'Рождественские');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (38, 'Рок');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (39, 'Романсы');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (40, 'Свадебные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (41, 'Танго');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (42, 'Танцевальные');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (43, 'Шансон');
-                                          INSERT INTO public."Tag" ("TagId", "Tag") VALUES (44, 'Шуточные');
-                                          """;
+    /// <summary>
+    /// DDL и первоначальные данные для авторизации на Postgres.
+    /// В скрипте присутствуют ограничения на длину строк.
+    /// </summary>
+    public const string DdlData = """
+                                  CREATE TABLE IF NOT EXISTS "Note" (
+                                    "NoteId" integer GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+                                    "Title" varchar(50) NOT NULL,
+                                    "Text" varchar(10000),
+                                    PRIMARY KEY ("NoteId"),
+                                    UNIQUE ("Title")
+                                  );
+                                  CREATE TABLE IF NOT EXISTS "Tag" (
+                                    "TagId" integer GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+                                    "Tag" varchar(30) NOT NULL,
+                                    PRIMARY KEY ("TagId"),
+                                    UNIQUE ("Tag")
+                                  );
+                                  CREATE TABLE IF NOT EXISTS "TagsToNotes" (
+                                    "TagId" integer NOT NULL,
+                                    "NoteId" integer NOT NULL,
+                                    PRIMARY KEY ("TagId", "NoteId"),
+                                    FOREIGN KEY ("NoteId") REFERENCES "Note"("NoteId") ON DELETE CASCADE,
+                                    FOREIGN KEY ("TagId") REFERENCES "Tag"("TagId") ON DELETE CASCADE
+                                  );
+                                  CREATE TABLE IF NOT EXISTS public."Users" (
+                                     "Id" integer GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+                                     "Email" varchar(30),
+                                     "Password" varchar(30),
+                                     PRIMARY KEY ("Id")
+                                  );
+                                  INSERT INTO public."Users" ("Id", "Email", "Password")
+                                  VALUES (1, '1@2', '12')
+                                  ON CONFLICT ("Id") DO NOTHING;
+                                  """;
 
     /// <summary>
-    /// DDL не будет содержать таблицу "Users".
+    /// DDL будет содержать таблицу "Users".
     /// Именования берутся в кавычки для сохранения регистра.
     /// К ключу дописывается автогенерация.
     /// </summary>

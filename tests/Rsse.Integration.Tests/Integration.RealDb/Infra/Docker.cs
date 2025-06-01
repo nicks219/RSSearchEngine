@@ -54,7 +54,7 @@ public abstract class Docker
                    $"-v {PostgresVolume}:/var/lib/postgresql/data -p {PostgresPort}:5432 -d postgres:17.4-alpine3.21";
         await InitializeContainer(args, true, PostgresContainer, "pg_isready", "accepting connections", cancellationToken);
 
-        args = $"run --name {MySqlContainer}  --env=MYSQL_PASSWORD=1  --env=MYSQL_USER=1--env=MYSQL_DATABASE=tagit --env=MYSQL_ROOT_PASSWORD=1 " +
+        args = $"run --name {MySqlContainer}  -e MYSQL_PASSWORD=1  -e MYSQL_USER=1 -e MYSQL_DATABASE=tagit -e MYSQL_ROOT_PASSWORD=1 " +
                $"--volume={MySqlVolume}:/var/lib/mysql -p {MySqlPort}:3306 -d mysql:8.0.31-debian";
         await InitializeContainer(args, true, "mysql_test_8", "mysqladmin ping -uroot -p1", "mysqld is alive", cancellationToken);
     }

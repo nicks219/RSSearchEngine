@@ -151,7 +151,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         var tagList = await context.Tags
             // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new EnrichedTagList(tag.Tag!, tag.RelationEntityReference!.Count))
+            .Select(tag => new EnrichedTagList(tag.Tag, tag.RelationEntityReference!.Count))
             .ToListAsync(cancellationToken);
 
         return tagList.Select(tagAndAmount =>

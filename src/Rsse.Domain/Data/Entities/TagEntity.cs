@@ -21,7 +21,7 @@ public class TagEntity
     /// </summary>
     [MaxLength(30)]
     [Column("Tag")]
-    public string? Tag { get; set; }
+    public required string Tag { get; set; }
 
     /// <summary>
     /// Служебное поле EF для создания связи.

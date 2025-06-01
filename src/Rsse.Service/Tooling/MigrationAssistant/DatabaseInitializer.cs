@@ -27,14 +27,11 @@ public abstract class DatabaseInitializer
 
         try
         {
-            var readerCreated = await mysqlContext.Database.EnsureCreatedAsync(ct);
-            var writerCreated = await npgsqlContext.Database.EnsureCreatedAsync(ct);
+            // Исходим из того, что бд 'tagit' уже существует, например, создана при инициализации контейнера.
+            await SeedDatabase(mysqlContext, ct);
+            await SeedDatabase(npgsqlContext, ct);
 
-            await SeedDatabase(mysqlContext, readerCreated, ct);
-            await SeedDatabase(npgsqlContext, writerCreated, ct);
-
-            logger.LogInformation("[{Name}] finished with results: {FirstResult} - {SecondResult}",
-                nameof(DatabaseInitializer), readerCreated, writerCreated);
+            logger.LogInformation("[{Name}] finished", nameof(DatabaseInitializer));
         }
         catch (Exception ex)
         {
@@ -44,37 +41,29 @@ public abstract class DatabaseInitializer
     }
 
     /// <summary>
-    /// Заполнить базу тестовыми данными.
+    /// Заполнить базу тестовыми данными для SqLite либо данными изначальной авторизации для Postgres|MySql.
     /// </summary>
     /// <param name="context">Контекст базы данных.</param>
-    /// <param name="created">Была ли база создана.</param>
-    /// <param name="ct"></param>
-    private static async Task SeedDatabase(BaseCatalogContext context, bool created, CancellationToken ct)
+    /// <param name="ct">Токен отмены.</param>
+    private static async Task SeedDatabase(BaseCatalogContext context, CancellationToken ct)
     {
+        int rows;
         var database = context.Database;
         switch (database.ProviderName)
         {
             case "Npgsql.EntityFrameworkCore.PostgreSQL":
-                if (created)
-                {
-                    var raws = await database.ExecuteSqlRawAsync(NpgsqlScript.CreateUserOnlyData, ct);
-                    Console.WriteLine($"[Npgsql] [ROWS AFFECTED] {raws}");
-                }
-
+                rows = await database.ExecuteSqlRawAsync(NpgsqlScript.DdlData, ct);
+                Console.WriteLine($"[{nameof(NpgsqlScript)}] rows affected | {rows}");
                 break;
 
             case "Pomelo.EntityFrameworkCore.MySql":
-                if (created)
-                {
-                    var raws = await database.ExecuteSqlRawAsync(MySqlScript.CreateStubData, ct);
-                    Console.WriteLine($"[MySql] [ROWS AFFECTED] {raws}");
-                }
-
+                rows = await database.ExecuteSqlRawAsync(MySqlScript.DdlData, ct);
+                Console.WriteLine($"[{nameof(MySqlScript)}] rows affected | {rows}");
                 break;
 
-            // SQLite используется при запуске интеграционных тестов:
+            // Контекст абстрагирует SQLite, который используется при запуске интеграционных тестов:
             case "Microsoft.EntityFrameworkCore.Sqlite":
-
+                var created = await database.EnsureCreatedAsync(ct);
                 if (!created)
                 {
                     await database.EnsureDeletedAsync(ct);
@@ -83,19 +72,15 @@ public abstract class DatabaseInitializer
 
                 if (created)
                 {
-                    var rows = await database.ExecuteSqlRawAsync(SQLiteIntegrationTestScript.CreateTestData, ct);
-                    Console.WriteLine($"[Sqlite] [ROWS AFFECTED] {rows}");
+                    rows = await database.ExecuteSqlRawAsync(SqLiteIntegrationTestScript.TestData, ct);
+                    Console.WriteLine($"[{nameof(SqLiteIntegrationTestScript)}] rows affected | {rows}");
                 }
 
                 break;
 
             case "Microsoft.EntityFrameworkCore.SqlServer":
-                if (created)
-                {
-                    var raws = await database.ExecuteSqlRawAsync(MsSqlScript.CreateStubData, ct);
-                    Console.WriteLine($"[SqlServer] [ROWS AFFECTED] {raws}");
-                }
-
+                rows = await database.ExecuteSqlRawAsync(MsSqlScript.TestData, ct);
+                Console.WriteLine($"[{nameof(MsSqlScript)}] rows affected | {rows}");
                 break;
         }
     }

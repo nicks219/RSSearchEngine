@@ -10,16 +10,29 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Api.Startup;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
+using SearchEngine.Tests.Integration.RealDb.Api;
 using SearchEngine.Tests.Integration.RealDb.Extensions;
+using SearchEngine.Tests.Integration.RealDb.Infra;
 
 namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
-public class DistributionTests : TestBase
+public sealed class DistributionTests : TestBase, IDisposable
 {
+    private readonly IntegrationWebAppFactory<Startup> _factory = new();
+
+    /// <summary>
+    /// Закрываем фабрику средствами шарпа.
+    /// </summary>
+    public void Dispose()
+    {
+        _factory.Dispose();
+    }
+
     /// <summary>
     /// Тест оценивает распределение запросов на получение случайной заметки.
     /// </summary>
@@ -32,10 +45,10 @@ public class DistributionTests : TestBase
         const int electionTestTagsCount = 44;
 
         const double expectedCoefficient = 0.7D;
-        using var client = Factory.CreateClient(Options);
+        using var client = _factory.CreateClient(Options);
 
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
-        await TestHelper.CleanUpDatabases(Factory, Token);
+        await TestHelper.CleanUpDatabases(_factory, Token);
         await client.TryAuthorizeToService("1@2", "12", ct: Token);
         await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
         await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);

@@ -3,40 +3,41 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integration.RealDb.Api;
-using SearchEngine.Tests.Integration.RealDb.Infra;
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace SearchEngine.Tests.Integration.RealDb.Infra;
 
 /// <summary>
 /// Базовый класс для тестов.
 /// Обеспечивает однократный подъём докера на локальной разработке, "прогрев" и очистку хоста.
 /// </summary>
-public class TestBase : IDisposable
+public class TestBase
 {
     protected static readonly CancellationToken Token = CancellationToken.None;
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static volatile bool _initialized;
 
-    protected readonly IntegrationWebAppFactory<Startup> Factory = new();
-    protected readonly WebApplicationFactoryClientOptions Options = new()
+    protected static readonly WebApplicationFactoryClientOptions Options = new()
     {
         BaseAddress = BaseAddress,
         HandleCookies = true
     };
 
-    protected TestBase()
+    [ClassInitialize(InheritanceBehavior.BeforeEachDerivedClass)]
+    public static async Task Initialize(TestContext testContext)
     {
-        InitializeAsync().GetAwaiter().GetResult();
+        // Возможность быстро прервать подъём докера (может повлиять на его стейт).
+        var token = testContext.CancellationTokenSource.Token;
+        await InitializeAsync(token);
     }
 
-    private async Task InitializeAsync()
+    private static async Task InitializeAsync(CancellationToken ct)
     {
         if (_initialized) return;
 
-        var ct = CancellationToken.None;
         var isGitHubAction = Docker.IsGitHubAction();
         switch (isGitHubAction)
         {
@@ -54,15 +55,11 @@ public class TestBase : IDisposable
                 }
         }
 
-        using var client = Factory.CreateClient(Options);
+        await using var factory = new IntegrationWebAppFactory<Startup>();
+        using var client = factory.CreateClient(Options);
         client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, ct).GetAwaiter().GetResult();
         Console.WriteLine("host warmup completed");
 
         _initialized = true;
-    }
-
-    public void Dispose()
-    {
-        Factory.Dispose();
     }
 }
