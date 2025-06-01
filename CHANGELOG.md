@@ -143,7 +143,12 @@
   * upd: заменить EnsureCreated при инициализации на SQL
   * upd: `bumps: обновлён`закрыть параметры ручек проверкой required
 ---
-  * [ ] подумать над поставкой observability в OTLP формате 
+  * [ ] `docker-compose` поставлять observability в OTLP формате на http://otel-collector:4317
+    * [x] настройка конфигурации через appsettings и код:
+      * логи: консоль и Serilog.Sinks.OpenTelemetry
+      * метрики: http://otel-collector:4317 (/metrics пока оставляем)
+      * трейсы: http://otel-collector:4317
+    * [ ] флаги: добавить `EnableTelemetry` (мб отключать на CI), поменять логику TRACING_ENABLE
     * [ ] `k3s: обновить` проверить интеграцию с Grafana Cloud)
 ---
 

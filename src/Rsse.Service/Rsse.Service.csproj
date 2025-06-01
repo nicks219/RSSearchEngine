@@ -23,12 +23,13 @@
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     </PropertyGroup>
-    <!-- <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DefineConstants>$(DefineConstants);TRACING_ENABLE</DefineConstants>
-    </PropertyGroup> -->
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="MySqlBackup.NET" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 
@@ -39,6 +40,7 @@
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
       <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
       <PackageReference Include="Serilog.AspNetCore" />
+      <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
     </ItemGroup>
     <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
       <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />

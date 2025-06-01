@@ -47,9 +47,14 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddJsonFile($"appsettings.{env}.json", true)
     .Build();
+
+var endpoint = configuration.GetValue<string>("Otlp:Endpoint");
+if (endpoint == null) throw new Exception("Otlp:Endpoint not found.");
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom
     .Configuration(configuration)
+    .WriteTo.OpenTelemetry(endpoint)
     .CreateLogger();
 
 Log.Information("Starting web host");

@@ -137,10 +137,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         });
 
         services.AddHealthChecks().AddCheck<ReadyHealthCheck>("ready.check", tags: ["ready"]);
-        services.AddMetricsInternal();
         services.AddRateLimiterInternal();
+
+        services.AddMetricsInternal(configuration);
 #if TRACING_ENABLE
-        services.AddTracingInternal();
+        services.AddTracingInternal(configuration);
         services
             .AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "rsse-keys")))

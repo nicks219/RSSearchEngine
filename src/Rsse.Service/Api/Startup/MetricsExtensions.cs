@@ -1,3 +1,5 @@
+using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 
@@ -12,12 +14,20 @@ internal static class MetricsExtensions
     /// Зарегистрировать функционал поставки метрик.
     /// </summary>
     /// <param name="services">Коллекция служб.</param>
-    internal static void AddMetricsInternal(this IServiceCollection services)
+    internal static void AddMetricsInternal(this IServiceCollection services, IConfiguration configuration)
     {
+        var endpoint = configuration.GetValue<string>("Otlp:Endpoint");
+        if (endpoint == null) throw new Exception("Otlp:Endpoint not found.");
+
         services.AddOpenTelemetry()
             .WithMetrics(meterProviderBuilder =>
             {
+                // todo: подумать, стоит ли удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
                 meterProviderBuilder.AddPrometheusExporter();
+                meterProviderBuilder.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(endpoint);
+                });
                 meterProviderBuilder.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel");
                 meterProviderBuilder.AddView("http.server.request.duration",
                     new ExplicitBucketHistogramConfiguration
