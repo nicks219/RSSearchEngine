@@ -32,6 +32,6 @@ public static class RandomizationExtension
     {
         var randomInt = new byte[4];
         rnd.GetBytes(randomInt);
-        return Convert.ToInt32(randomInt[0]);
+        return BitConverter.ToInt32([randomInt[0]]);
     }
 }

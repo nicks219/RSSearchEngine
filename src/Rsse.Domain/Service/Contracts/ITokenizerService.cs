@@ -55,4 +55,10 @@ public interface ITokenizerService
     /// <returns><b>true</b> - Инициализация завершена успешно, либо функционал отключен.</returns>
     /// <exception cref="OperationCanceledException">Запрошена отмена освобождения блокировки.</exception>
     public Task<bool> WaitWarmUp(CancellationToken timeoutToken);
+
+    /// <summary>
+    /// Флаг успешной инициализации токенизвтора.
+    /// </summary>
+    /// <returns><b>true</b> - Инициализация завершена успешно.</returns>
+    public bool IsInitialized();
 }

@@ -86,6 +86,16 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
+    public async Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
+    {
+        return await context.Notes
+            .AsNoTracking()
+            .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
+            .OrderBy(r => EF.Functions.Random())
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<List<CatalogItemDto>> ReadCatalogPage(int pageNumber, int pageSize,
         CancellationToken cancellationToken)
     {

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integrations.Infra;
+using Serilog;
 
 namespace SearchEngine.Tests.Integrations.IntegrationTests.RealDb;
 
@@ -14,6 +15,11 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
 {
     protected override IHostBuilder CreateHostBuilder()
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Error()
+            .WriteTo.Console()
+            .CreateLogger();
+
         var mysqlConnectionString = GetMysqlConnectionString();
         var pgConnectionString = GetPgConnectionString();
 
@@ -39,6 +45,7 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
                 services.AddDbsIntegrationTestEnvironment();
             });
 
+        builder.UseSerilog();
         return builder;
     }
 

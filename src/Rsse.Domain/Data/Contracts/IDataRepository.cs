@@ -13,6 +13,14 @@ namespace SearchEngine.Data.Contracts;
 public interface IDataRepository
 {
     /// <summary>
+    /// Получить случайную заметку, используя средства SQL.
+    /// </summary>
+    /// <param name="checkedTags">Идентификаторы тегов для выбора заметок.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>Случайная заметка.</returns>
+    Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Создать заметку.
     /// </summary>
     /// <param name="noteRequest">Контейнер запроса с заметкой.</param>

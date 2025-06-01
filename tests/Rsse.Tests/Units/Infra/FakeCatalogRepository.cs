@@ -156,6 +156,14 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
+    public Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
+    {
+        var note = _notes[TestNoteId];
+        var noteEntity = new NoteEntity { Text = note.Text, Title = note.Title };
+        return Task.FromResult<NoteEntity?>(noteEntity);
+    }
+
+    /// <inheritdoc/>
     public Task<int> ReadNotesCount(CancellationToken cancellationToken)
     {
         if (_notes == null) throw new NullReferenceException("Data is null");

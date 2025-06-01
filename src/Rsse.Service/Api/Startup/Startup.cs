@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 // Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -134,6 +135,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
+        services.AddHealthChecks().AddCheck<ReadyHealthCheck>("ready.check", tags: ["ready"]);
         services.AddMetricsInternal();
         services.AddRateLimiterInternal();
 #if TRACING_ENABLE
@@ -199,6 +201,16 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseRateLimiter();
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapHealthChecks("/system/live",
+                new HealthCheckOptions
+                {
+                    Predicate = _ => false
+                });
+            endpoints.MapHealthChecks("/system/ready",
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("ready")
+                });
             endpoints.Map("/account/accessDenied", async next =>
             {
                 next.Response.StatusCode = 403;
