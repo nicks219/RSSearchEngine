@@ -84,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
 		src\docker-compose-latest.yml = src\docker-compose-latest.yml
+		src\otel-docker-config.yaml = src\otel-docker-config.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"

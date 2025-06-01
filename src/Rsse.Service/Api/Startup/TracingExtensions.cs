@@ -1,5 +1,6 @@
 #if TRACING_ENABLE
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
@@ -16,6 +17,7 @@ internal static class TracingExtensions
     /// Зарегистрировать функционала поставки трассировок.
     /// </summary>
     /// <param name="services">Коллекция служб.</param>
+    /// <param name="configuration">Конфигурация.</param>
     internal static void AddTracingInternal(this IServiceCollection services, IConfiguration configuration)
     {
         var endpoint = configuration.GetValue<string>("Otlp:Endpoint");
@@ -23,6 +25,12 @@ internal static class TracingExtensions
 
         services
             .AddOpenTelemetry()
+            .ConfigureResource(resource => resource
+                // service name заоверрайдится на Rsse.Service
+                .AddService("rsse-app", serviceNamespace: "rsse-group")
+                .AddAttributes([
+                    new KeyValuePair<string, object>("deployment.environment", "production")
+                ]))
             .WithTracing(tracerProviderBuilder =>
             {
                 tracerProviderBuilder.AddAspNetCoreInstrumentation();

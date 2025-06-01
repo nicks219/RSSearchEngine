@@ -14,6 +14,7 @@ internal static class MetricsExtensions
     /// Зарегистрировать функционал поставки метрик.
     /// </summary>
     /// <param name="services">Коллекция служб.</param>
+    /// <param name="configuration">Конфигурация.</param>
     internal static void AddMetricsInternal(this IServiceCollection services, IConfiguration configuration)
     {
         var endpoint = configuration.GetValue<string>("Otlp:Endpoint");

@@ -148,6 +148,7 @@
       * логи: консоль и Serilog.Sinks.OpenTelemetry
       * метрики: http://otel-collector:4317 (/metrics пока оставляем)
       * трейсы: http://otel-collector:4317
+    * [x] добавить в компоуз с конфигурацией на otel и файликом `.env` (не коммитается)
     * [ ] флаги: добавить `EnableTelemetry` (мб отключать на CI), поменять логику TRACING_ENABLE
     * [ ] `k3s: обновить` проверить интеграцию с Grafana Cloud)
 ---

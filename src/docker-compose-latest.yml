@@ -2,6 +2,22 @@ version: "3.7"
 
 services:
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./otel-docker-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GRAFANA_CLOUD_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp"
+      GRAFANA_CLOUD_INSTANCE_ID: "${GRAFANA_CLOUD_INSTANCE_ID}"
+      GRAFANA_CLOUD_API_KEY: "${GRAFANA_CLOUD_API_KEY}"
+    networks:
+      - default
+
   mysql:
     image: mysql:8.0.31-debian
     container_name: mysql_rsse
@@ -15,6 +31,8 @@ services:
       - 3306
     volumes:
       - compose-mysql-volume:/var/lib/mysql
+    networks:
+      - default
 
   postgres:
     image: postgres:17.4-alpine3.21
@@ -27,13 +45,21 @@ services:
       - 5432
     volumes:
       - compose-pg-volume:/var/lib/postgresql/data
+    networks:
+      - default
 
   tagit:
     image: nick219nick/rsse-app:latest
     container_name: rsse
+    depends_on:
+      - otel-collector
     restart: always
+    environment:
+      OTEL_RESOURCE_ATTRIBUTES="service:name=rsse-app,service:namespace=rsse-group,deployment:environment=production":
     ports:
       - 5100:5000
+    networks:
+      - default
 
 volumes:
   compose-mysql-volume:
