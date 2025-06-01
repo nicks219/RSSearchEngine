@@ -1,4 +1,5 @@
 
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,8 @@ public partial class CreateService(IDataRepository repo)
     /// <returns>Контейнер с иснформации о созданной заметке.</returns>
     public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto, CancellationToken stoppingToken)
     {
-        var enrichedTags = await repo.ReadEnrichedTagList(stoppingToken);
+        var storedTags = await repo.ReadTags(stoppingToken);
+        var enrichedTags = storedTags.Select(t => t.GetEnrichedName()).ToList();
         var unsuccessfulResultDto = new NoteResultDto(enrichedTags: enrichedTags);
 
         if (noteRequestDto.CheckedTags == null ||
@@ -64,13 +66,14 @@ public partial class CreateService(IDataRepository repo)
             return unsuccessfulResultDto;
         }
 
-        var tagsAfterCreate = await repo.ReadEnrichedTagList(stoppingToken);
+        var tagsAfterCreate = await repo.ReadTags(stoppingToken);
+        var enrichedTagsAfterCreate = tagsAfterCreate.Select(t => t.GetEnrichedName()).ToList();
         var totalTagsCount = tagsAfterCreate.Count;
         var noteTagIds = await repo.ReadNoteTagIds(newNoteId, stoppingToken);
 
         var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
 
-        return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
+        return new NoteResultDto(enrichedTagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
     }
 
     /// <summary>

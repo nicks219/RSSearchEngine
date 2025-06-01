@@ -62,11 +62,11 @@ public interface IDataRepository
     // common:
 
     /// <summary>
-    /// Получить список тегов в формате "имя : количество записей".
+    /// Получить список тегов, поддерживающих конвертацию в формат "имя : количество записей".
     /// </summary>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Обогащенный список тегов.</returns>
-    Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken);
+    /// <returns>Список тегов, поддерживающих конвертацию.</returns>
+    Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken);
 
     /// <summary>
     /// Получить общее количество заметок.

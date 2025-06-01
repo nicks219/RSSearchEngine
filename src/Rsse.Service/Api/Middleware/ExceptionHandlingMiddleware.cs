@@ -38,7 +38,25 @@ public class ExceptionHandlingMiddleware(
         {
             var endpoint = context.GetEndpoint();
             var routePattern = endpoint?.DisplayName;
-            logger.LogError(ex, "{Reporter} | unhandled exception: '{RoutePattern}'", nameof(ExceptionHandlingMiddleware), routePattern);
+            switch (ex.Source)
+            {
+                // Исключения при отсутствии коннекта до бд:
+                // Postgres: InvalidOperationException: "An exception has been raised that is likely due to a transient failure."
+                // MySql: MySqlException: "Unable to connect to any of the specified MySQL hosts"
+
+                case "MySql.Data":
+                case "Npgsql.EntityFrameworkCore.PostgreSQL":
+                    logger.LogError("{Reporter} | unhandled exception from: '{RoutePattern}' | type: '{Type}' " +
+                                    "| source: '{Source}' | message: '{Message}'",
+                        nameof(ExceptionHandlingMiddleware), routePattern, ex.GetType().Name, ex.Source, ex.Message);
+                    break;
+
+                default:
+                    logger.LogError(ex, "{Reporter} | unhandled exception from: '{RoutePattern}'",
+                        nameof(ExceptionHandlingMiddleware), routePattern);
+                    break;
+            }
+
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         }
     }

@@ -21,7 +21,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     internal const string SecondNoteTitle = "Шаинский - Облака";
     private const int TestNoteId = 1;
 
-    internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
+    internal static readonly List<string> TagNameList = ["Rock", "Pop", "Jazz"];
 
     private readonly Dictionary<int, TextResultDto> _notes = new();
 
@@ -142,9 +142,13 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken)
+    public Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken)
     {
-        var result = Task.FromResult(TagList);
+        var enrichedTagList = TagNameList
+            .Select((name, id) => new TagResultDto(Tag: name, TagId: id + 1, RelationEntityReferenceCount: 1))
+            .ToList();
+        var result = Task.FromResult(enrichedTagList);
+
         return result;
     }
 

@@ -37,10 +37,10 @@ public class CreateTests
     public async Task CreateManager_ShouldReports_ExpectedTagsCount()
     {
         // arrange & act:
-        var resultDto = await Repository.ReadEnrichedTagList(_token);
+        var resultDto = await Repository.ReadTags(_token);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, resultDto.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagNameList.Count, resultDto.Count);
     }
 
     [TestMethod]

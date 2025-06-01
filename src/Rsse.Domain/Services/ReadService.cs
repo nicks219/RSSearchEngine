@@ -15,12 +15,6 @@ namespace SearchEngine.Services;
 public class ReadService(IDataRepository repo)
 {
     /// <summary>
-    /// Кэшируем диапазон идентификаторов тегов тк сами теги добавляются редко.
-    /// В данной реализации кэш будет обновлён только при перезапуске сервиса.
-    /// </summary>
-    private static List<int>? _allTagsRange;
-
-    /// <summary>
     /// Минимальное значение идентфикатора в бд.
     /// </summary>
     private const int MinIdValue = 1;
@@ -45,9 +39,10 @@ public class ReadService(IDataRepository repo)
     /// <returns>Ответ со списком обогащенных тегов.</returns>
     public async Task<NoteResultDto> ReadEnrichedTagList(CancellationToken cancellationToken)
     {
-        var enrichedTagList = await repo.ReadEnrichedTagList(cancellationToken);
+        var totalTags = await repo.ReadTags(cancellationToken);
+        var enrichedTags = totalTags.Select(t => t.GetEnrichedName()).ToList();
 
-        return new NoteResultDto(enrichedTagList);
+        return new NoteResultDto(enrichedTags);
     }
 
     /// <summary>
@@ -61,52 +56,52 @@ public class ReadService(IDataRepository repo)
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
         bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
     {
-        var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
-        if (request?.CheckedTags == null || totalTags.Count == 0)
+        var storedTags = await repo.ReadTags(cancellationToken);
+        var enrichedTags = storedTags.Select(t => t.GetEnrichedName()).ToList();
+        if (request?.CheckedTags == null || storedTags.Count == 0)
         {
-            return new NoteResultDto(totalTags);
+            // Если в бд нет тегов, точно стоит отдавать пустой ответ?
+            return new NoteResultDto(enrichedTags);
         }
 
-        // Если список тегов пуст, заполняем его полностью.
-        if (request.CheckedTags.Count == 0)
-        {
-            _allTagsRange ??= Enumerable.Range(AppConstants.MinTagNumber, totalTags.Count).ToList();
-            request = request with { CheckedTags = _allTagsRange };
-        }
+        // Если список отмеченных тегов в запросе пуст, заполняем его полностью.
+        var requestCheckedTags = request.CheckedTags.Count == 0
+            ? storedTags.Select(t => t.TagId).ToList()
+            : request.CheckedTags;
 
         // Если указан конкретный id, пробуем получить заметку по нему.
         if (int.TryParse(id, out var specificNoteId))
         {
-            return await GetNoteOrEmpty(totalTags, specificNoteId, cancellationToken);
+            return await GetNoteOrEmpty(enrichedTags, specificNoteId, cancellationToken);
         }
 
         // Выбираем заметку по тегам, средствами SQL.
         if (randomElectionEnabled)
         {
-            var noteEntity = await repo.GetRandomNoteOrDefault(request.CheckedTags, cancellationToken);
+            var noteEntity = await repo.GetRandomNoteOrDefault(requestCheckedTags, cancellationToken);
             return noteEntity == null
-                ? new NoteResultDto(totalTags)
-                : new NoteResultDto(totalTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
+                ? new NoteResultDto(enrichedTags)
+                : new NoteResultDto(enrichedTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
         }
 
         // Выбираем заметку по тегам с round robin.
-        var electableNoteIds = await repo.ReadTaggedNotesIds(request.CheckedTags, cancellationToken);
+        var electableNoteIds = await repo.ReadTaggedNotesIds(requestCheckedTags, cancellationToken);
         var electedNoteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
 
-        return await GetNoteOrEmpty(totalTags, electedNoteId, cancellationToken);
+        return await GetNoteOrEmpty(enrichedTags, electedNoteId, cancellationToken);
     }
 
-    private async Task<NoteResultDto> GetNoteOrEmpty(List<string> totalTags, int noteId,
+    private async Task<NoteResultDto> GetNoteOrEmpty(List<string> enrichedTags, int noteId,
         CancellationToken cancellationToken)
     {
         if (noteId < MinIdValue)
         {
-            return new NoteResultDto(totalTags);
+            return new NoteResultDto(enrichedTags);
         }
 
         var note = await repo.ReadNote(noteId, cancellationToken);
         return note == null
-            ? new NoteResultDto(totalTags)
-            : new NoteResultDto(totalTags, noteId, note.Text, note.Title);
+            ? new NoteResultDto(enrichedTags)
+            : new NoteResultDto(enrichedTags, noteId, note.Text, note.Title);
     }
 }

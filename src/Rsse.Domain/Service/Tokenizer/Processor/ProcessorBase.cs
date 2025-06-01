@@ -14,7 +14,7 @@ public abstract class ProcessorBase : ITokenizerProcessor
     protected const string ReducedEnglish = "qwrtpsdfghjklzxcvbnm";
 
     // Разделители слов в заметке.
-    private static readonly char[] Separators = ['\r', '\n', ':', '/', '.', ' '];
+    private static readonly char[] Separators = ['\r', '\n', '\t', ':', '/', '.', ' '];
 
     /// <summary>
     /// Полный набор символов для токенизации.

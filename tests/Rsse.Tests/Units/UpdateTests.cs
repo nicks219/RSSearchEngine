@@ -48,7 +48,7 @@ public class UpdateTests
         var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1, _token);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.EnrichedTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagNameList.Count, responseDto.EnrichedTags?.Count);
     }
 
     [TestMethod]

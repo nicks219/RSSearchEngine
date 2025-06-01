@@ -69,25 +69,27 @@ public class RepositoryTests
         var token = CancellationToken.None;
 
         // act:
-        const string tag = "new-1";
+        const string tagRequest = "new-1";
         using var _ = _factory!.CreateClient(_options!);
         using var serviceScope = _factory.Services.CreateScope();
         var mysqlRepo = (CatalogRepository<MysqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<MysqlCatalogContext>));
         var npgsqlRepo = (CatalogRepository<NpgsqlCatalogContext>)serviceScope.ServiceProvider.GetRequiredService(typeof(CatalogRepository<NpgsqlCatalogContext>));
         mysqlRepo.EnsureNotNull();
-        await mysqlRepo.CreateTagIfNotExists(tag, token);
-        var tagsFromMysql = await mysqlRepo.ReadEnrichedTagList(token);
-        var tagsFromNpg = await npgsqlRepo.ReadEnrichedTagList(token);
+        await mysqlRepo.CreateTagIfNotExists(tagRequest, token);
+        var tagsFromMysql = await mysqlRepo.ReadTags(token);
+        var tagsFromNpg = await npgsqlRepo.ReadTags(token);
 
         // assert:
         // теги сохраняются в верхнем регистре
         tagsFromMysql
+            .Select(tagResult => tagResult.GetEnrichedName())
             .Should()
-            .Contain(tag.ToUpper());
+            .Contain(tagRequest.ToUpper());
 
         tagsFromNpg
+            .Select(tagResult => tagResult.GetEnrichedName())
             .Should()
-            .NotContain(tag.ToUpper());
+            .NotContain(tagRequest.ToUpper());
     }
 
     [TestMethod]

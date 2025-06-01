@@ -1,4 +1,5 @@
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
@@ -59,12 +60,13 @@ public class UpdateService(IDataRepository repo)
             text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
         }
 
-        var tagsBeforeUpdate = await repo.ReadEnrichedTagList(cancellationToken);
+        var tagsBeforeUpdate = await repo.ReadTags(cancellationToken);
+        var enrichedTagsBeforeUpdate = tagsBeforeUpdate.Select(t => t.GetEnrichedName()).ToList();
         var totalTagsCount = tagsBeforeUpdate.Count;
         var noteTagIds = await repo.ReadNoteTagIds(originalNoteId, cancellationToken);
 
         var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
 
-        return new NoteResultDto(tagsBeforeUpdate, originalNoteId, text, title, checkboxes);
+        return new NoteResultDto(enrichedTagsBeforeUpdate, originalNoteId, text, title, checkboxes);
     }
 }

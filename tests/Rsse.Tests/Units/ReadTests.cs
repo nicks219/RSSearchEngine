@@ -31,7 +31,7 @@ public class ReadTests
     public required ServiceProviderStub ServiceProviderStub;
 
     private readonly CancellationToken _token = CancellationToken.None;
-    private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
+    private readonly int _tagsCount = FakeCatalogRepository.TagNameList.Count;
 
     [TestInitialize]
     public void Initialize()

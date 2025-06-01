@@ -80,8 +80,8 @@ public sealed class MirrorRepository(
     }
 
     /// <inheritdoc/>
-    public Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken) =>
-        _reader.ReadEnrichedTagList(cancellationToken);
+    public Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken) =>
+        _reader.ReadTags(cancellationToken);
 
     /// <inheritdoc/>
     public Task<int> ReadNotesCount(CancellationToken cancellationToken) => _reader.ReadNotesCount(cancellationToken);

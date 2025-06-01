@@ -17,9 +17,6 @@ namespace SearchEngine.Infrastructure.Repository;
 /// </summary>
 public sealed class CatalogRepository<T>(T context) : IDataRepository where T : BaseCatalogContext
 {
-    /// <summary/> Контейнер для метода, создающего обогащенный список тегов.
-    private record struct EnrichedTagList(string Tag, int RelationEntityReferenceCount);
-
     private readonly CancellationToken _noneToken = CancellationToken.None;
 
     /// <inheritdoc/>
@@ -146,19 +143,14 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken)
+    public async Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken)
     {
         var tagList = await context.Tags
-            // todo: [?] заменить сортировку на корректный индекс в бд
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new EnrichedTagList(tag.Tag, tag.RelationEntityReference!.Count))
+            .Select(tag => new TagResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference!.Count))
             .ToListAsync(cancellationToken);
 
-        return tagList.Select(tagAndAmount =>
-                tagAndAmount.RelationEntityReferenceCount > 0
-                    ? tagAndAmount.Tag + ": " + tagAndAmount.RelationEntityReferenceCount
-                    : tagAndAmount.Tag)
-            .ToList();
+        return tagList;
     }
 
     /// <inheritdoc/>
