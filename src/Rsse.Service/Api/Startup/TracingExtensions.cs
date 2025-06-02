@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Api.Startup;
 
@@ -20,6 +21,11 @@ internal static class TracingExtensions
     /// <param name="configuration">Конфигурация.</param>
     internal static void AddTracingInternal(this IServiceCollection services, IConfiguration configuration)
     {
+        if (Environment.GetEnvironmentVariable(Constants.AspNetCoreEnvironmentName) == Constants.TestingEnvironment)
+        {
+            return;
+        }
+
         var endpoint = configuration.GetValue<string>("Otlp:Endpoint");
         if (endpoint == null) throw new Exception("Otlp:Endpoint not found.");
 
@@ -46,11 +52,3 @@ internal static class TracingExtensions
     }
 }
 #endif
-/* можеь подхватить:
-"OpenTelemetry": {
-    "Otlp": {
-      "Endpoint": "http://otel-collector:4317",
-      "Protocol": "Grpc" // или "HttpProtobuf"
-    }
-  }
-  */

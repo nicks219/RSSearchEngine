@@ -1,7 +1,9 @@
+#if TRACING_ENABLE
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
+using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Api.Startup;
 
@@ -17,6 +19,11 @@ internal static class MetricsExtensions
     /// <param name="configuration">Конфигурация.</param>
     internal static void AddMetricsInternal(this IServiceCollection services, IConfiguration configuration)
     {
+        if (Environment.GetEnvironmentVariable(Constants.AspNetCoreEnvironmentName) == Constants.TestingEnvironment)
+        {
+            return;
+        }
+
         var endpoint = configuration.GetValue<string>("Otlp:Endpoint");
         if (endpoint == null) throw new Exception("Otlp:Endpoint not found.");
 
@@ -55,3 +62,4 @@ internal static class MetricsExtensions
             });
     }
 }
+#endif

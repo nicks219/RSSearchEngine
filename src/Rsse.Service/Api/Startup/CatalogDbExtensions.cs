@@ -39,6 +39,9 @@ public static class CatalogDbExtensions
         {
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var npgsqlDataSource = new NpgsqlDataSourceBuilder(npgsqlConnectionString)
+                {
+                    Name = "rsse-postgres"
+                }
                 .UseLoggerFactory(loggerFactory)
                 .Build();
 
@@ -58,6 +61,7 @@ public static class CatalogDbExtensions
         {
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var npgsqlDataSource = new MySqlDataSourceBuilder(mysqlConnectionString)
+                .UseName("rsse-mysql")
                 .UseLoggerFactory(loggerFactory)
                 .Build();
 

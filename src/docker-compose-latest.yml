@@ -49,7 +49,7 @@ services:
       - default
 
   tagit:
-    image: nick219nick/rsse-app:latest
+    image: ghcr.io/nicks219/rssearchengine:latest
     container_name: rsse
     depends_on:
       - otel-collector

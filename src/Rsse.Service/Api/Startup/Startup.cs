@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Logger;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
@@ -42,8 +41,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     internal const string DefaultConnectionKey = "DefaultConnection";
     internal const string AdditionalConnectionKey = "AdditionalConnection";
-
-    private const string LogFileName = "service.log";
 
     private readonly string[] _allowedOrigins =
     [
@@ -139,8 +136,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddHealthChecks().AddCheck<ReadyHealthCheck>("ready.check", tags: ["ready"]);
         services.AddRateLimiterInternal();
 
-        services.AddMetricsInternal(configuration);
 #if TRACING_ENABLE
+        services.AddMetricsInternal(configuration);
         services.AddTracingInternal(configuration);
         services
             .AddDataProtection()
@@ -161,10 +158,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             // полный вывод деталей ошибки и всех хедеров также доступен в сваггере
             app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            // app.UseExceptionHandler("/error");
         }
 
         app.UseSwagger();
@@ -220,25 +213,25 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
             }).RequireAuthorization();
             endpoints.MapControllers();
-            endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
+
+#if TRACING_ENABLE
+            if (Environment.GetEnvironmentVariable(Constants.AspNetCoreEnvironmentName) != Constants.TestingEnvironment)
+            {
+                endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
+            }
+#endif
         });
 
-        // AddLogging(loggerFactory);
         LogSystemInfo(loggerFactory, isDevelopment, isProduction);
     }
 
     private string? GetDefaultConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
     private string? GetAdditionalConnectionString() => configuration.GetConnectionString(AdditionalConnectionKey);
 
-    private static void AddLogging(ILoggerFactory loggerFactory)
-    {
-        loggerFactory.AddFileLoggerProviderInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
-    }
-
     // todo: в проекте есть serilog | единственное применение - для примитивной записи логов на тестах
     private void LogSystemInfo(ILoggerFactory loggerFactory, bool isDevelopment, bool isProduction)
     {
-        var logger = loggerFactory.CreateLogger<FileLoggerInternal>();
+        var logger = loggerFactory.CreateLogger<Startup>();
 
         logger.LogInformation("Application started at {Date}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
         logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());

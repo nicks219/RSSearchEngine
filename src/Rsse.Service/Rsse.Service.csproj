@@ -23,7 +23,7 @@
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup Condition=" '$(EnableTelemetry)' != 'False' ">
       <DefineConstants>$(DefineConstants);TRACING_ENABLE</DefineConstants>
     </PropertyGroup>
 
@@ -38,13 +38,13 @@
     </ItemGroup>
     <ItemGroup Label="Observability">
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
       <PackageReference Include="Serilog.AspNetCore" />
       <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
     </ItemGroup>
     <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
       <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
       <PackageReference Include="OpenTelemetry.Exporter.Console" />
+      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>
