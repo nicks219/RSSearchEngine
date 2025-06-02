@@ -1,8 +1,8 @@
-
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SearchEngine.Data.Common;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using static SearchEngine.Service.Configuration.ServiceErrorMessages;
@@ -66,14 +66,10 @@ public partial class CreateService(IDataRepository repo)
             return unsuccessfulResultDto;
         }
 
-        var tagsAfterCreate = await repo.ReadTags(stoppingToken);
-        var enrichedTagsAfterCreate = tagsAfterCreate.Select(t => t.GetEnrichedName()).ToList();
-        var totalTagsCount = tagsAfterCreate.Count;
-        var noteTagIds = await repo.ReadNoteTagIds(newNoteId, stoppingToken);
+        var tagsAfterCreate = await repo.ReadMarkedTags(newNoteId, stoppingToken);
+        var noteResultDto = NoteResult.CreateFrom(tagsAfterCreate, newNoteId, string.Empty, "[OK]");
 
-        var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
-
-        return new NoteResultDto(enrichedTagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
+        return noteResultDto;
     }
 
     /// <summary>

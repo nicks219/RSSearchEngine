@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -100,7 +101,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
             .OrderBy(note => note.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(note => new CatalogItemDto { Title = note.Title!, NoteId = note.NoteId })
+            .Select(note => new CatalogItemDto { Title = note.Title, NoteId = note.NoteId })
             .ToListAsync(cancellationToken);
 
         return catalogPages;
@@ -111,21 +112,10 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         var note = await context.Notes
             .Where(note => note.NoteId == noteId)
-            .Select(note => new TextResultDto { Text = note.Text!, Title = note.Title! })
+            .Select(note => new TextResultDto { Text = note.Text, Title = note.Title })
             .FirstOrDefaultAsync(cancellationToken);
 
         return note;
-    }
-
-    /// <inheritdoc/>
-    public async Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken)
-    {
-        var tagIds = await context.TagsToNotesRelation
-            .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
-            .Select(relation => relation.TagId)
-            .ToListAsync(cancellationToken);
-
-        return tagIds;
     }
 
     /// <inheritdoc/>
@@ -154,12 +144,33 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest,
+    public async Task<List<TagMarkedResultDto>> ReadMarkedTags(int nodeId, CancellationToken cancellationToken)
+    {
+        var tagList = await context.Tags
+            .OrderBy(tag => tag.TagId)
+            .Select(tag => new TagMarkedResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference!.Count,
+                tag.RelationEntityReference!.Select(t => t.NoteId).Contains(nodeId)))
+            .ToListAsync(cancellationToken);
+
+        return tagList;
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateNote(NoteRequestDto noteRequest,
         CancellationToken stoppingToken)
     {
-        var forAddition = noteRequest.CheckedTags!.ToHashSet();
+        if (noteRequest.Title == null || noteRequest.Text == null)
+        {
+            throw new ArgumentNullException(nameof(noteRequest), $"[{nameof(UpdateNote)}] null text or title in note entity");
+        }
 
-        var forDelete = initialTags.ToHashSet();
+        var noteId = noteRequest.NoteIdExchange;
+        var forDelete = await context.TagsToNotesRelation
+            .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
+            .Select(relation => relation.TagId)
+            .ToHashSetAsync(stoppingToken);
+
+        var forAddition = noteRequest.CheckedTags!.ToHashSet();
 
         var except = forAddition.Intersect(forDelete).ToList();
 
@@ -227,7 +238,12 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     /// <inheritdoc/>
     public async Task<int> CreateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
-        if (await VerifyTitleNotExists(noteRequest.Title!, stoppingToken) == false)
+        if (noteRequest.Title == null || noteRequest.Text == null)
+        {
+            throw new ArgumentNullException(nameof(noteRequest), $"[{nameof(CreateNote)}] null text or title in note entity");
+        }
+
+        if (await VerifyTitleNotExists(noteRequest.Title, stoppingToken) == false)
         {
             return noteRequest.NoteIdExchange;
         }

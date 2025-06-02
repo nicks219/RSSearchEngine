@@ -39,10 +39,9 @@ public interface IDataRepository
     /// <summary>
     /// Изменить заметку.
     /// </summary>
-    /// <param name="initialTags">Отмеченные теги.</param>
     /// <param name="noteRequest">Контейнер для запроса с заметкой.</param>
     /// <param name="stoppingToken">Токен отмены.</param>
-    Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken);
+    Task UpdateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken);
 
     /// <summary>
     /// Обновить логин и пароль.
@@ -67,6 +66,14 @@ public interface IDataRepository
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Список тегов, поддерживающих конвертацию.</returns>
     Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Получить список тегов с признаками соответствия/несоответствия конкретной заметке.
+    /// </summary>
+    /// <param name="nodeId">Идентификатор заметки.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>Список тегов с признаками соответствия/несоответствия.</returns>
+    Task<List<TagMarkedResultDto>> ReadMarkedTags(int nodeId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Получить общее количество заметок.
@@ -97,14 +104,6 @@ public interface IDataRepository
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Название заметки.</returns>
     Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Получить идентификаторы тегов заметки по идентификатору заметки.
-    /// </summary>
-    /// <param name="noteId">Идентификатор заметки.</param>
-    /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Идентификаторы тегов.</returns>
-    Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken);
 
     // additional:
 

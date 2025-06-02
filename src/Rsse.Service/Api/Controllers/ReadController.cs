@@ -104,7 +104,7 @@ public class ReadController(
     }
 
     /// <summary>
-    /// Получить обновляемую заметку.
+    /// Получить обновляемую заметку, под авторизацией.
     /// </summary>
     /// <param name="id">Идентификатор обновляемой заметки.</param>
     /// <param name="cancellationToken">Токен отмены.</param>

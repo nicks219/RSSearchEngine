@@ -121,7 +121,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     {
         var user = credentialsRequest.Password == "skip"
             ? null
-            : new UserEntity();
+            : new UserEntity{Email = string.Empty, Password = string.Empty};
 
         return Task.FromResult(user);
     }
@@ -153,10 +153,15 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken)
+    public Task<List<TagMarkedResultDto>> ReadMarkedTags(int nodeId, CancellationToken cancellationToken)
     {
-        var tagList = new List<int> { 1, 2 };
-        return Task.FromResult(tagList);
+        var enrichedTagList = TagNameList
+            // первая заметка относится ко всем категориям:
+            .Select((name, id) => new TagMarkedResultDto(Tag: name, TagId: id + 1, RelationEntityReferenceCount: 1, true))
+            .ToList();
+        var result = Task.FromResult(enrichedTagList);
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -204,7 +209,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken)
+    public Task UpdateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {

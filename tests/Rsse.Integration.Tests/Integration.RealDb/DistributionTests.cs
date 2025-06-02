@@ -80,7 +80,8 @@ public sealed class DistributionTests : TestBase, IDisposable
             message.EnsureSuccessStatusCode();
             var resp = await message.Content.ReadFromJsonAsync<NoteResponse>(token);
             var noteId = resp.EnsureNotNull().NoteIdExchange.EnsureNotNull().Value;
-            var noteResultDto = new NoteResultDto([], noteId);
+            List<string> empty = [];
+            var noteResultDto = new NoteResultDto(empty, noteId);
 
             var id = noteResultDto.NoteIdExchange;
 

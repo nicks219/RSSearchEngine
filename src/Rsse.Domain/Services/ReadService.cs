@@ -81,7 +81,7 @@ public class ReadService(IDataRepository repo)
             var noteEntity = await repo.GetRandomNoteOrDefault(requestCheckedTags, cancellationToken);
             return noteEntity == null
                 ? new NoteResultDto(enrichedTags)
-                : new NoteResultDto(enrichedTags, noteEntity.NoteId, noteEntity.Text!, noteEntity.Title!);
+                : new NoteResultDto(enrichedTags, noteEntity.NoteId, noteEntity.Text, noteEntity.Title);
         }
 
         // Выбираем заметку по тегам с round robin.

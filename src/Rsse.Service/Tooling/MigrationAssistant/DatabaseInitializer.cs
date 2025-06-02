@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Tooling.Scripts;
 
-namespace SearchEngine.Tooling;
+namespace SearchEngine.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Создание и первоначальное заполнение базы данных.

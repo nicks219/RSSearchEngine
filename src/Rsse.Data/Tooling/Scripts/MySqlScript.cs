@@ -15,7 +15,7 @@ public static class MySqlScript
                                    CREATE TABLE IF NOT EXISTS `Note` (
                                      `NoteId` int NOT NULL AUTO_INCREMENT,
                                      `Title` varchar(50) NOT NULL,
-                                     `Text` varchar(10000) DEFAULT NULL,
+                                     `Text` varchar(10000) NOT NULL,
                                      PRIMARY KEY (`NoteId`),
                                      UNIQUE KEY `AK_Note_Title` (`Title`)
                                    );
@@ -34,8 +34,8 @@ public static class MySqlScript
                                    );
                                    CREATE TABLE IF NOT EXISTS `Users` (
                                      `Id` int NOT NULL AUTO_INCREMENT,
-                                     `Email` longtext,
-                                     `Password` longtext,
+                                     `Email` longtext NOT NULL,
+                                     `Password` longtext NOT NULL,
                                      PRIMARY KEY (`Id`)
                                    );
                                    INSERT INTO `Users`(`Id`, `Email`, `Password`) VALUES

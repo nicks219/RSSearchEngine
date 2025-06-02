@@ -49,12 +49,10 @@ public sealed class MirrorRepository(
         _reader.ReadNote(noteId, cancellationToken);
 
     /// <inheritdoc/>
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken)
+    public Task UpdateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
-        // todo: можно сразу принимать IList
-        var enumerable = initialTags.ToList();
-        return Task.WhenAll(_writerPrimary.UpdateNote(enumerable, noteRequest, stoppingToken),
-            _writerSecondary.UpdateNote(enumerable, noteRequest, stoppingToken));
+        return Task.WhenAll(_writerPrimary.UpdateNote(noteRequest, stoppingToken),
+            _writerSecondary.UpdateNote(noteRequest, stoppingToken));
     }
 
     /// <inheritdoc/>
@@ -84,6 +82,10 @@ public sealed class MirrorRepository(
         _reader.ReadTags(cancellationToken);
 
     /// <inheritdoc/>
+    public Task<List<TagMarkedResultDto>> ReadMarkedTags(int nodeId, CancellationToken cancellationToken) =>
+        _reader.ReadMarkedTags(nodeId, cancellationToken);
+
+    /// <inheritdoc/>
     public Task<int> ReadNotesCount(CancellationToken cancellationToken) => _reader.ReadNotesCount(cancellationToken);
 
     /// <inheritdoc/>
@@ -101,10 +103,6 @@ public sealed class MirrorRepository(
     /// <inheritdoc/>
     public Task<string?> ReadNoteTitle(int noteId, CancellationToken cancellationToken) =>
         _reader.ReadNoteTitle(noteId, cancellationToken);
-
-    /// <inheritdoc/>
-    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken) =>
-        _reader.ReadNoteTagIds(noteId, cancellationToken);
 
     /// <inheritdoc/>
     public Task<List<CatalogItemDto>>
