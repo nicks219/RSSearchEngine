@@ -60,8 +60,11 @@ kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dum
 apk update && apk add nano
 вариант: sed -i 's/старый_текст/новый_текст/g' file_name.txt
 
-# kubectl create secret for otel.collector: auth.txt содержит строку `Basic base64(username:password)`
+# secret for otel.collector.metrics: auth.txt содержит строку `Basic base64(username:password)`
 kubectl create secret generic grafana-auth --from-file=authorization=./auth.txt
+# secret for otel.collector.otlp: user и token созданные graphana cloud
+kubectl create secret generic grafana-cloud-api-key --from-file=key=./grafana-cloud-api-key.txt
+kubectl create secret generic grafana-cloud-instance-id --from-file=id=./grafana-cloud-instance-id.txt
 
 # temporary pod for testing purpose
 kubectl run curlpod --rm -i -t --image=curlimages/curl --namespace=default --restart=Never -- sh

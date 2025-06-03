@@ -27,11 +27,12 @@ public abstract class Constants
     internal const string PostgresDumpArchiveName = "dump.zip";
 
     // <summary>Версия приложения.</summary>
-    private const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
+    internal const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     // <summary>Версия API.</summary>
     internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: pre-release beta | .NET9/React19/PostgreSQL + MySql | code-review";
+    internal const string ApplicationFullName = $"v{ApplicationVersion}: pre-release 3 | .NET9/React19/PostgreSQL + MySql " +
+                                                $"| code-review | Open Telemetry";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
     internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>
@@ -51,6 +52,12 @@ public abstract class Constants
     internal const string TestingEnvironment = "Testing";
     // <summary>Именование переменной, задающей имя окружения.</summary>
     internal const string AspNetCoreEnvironmentName = "ASPNETCORE_ENVIRONMENT";
+
+    // <summary>Именование переменной, задающей имя окружения.</summary>
+    internal const string AspNetCoreObservabilityDisableName = "ASPNETCORE_OBSERVABILITY_DISABLE";
+    // <summary>Именование окружения для тестирования.</summary>
+    internal const string DisableValue = "Disable";
+
     // <summary>Заголовок для челенджа аутентификации.</summary>
     internal const string ShiftHeaderName = "Shift";
     // <summary>Значение заголовка для челенджа.</summary>

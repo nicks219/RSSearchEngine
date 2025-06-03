@@ -84,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
 		src\docker-compose-latest.yml = src\docker-compose-latest.yml
+		src\otel-docker-config.yaml = src\otel-docker-config.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"
@@ -91,7 +92,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-AFC8-4031-95FC-F4976BB8A0F9}"
 	ProjectSection(SolutionItems) = preProject
 		.k3s\configmap.mysql.cnf = .k3s\configmap.mysql.cnf
-		.k3s\deployment.rsse.pvc.yml = .k3s\deployment.rsse.pvc.yml
 		.k3s\deployment.rsse.yml = .k3s\deployment.rsse.yml
 		.k3s\ingress.traefik.ip.yml = .k3s\ingress.traefik.ip.yml
 		.k3s\ingress.traefik.ru.yml = .k3s\ingress.traefik.ru.yml
@@ -101,6 +101,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\resource.postgres.yml = .k3s\resource.postgres.yml
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
 		.k3s\otel.collector.metrics.yml = .k3s\otel.collector.metrics.yml
+		.k3s\deployment.rsse.pvc.v2.yml = .k3s\deployment.rsse.pvc.v2.yml
+		.k3s\deployment.rsse.pvc.yml = .k3s\deployment.rsse.pvc.yml
+		.k3s\otel.collector.otlp.v2.yml = .k3s\otel.collector.otlp.v2.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"

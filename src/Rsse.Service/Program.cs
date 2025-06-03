@@ -1,14 +1,18 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
+using Serilog.Configuration;
+using Serilog.Sinks.OpenTelemetry;
 
 #if WINDOWS
 var standaloneMode = ClientLauncher.Run(args);
@@ -47,17 +51,19 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddJsonFile($"appsettings.{env}.json", true)
     .Build();
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom
     .Configuration(configuration)
     .CreateLogger();
 
-Log.Information("Starting web host");
+Log.ForContext<Program>().Information("Starting web host");
 
 try
 {
     var app = builder.Build();
-    await app.RunAsync();
+    var lifeTime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    await app.RunAsync(lifeTime.ApplicationStopping);
     return 0;
 }
 catch (Exception ex)
@@ -67,5 +73,8 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    Log.ForContext<Program>().Information("Web host stopped...");
+    var sw = Stopwatch.StartNew();
+    await Log.CloseAndFlushAsync();
+    Console.WriteLine($"Serilog closed for `{sw.Elapsed.TotalSeconds:F2}` sec...");
 }

@@ -136,15 +136,17 @@
   * upd: корректная отмена миграций
   * upd: задействовать NpgSqlDataSource и MySqlDataSource
   * `k6.0.0` `d0.0.1` `master` upd: рассмотреть возможность заменить в Rsse.Data конкретные зависимости на абстрактные
-* `develop`
-  * upd: добавить манифест для экспорта метрик **otel** - **graphana**, также см [kubectl create secret](.common/scripts.k3s.bash)
+* `develop/release/6.0.0-pre-3`
+  * upd: добавить манифест для скрейпа и экспорта метрик **otel** - **graphana**, также см [kubectl create secret](.common/scripts.k3s.bash)
   * upd: `k3s: обновить` добавить хелсчеки (трафик можно принимать при завершения инициализации)
   * upd: выделить тесты на реальных бд в отдельный проект
   * upd: заменить EnsureCreated при инициализации на SQL
   * upd: `bumps: обновлён`закрыть параметры ручек проверкой required (для Rider версия open api в json отредактирована)
+  * upd: `k3s: *.v2.yml` поставлять observability в OTLP формате на `http://otel-collector:4317`
+    * самодиагностика [OpenTelemetry SDK NET](https://www.nuget.org/packages/OpenTelemetry#self-diagnostics)
+
 ---
-  * [ ] подумать над поставкой observability в OTLP формате 
-    * [ ] `k3s: обновить` проверить интеграцию с Grafana Cloud)
+  * [ ] выпустить релиз `6.0.0` в **GitHub**
 ---
 
 # Запланированные изменения:

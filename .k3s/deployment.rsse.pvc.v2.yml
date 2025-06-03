@@ -17,6 +17,11 @@ spec:
       containers:
         - name: rsse-app
           image: nick219nick/rsse-app
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           volumeMounts:
           - mountPath: /root/.aspnet/DataProtection-Keys
             name: dataprotection-keys
@@ -25,16 +30,16 @@ spec:
           - containerPort: 5000
           livenessProbe:
             httpGet:
-              path: /system/version
+              path: /system/live
               port: 5000
-            periodSeconds: 5
+            periodSeconds: 30
             initialDelaySeconds: 5
           readinessProbe:
             httpGet:
-              path: /system/version
+              path: /system/ready
               port: 5000
-            periodSeconds: 10
-            initialDelaySeconds: 5
+            periodSeconds: 20
+            initialDelaySeconds: 10
       volumes:
         - name: dataprotection-keys
           persistentVolumeClaim:

@@ -11,6 +11,8 @@
 *.sln.docstates
 .editorconfig
 auth.txt
+.env
+*.pwd
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

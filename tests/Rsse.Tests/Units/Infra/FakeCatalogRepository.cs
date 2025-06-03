@@ -121,7 +121,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     {
         var user = credentialsRequest.Password == "skip"
             ? null
-            : new UserEntity{Email = string.Empty, Password = string.Empty};
+            : new UserEntity { Email = string.Empty, Password = string.Empty };
 
         return Task.FromResult(user);
     }
