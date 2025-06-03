@@ -1,7 +1,8 @@
-
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SearchEngine.Data.Common;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using static SearchEngine.Service.Configuration.ServiceErrorMessages;
@@ -24,7 +25,8 @@ public partial class CreateService(IDataRepository repo)
     /// <returns>Контейнер с иснформации о созданной заметке.</returns>
     public async Task<NoteResultDto> CreateNote(NoteRequestDto noteRequestDto, CancellationToken stoppingToken)
     {
-        var enrichedTags = await repo.ReadEnrichedTagList(stoppingToken);
+        var storedTags = await repo.ReadTags(stoppingToken);
+        var enrichedTags = storedTags.Select(t => t.GetEnrichedName()).ToList();
         var unsuccessfulResultDto = new NoteResultDto(enrichedTags: enrichedTags);
 
         if (noteRequestDto.CheckedTags == null ||
@@ -64,13 +66,10 @@ public partial class CreateService(IDataRepository repo)
             return unsuccessfulResultDto;
         }
 
-        var tagsAfterCreate = await repo.ReadEnrichedTagList(stoppingToken);
-        var totalTagsCount = tagsAfterCreate.Count;
-        var noteTagIds = await repo.ReadNoteTagIds(newNoteId, stoppingToken);
+        var tagsAfterCreate = await repo.ReadMarkedTags(newNoteId, stoppingToken);
+        var noteResultDto = NoteResult.CreateFrom(tagsAfterCreate, newNoteId, string.Empty, "[OK]");
 
-        var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
-
-        return new NoteResultDto(tagsAfterCreate, newNoteId, "", "[OK]", checkboxes);
+        return noteResultDto;
     }
 
     /// <summary>

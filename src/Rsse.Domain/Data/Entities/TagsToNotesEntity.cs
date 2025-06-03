@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SearchEngine.Data.Entities;
 
@@ -6,6 +7,8 @@ namespace SearchEngine.Data.Entities;
 /// Представление строки таблицы бд, связывающей заметки и теги.
 /// </summary>
 [Table("TagsToNotes")]
+// свойства entity должны содержать метод set
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class TagsToNotesEntity
 {
     /// <summary>

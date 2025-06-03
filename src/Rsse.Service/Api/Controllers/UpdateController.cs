@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,8 @@ public class UpdateController(
     /// </summary>
     /// <param name="request">Контейнер с данными для обновления.</param>
     [Authorize, HttpPut(RouteConstants.UpdateNotePutUrl)]
-    public async Task<ActionResult<NoteResponse>> UpdateNote([FromBody] NoteRequest request)
+    public async Task<ActionResult<NoteResponse>> UpdateNote(
+        [FromBody][Required(AllowEmptyStrings = false)] NoteRequest request)
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);

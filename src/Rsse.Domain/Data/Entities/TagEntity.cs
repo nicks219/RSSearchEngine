@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SearchEngine.Data.Entities;
 
@@ -8,6 +9,8 @@ namespace SearchEngine.Data.Entities;
 /// Представление строки таблицы бд с тегом.
 /// </summary>
 [Table("Tag")]
+// свойства entity должны содержать метод set
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class TagEntity
 {
     /// <summary>
@@ -21,7 +24,7 @@ public class TagEntity
     /// </summary>
     [MaxLength(30)]
     [Column("Tag")]
-    public string? Tag { get; set; }
+    public required string Tag { get; set; }
 
     /// <summary>
     /// Служебное поле EF для создания связи.

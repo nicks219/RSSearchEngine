@@ -34,10 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ClientApp\build\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="ClientApp\build\backup_9.dump">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

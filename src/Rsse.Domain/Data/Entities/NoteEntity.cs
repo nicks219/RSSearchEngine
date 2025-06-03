@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using SearchEngine.Data.Configuration;
 
 namespace SearchEngine.Data.Entities;
@@ -9,6 +10,8 @@ namespace SearchEngine.Data.Entities;
 /// Представление строки таблицы бд с заметкой.
 /// </summary>
 [Table("Note")]
+// свойства entity должны содержать метод set
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class NoteEntity
 {
     /// <summary>
@@ -22,14 +25,14 @@ public class NoteEntity
     /// </summary>
     [Column("Title")]
     [MaxLength(CommonDataConstants.MaxTitleLength)]
-    public string? Title { get; set; }
+    public required string Title { get; set; }
 
     /// <summary>
     /// Текст заметки.
     /// </summary>
     [Column("Text")]
     [MaxLength(CommonDataConstants.MaxTextLength)]
-    public string? Text { get; set; }
+    public required string Text { get; set; }
 
     /// <summary>
     /// Служебное поле EF для создания связи.

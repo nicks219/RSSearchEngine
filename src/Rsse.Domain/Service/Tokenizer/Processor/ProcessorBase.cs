@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
@@ -10,11 +10,11 @@ namespace SearchEngine.Service.Tokenizer.Processor;
 /// </summary>
 public abstract class ProcessorBase : ITokenizerProcessor
 {
-    // сокращенный набор символов из английского алфавита.
+    // Сокращенный набор символов из английского алфавита.
     protected const string ReducedEnglish = "qwrtpsdfghjklzxcvbnm";
 
-    // разделитель слов в заметке.
-    private const string WordSeparatorSymbol = " ";
+    // Разделители слов в заметке.
+    private static readonly char[] Separators = ['\r', '\n', '\t', ':', '/', '.', ' '];
 
     /// <summary>
     /// Полный набор символов для токенизации.
@@ -27,23 +27,13 @@ public abstract class ProcessorBase : ITokenizerProcessor
     /// <inheritdoc/>
     public List<string> PreProcessNote(string note)
     {
-        var stringBuilder = new StringBuilder(note.ToLower());
-
-        // замена символов:
-        stringBuilder = stringBuilder.Replace((char)13, ' '); // @"\r"
-        stringBuilder = stringBuilder.Replace((char)10, ' '); // @"\n"
-        stringBuilder = stringBuilder.Replace('ё', 'е');
-        // деление ссылкок на части, можно сделать конфигурируемым или отключаемым:
-        stringBuilder = stringBuilder.Replace(':', ' ');
-        stringBuilder = stringBuilder.Replace('/', ' ');
-        stringBuilder = stringBuilder.Replace('.', ' ');
-
-        var words = stringBuilder.ToString().Split(WordSeparatorSymbol);
-
-        return words
-            .Select(word => word.Where(letter => ConsonantChain.Contains(letter))
-                .Aggregate("", (current, value) => current + value))
-            .Where(completed => completed != "")
+        return note
+            .ToLower()
+            .Replace('ё', 'е')
+            .Split(Separators, StringSplitOptions.RemoveEmptyEntries)
+            .Select(word =>
+                new string(word.Where(symbol => ConsonantChain.Contains(symbol)).ToArray()))
+            .Where(word => word.Length > 0)
             .ToList();
     }
 

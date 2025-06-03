@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
@@ -48,7 +48,7 @@ public class UpdateTests
         var responseDto = await UpdateService.GetNoteWithTagsForUpdate(1, _token);
 
         // assert:
-        Assert.AreEqual(FakeCatalogRepository.TagList.Count, responseDto.EnrichedTags?.Count);
+        Assert.AreEqual(FakeCatalogRepository.TagNameList.Count, responseDto.EnrichedTags?.Count);
     }
 
     [TestMethod]

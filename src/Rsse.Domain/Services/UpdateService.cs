@@ -1,6 +1,6 @@
-
 using System.Threading;
 using System.Threading.Tasks;
+using SearchEngine.Data.Common;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 
@@ -27,10 +27,7 @@ public class UpdateService(IDataRepository repo)
             return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
         }
 
-        var initialNoteTags = await repo
-            .ReadNoteTagIds(updatedNoteRequest.NoteIdExchange, stoppingToken);
-
-        await repo.UpdateNote(initialNoteTags, updatedNoteRequest, stoppingToken);
+        await repo.UpdateNote(updatedNoteRequest, stoppingToken);
 
         return await GetNoteWithTagsForUpdate(updatedNoteRequest.NoteIdExchange, stoppingToken);
     }
@@ -59,12 +56,9 @@ public class UpdateService(IDataRepository repo)
             text = $"[{nameof(GetNoteWithTagsForUpdate)}] action is not possible, note to be updated is not specified";
         }
 
-        var tagsBeforeUpdate = await repo.ReadEnrichedTagList(cancellationToken);
-        var totalTagsCount = tagsBeforeUpdate.Count;
-        var noteTagIds = await repo.ReadNoteTagIds(originalNoteId, cancellationToken);
+        var tagsBeforeUpdate = await repo.ReadMarkedTags(originalNoteId, cancellationToken);
+        var noteResultDto = NoteResult.CreateFrom(tagsBeforeUpdate, originalNoteId, text, title);
 
-        var checkboxes = TagConverter.AllToFlags(noteTagIds, totalTagsCount);
-
-        return new NoteResultDto(tagsBeforeUpdate, originalNoteId, text, title, checkboxes);
+        return noteResultDto;
     }
 }

@@ -17,8 +17,8 @@ public static class RandomizationExtension
         var current = list.Count;
         while (current > 1)
         {
-            // var k = rng.Next(n--);
-            var next = GetNextInt32(rng) % current--;
+            var random = Math.Abs(GetNextInt32(rng));
+            var next = random % current--;
             (list[current], list[next]) = (list[next], list[current]);
         }
 
@@ -32,6 +32,6 @@ public static class RandomizationExtension
     {
         var randomInt = new byte[4];
         rnd.GetBytes(randomInt);
-        return Convert.ToInt32(randomInt[0]);
+        return BitConverter.ToInt32(randomInt, startIndex: 0);
     }
 }

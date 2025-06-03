@@ -5,7 +5,7 @@ namespace SearchEngine.Tooling.Scripts;
 /// </summary>
 public static class MsSqlScript
 {
-    public const string CreateStubData = """
+    public const string TestData = """
                                          SET IDENTITY_INSERT [dbo].[Tag] ON
                                          INSERT INTO [dbo].[Tag] ([TagId], [Tag]) VALUES (1, N'Авторские')
                                          INSERT INTO [dbo].[Tag] ([TagId], [Tag]) VALUES (15, N'Авторские (Павел)')

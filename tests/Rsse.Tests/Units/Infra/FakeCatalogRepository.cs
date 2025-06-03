@@ -21,7 +21,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     internal const string SecondNoteTitle = "Шаинский - Облака";
     private const int TestNoteId = 1;
 
-    internal static readonly List<string> TagList = ["Rock", "Pop", "Jazz"];
+    internal static readonly List<string> TagNameList = ["Rock", "Pop", "Jazz"];
 
     private readonly Dictionary<int, TextResultDto> _notes = new();
 
@@ -121,7 +121,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     {
         var user = credentialsRequest.Password == "skip"
             ? null
-            : new UserEntity();
+            : new UserEntity { Email = string.Empty, Password = string.Empty };
 
         return Task.FromResult(user);
     }
@@ -142,17 +142,34 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<List<string>> ReadEnrichedTagList(CancellationToken cancellationToken)
+    public Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken)
     {
-        var result = Task.FromResult(TagList);
+        var enrichedTagList = TagNameList
+            .Select((name, id) => new TagResultDto(Tag: name, TagId: id + 1, RelationEntityReferenceCount: 1))
+            .ToList();
+        var result = Task.FromResult(enrichedTagList);
+
         return result;
     }
 
     /// <inheritdoc/>
-    public Task<List<int>> ReadNoteTagIds(int noteId, CancellationToken cancellationToken)
+    public Task<List<TagMarkedResultDto>> ReadMarkedTags(int nodeId, CancellationToken cancellationToken)
     {
-        var tagList = new List<int> { 1, 2 };
-        return Task.FromResult(tagList);
+        var enrichedTagList = TagNameList
+            // первая заметка относится ко всем категориям:
+            .Select((name, id) => new TagMarkedResultDto(Tag: name, TagId: id + 1, RelationEntityReferenceCount: 1, true))
+            .ToList();
+        var result = Task.FromResult(enrichedTagList);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public Task<NoteEntity?> GetRandomNoteOrDefault(IEnumerable<int> checkedTags, CancellationToken cancellationToken)
+    {
+        var note = _notes[TestNoteId];
+        var noteEntity = new NoteEntity { Text = note.Text, Title = note.Title };
+        return Task.FromResult<NoteEntity?>(noteEntity);
     }
 
     /// <inheritdoc/>
@@ -192,7 +209,7 @@ public sealed class FakeCatalogRepository : IDataRepository
     }
 
     /// <inheritdoc/>
-    public Task UpdateNote(IEnumerable<int> initialTags, NoteRequestDto noteRequest, CancellationToken stoppingToken)
+    public Task UpdateNote(NoteRequestDto noteRequest, CancellationToken stoppingToken)
     {
         if (noteRequest.Title == null || noteRequest.Text == null || _notes == null)
         {

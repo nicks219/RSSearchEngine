@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,15 +10,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 // Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Logger;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
@@ -31,7 +29,6 @@ using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using Serilog;
 
-[assembly: InternalsVisibleTo("Rsse.Tests")]
 namespace SearchEngine.Api.Startup;
 
 /// <summary>
@@ -41,8 +38,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     internal const string DefaultConnectionKey = "DefaultConnection";
     internal const string AdditionalConnectionKey = "AdditionalConnection";
-
-    private const string LogFileName = "service.log";
 
     private readonly string[] _allowedOrigins =
     [
@@ -135,21 +130,24 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
-        services.AddMetricsInternal();
+        services.AddHealthChecks().AddCheck<ReadyHealthCheck>("ready.check", tags: ["ready"]);
         services.AddRateLimiterInternal();
-#if TRACING_ENABLE
-        services.AddTracingInternal();
         services
             .AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "rsse-keys")))
             .SetApplicationName("rsse-app");
+
+#if TRACING_ENABLE
+        {
+            services.AddMetricsAndTracingInternal(configuration);
+        }
 #endif
     }
 
     /// <summary>
     /// Настроить найплайн обработки запроса.
     /// </summary>
-    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+    public void Configure(IApplicationBuilder app)
     {
         var isDevelopment = env.IsDevelopment();
         var isProduction = env.IsProduction();
@@ -158,10 +156,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             // полный вывод деталей ошибки и всех хедеров также доступен в сваггере
             app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            // app.UseExceptionHandler("/error");
         }
 
         app.UseSwagger();
@@ -200,6 +194,16 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseRateLimiter();
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapHealthChecks("/system/live",
+                new HealthCheckOptions
+                {
+                    Predicate = _ => false
+                });
+            endpoints.MapHealthChecks("/system/ready",
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("ready")
+                });
             endpoints.Map("/account/accessDenied", async next =>
             {
                 next.Response.StatusCode = 403;
@@ -207,33 +211,33 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
             }).RequireAuthorization();
             endpoints.MapControllers();
-            endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
+
+#if TRACING_ENABLE
+            if (Environment.GetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName) != Constants.DisableValue)
+            {
+                // endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
+            }
+#endif
         });
 
-        // AddLogging(loggerFactory);
-        LogSystemInfo(loggerFactory, isDevelopment, isProduction);
+        LogSystemInfo(isDevelopment, isProduction);
     }
 
     private string? GetDefaultConnectionString() => configuration.GetConnectionString(DefaultConnectionKey);
     private string? GetAdditionalConnectionString() => configuration.GetConnectionString(AdditionalConnectionKey);
 
-    private static void AddLogging(ILoggerFactory loggerFactory)
+    private void LogSystemInfo(bool isDevelopment, bool isProduction)
     {
-        loggerFactory.AddFileLoggerProviderInternal(Path.Combine(Directory.GetCurrentDirectory(), LogFileName));
-    }
+        var podName = Environment.GetEnvironmentVariable("POD_NAME");
 
-    // todo: в проекте есть serilog | единственное применение - для примитивной записи логов на тестах
-    private void LogSystemInfo(ILoggerFactory loggerFactory, bool isDevelopment, bool isProduction)
-    {
-        var logger = loggerFactory.CreateLogger<FileLoggerInternal>();
-
-        logger.LogInformation("Application started at {Date}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
-        logger.LogInformation("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());
-        logger.LogInformation("Development: {IsDev}", isDevelopment);
-        logger.LogInformation("Production: {IsProd}", isProduction);
-        logger.LogInformation("Default connection string: {ConnectionString}", GetDefaultConnectionString());
-        logger.LogInformation("Additional connection string: {ConnectionString}", GetAdditionalConnectionString());
-        logger.LogInformation("Server GC: {IsServer}", GCSettings.IsServerGC);
-        logger.LogInformation("CPU: {Cpus}", Environment.ProcessorCount);
+        Log.ForContext<Startup>().Information("Application started at {Date}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        Log.ForContext<Startup>().Information("Is 64-bit process: {Process}", Environment.Is64BitProcess.ToString());
+        Log.ForContext<Startup>().Information("Development: {IsDev}", isDevelopment);
+        Log.ForContext<Startup>().Information("Production: {IsProd}", isProduction);
+        Log.ForContext<Startup>().Information("Default connection string: {ConnectionString}", GetDefaultConnectionString());
+        Log.ForContext<Startup>().Information("Additional connection string: {ConnectionString}", GetAdditionalConnectionString());
+        Log.ForContext<Startup>().Information("Server GC: {IsServer}", GCSettings.IsServerGC);
+        Log.ForContext<Startup>().Information("CPU: {Cpus}", Environment.ProcessorCount);
+        Log.ForContext<Startup>().Information("Pod name: '{PodName}'", podName);
     }
 }

@@ -15,7 +15,7 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Services;
-using SearchEngine.Tests.Integrations.Extensions;
+using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
@@ -31,7 +31,7 @@ public class ReadTests
     public required ServiceProviderStub ServiceProviderStub;
 
     private readonly CancellationToken _token = CancellationToken.None;
-    private readonly int _tagsCount = FakeCatalogRepository.TagList.Count;
+    private readonly int _tagsCount = FakeCatalogRepository.TagNameList.Count;
 
     [TestInitialize]
     public void Initialize()
@@ -58,8 +58,8 @@ public class ReadTests
         Assert.AreEqual(_tagsCount, noteResultDto.EnrichedTags?.Count);
     }
 
-    [TestMethod] // ---
-    public async Task ReadService_ShouldThrow_OnInvalidElectionRequest()
+    [TestMethod]
+    public async Task ReadService_ShouldNotThrow_OnInvalidElectionRequest()
     {
         // arrange:
         const int key = 25000;
@@ -73,12 +73,11 @@ public class ReadTests
 
         // act:
         var exception =
-            await TestHelper.GetExpectedExceptionWithAsync<KeyNotFoundException>(() =>
+            await TestHelper.GetExpectedExceptionWithAsync<Exception>(() =>
                 ReadService.GetNextOrSpecificNote(noteRequestDto, cancellationToken: _token));
 
         // asserts:
-        exception.EnsureNotNull();
-        exception.Message.Should().Be($"The given key '{key}' was not present in the dictionary.");
+        exception.Should().BeNull();
     }
 
     [TestMethod]
@@ -150,16 +149,17 @@ public class ReadTests
     }
 
     [TestMethod]
-    // NB: в тч демонстрация распределения результатов алгоритме выбора
-    public async Task ReadService_Election_ShouldHasExpectedResponsesDistribution_OnElectionRequests()
+    // Для round robin можно просто оценить distinct на полученных идентификаторах.
+    // Но тк будет добавлен алгоритм случайного выбора на стороне .NET, оценка распределения также потребуется.
+    public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRoundRobin()
     {
         var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(ElectionTestNotesCount, _token);
 
-        const double expectedCoefficient = 0.7D;
+        const double expectedCoefficient = 1D;
 
-        var requestCount = 100;
+        var requestCount = ElectionTestNotesCount;
 
         var tempCount = requestCount;
 
@@ -179,7 +179,8 @@ public class ReadTests
 
         while (requestCount-- > 0)
         {
-            var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, cancellationToken: _token);
+            var noteResultDto = await ReadService
+                .GetNextOrSpecificNote(noteRequestDto, randomElectionEnabled: false, cancellationToken: _token);
 
             var id = noteResultDto.NoteIdExchange;
 
@@ -200,16 +201,17 @@ public class ReadTests
         // assert:
         idStorage.Count
             .Should()
-            .BeGreaterThan((int)expectedNotesCount);
+            .BeGreaterOrEqualTo((int)expectedNotesCount);
 
         Console.WriteLine("[get different '{0}' ids from '{1}' notes | by '{2}' calls]", idStorage.Count, ElectionTestNotesCount, tempCount);
-        Console.Write("[with ids >= '{0}' repeats] ", evaluatedBucket);
+        Console.Write("[with greater or equals to '{0}' repeats] ", evaluatedBucket);
 
+        var evaluatedCounter = 0;
         foreach (var (key, value) in idStorage)
         {
             if (value >= evaluatedBucket)
             {
-                Console.Write(key + " - ");
+                evaluatedCounter++;
             }
 
             for (var i = 0; i < bucket.Length; i++)
@@ -221,6 +223,7 @@ public class ReadTests
             }
         }
 
+        Console.Write($"{evaluatedCounter} unique notes");
         Console.WriteLine("\n[repeat histogram: 1 - {0}]", buckets);
 
         foreach (var i in bucket)

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SearchEngine.Data.Entities;
 
@@ -7,6 +8,8 @@ namespace SearchEngine.Data.Entities;
 /// Представление строки таблицы бд с информацией для авторизации.
 /// </summary>
 [Table("Users")]
+// свойства entity должны содержать метод set
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class UserEntity
 {
     /// <summary>
@@ -20,12 +23,12 @@ public class UserEntity
     /// </summary>
     [Column("Email")]
     [MaxLength(30)]
-    public string? Email { get; set; }
+    public required string Email { get; set; }
 
     /// <summary>
     /// Пароль для пользователя.
     /// </summary>
     [Column("Password")]
     [MaxLength(30)]
-    public string? Password { get; set; }
+    public required string Password { get; set; }
 }

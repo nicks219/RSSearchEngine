@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
@@ -15,6 +14,11 @@ namespace SearchEngine.Services;
 /// </summary>
 public class ReadService(IDataRepository repo)
 {
+    /// <summary>
+    /// Минимальное значение идентфикатора в бд.
+    /// </summary>
+    private const int MinIdValue = 1;
+
     /// <summary>
     /// Прочитать название заметки по её идентификатору.
     /// </summary>
@@ -35,9 +39,10 @@ public class ReadService(IDataRepository repo)
     /// <returns>Ответ со списком обогащенных тегов.</returns>
     public async Task<NoteResultDto> ReadEnrichedTagList(CancellationToken cancellationToken)
     {
-        var enrichedTagList = await repo.ReadEnrichedTagList(cancellationToken);
+        var totalTags = await repo.ReadTags(cancellationToken);
+        var enrichedTags = totalTags.Select(t => t.GetEnrichedName()).ToList();
 
-        return new NoteResultDto(enrichedTagList);
+        return new NoteResultDto(enrichedTags);
     }
 
     /// <summary>
@@ -51,52 +56,52 @@ public class ReadService(IDataRepository repo)
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
         bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
     {
-        if (request?.CheckedTags?.Count == 0)
+        var storedTags = await repo.ReadTags(cancellationToken);
+        var enrichedTags = storedTags.Select(t => t.GetEnrichedName()).ToList();
+        if (request?.CheckedTags == null || storedTags.Count == 0)
         {
-            // Для пустого запроса считаем все теги отмеченными.
-            var totalTags = await repo.ReadEnrichedTagList(cancellationToken);
-            var maxTagNumber = totalTags.Count;
-            var allTags = GetAllTagsCollection(maxTagNumber);
-            request = request with { CheckedTags = allTags };
+            // Если в бд нет тегов, точно стоит отдавать пустой ответ?
+            return new NoteResultDto(enrichedTags);
         }
 
-        var text = string.Empty;
-        var title = string.Empty;
-        var noteId = 0;
+        // Если список отмеченных тегов в запросе пуст, заполняем его полностью.
+        var requestCheckedTags = request.CheckedTags.Count == 0
+            ? storedTags.Select(t => t.TagId).ToList()
+            : request.CheckedTags;
 
-        if (request is { CheckedTags: not null } && request.CheckedTags.Count != 0)
+        // Если указан конкретный id, пробуем получить заметку по нему.
+        if (int.TryParse(id, out var specificNoteId))
         {
-            if (IsSpecific() == false)
-            {
-                var checkedTags = request.CheckedTags;
-                // todo: вычитывается весь список
-                var electableNoteIds = await repo.ReadTaggedNotesIds(checkedTags, cancellationToken);
-                noteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled);
-            }
-
-            if (noteId != 0)
-            {
-                var note = await repo.ReadNote(noteId, cancellationToken);
-
-                if (note != null)
-                {
-                    text = note.Text;
-
-                    title = note.Title;
-                }
-            }
+            return await GetNoteOrEmpty(enrichedTags, specificNoteId, cancellationToken);
         }
 
-        var tagList = await repo.ReadEnrichedTagList(cancellationToken);
-
-        return new NoteResultDto(tagList, noteId, text, title);
-
-        bool IsSpecific() => int.TryParse(id, out noteId);
-
-        List<int> GetAllTagsCollection(int maxTagNumber)
+        // Выбираем заметку по тегам, средствами SQL.
+        if (randomElectionEnabled)
         {
-            var allTags = Enumerable.Range(AppConstants.MinTagNumber, maxTagNumber).ToList();
-            return allTags;
+            var noteEntity = await repo.GetRandomNoteOrDefault(requestCheckedTags, cancellationToken);
+            return noteEntity == null
+                ? new NoteResultDto(enrichedTags)
+                : new NoteResultDto(enrichedTags, noteEntity.NoteId, noteEntity.Text, noteEntity.Title);
         }
+
+        // Выбираем заметку по тегам с round robin.
+        var electableNoteIds = await repo.ReadTaggedNotesIds(requestCheckedTags, cancellationToken);
+        var electedNoteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
+
+        return await GetNoteOrEmpty(enrichedTags, electedNoteId, cancellationToken);
+    }
+
+    private async Task<NoteResultDto> GetNoteOrEmpty(List<string> enrichedTags, int noteId,
+        CancellationToken cancellationToken)
+    {
+        if (noteId < MinIdValue)
+        {
+            return new NoteResultDto(enrichedTags);
+        }
+
+        var note = await repo.ReadNote(noteId, cancellationToken);
+        return note == null
+            ? new NoteResultDto(enrichedTags)
+            : new NoteResultDto(enrichedTags, noteId, note.Text, note.Title);
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SearchEngine.Data.Dto;
 
@@ -23,7 +24,7 @@ public record NoteResultDto
     public string? Text { get; init; }
 
     /// <summary>
-    /// Список тегов в формате "имя : количество записей".
+    /// Список тегов в формате "имя : количество записей по тегу".
     /// </summary>
     public List<string>? EnrichedTags { get; }
 
