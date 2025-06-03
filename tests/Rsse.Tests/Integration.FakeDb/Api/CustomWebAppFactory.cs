@@ -48,7 +48,7 @@ public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.TestingEnvironment);
-                Environment.SetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName, Constants.DisableValue);
+                Environment.SetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable, Constants.DisableValue);
                 webBuilder.UseStartup<T>();
             })
             .ConfigureServices(TryReplaceStartupDatabaseProviders);

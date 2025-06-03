@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-// Microsoft.AspNetCore.DataProtection не удалять, используется на трассировке
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -75,8 +74,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
         });
 
+        services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);
         services.Configure<CommonBaseOptions>(configuration.GetSection(nameof(CommonBaseOptions)));
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
@@ -137,9 +138,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             .SetApplicationName("rsse-app");
 
 #if TRACING_ENABLE
-        {
-            services.AddMetricsAndTracingInternal(configuration);
-        }
+        services.AddMetricsAndTracingInternal(configuration);
 #endif
     }
 
@@ -212,10 +211,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             endpoints.MapControllers();
 
 #if TRACING_ENABLE
-            if (Environment.GetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName) != Constants.DisableValue)
-            {
-                // endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
-            }
+            // endpoints.MapPrometheusScrapingEndpoint().RequireRateLimiting(Constants.MetricsHandlerPolicy);
 #endif
         });
 

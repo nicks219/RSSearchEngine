@@ -14,7 +14,8 @@ namespace SearchEngine.Api.Controllers;
 /// </summary>
 [ApiController]
 public class SystemController(
-    IOptionsSnapshot<DatabaseOptions> options,
+    IOptionsSnapshot<DatabaseOptions> databaseOptions,
+    IOptionsMonitor<ElectionTypeOptions> electionType,
     ITokenizerService tokenizerService) : ControllerBase
 {
     /// <summary>
@@ -33,8 +34,9 @@ public class SystemController(
         var response = new SystemResponse(
             Version: Constants.ApplicationFullName,
             DebugBuild: Constants.IsDebug,
-            ReaderContext: options.Value.ReaderContext,
-            CreateTablesOnPgMigration: options.Value.CreateTablesOnPgMigration
+            ReaderContext: databaseOptions.Value.ReaderContext,
+            CreateTablesOnPgMigration: databaseOptions.Value.CreateTablesOnPgMigration,
+            ElectionType: electionType.CurrentValue.ElectionType.ToString()
         );
         return Ok(response);
     }

@@ -34,7 +34,7 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.TestingEnvironment);
-                Environment.SetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName, Constants.DisableValue);
+                Environment.SetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable, Constants.DisableValue);
                 webBuilder.UseStartup<T>();
             })
             .ConfigureAppConfiguration((_, config) =>

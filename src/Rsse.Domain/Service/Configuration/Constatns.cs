@@ -54,7 +54,7 @@ public abstract class Constants
     internal const string AspNetCoreEnvironmentName = "ASPNETCORE_ENVIRONMENT";
 
     // <summary>Именование переменной, задающей имя окружения.</summary>
-    internal const string AspNetCoreObservabilityDisableName = "ASPNETCORE_OBSERVABILITY_DISABLE";
+    internal const string AspNetCoreOtlpExportersDisable = "ASPNETCORE_OTLP_EXPORTERS_DISABLE";
     // <summary>Именование окружения для тестирования.</summary>
     internal const string DisableValue = "Disable";
 

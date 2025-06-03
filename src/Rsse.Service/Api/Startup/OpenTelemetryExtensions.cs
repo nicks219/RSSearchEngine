@@ -28,7 +28,7 @@ internal static class OpenTelemetryExtensions
         services
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource
-                // service name заоверрайдится на Rsse.Service
+                // далее service name оверрайдится на Rsse.Service
                 .AddService(serviceName: "rsse-app",
                     serviceNamespace: "rsse-group",
                     serviceVersion: Constants.ApplicationVersion,

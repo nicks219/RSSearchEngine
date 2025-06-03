@@ -12,7 +12,7 @@ public static class RandomizationExtension
     /// <summary>
     /// Перемешать список, качество зависит от RNG.
     /// </summary>
-    public static IList<T> Shuffle<T>(this IList<T> list, RandomNumberGenerator rng)
+    public static List<T> Shuffle<T>(this List<T> list, RandomNumberGenerator rng)
     {
         var current = list.Count;
         while (current > 1)

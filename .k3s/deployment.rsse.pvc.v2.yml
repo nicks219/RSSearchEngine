@@ -1,6 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    app.version: "v6.0.0"
+    manifest.version: "2025-06-03"
   name: rsse-app-deployment
   labels:
     app: rsse-app
@@ -22,6 +25,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: RSSE_APP_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['app.version']
           volumeMounts:
           - mountPath: /root/.aspnet/DataProtection-Keys
             name: dataprotection-keys

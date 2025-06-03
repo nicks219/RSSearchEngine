@@ -30,7 +30,7 @@ public static class TracingInternal
                 // todo: удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
                 // tracerProviderBuilder.AddConsoleExporter();
 
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName) !=
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
                     Constants.DisableValue)
                 {
                     if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");

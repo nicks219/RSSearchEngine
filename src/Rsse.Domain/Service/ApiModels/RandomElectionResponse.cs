@@ -1,12 +1,13 @@
 using System.Text.Json.Serialization;
+using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Service.ApiModels;
 
 /// <summary>
 /// Контракт ответа изменения алгоритма выбора.
 /// </summary>
-/// <param name="RandomElection">Флаг случайного выбора следующей заметки.</param>
+/// <param name="ElectionType">Флаг случайного выбора следующей заметки.</param>
 public record RandomElectionResponse
 (
-    [property: JsonPropertyName("randomElection")] bool RandomElection
+    [property: JsonPropertyName("electionType")] ElectionType ElectionType
 );

@@ -39,3 +39,5 @@ COPY --from=build-env /app/Rsse.Service/ClientApp/build/ App/ClientApp/build/
 WORKDIR /App
 EXPOSE 5000
 ENTRYPOINT ["./Rsse.Service"]
+
+LABEL version="6.0.0"

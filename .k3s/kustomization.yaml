@@ -1,0 +1,21 @@
+resources:
+  - deployment.rsse.pvc.v2.yml
+patches:
+  - target:
+      kind: Deployment
+      name: rsse-app-deployment
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: rsse-app-deployment
+        annotations:
+          app.version: "v6.0.0"
+          manifest.version: "2025-06-03"
+
+# можно не патчить, а добавить к существующим аннотациям:
+#commonAnnotations:
+#  app.version: "v6.0.0"
+#  manifest.version: "2025-06-03"
+# применить: kubectl apply -k .
+# посмотреть: kubectl kustomize .

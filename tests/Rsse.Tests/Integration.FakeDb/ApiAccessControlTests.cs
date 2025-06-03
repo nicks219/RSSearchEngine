@@ -266,7 +266,7 @@ public class ApiAccessControlTests
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadElectionGetUrl}?electionType=RoundRobin", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
     ];
@@ -305,7 +305,7 @@ public class ApiAccessControlTests
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadElectionGetUrl}?electionType=RoundRobin", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
         [$"{MigrationDownloadGetUrl}?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404

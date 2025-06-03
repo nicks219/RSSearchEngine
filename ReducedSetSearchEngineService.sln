@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 		.common\scripts.docker.md = .common\scripts.docker.md
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
 		.common\ssl.update.md = .common\ssl.update.md
+		ROADMAP.md = ROADMAP.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
@@ -104,6 +105,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\deployment.rsse.pvc.v2.yml = .k3s\deployment.rsse.pvc.v2.yml
 		.k3s\deployment.rsse.pvc.yml = .k3s\deployment.rsse.pvc.yml
 		.k3s\otel.collector.otlp.v2.yml = .k3s\otel.collector.otlp.v2.yml
+		.k3s\kustomization.yaml = .k3s\kustomization.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
