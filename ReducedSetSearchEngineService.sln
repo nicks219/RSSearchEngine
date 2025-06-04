@@ -112,6 +112,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5
 	ProjectSection(SolutionItems) = preProject
 		.common\.drafts\ingress.traefik.one.yml = .common\.drafts\ingress.traefik.one.yml
 		.common\.drafts\ingress.traefik.two.yml = .common\.drafts\ingress.traefik.two.yml
+		src\OTEL_DIAGNOSTICS.json = src\OTEL_DIAGNOSTICS.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Generator", "src\Rsse.Generator\Rsse.Generator.csproj", "{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4}"
