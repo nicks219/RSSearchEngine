@@ -39,6 +39,7 @@ internal class SqliteStartup(IConfiguration configuration)
         services.AddSingleton<MigratorState>();
 
         services.AddDomainLayerDependencies();
+        services.AddScoped<DbDataProvider>();
     }
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

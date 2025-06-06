@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -46,12 +45,11 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken)
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
         var notes = context.Notes
             .AsNoTracking()
-            .AsAsyncEnumerable()
-            .WithCancellation(cancellationToken);
+            .AsAsyncEnumerable();
 
         return notes;
     }

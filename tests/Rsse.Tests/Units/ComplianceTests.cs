@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Controllers;
+using SearchEngine.Api.Services;
+using SearchEngine.Data.Contracts;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Services;
@@ -33,7 +35,9 @@ public class ComplianceTests
         complianceController.AddHttpContext(stub.Provider);
 
         // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        await tokenizer.Initialize(CancellationToken.None);
+        var repo = stub.Provider.GetRequiredService<IDataRepository>();
+        var dbDataProvider = new DbDataProvider(repo);
+        await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
 
         // act:
         var actionResult = complianceController.GetComplianceIndices(Text, _token);

@@ -6,7 +6,6 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>SearchEngine</RootNamespace>
         <Configurations>Debug;Release</Configurations>
-        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
     <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->

@@ -18,10 +18,12 @@ internal abstract class Generator
     {
         if (args.Length != 3)
         {
-            await Console.Error.WriteLineAsync("Usage: Rsse.Generator <dllPath> <className> <outputFile>");
-            return 1;
+            await Console.Error.WriteLineAsync($"[{nameof(Rsse.Generator)}] invalid arguments count: '{args.Length}' | " +
+                                               $"usage: Rsse.Generator <dllPath> <className> <outputFile> |");
+            return 2;
         }
 
+        await Console.Out.WriteLineAsync($"[{nameof(Rsse.Generator)}] started with args: '{args[0]}' '{args[1]}' '{args[2]}'");
         var dllPath = args[0];
         var constantsClass = args[1];
         var outputFile = args[2];
@@ -55,7 +57,7 @@ internal abstract class Generator
                 }
 
                 await sw.WriteLineAsync("}");
-                return 1;
+                return 0;
             }
 
             if (!isTsx) return 0;
@@ -73,8 +75,9 @@ internal abstract class Generator
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("{0} crashed: {1}", nameof(Rsse.Generator), ex);
-            return 1;
+            await Console.Error.WriteLineAsync($"[{nameof(Rsse.Generator)}] crashed, " +
+                                               $"args: '{args[0]}' '{args[1]}' '{args[2]}' | exception: '{ex}'");
+            return 3;
         }
     }
 }

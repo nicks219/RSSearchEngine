@@ -52,9 +52,13 @@ jobs:
       with:
         dotnet-version: 9.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        dotnet restore ./tests/Rsse.Tests
+        dotnet restore ./tests/Rsse.Integration.Tests
     - name: Build
-      run: dotnet build --no-restore -p:IsPublishing=true -c Release
+      run: |
+        dotnet build --no-restore -p:IsPublishing=true -c Release ./tests/Rsse.Tests
+        dotnet build --no-restore -p:IsPublishing=true -c Release ./tests/Rsse.Integration.Tests
     - name: Test
       env:
         # идём на локалхост тк мапим порты
@@ -63,11 +67,11 @@ jobs:
       run: |
         echo "Running dotnet test..."
         echo "::group::Running Rsse.Tests"
-        dotnet test tests/Rsse.Tests --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release
+        dotnet test ./tests/Rsse.Tests --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release
         echo -e "\033[1;32mTests finished\033[0m"
         echo "::endgroup::"
 
         echo "::group::Running Rsse.Integration.Tests"
-        dotnet test tests/Rsse.Integration.Tests --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release
+        dotnet test ./tests/Rsse.Integration.Tests --no-build --logger "console;verbosity=detailed" --environment "DOTNET_CI=true" -c Release
         echo -e "\033[1;32mTests finished\033[0m"
         echo "::endgroup::"

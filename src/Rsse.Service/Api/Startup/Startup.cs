@@ -88,6 +88,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
         services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
         services.AddScoped<IDataRepository, MirrorRepository>();
+        services.AddScoped<DbDataProvider>();
 
         services.AddControllers();
         services.AddDomainLayerDependencies();

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
@@ -25,7 +25,6 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly ConcurrentDictionary<int, TokenLine> _tokenLines;
 
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ITokenizerProcessorFactory _processorFactory;
     private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
@@ -38,18 +37,15 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// <summary>
     /// Создать и инициализировать сервис токенайзера, вызывается раз в N часов.
     /// </summary>
-    /// <param name="scopeFactory">Scope-фабрика.</param>
     /// <param name="processorFactory">Фабрика токенайзеров.</param>
     /// <param name="options">Настройки.</param>
     /// <param name="logger">Логер.</param>
     public TokenizerService(
-        IServiceScopeFactory scopeFactory,
         ITokenizerProcessorFactory processorFactory,
         IOptions<CommonBaseOptions> options,
         ILogger<TokenizerService> logger)
     {
         _tokenLines = new ConcurrentDictionary<int, TokenLine>();
-        _scopeFactory = scopeFactory;
         _processorFactory = processorFactory;
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
@@ -110,23 +106,19 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task Initialize(CancellationToken stoppingToken)
+    public async Task Initialize(IDataProvider<NoteEntity> dataProvider, CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
         // Инициализация вызывается не только не старте сервиса и её следует разграничить с остальными меняющими данные операций.
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
-        // Создаём scope, чтобы не закрывать контекст в корневом scope провайдера.
-        using var scope = _scopeFactory.CreateScope();
-        var repo = scope.ServiceProvider.GetRequiredService<IDataRepository>();
-
         try
         {
             _tokenLines.Clear();
 
             // todo: подумать, как избавиться от загрузки всех записей из таблицы
-            var notes = repo.ReadAllNotes(stoppingToken);
+            var notes = dataProvider.GetDataAsync().WithCancellation(stoppingToken);
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
             await foreach (var note in notes)

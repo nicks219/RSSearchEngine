@@ -365,19 +365,6 @@ public class ApiAccessControlTests
         statusCode.Should().Be(expected);
     }
 
-    // 400: закрыты [Required(AllowEmptyStrings = false)]
-    // [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest], // ?email=&password= тож 400
-    // [AccountUpdateGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest]
-    // [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.BadRequest]
-    // [CatalogPageGetUrl] [CatalogNavigatePostUrl] [ComplianceIndicesGetUrl]
-    // [MigrationDownloadGetUrl] [ReadTitleGetUrl] [ReadNoteWithTagsForUpdateAuthGetUrl]
-
-    // [CreateNotePostUrl] [UpdateNotePutUrl] [MigrationUploadPostUrl]
-    // - хз как пост и пуи без нагрузки ответят
-
-    // [MigrationCreateGetUrl] [MigrationRestoreGetUrl] [GetNextOrSpecificNote] (подумать)
-    // - не трогаем, на пустой строке завязана логика
-
     public static IEnumerable<object[]> BadRequestTestData =>
     [
         [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest],

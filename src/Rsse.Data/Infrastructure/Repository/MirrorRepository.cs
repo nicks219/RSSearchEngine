@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -88,8 +87,8 @@ public sealed class MirrorRepository(
     public Task<int> ReadNotesCount(CancellationToken cancellationToken) => _reader.ReadNotesCount(cancellationToken);
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken) =>
-        _reader.ReadAllNotes(cancellationToken);
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes() =>
+        _reader.ReadAllNotes();
 
     /// <inheritdoc/>
     public Task<List<int>> ReadTaggedNotesIds(IEnumerable<int> checkedTags, CancellationToken cancellationToken) =>

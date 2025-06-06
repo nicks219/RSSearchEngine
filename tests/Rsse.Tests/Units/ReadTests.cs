@@ -165,7 +165,7 @@ public class ReadTests
 
         repo.CreateStubData(ElectionTestNotesCount, _token);
 
-        var requestCount = ElectionTestNotesCount/4;
+        var requestCount = ElectionTestNotesCount / 4;
 
         var tempCount = requestCount;
 
