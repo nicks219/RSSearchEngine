@@ -4,7 +4,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Service.ApiModels;
 
-namespace SearchEngine.Api.Mapping;
+namespace SearchEngine.Service.Mapping;
 
 /// <summary>
 /// Расширения для маппинга.

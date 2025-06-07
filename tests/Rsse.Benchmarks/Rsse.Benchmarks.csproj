@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
@@ -8,26 +9,16 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <RootNamespace>SearchEngine.Benchmarks</RootNamespace>
     <Configurations>Debug;Release</Configurations>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-    <PackageReference Include="coverlet.collector" >
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="NSubstitute" />
-
     <PackageReference Include="Lucene.Net" />
     <PackageReference Include="Lucene.Net.Analysis.Common" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rsse.Service\Rsse.Service.csproj" />
+    <ProjectReference Include="..\..\src\Rsse.Domain\Rsse.Domain.csproj" />
   </ItemGroup>
 
     <ItemGroup>

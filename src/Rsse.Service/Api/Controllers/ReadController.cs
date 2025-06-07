@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SearchEngine.Api.Mapping;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
 using Serilog;
 
