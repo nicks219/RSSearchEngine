@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
 
@@ -27,7 +28,7 @@ public sealed class ProcessorExtended : ProcessorBase
     /// <param name="referenceTokens">эталонный вектор</param>
     /// <param name="inputTokens">сравниваемый вектор</param>
     /// <returns>метрика количества совпадений</returns>
-    public override int ComputeComparisionMetric(List<int> referenceTokens, IEnumerable<int> inputTokens)
+    public override int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 

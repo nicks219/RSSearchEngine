@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
 
@@ -21,7 +23,25 @@ public sealed class ProcessorReduced : ProcessorBase
     /// <param name="referenceTokens">эталонный вектор</param>
     /// <param name="inputTokens">сравниваемый вектор</param>
     /// <returns>метрика количества совпадений</returns>
-    public override int ComputeComparisionMetric(List<int> referenceTokens, IEnumerable<int> inputTokens)
+    public override int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens)
+    {
+        // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
+
+        var count = 0;
+        foreach (var token in inputTokens)
+        {
+            if (referenceTokens.Contains(token))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    // Todo: метод ComputeComparisionMetric до внесения изменений.
+    [Obsolete("Todo: зафиксировать поведение юнит-тестами, оригинальный метод до профилирования.")]
+    public int ComputeComparisionMetric_Old(List<int> referenceTokens, IEnumerable<int> inputTokens)
     {
         // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
 

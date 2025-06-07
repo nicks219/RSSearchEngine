@@ -22,7 +22,7 @@ public abstract class ProcessorBase : ITokenizerProcessor
     protected abstract string ConsonantChain { get; }
 
     /// <inheritdoc/>
-    public abstract int ComputeComparisionMetric(List<int> referenceTokens, IEnumerable<int> inputTokens);
+    public abstract int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens);
 
     /// <inheritdoc/>
     public List<string> PreProcessNote(string note)

@@ -27,5 +27,5 @@ public interface ITokenizerProcessor
     /// <param name="referenceTokens">Эталонный вектор токенов.</param>
     /// <param name="inputTokens">Сравниваемый вектор токенов.</param>
     /// <returns>Метрика о количества совпадений.</returns>
-    public int ComputeComparisionMetric(List<int> referenceTokens, IEnumerable<int> inputTokens);
+    public int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens);
 }
