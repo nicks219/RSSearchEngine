@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
@@ -36,16 +35,19 @@ public sealed class ProcessorExtended : ProcessorBase
 
         var startIndex = 0;
 
-        foreach (var intersectionIndex in inputTokens.Select(value => referenceTokens.IndexOf(value, startIndex))
-                     .Where(intersectionIndex => intersectionIndex != -1 && intersectionIndex >= startIndex))
+        foreach (var value in inputTokens)
         {
-            result++;
-
-            startIndex = intersectionIndex + 1;
-
-            if (startIndex >= referenceTokens.Count)
+            var intersectionIndex = referenceTokens.IndexOf(value, startIndex);
+            if (intersectionIndex != -1 && intersectionIndex >= startIndex)
             {
-                break;
+                result++;
+
+                startIndex = intersectionIndex + 1;
+
+                if (startIndex >= referenceTokens.Count)
+                {
+                    break;
+                }
             }
         }
 
