@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
 
@@ -48,6 +49,33 @@ public sealed class ProcessorExtended : ProcessorBase
                 {
                     break;
                 }
+            }
+        }
+
+        return result;
+    }
+
+    // Todo: метод ComputeComparisionMetric до внесения изменений.
+    [Obsolete("Todo: зафиксировать поведение юнит-тестами, оригинальный метод до профилирования.")]
+    public int ComputeComparisionMetric_Old(List<int> referenceTokens, List<int> inputTokens)
+    {
+        // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
+
+        var result = 0;
+
+        var startIndex = 0;
+
+        foreach (var intersectionIndex in inputTokens
+                     .Select(value => referenceTokens.IndexOf(value, startIndex))
+                     .Where(intersectionIndex => intersectionIndex != -1 && intersectionIndex >= startIndex))
+        {
+            result++;
+
+            startIndex = intersectionIndex + 1;
+
+            if (startIndex >= referenceTokens.Count)
+            {
+                break;
             }
         }
 
