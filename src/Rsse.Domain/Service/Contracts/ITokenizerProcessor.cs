@@ -8,18 +8,11 @@ namespace SearchEngine.Service.Contracts;
 public interface ITokenizerProcessor
 {
     /// <summary>
-    /// Подготовить заметку к токенизации.
+    /// Подготовить и токенизировать заметку.
     /// </summary>
-    /// <param name="note">Текст заметки.</param>
-    /// <returns>Заметка, разбитая на список обработанных слов.</returns>
-    public List<int> PreProcessNote(string note);
-
-    /// <summary>
-    /// Токенизировать заметку.
-    /// </summary>
-    /// <param name="strings">Заметка, разбитая на список обработанных слов.</param>
-    /// <returns>Вектор токенов, представляющий заметку.</returns>
-    // public List<int> TokenizeSequence(List<char[]> strings);
+    /// <param name="note">Текст заметки в виде строки.</param>
+    /// <returns>Вектор токенов, представляющий обработанную заметку.</returns>
+    public List<int> TokenizeNote(string note);
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов.

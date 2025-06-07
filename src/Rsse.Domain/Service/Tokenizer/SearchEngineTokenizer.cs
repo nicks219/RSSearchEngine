@@ -146,15 +146,13 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var processor = _processorFactory.CreateProcessor(ProcessorType.Extended);
 
-        var newTokensLine = processor.PreProcessNote(text);
+        var newTokensLine = processor.TokenizeNote(text);
 
         if (newTokensLine.Count == 0)
         {
             // заметки вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
-
-        //var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
@@ -187,9 +185,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         processor = _processorFactory.CreateProcessor(ProcessorType.Reduced);
 
-        newTokensLine = processor.PreProcessNote(text);
-
-        //newTokensLine = processor.TokenizeSequence(preprocessedStrings);
+        newTokensLine = processor.TokenizeNote(text);
 
         if (newTokensLine.Count == 0)
         {
@@ -232,19 +228,17 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
     private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
     {
+        var text = note.Text + ' ' + note.Title;
+
         // расширенная эталонная последовательность:
         var processor = factory.CreateProcessor(ProcessorType.Extended);
 
-        var extendedTokensLine = processor.PreProcessNote(note.Text + ' ' + note.Title);
-
-        //var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
+        var extendedTokensLine = processor.TokenizeNote(text);
 
         // урезанная эталонная последовательность:
         processor = factory.CreateProcessor(ProcessorType.Reduced);
 
-        var reducedTokensLine = processor.PreProcessNote(note.Text + ' ' + note.Title);
-
-        //var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
+        var reducedTokensLine = processor.TokenizeNote(text);
 
         return new TokenLine(Extended: extendedTokensLine, Reduced: reducedTokensLine);
     }
