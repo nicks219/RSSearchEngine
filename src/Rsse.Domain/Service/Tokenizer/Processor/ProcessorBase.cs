@@ -25,41 +25,76 @@ public abstract class ProcessorBase : ITokenizerProcessor
     public abstract int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens);
 
     /// <inheritdoc/>
-    public List<string> PreProcessNote(string note)
+    public List<int> PreProcessNote(string note)
     {
-        return note
-            .ToLower()
-            .Replace('ё', 'е')
-            .Split(Separators, StringSplitOptions.RemoveEmptyEntries)
+        var list = new List<char>();
+        var result = new List<int>();
+        foreach (var word in Split())
+        {
+            foreach (var symbol in word)
+            {
+                if (ConsonantChain.Contains(symbol))
+                {
+                    list.Add(symbol);
+                }
+            }
+
+            var preProcessedWord = list;
+
+            if (preProcessedWord.Count > 0)
+            {
+                var hash = CreateHash(preProcessedWord);
+                result.Add(hash);
+                list.Clear();
+            }
+        }
+        return result;
+
+        /*return Split()
             .Select(word =>
-                new string(word.Where(symbol => ConsonantChain.Contains(symbol)).ToArray()))
+                word.Where(symbol => ConsonantChain.Contains(symbol)).ToArray())
             .Where(word => word.Length > 0)
-            .ToList();
+            .ToList();*/
+
+        string[] Split()
+        {
+            return note
+                .ToLower()
+                .Replace('ё', 'е')
+                .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+        }
     }
 
     /// <inheritdoc/>
-    public List<int> TokenizeSequence(IEnumerable<string> strings)
+    /*public List<int> TokenizeSequence(List<char[]> strings)
     {
-        const int factor = 31;
-
         var result = new List<int>();
 
         foreach (var word in strings)
         {
-            var hash = 0;
-
-            var tempFactor = factor;
-
-            foreach (var letter in word)
-            {
-                hash += letter * tempFactor;
-
-                tempFactor *= factor;
-            }
+            var hash = CreateHash(word);
 
             result.Add(hash);
         }
 
         return result;
+    }*/
+
+    private static int CreateHash(List<char> word)
+    {
+        const int factor = 31;
+
+        var hash = 0;
+
+        var tempFactor = factor;
+
+        foreach (var letter in word)
+        {
+            hash += letter * tempFactor;
+
+            tempFactor *= factor;
+        }
+
+        return hash;
     }
 }

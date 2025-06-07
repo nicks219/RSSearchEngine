@@ -146,15 +146,15 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var processor = _processorFactory.CreateProcessor(ProcessorType.Extended);
 
-        var preprocessedStrings = processor.PreProcessNote(text);
+        var newTokensLine = processor.PreProcessNote(text);
 
-        if (preprocessedStrings.Count == 0)
+        if (newTokensLine.Count == 0)
         {
             // заметки вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
-        var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
+        //var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
@@ -187,11 +187,11 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         processor = _processorFactory.CreateProcessor(ProcessorType.Reduced);
 
-        preprocessedStrings = processor.PreProcessNote(text);
+        newTokensLine = processor.PreProcessNote(text);
 
-        newTokensLine = processor.TokenizeSequence(preprocessedStrings);
+        //newTokensLine = processor.TokenizeSequence(preprocessedStrings);
 
-        if (preprocessedStrings.Count == 0)
+        if (newTokensLine.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
             return result;
@@ -235,16 +235,16 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         // расширенная эталонная последовательность:
         var processor = factory.CreateProcessor(ProcessorType.Extended);
 
-        var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
+        var extendedTokensLine = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
-        var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
+        //var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         // урезанная эталонная последовательность:
         processor = factory.CreateProcessor(ProcessorType.Reduced);
 
-        preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
+        var reducedTokensLine = processor.PreProcessNote(note.Text + ' ' + note.Title);
 
-        var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
+        //var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
 
         return new TokenLine(Extended: extendedTokensLine, Reduced: reducedTokensLine);
     }

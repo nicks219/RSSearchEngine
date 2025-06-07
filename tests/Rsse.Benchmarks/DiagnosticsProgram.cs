@@ -78,7 +78,14 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         var benchmark = new TokenizerBenchmarks();
+        var initializationStopwatch = Stopwatch.StartNew();
         await TokenizerBenchmarks.InitializeEngineTokenizer();
+        initializationStopwatch.Stop();
+        var initializationMegabytes = GC.GetTotalAllocatedBytes() / 1000000;
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | initialization | " +
+                          $"elapsed: {(double)initializationStopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
+                          $"memory allocated: {initializationMegabytes:N1} Mb.");
+
         // Чистим память перед запуском.
         // GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive);
 
@@ -91,12 +98,14 @@ public static class DiagnosticsProgram
             benchmark.BenchmarkEngineTokenizer();
             // tokenizerBenchmark.LuceneBenchmark();
         }
+        var warmupMegabytes = GC.GetTotalAllocatedBytes();
 
         Console.WriteLine("Runner is ready for profiling. Press 'enter' to continue.");
         Console.ReadLine();
         Console.WriteLine($"'{ProfilerIterations}' iterations starting..");
 
-        var stopwatch = Stopwatch.StartNew();
+
+        var iterationsStopwatch = Stopwatch.StartNew();
 
         for (var i = 0; i < ProfilerIterations; i++)
         {
@@ -104,11 +113,12 @@ public static class DiagnosticsProgram
             // tokenizerBenchmark.LuceneBenchmark();
         }
 
-        stopwatch.Stop();
-        var megabytes = GC.GetTotalAllocatedBytes() / 1000000;
+        iterationsStopwatch.Stop();
+        var iterationsMegabytes = (GC.GetTotalAllocatedBytes() - warmupMegabytes) / 1000000;
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
-                          $"memory allocated: {megabytes:N1} Mb.");
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | " +
+                          $"elapsed: {(double)iterationsStopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
+                          $"memory allocated: {iterationsMegabytes:N1} Mb.");
 
         Console.WriteLine("Press any key to exit.");
         Console.ReadKey();
