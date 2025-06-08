@@ -18,11 +18,11 @@ public sealed class FileDataProvider : IDataProvider<NoteEntity>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
     {
         Console.OutputEncoding = Encoding.UTF8;
-        var notes = new List<NoteEntity>();
+        var notes = new List<NoteEntity>(DiagnosticsProgram.ProfilerIterations);
 
         await using var fileStream = File.OpenRead("pg_backup_.txtnotes");
         using var reader = new StreamReader(fileStream);
-        for (var text = await reader.ReadLineAsync(); text != null; text = await reader.ReadLineAsync())
+        while (await reader.ReadLineAsync() is { } text)
         {
             var items = text.Split('\t');
 

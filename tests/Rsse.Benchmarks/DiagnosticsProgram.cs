@@ -78,9 +78,13 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         var benchmark = new TokenizerBenchmarks();
+        var stopwatch = Stopwatch.StartNew();
         await TokenizerBenchmarks.InitializeEngineTokenizer();
-        // Чистим память перед запуском.
-        // GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive);
+        stopwatch.Stop();
+        var initializeMemory = GC.GetTotalAllocatedBytes();
+
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | initialize | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
+                          $"memory allocated: {initializeMemory / 1000000:N1} Mb.");
 
         Console.WriteLine("Runner is ready for warm-up. Press 'enter' to continue.");
         Console.ReadLine();
@@ -91,24 +95,23 @@ public static class DiagnosticsProgram
             benchmark.BenchmarkEngineTokenizer();
             // tokenizerBenchmark.LuceneBenchmark();
         }
+        var warmupMemory = GC.GetTotalAllocatedBytes();
 
         Console.WriteLine("Runner is ready for profiling. Press 'enter' to continue.");
         Console.ReadLine();
         Console.WriteLine($"'{ProfilerIterations}' iterations starting..");
 
-        var stopwatch = Stopwatch.StartNew();
-
+        stopwatch.Restart();
         for (var i = 0; i < ProfilerIterations; i++)
         {
             benchmark.BenchmarkEngineTokenizer();
             // tokenizerBenchmark.LuceneBenchmark();
         }
-
         stopwatch.Stop();
-        var megabytes = GC.GetTotalAllocatedBytes() / 1000000;
+        var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
-                          $"memory allocated: {megabytes:N1} Mb.");
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
+                          $"memory allocated: {iterationsMemory / 1000000:N1} Mb.");
 
         Console.WriteLine("Press any key to exit.");
         Console.ReadKey();

@@ -17,25 +17,25 @@ public sealed class ProcessorReduced : ProcessorBase
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов, для эталонного вектора на основе редуцированного набора.
-    /// Последовательность токенов (т.е. "слов") не учитывается
+    /// Последовательность токенов (т.е. "слов") не учитывается.
     /// </summary>
-    /// <param name="referenceTokens">эталонный вектор</param>
-    /// <param name="inputTokens">сравниваемый вектор</param>
-    /// <returns>метрика количества совпадений</returns>
-    public override int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens)
+    /// <param name="targetVector">Вектор, в котором ищем.</param>
+    /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <returns>Метрика количества совпадений.</returns>
+    public override int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector)
     {
         // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
 
-        var count = 0;
-        foreach (var token in inputTokens)
+        var metrics = 0;
+        foreach (var token in searchVector)
         {
-            if (referenceTokens.Contains(token))
+            if (targetVector.Contains(token))
             {
-                count++;
+                metrics++;
             }
         }
 
-        return count;
+        return metrics;
     }
 
     // Todo: метод ComputeComparisionMetric до внесения изменений.

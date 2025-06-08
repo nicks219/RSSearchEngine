@@ -146,37 +146,35 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var processor = _processorFactory.CreateProcessor(ProcessorType.Extended);
 
-        var preprocessedStrings = processor.PreProcessNote(text);
+        var extendedTokenizedText = processor.TokenizeText(text);
 
-        if (preprocessedStrings.Count == 0)
+        if (extendedTokenizedText.Count == 0)
         {
             // заметки вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
-        var newTokensLine = processor.TokenizeSequence(preprocessedStrings);
-
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
-        foreach (var (key, tokensLine) in _tokenLines)
+        foreach (var (id, tokenLine) in _tokenLines)
         {
-            var extendedTokensLine = tokensLine.Extended;
-            var metric = processor.ComputeComparisionMetric(extendedTokensLine, newTokensLine);
+            var extendedTokenLine = tokenLine.Extended;
+            var metric = processor.ComputeComparisionMetric(extendedTokenLine, extendedTokenizedText);
 
             // I. 100% совпадение по extended последовательности, по reduced можно не искать
-            if (metric == newTokensLine.Count)
+            if (metric == extendedTokenizedText.Count)
             {
                 reducedChainSearch = false;
-                result.Add(key, metric * (1000D / extendedTokensLine.Count));
+                result.Add(id, metric * (1000D / extendedTokenLine.Count));
                 continue;
             }
 
             // II. extended% совпадение
-            if (metric >= newTokensLine.Count * extended)
+            if (metric >= extendedTokenizedText.Count * extended)
             {
                 // todo: можно так оценить
                 // reducedChainSearch = false;
-                result.Add(key, metric * (100D / extendedTokensLine.Count));
+                result.Add(id, metric * (100D / extendedTokenLine.Count));
             }
         }
 
@@ -187,37 +185,35 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         processor = _processorFactory.CreateProcessor(ProcessorType.Reduced);
 
-        preprocessedStrings = processor.PreProcessNote(text);
+        var reducedTokenizedText = processor.TokenizeText(text);
 
-        newTokensLine = processor.TokenizeSequence(preprocessedStrings);
-
-        if (preprocessedStrings.Count == 0)
+        if (reducedTokenizedText.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
             return result;
         }
 
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        newTokensLine = newTokensLine.ToHashSet().ToList();
+        reducedTokenizedText = reducedTokenizedText.ToHashSet().ToList();
 
         // поиск в векторе reduced
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
-        foreach (var (key, tokensLine) in _tokenLines)
+        foreach (var (id, tokenLine) in _tokenLines)
         {
-            var reducedTokensLine = tokensLine.Reduced;
-            var metric = processor.ComputeComparisionMetric(reducedTokensLine, newTokensLine);
+            var reducedTokenLine = tokenLine.Reduced;
+            var metric = processor.ComputeComparisionMetric(reducedTokenLine, reducedTokenizedText);
 
             // III. 100% совпадение по reduced
-            if (metric == newTokensLine.Count)
+            if (metric == reducedTokenizedText.Count)
             {
-                result.TryAdd(key, metric * (10D / reducedTokensLine.Count));
+                result.TryAdd(id, metric * (10D / reducedTokenLine.Count));
                 continue;
             }
 
             // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (metric >= newTokensLine.Count * reduced)
+            if (metric >= reducedTokenizedText.Count * reduced)
             {
-                result.TryAdd(key, metric * (1D / reducedTokensLine.Count));
+                result.TryAdd(id, metric * (1D / reducedTokenLine.Count));
             }
         }
 
@@ -232,21 +228,19 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
     private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
     {
+        var text = note.Text + ' ' + note.Title;
+
         // расширенная эталонная последовательность:
-        var processor = factory.CreateProcessor(ProcessorType.Extended);
+        var extendedProcessor = factory.CreateProcessor(ProcessorType.Extended);
 
-        var preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
-
-        var extendedTokensLine = processor.TokenizeSequence(preprocessedNote);
+        var extendedTokenLine = extendedProcessor.TokenizeText(text);
 
         // урезанная эталонная последовательность:
-        processor = factory.CreateProcessor(ProcessorType.Reduced);
+        var reducedProcessor = factory.CreateProcessor(ProcessorType.Reduced);
 
-        preprocessedNote = processor.PreProcessNote(note.Text + ' ' + note.Title);
+        var reducedTokenLine = reducedProcessor.TokenizeText(text);
 
-        var reducedTokensLine = processor.TokenizeSequence(preprocessedNote);
-
-        return new TokenLine(Extended: extendedTokensLine, Reduced: reducedTokensLine);
+        return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }
 
     public void Dispose()

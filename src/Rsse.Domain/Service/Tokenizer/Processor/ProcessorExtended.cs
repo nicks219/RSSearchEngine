@@ -23,36 +23,36 @@ public sealed class ProcessorExtended : ProcessorBase
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов, для эталонного вектора на основе расширенного набора.
-    /// Учитывается последовательность токенов (т.е. "слов")
+    /// Учитывается последовательность токенов (т.е. "слов").
     /// </summary>
-    /// <param name="referenceTokens">эталонный вектор</param>
-    /// <param name="inputTokens">сравниваемый вектор</param>
-    /// <returns>метрика количества совпадений</returns>
-    public override int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens)
+    /// <param name="targetVector">Вектор, в котором ищем.</param>
+    /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <returns>Метрика количества совпадений.</returns>
+    public override int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 
-        var result = 0;
+        var metrics = 0;
 
         var startIndex = 0;
 
-        foreach (var value in inputTokens)
+        foreach (var token in searchVector)
         {
-            var intersectionIndex = referenceTokens.IndexOf(value, startIndex);
-            if (intersectionIndex != -1 && intersectionIndex >= startIndex)
+            var intersectionIndex = targetVector.IndexOf(token, startIndex);
+            if (intersectionIndex != -1)
             {
-                result++;
+                metrics++;
 
                 startIndex = intersectionIndex + 1;
 
-                if (startIndex >= referenceTokens.Count)
+                if (startIndex >= targetVector.Count)
                 {
                     break;
                 }
             }
         }
 
-        return result;
+        return metrics;
     }
 
     // Todo: метод ComputeComparisionMetric до внесения изменений.

@@ -8,24 +8,17 @@ namespace SearchEngine.Service.Contracts;
 public interface ITokenizerProcessor
 {
     /// <summary>
-    /// Подготовить заметку к токенизации.
+    /// Обработать и токенизировать текст.
     /// </summary>
-    /// <param name="note">Текст заметки.</param>
-    /// <returns>Заметка, разбитая на список обработанных слов.</returns>
-    public List<string> PreProcessNote(string note);
-
-    /// <summary>
-    /// Токенизировать заметку.
-    /// </summary>
-    /// <param name="strings">Заметка, разбитая на список обработанных слов.</param>
-    /// <returns>Вектор токенов, представляющий заметку.</returns>
-    public List<int> TokenizeSequence(IEnumerable<string> strings);
+    /// <param name="text">Необработанный текст в формате строки.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public List<int> TokenizeText(string text);
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов.
     /// </summary>
-    /// <param name="referenceTokens">Эталонный вектор токенов.</param>
-    /// <param name="inputTokens">Сравниваемый вектор токенов.</param>
-    /// <returns>Метрика о количества совпадений.</returns>
-    public int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens);
+    /// <param name="targetVector">Вектор, в котором ищем.</param>
+    /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <returns>Метрика количества совпадений.</returns>
+    public int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector);
 }

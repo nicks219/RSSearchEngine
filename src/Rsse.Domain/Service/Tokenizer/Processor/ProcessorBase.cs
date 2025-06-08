@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using SearchEngine.Service.Contracts;
@@ -22,44 +23,77 @@ public abstract class ProcessorBase : ITokenizerProcessor
     protected abstract string ConsonantChain { get; }
 
     /// <inheritdoc/>
-    public abstract int ComputeComparisionMetric(List<int> referenceTokens, List<int> inputTokens);
+    public abstract int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector);
 
     /// <inheritdoc/>
-    public List<string> PreProcessNote(string note)
+    public List<int> TokenizeText(string text)
     {
-        return note
+        var words = text
             .ToLower()
             .Replace('ё', 'е')
-            .Split(Separators, StringSplitOptions.RemoveEmptyEntries)
-            .Select(word =>
-                new string(word.Where(symbol => ConsonantChain.Contains(symbol)).ToArray()))
-            .Where(word => word.Length > 0)
-            .ToList();
-    }
+            .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
 
-    /// <inheritdoc/>
-    public List<int> TokenizeSequence(IEnumerable<string> strings)
-    {
-        const int factor = 31;
+        var vector = new List<int>(words.Length);
 
-        var result = new List<int>();
-
-        foreach (var word in strings)
+        foreach (var word in words)
         {
-            var hash = 0;
-
-            var tempFactor = factor;
-
-            foreach (var letter in word)
+            var sequenceHashProcessor = new SequenceHashProcessor();
+            foreach (var symbol in word)
             {
-                hash += letter * tempFactor;
-
-                tempFactor *= factor;
+                if (ConsonantChain.Contains(symbol))
+                {
+                    sequenceHashProcessor.AddChar(symbol);
+                }
             }
 
-            result.Add(hash);
+            if (sequenceHashProcessor.HasValue())
+            {
+                var token = sequenceHashProcessor.GetHash();
+                vector.Add(token);
+            }
         }
 
-        return result;
+        vector.TrimExcess();
+
+        return vector;
+    }
+
+    /// <summary>
+    /// Контейнер, вычисляющий хэш на последовательность символов по мере их добавления.
+    /// </summary>
+    private struct SequenceHashProcessor()
+    {
+        private const int Factor = 31;
+
+        private int _hash = 0;
+
+        private int _tempFactor = Factor;
+
+        private bool _hasValue;
+
+        /// <summary>
+        /// Добавить символ к последовательности, по которой вычисляется хэш.
+        /// </summary>
+        /// <param name="letter"></param>
+        public void AddChar(char letter)
+        {
+            _hash += letter * _tempFactor;
+
+            _tempFactor *= Factor;
+
+            _hasValue = true;
+        }
+
+        /// <summary>
+        /// Получить текущий хэш на добавленную последовательность символов.
+        /// </summary>
+        /// <returns>Хэш.</returns>
+        public int GetHash() => _hash;
+
+        /// <summary>
+        /// Признак наличия добавленных символов в контейнере.
+        /// </summary>
+        /// <returns><b>true</b> - символы были добавлены.</returns>
+        public bool HasValue() => _hasValue;
     }
 }
