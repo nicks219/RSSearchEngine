@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SearchEngine.Service.Tokenizer.Wrapper;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
 
@@ -28,7 +29,7 @@ public sealed class ProcessorExtended : ProcessorBase
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public override int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector)
+    public override int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 

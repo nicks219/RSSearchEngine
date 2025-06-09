@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
@@ -194,7 +193,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         }
 
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        reducedTokenizedText = reducedTokenizedText.ToHashSet().ToList();
+        reducedTokenizedText = reducedTokenizedText.DistinctAndGet();
 
         // поиск в векторе reduced
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));

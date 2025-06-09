@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using SearchEngine.Service.Tokenizer.Wrapper;
 
 namespace SearchEngine.Service.Contracts;
 
@@ -12,7 +12,7 @@ public interface ITokenizerProcessor
     /// </summary>
     /// <param name="text">Необработанный текст в формате строки.</param>
     /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public List<int> TokenizeText(string text);
+    public TokenVector TokenizeText(string text);
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов.
@@ -20,5 +20,5 @@ public interface ITokenizerProcessor
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector);
+    public int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector);
 }

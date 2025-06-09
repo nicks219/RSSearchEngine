@@ -1,8 +1,7 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
 using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer.Wrapper;
 
 namespace SearchEngine.Service.Tokenizer.Processor;
 
@@ -23,17 +22,17 @@ public abstract class ProcessorBase : ITokenizerProcessor
     protected abstract string ConsonantChain { get; }
 
     /// <inheritdoc/>
-    public abstract int ComputeComparisionMetric(List<int> targetVector, List<int> searchVector);
+    public abstract int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector);
 
     /// <inheritdoc/>
-    public List<int> TokenizeText(string text)
+    public TokenVector TokenizeText(string text)
     {
         var words = text
             .ToLower()
             .Replace('ё', 'е')
             .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
 
-        var vector = new List<int>(words.Length);
+        var vector = new List<Token>(words.Length);
 
         foreach (var word in words)
         {
@@ -49,13 +48,15 @@ public abstract class ProcessorBase : ITokenizerProcessor
             if (sequenceHashProcessor.HasValue())
             {
                 var token = sequenceHashProcessor.GetHash();
-                vector.Add(token);
+                var tokenWrapper = new Token(token);
+                vector.Add(tokenWrapper);
             }
         }
 
         vector.TrimExcess();
 
-        return vector;
+        var vectorWrapper = new TokenVector(vector);
+        return vectorWrapper;
     }
 
     /// <summary>

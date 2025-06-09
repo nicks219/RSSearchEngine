@@ -80,12 +80,14 @@ public class TokenizerTests
         tokenLines.ElementAt(0)
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedFirst);
 
         tokenLines.ElementAt(0)
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedFirst);
     }
@@ -112,12 +114,14 @@ public class TokenizerTests
         tokenLines.First()
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
         tokenLines.First()
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
@@ -142,12 +146,14 @@ public class TokenizerTests
         tokenLines.Last()
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
         tokenLines.Last()
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
