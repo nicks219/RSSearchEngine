@@ -8,12 +8,12 @@ namespace SearchEngine.Service.Tokenizer.Wrapper;
 /// Вектор из хэшей, представляющий собой токенизированную заметку.
 /// </summary>
 /// <param name="vector">Токенизированная заметка.</param>
-public readonly struct TokenVector(List<Token> vector) : IEquatable<TokenVector>
+public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
 {
     /// <summary>
     /// Токенизированная заметка.
     /// </summary>
-    private readonly List<Token> _vector = vector;
+    private readonly List<int> _vector = vector;
 
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.
@@ -25,7 +25,7 @@ public readonly struct TokenVector(List<Token> vector) : IEquatable<TokenVector>
     /// </summary>
     /// <param name="token">Токен.</param>
     /// <returns><b>true</b> - Вектор содержит токен.</returns>
-    public bool Contains(Token token) => _vector.Contains(token);
+    public bool Contains(Token token) => _vector.Contains(token.Value);
 
     /// <summary>
     /// Вернуть отсчитываемый от ноля индекс первого вхождения токена.
@@ -33,19 +33,20 @@ public readonly struct TokenVector(List<Token> vector) : IEquatable<TokenVector>
     /// <param name="token">Токен.</param>
     /// <param name="startIndex">Отсчитываемый от ноля индекс начала поиска.</param>
     /// <returns>Отсчитываемый от ноля индекс первого вхождения токена, либо -1 если токен не найден.</returns>
-    public int IndexOf(Token token, int startIndex) => _vector.IndexOf(token, startIndex);
+    public int IndexOf(Token token, int startIndex) => _vector.IndexOf(token.Value, startIndex);
 
     /// <summary>
     /// Получить перечислитель для вектора.
     /// </summary>
     /// <returns>Перечислитель для вектора.</returns>
-    public List<Token>.Enumerator GetEnumerator() => _vector.GetEnumerator();
+    public Enumerator GetEnumerator() => new(_vector.GetEnumerator());
 
     /// <summary>
-    /// Конвертировать вектор в список int.
+    /// Получить копию вектора как коллекцию хэшей.
+    /// Для целей тестирования.
     /// </summary>
-    /// <returns>Список с числами.</returns>
-    public List<int> ToIntList() => _vector.ConvertAll(x => x.Value);
+    /// <returns>Список хэшей.</returns>
+    public List<int> ToIntList() => _vector.ToList();
 
     /// <summary>
     /// Конвертировать в вектор с уникальными элементами.
@@ -62,4 +63,16 @@ public readonly struct TokenVector(List<Token> vector) : IEquatable<TokenVector>
     public static bool operator ==(TokenVector left, TokenVector right) => left.Equals(right);
 
     public static bool operator !=(TokenVector left, TokenVector right) => !(left == right);
+
+    /// <summary>
+    /// Перечислитель для вектора.
+    /// </summary>
+    public struct Enumerator(List<int>.Enumerator enumerator)
+    {
+        private List<int>.Enumerator _enumerator = enumerator;
+
+        public bool MoveNext() => _enumerator.MoveNext();
+
+        public Token Current => new(_enumerator.Current);
+    }
 }

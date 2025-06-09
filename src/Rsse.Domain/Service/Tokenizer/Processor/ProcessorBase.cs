@@ -32,7 +32,7 @@ public abstract class ProcessorBase : ITokenizerProcessor
             .Replace('ё', 'е')
             .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
 
-        var vector = new List<Token>(words.Length);
+        var tokens = new List<int>(words.Length);
 
         foreach (var word in words)
         {
@@ -47,15 +47,14 @@ public abstract class ProcessorBase : ITokenizerProcessor
 
             if (sequenceHashProcessor.HasValue())
             {
-                var token = sequenceHashProcessor.GetHash();
-                var tokenWrapper = new Token(token);
-                vector.Add(tokenWrapper);
+                var hash = sequenceHashProcessor.GetHash();
+                tokens.Add(hash);
             }
         }
 
-        vector.TrimExcess();
+        tokens.TrimExcess();
 
-        var vectorWrapper = new TokenVector(vector);
+        var vectorWrapper = new TokenVector(tokens);
         return vectorWrapper;
     }
 
