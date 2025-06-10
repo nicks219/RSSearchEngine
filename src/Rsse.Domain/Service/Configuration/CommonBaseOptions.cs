@@ -1,3 +1,5 @@
+using SearchEngine.Service.Tokenizer.SearchProcessor;
+
 namespace SearchEngine.Service.Configuration;
 
 /// <summary>
@@ -14,4 +16,9 @@ public class CommonBaseOptions
     /// Разрешение активации функционала токенизации.
     /// </summary>
     public bool TokenizerIsEnable { get; set; }
+
+    /// <summary>
+    /// Алгоритм оптимизации поиска в токенайзере.
+    /// </summary>
+    public SearchType SearchType { get; set; }
 }

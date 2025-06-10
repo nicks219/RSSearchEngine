@@ -22,8 +22,8 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly ConcurrentDictionary<DocId, TokenLine> _generalDirectIndex;
-    private readonly GinHandler _ginExtended;
-    private readonly GinHandler _ginReduced;
+    private readonly GinHandler? _ginExtended;
+    private readonly GinHandler? _ginReduced;
     private readonly SearchProcessorFactory _searchProcessorFactory;
     private readonly SearchType _searchType;
 
@@ -47,8 +47,12 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         _tokenizerProcessorFactory = tokenizerProcessorFactory;
         _searchType = searchType;
 
-        _ginExtended = new GinHandler();
-        _ginReduced = new GinHandler();
+        if (_searchType != SearchType.Original)
+        {
+            _ginExtended = new GinHandler();
+            _ginReduced = new GinHandler();
+        }
+
         _searchProcessorFactory = new SearchProcessorFactory(
             _ginExtended,
             _ginReduced,
@@ -128,8 +132,8 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                     var noteDocId = new DocId(note.NoteId);
                     var extendedVector = tokenLine.Extended;
                     var reducedVector = tokenLine.Reduced;
-                    _ginExtended.AddVector(extendedVector, noteDocId);
-                    _ginReduced.AddVector(reducedVector, noteDocId);
+                    _ginExtended?.AddVector(extendedVector, noteDocId);
+                    _ginReduced?.AddVector(reducedVector, noteDocId);
                 }
 
                 var noteDbId = new DocId(note.NoteId);

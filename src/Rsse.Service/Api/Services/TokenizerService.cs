@@ -39,7 +39,8 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
-        _searchEngineTokenizer = new SearchEngineTokenizer(processorFactory);
+        var searchType = options.Value.SearchType;
+        _searchEngineTokenizer = new SearchEngineTokenizer(processorFactory, searchType);
     }
 
     // Используется для тестов.

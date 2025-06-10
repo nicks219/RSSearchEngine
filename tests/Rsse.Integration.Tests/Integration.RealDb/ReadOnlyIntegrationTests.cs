@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -144,14 +145,18 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
     }
 
     [TestMethod]
+    // Валидные поисковые запросы.
     [DataRow("чорт з ным зо сталом", """{"res":{"1":0.43478260869565216},"error":null}""")]
     [DataRow("чёрт с ними за столом", """{"res":{"1":52.631578947368425},"error":null}""")]
-    // [DataRow("преключиться вдруг верный друг", """{"res":{"243":0.02,"444":0.35714285714285715},"error":null}""")]
     [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.35714285714285715,"243":0.02},"error":null}""")]
     [DataRow("приключится вдруг верный друг", """{"res":{"444":35.08771929824562},"error":null}""")]
     [DataRow("пляшем на", """{"res":{"1":21.05263157894737},"error":null}""")]
     [DataRow("ты шла по палубе в молчаний", """{"res":{"10":5.154639175257731},"error":null}""")]
     [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.6818181818181818},"error":null}""")]
+    // Мусорные поисковые запросы.
+    [DataRow("123 456 иии", """{"res":null,"error":null}""")]
+    [DataRow("aa bb cc dd .,/#", """{"res":null,"error":null}""")]
+    [DataRow(" |", """{"res":null,"error":null}""")]
     public async Task ComplianceRequest_ShouldReturn_ExpectedDocumentWeights(string text, string expected)
     {
         // arrange:
@@ -160,7 +165,9 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
 
         // act:
-        var uri = new Uri($"{RouteConstants.ComplianceIndicesGetUrl}?text={text}", UriKind.Relative);
+        var httpEncoded = HttpUtility.UrlEncode(text);
+        var uriString = $"{RouteConstants.ComplianceIndicesGetUrl}?text={httpEncoded}";
+        var uri = new Uri(uriString, UriKind.Relative);
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
         using var message = await client.SendAsync(request, cancellationToken: token);
         message.EnsureSuccessStatusCode();

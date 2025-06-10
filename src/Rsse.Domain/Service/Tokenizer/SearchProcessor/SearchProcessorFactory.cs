@@ -29,10 +29,11 @@ public class SearchProcessorFactory
     /// <param name="generalDirectIndex">Индекс для всех токенизированных заметок.</param>
     /// <param name="tokenizerProcessorFactory">Фабрика процессоров токенайзера.</param>
     /// <param name="searchType">Тип оптимизации алгоритма поиска.</param>
+    /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
     public SearchProcessorFactory(
-        GinHandler ginExtended,
-        GinHandler ginReduced,
+        GinHandler? ginExtended,
+        GinHandler? ginReduced,
         ConcurrentDictionary<DocId, TokenLine> generalDirectIndex,
         ITokenizerProcessorFactory tokenizerProcessorFactory,
         SearchType searchType = SearchType.Original)
@@ -57,6 +58,8 @@ public class SearchProcessorFactory
             // С GIN-индексом.
             case SearchType.GinOptimized:
                 FailIfProductionEnvironment(searchType);
+                if (ginExtended == null || ginReduced == null)
+                    throw new ArgumentNullException(nameof(searchType), $"[{nameof(SearchProcessorFactory)}] GIN is null.");
 
                 ExtendedSearchProcessor = new ExtendedSearchGinOptimized
                 {
@@ -76,6 +79,8 @@ public class SearchProcessorFactory
             // С GIN-индексом.
             case SearchType.GinSimple:
                 FailIfProductionEnvironment(searchType);
+                if (ginExtended == null || ginReduced == null)
+                    throw new ArgumentNullException(nameof(searchType), $"[{nameof(SearchProcessorFactory)}] GIN is null.");
 
                 ExtendedSearchProcessor = new ExtendedSearchGin
                 {

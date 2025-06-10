@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -11,6 +12,7 @@ using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer.SearchProcessor;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
@@ -20,6 +22,8 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ComplianceTests
 {
+    private readonly List<SearchType> _searchTypes =
+        [SearchType.GinOptimized, SearchType.GinSimple, SearchType.Original];
     private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
@@ -29,40 +33,79 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
         string text, string expected)
     {
-        // arrange:
-        using var stub = new ServiceProviderStub();
-        var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
-        var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
+        foreach (var searchType in _searchTypes)
+        {
+            // arrange:
+            using var stub = new ServiceProviderStub(searchType);
+            var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+            var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
-        var complianceController = new ComplianceSearchController(complianceManager);
-        complianceController.AddHttpContext(stub.Provider);
+            var complianceController = new ComplianceSearchController(complianceManager);
+            complianceController.AddHttpContext(stub.Provider);
 
-        // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-        var repo = stub.Provider.GetRequiredService<IDataRepository>();
-        var dbDataProvider = new DbDataProvider(repo);
-        await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
+            // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+            var repo = stub.Provider.GetRequiredService<IDataRepository>();
+            var dbDataProvider = new DbDataProvider(repo);
+            await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
 
-        // act:
-        var actionResult = complianceController.GetComplianceIndices(text, _token);
-        var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
-        var serialized = JsonSerializer.Serialize(okObjectResult);
-        var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
+            // act:
+            var actionResult = complianceController.GetComplianceIndices(text, _token);
+            var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+            var serialized = JsonSerializer.Serialize(okObjectResult);
+            var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
-        // assert:
-        serialized.Should().Be(expected);
-        deserialized.Should().NotBeNull();
-        deserialized.Error.Should().BeNull();
-        deserialized.Res.Should().NotBeNull();
+            // assert:
+            serialized.Should().Be(expected);
+            deserialized.Should().NotBeNull();
+            deserialized.Error.Should().BeNull();
+            deserialized.Res.Should().NotBeNull();
 
-        deserialized.Res.Keys.Should().NotBeEmpty();
-        deserialized.Res.Values.Should().NotBeEmpty();
+            deserialized.Res.Keys.Should().NotBeEmpty();
+            deserialized.Res.Values.Should().NotBeEmpty();
 
-        deserialized.Res
-            .Keys
-            .ElementAt(0)
-            .Should()
-            .Be(1);
+            deserialized.Res
+                .Keys
+                .ElementAt(0)
+                .Should()
+                .Be(1);
+        }
+    }
 
-        // deserialized.Res.Values.ElementAt(0).Should().Be(2.3529411764705883D);
+    [TestMethod]
+    [DataRow("123 456 иии", """{"res":null,"error":null}""")]
+    [DataRow("я ты он она", """{"res":null,"error":null}""")]
+    [DataRow("a b c d .,/#", """{"res":null,"error":null}""")]
+    [DataRow(" ", """{"res":null,"error":null}""")]
+    [DataRow("", """{"res":null,"error":null}""")]
+    public async Task ComplianceController_ShouldReturnNullResult_WhenFindGarbageTextOnStubData(
+        string text, string expected)
+    {
+        foreach (var searchType in _searchTypes)
+        {
+            // arrange:
+            using var stub = new ServiceProviderStub(searchType);
+            var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+            var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
+
+            var complianceController = new ComplianceSearchController(complianceManager);
+            complianceController.AddHttpContext(stub.Provider);
+
+            // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+            var repo = stub.Provider.GetRequiredService<IDataRepository>();
+            var dbDataProvider = new DbDataProvider(repo);
+            await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
+
+            // act:
+            var actionResult = complianceController.GetComplianceIndices(text, _token);
+            var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+            var serialized = JsonSerializer.Serialize(okObjectResult);
+            var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
+
+            // assert:
+            serialized.Should().Be(expected);
+            deserialized.Should().NotBeNull();
+            deserialized.Error.Should().BeNull();
+            deserialized.Res.Should().BeNull();
+        }
     }
 }
