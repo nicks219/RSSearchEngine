@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Service.Tokenizer;
+using SearchEngine.Service.Tokenizer.Factory;
 
 namespace SearchEngine.Benchmarks;
 
@@ -11,6 +12,7 @@ public class TokenizerBenchmarks
 {
     private static readonly SearchEngineTokenizer Tokenizer;
 
+    // private const string Text = "пляшем на столе за детей";
     private const string Text = "преключиться вдруг верный друг";
     // private const string Text = "приключится вдруг верный друг";
     private static bool _isInitialized;
@@ -18,7 +20,7 @@ public class TokenizerBenchmarks
     static TokenizerBenchmarks()
     {
         var processorFactory = new TokenizerProcessorFactory();
-        Tokenizer = new SearchEngineTokenizer(processorFactory);
+        Tokenizer = new SearchEngineTokenizer(processorFactory, SearchType.GinOptimized);
     }
 
     [GlobalSetup]
@@ -40,6 +42,8 @@ public class TokenizerBenchmarks
         {
             Console.WriteLine("TOKENIZER: EMPTY RESULTS");
         }
+
+        // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
     }
 
     [Benchmark]
@@ -51,6 +55,8 @@ public class TokenizerBenchmarks
         {
             Console.WriteLine("LUCENE: EMPTY RESULTS");
         }
+
+        // Console.WriteLine($"[{nameof(BenchmarkLucene)}] found: {result.Count}");
     }
 
     /// <summary>

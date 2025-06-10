@@ -10,15 +10,19 @@ namespace SearchEngine.Service.Tokenizer.Wrapper;
 /// <param name="vector">Токенизированная заметка.</param>
 public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
 {
-    /// <summary>
-    /// Токенизированная заметка.
-    /// </summary>
+    // Токенизированная заметка.
     private readonly List<int> _vector = vector;
 
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.
     /// </summary>
     public int Count => _vector.Count;
+
+    /// <summary>
+    /// Добавить хэш в вектор.
+    /// </summary>
+    /// <param name="hash">Хэш.</param>
+    internal void Add(int hash) => _vector.Add(hash);
 
     /// <summary>
     /// Определить, содержит ли вектор токен.
@@ -42,11 +46,11 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     public Enumerator GetEnumerator() => new(_vector.GetEnumerator());
 
     /// <summary>
-    /// Получить копию вектора как коллекцию хэшей.
+    /// Получить вектор как коллекцию хэшей.
     /// Для целей тестирования.
     /// </summary>
     /// <returns>Список хэшей.</returns>
-    public List<int> ToIntList() => _vector.ToList();
+    internal List<int> ToIntList() => _vector;
 
     /// <summary>
     /// Конвертировать в вектор с уникальными элементами.

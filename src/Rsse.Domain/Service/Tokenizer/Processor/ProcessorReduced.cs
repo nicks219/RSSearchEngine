@@ -23,20 +23,20 @@ public sealed class ProcessorReduced : ProcessorBase
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public override int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector)
+    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector)
     {
         // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
 
-        var metrics = 0;
+        var comparisionScore = 0;
         foreach (var token in searchVector)
         {
             if (targetVector.Contains(token))
             {
-                metrics++;
+                comparisionScore++;
             }
         }
 
-        return metrics;
+        return comparisionScore;
     }
 
     // Todo: метод ComputeComparisionMetric до внесения изменений.

@@ -20,5 +20,5 @@ public interface ITokenizerProcessor
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector);
+    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector);
 }

@@ -1,5 +1,6 @@
 {
   "profiles": {
+
     "Benchmarks": {
       "commandName": "Project",
       "commandLineArgs": "bench"

@@ -29,11 +29,11 @@ public sealed class ProcessorExtended : ProcessorBase
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public override int ComputeComparisionMetric(TokenVector targetVector, TokenVector searchVector)
+    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 
-        var metrics = 0;
+        var comparisonScore = 0;
 
         var startIndex = 0;
 
@@ -42,7 +42,7 @@ public sealed class ProcessorExtended : ProcessorBase
             var intersectionIndex = targetVector.IndexOf(token, startIndex);
             if (intersectionIndex != -1)
             {
-                metrics++;
+                comparisonScore++;
 
                 startIndex = intersectionIndex + 1;
 
@@ -53,7 +53,7 @@ public sealed class ProcessorExtended : ProcessorBase
             }
         }
 
-        return metrics;
+        return comparisonScore;
     }
 
     // Todo: метод ComputeComparisionMetric до внесения изменений.

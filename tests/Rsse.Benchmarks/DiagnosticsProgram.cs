@@ -45,6 +45,10 @@ public static class DiagnosticsProgram
             case "profile":
                 await RunProfiling();
                 break;
+
+            default:
+                RunBenchmarks();
+                break;
         }
     }
 

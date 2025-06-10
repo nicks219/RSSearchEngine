@@ -9,7 +9,9 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Exceptions;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Mapping;
+using SearchEngine.Service.Tokenizer.Factory;
 using SearchEngine.Service.Tokenizer.Processor;
+using SearchEngine.Service.Tokenizer.Wrapper;
 
 namespace SearchEngine.Service.Tokenizer;
 
@@ -19,7 +21,11 @@ namespace SearchEngine.Service.Tokenizer;
 public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly ConcurrentDictionary<int, TokenLine> _tokenLines;
+    private readonly ConcurrentDictionary<DocId, TokenLine> _tokenLines;
+    private readonly GinHandler _extendedGin;
+    private readonly GinHandler _reducedGin;
+    private readonly MetricsProcessorFactory _metricsProcessorFactory;
+    private readonly SearchType _searchType;
 
     private readonly ITokenizerProcessorFactory _processorFactory;
 
@@ -32,20 +38,27 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// Создать токенайзер.
     /// </summary>
     /// <param name="processorFactory">Фабрика токенайзеров.</param>
-    public SearchEngineTokenizer(ITokenizerProcessorFactory processorFactory)
+    /// <param name="searchType">Тип оптимизации алгоритма поиска.</param>
+    public SearchEngineTokenizer(ITokenizerProcessorFactory processorFactory, SearchType searchType = SearchType.Original)
     {
-        _tokenLines = new ConcurrentDictionary<int, TokenLine>();
+        _tokenLines = new ConcurrentDictionary<DocId, TokenLine>();
         _processorFactory = processorFactory;
+        _searchType = searchType;
+
+        _extendedGin = new GinHandler();
+        _reducedGin = new GinHandler();
+        _metricsProcessorFactory = new MetricsProcessorFactory(_extendedGin, _reducedGin, _tokenLines, _processorFactory, _searchType);
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _tokenLines;
+    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _tokenLines;
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
     {
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
-        var removed = _tokenLines.TryRemove(id, out _);
+        var docId = new DocId(id);
+        var removed = _tokenLines.TryRemove(docId, out _);
 
         return removed;
     }
@@ -57,7 +70,8 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var createdTokenLine = CreateTokensLine(_processorFactory, note);
 
-        var created = _tokenLines.TryAdd(id, createdTokenLine);
+        var docId = new DocId(id);
+        var created = _tokenLines.TryAdd(docId, createdTokenLine);
 
         return created;
     }
@@ -69,12 +83,13 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var updatedTokenLine = CreateTokensLine(_processorFactory, note);
 
-        if (!_tokenLines.TryGetValue(id, out var existedLine))
+        var docId = new DocId(id);
+        if (!_tokenLines.TryGetValue(docId, out var existedLine))
         {
             return false;
         }
 
-        var updated = _tokenLines.TryUpdate(id, updatedTokenLine, existedLine);
+        var updated = _tokenLines.TryUpdate(docId, updatedTokenLine, existedLine);
         // в данной реализации ошибки получения и обновления не разделяются
         return updated;
     }
@@ -99,9 +114,19 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
                 var requestNote = note.MapToDto();
 
-                var newTokenLine = CreateTokensLine(_processorFactory, requestNote);
+                var tokenLine = CreateTokensLine(_processorFactory, requestNote);
 
-                if (!_tokenLines.TryAdd(note.NoteId, newTokenLine))
+                if (_searchType != SearchType.Original)
+                {
+                    var noteDocId = new DocId(note.NoteId);
+                    var extendedVector = tokenLine.Extended;
+                    var reducedVector = tokenLine.Reduced;
+                    _extendedGin.AddVectorToGin(extendedVector, noteDocId);
+                    _reducedGin.AddVectorToGin(reducedVector, noteDocId);
+                }
+
+                var noteDbId = new DocId(note.NoteId);
+                if (!_tokenLines.TryAdd(noteDbId, tokenLine))
                 {
                     throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
                 }
@@ -132,91 +157,24 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     public bool IsInitialized() => _isActivated;
 
     /// <inheritdoc/>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public Dictionary<DocId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        var result = new Dictionary<int, double>();
+        var complianceMetrics = new Dictionary<DocId, double>();
 
-        // I. коэффициент extended поиска: 0.8D
-        const double extended = 0.8D;
-        // II. коэффициент reduced поиска: 0.4D
-        const double reduced = 0.6D; // 0.6 .. 0.75
+        var continueSearching = _metricsProcessorFactory
+            .ExtendedMetricsProcessor
+            .FindExtended(text, complianceMetrics, cancellationToken);
 
-        var reducedChainSearch = true;
-
-        var processor = _processorFactory.CreateProcessor(ProcessorType.Extended);
-
-        var extendedTokenizedText = processor.TokenizeText(text);
-
-        if (extendedTokenizedText.Count == 0)
+        if (!continueSearching)
         {
-            // заметки вида "123 456" не ищем, так как получим весь каталог
-            return result;
+            return complianceMetrics;
         }
 
-        // поиск в векторе extended
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
-        foreach (var (id, tokenLine) in _tokenLines)
-        {
-            var extendedTokenLine = tokenLine.Extended;
-            var metric = processor.ComputeComparisionMetric(extendedTokenLine, extendedTokenizedText);
+        _metricsProcessorFactory
+            .ReducedMetricsProcessor
+            .FindReduced(text, complianceMetrics, cancellationToken);
 
-            // I. 100% совпадение по extended последовательности, по reduced можно не искать
-            if (metric == extendedTokenizedText.Count)
-            {
-                reducedChainSearch = false;
-                result.Add(id, metric * (1000D / extendedTokenLine.Count));
-                continue;
-            }
-
-            // II. extended% совпадение
-            if (metric >= extendedTokenizedText.Count * extended)
-            {
-                // todo: можно так оценить
-                // reducedChainSearch = false;
-                result.Add(id, metric * (100D / extendedTokenLine.Count));
-            }
-        }
-
-        if (!reducedChainSearch)
-        {
-            return result;
-        }
-
-        processor = _processorFactory.CreateProcessor(ProcessorType.Reduced);
-
-        var reducedTokenizedText = processor.TokenizeText(text);
-
-        if (reducedTokenizedText.Count == 0)
-        {
-            // песни вида "123 456" не ищем, так как получим весь каталог
-            return result;
-        }
-
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        reducedTokenizedText = reducedTokenizedText.DistinctAndGet();
-
-        // поиск в векторе reduced
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ComputeComplianceIndices));
-        foreach (var (id, tokenLine) in _tokenLines)
-        {
-            var reducedTokenLine = tokenLine.Reduced;
-            var metric = processor.ComputeComparisionMetric(reducedTokenLine, reducedTokenizedText);
-
-            // III. 100% совпадение по reduced
-            if (metric == reducedTokenizedText.Count)
-            {
-                result.TryAdd(id, metric * (10D / reducedTokenLine.Count));
-                continue;
-            }
-
-            // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (metric >= reducedTokenizedText.Count * reduced)
-            {
-                result.TryAdd(id, metric * (1D / reducedTokenLine.Count));
-            }
-        }
-
-        return result;
+        return complianceMetrics;
     }
 
     /// <summary>

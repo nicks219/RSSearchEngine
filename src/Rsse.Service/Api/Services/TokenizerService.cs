@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
+using SearchEngine.Service.Tokenizer.Wrapper;
 
 namespace SearchEngine.Api.Services;
 
@@ -40,7 +42,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<int, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
+    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)
@@ -122,7 +124,9 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         var complianceIndices = _searchEngineTokenizer.ComputeComplianceIndices(text, cancellationToken);
 
-        return complianceIndices;
+        return complianceIndices
+            .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
+            .ToDictionary();
     }
 
     public void Dispose()

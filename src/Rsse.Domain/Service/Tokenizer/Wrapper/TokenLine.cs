@@ -1,6 +1,4 @@
-using SearchEngine.Service.Tokenizer.Wrapper;
-
-namespace SearchEngine.Service.Tokenizer;
+namespace SearchEngine.Service.Tokenizer.Wrapper;
 
 /// <summary>
 /// Контейнер с двумя векторами для заметки.
