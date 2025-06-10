@@ -22,9 +22,15 @@ using static SearchEngine.Service.Configuration.RouteConstants;
 namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
-public sealed class IntegrationTests : TestBase, IDisposable
+public sealed class DestructiveIntegrationTests : TestBase, IDisposable
 {
+    private const string TextToFind = "раз два три четыре";
+    private const string ReadNoteTestText = "рас дваа три";
+    private const string ReadCatalogPageTestText = "пасчитаим читырех";
+    private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
+
     private readonly IntegrationWebAppFactory<Startup> _factory = new();
+    private static int _processedId;
 
     /// <summary>
     /// Закрываем фабрику средствами шарпа.
@@ -57,9 +63,6 @@ public sealed class IntegrationTests : TestBase, IDisposable
             return Task.CompletedTask;
         }
     }
-
-    private const string TextToFind = "раз два три четыре";
-    private static int _processedId;
 
     public static IEnumerable<object?[]> AfterDatabaseCopyTestData =>
     [
@@ -171,8 +174,6 @@ public sealed class IntegrationTests : TestBase, IDisposable
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
 
-    private const string ReadNoteTestText = "рас дваа три";
-
     public static IEnumerable<object[]> ReadNoteTestData =>
     [
         [$"{MigrationRestoreGetUrl}?databaseType=MySql", HttpMethod.Get,
@@ -256,9 +257,6 @@ public sealed class IntegrationTests : TestBase, IDisposable
     {
         await ExecuteTest(uriString, requestMethod, requestContent, responseValidator);
     }
-
-    private const string ReadCatalogPageTestText = "пасчитаим читырех";
-    private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
 
     public static IEnumerable<object[]> ReadCatalogTestData =>
     [

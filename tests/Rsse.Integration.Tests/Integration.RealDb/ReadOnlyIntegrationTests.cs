@@ -21,9 +21,24 @@ using SearchEngine.Tests.Integration.RealDb.Infra;
 namespace SearchEngine.Tests.Integration.RealDb;
 
 [TestClass]
-public sealed class DistributionTests : TestBase, IDisposable
+public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
 {
     private readonly IntegrationWebAppFactory<Startup> _factory = new();
+
+    [ClassInitialize]
+    public static async Task InitializeTests(TestContext context)
+    {
+        // Однократная накатка дампа на Postgres.
+        var token = CancellationToken.None;
+        await using var factory = new IntegrationWebAppFactory<Startup>();
+        using var client = factory.CreateClient(Options);
+
+        await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
+        await TestHelper.CleanUpDatabases(factory, Token);
+        await client.TryAuthorizeToService("1@2", "12", ct: Token);
+        await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
+        await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);
+    }
 
     /// <summary>
     /// Закрываем фабрику средствами шарпа.
@@ -43,17 +58,12 @@ public sealed class DistributionTests : TestBase, IDisposable
 
         const int electionTestNotesCount = 900;
         const int electionTestTagsCount = 44;
-
         const double expectedCoefficient = 0.7D;
+        var requestCount = 250;
+
         using var client = _factory.CreateClient(Options);
 
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
-        await TestHelper.CleanUpDatabases(_factory, Token);
-        await client.TryAuthorizeToService("1@2", "12", ct: Token);
-        await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
-        await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);
-
-        var requestCount = 250;
 
         var tempCount = requestCount;
 
@@ -131,5 +141,32 @@ public sealed class DistributionTests : TestBase, IDisposable
         {
             Console.Write(i + " ");
         }
+    }
+
+    [TestMethod]
+    [DataRow("чорт з ным зо сталом", """{"res":{"1":0.43478260869565216},"error":null}""")]
+    [DataRow("чёрт с ними за столом", """{"res":{"1":52.631578947368425},"error":null}""")]
+    // [DataRow("преключиться вдруг верный друг", """{"res":{"243":0.02,"444":0.35714285714285715},"error":null}""")]
+    [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.35714285714285715,"243":0.02},"error":null}""")]
+    [DataRow("приключится вдруг верный друг", """{"res":{"444":35.08771929824562},"error":null}""")]
+    [DataRow("пляшем на", """{"res":{"1":21.05263157894737},"error":null}""")]
+    [DataRow("ты шла по палубе в молчаний", """{"res":{"10":5.154639175257731},"error":null}""")]
+    [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.6818181818181818},"error":null}""")]
+    public async Task ComplianceRequest_ShouldReturn_ExpectedDocumentWeights(string text, string expected)
+    {
+        // arrange:
+        var token = CancellationToken.None;
+        using var client = _factory.CreateClient(Options);
+        await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
+
+        // act:
+        var uri = new Uri($"{RouteConstants.ComplianceIndicesGetUrl}?text={text}", UriKind.Relative);
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        using var message = await client.SendAsync(request, cancellationToken: token);
+        message.EnsureSuccessStatusCode();
+        var complianceResponse = await message.Content.ReadAsStringAsync(token);
+
+        // assert:
+        complianceResponse.Should().Be(expected);
     }
 }

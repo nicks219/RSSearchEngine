@@ -42,7 +42,7 @@ public class TestBase
         switch (isGitHubAction)
         {
             case true:
-                Console.WriteLine($"{nameof(IntegrationTests)} | dbs running in container(s)");
+                Console.WriteLine($"{nameof(TestBase)} | dbs running in container(s)");
                 break;
 
             case false:

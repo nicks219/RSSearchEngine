@@ -20,11 +20,14 @@ namespace SearchEngine.Tests.Units;
 [TestClass]
 public class ComplianceTests
 {
-    private const string Text = "чорт з ным зо сталом";
     private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
-    public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData()
+    [DataRow("чорт з ным зо сталом", """{"res":{"1":2.3529411764705883},"error":null}""")]
+    [DataRow("чёрт с ними за столом", """{"res":{"1":294.11764705882354},"error":null}""")]
+    [DataRow("удача с ними за столом", """{"res":{"1":23.529411764705884},"error":null}""")]
+    public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
+        string text, string expected)
     {
         // arrange:
         using var stub = new ServiceProviderStub();
@@ -40,15 +43,19 @@ public class ComplianceTests
         await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
 
         // act:
-        var actionResult = complianceController.GetComplianceIndices(Text, _token);
+        var actionResult = complianceController.GetComplianceIndices(text, _token);
         var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
         var serialized = JsonSerializer.Serialize(okObjectResult);
         var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
         // assert:
-        serialized.Should().Be("""{"res":{"1":2.3529411764705883},"error":null}""");
+        serialized.Should().Be(expected);
         deserialized.Should().NotBeNull();
+        deserialized.Error.Should().BeNull();
         deserialized.Res.Should().NotBeNull();
+
+        deserialized.Res.Keys.Should().NotBeEmpty();
+        deserialized.Res.Values.Should().NotBeEmpty();
 
         deserialized.Res
             .Keys
@@ -56,10 +63,6 @@ public class ComplianceTests
             .Should()
             .Be(1);
 
-        deserialized.Res
-            .Values
-            .ElementAt(0)
-            .Should()
-            .Be(2.3529411764705883D);
+        // deserialized.Res.Values.ElementAt(0).Should().Be(2.3529411764705883D);
     }
 }
