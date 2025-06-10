@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Factory;
+using SearchEngine.Service.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Benchmarks;
 

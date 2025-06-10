@@ -1,21 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using SearchEngine.Service.Tokenizer.Processor;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.Dto;
+using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
-namespace SearchEngine.Service.Tokenizer.Factory;
+namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается на самом GIN индексе и создаётся промежуточный результат для поиска в нём.
 /// </summary>
-public class ReducedMetricsGinOptimized : ReducedMetricsBase, IReducedMetricsProcessor
+public class ReducedSearchGinOptimized : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
+    /// <summary>
+    /// Поддержка GIN-индекса.
+    /// </summary>
+    public required GinHandler GinReduced { get; init; }
+
     /// <inheritdoc/>
-    public void FindReduced(string text, Dictionary<DocId, double> complianceMetrics, CancellationToken cancellationToken)
+    public void FindReduced(string text, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        var processor = ProcessorFactory.CreateProcessor(ProcessorType.Reduced);
+        var processor = TokenizerProcessorFactory.CreateProcessor(ProcessorType.Reduced);
 
         var reducedSearchVector = processor.TokenizeText(text);
 
@@ -32,7 +38,7 @@ public class ReducedMetricsGinOptimized : ReducedMetricsBase, IReducedMetricsPro
         var comparisonScoresReduced = new Dictionary<DocId, int>();
         foreach (var token in reducedSearchVector)
         {
-            if (!ReducedGin.TryGetIdentifiers(token, out var ids))
+            if (!GinReduced.TryGetIdentifiers(token, out var ids))
             {
                 continue;
             }
@@ -48,24 +54,12 @@ public class ReducedMetricsGinOptimized : ReducedMetricsBase, IReducedMetricsPro
         }
 
         // поиск в векторе reduced
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedMetricsGinOptimized));
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
         foreach (var (docId, comparisonScore) in comparisonScoresReduced)
         {
-            // Нужен только count.
-            var reducedTargetVectorCount = TokenLines[docId].Reduced.Count;
+            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
 
-            // III. 100% совпадение по reduced
-            if (comparisonScore == reducedSearchVector.Count)
-            {
-                complianceMetrics.TryAdd(docId, comparisonScore * (10D / reducedTargetVectorCount));
-                continue;
-            }
-
-            // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-            if (comparisonScore >= reducedSearchVector.Count * ReducedCoefficient)
-            {
-                complianceMetrics.TryAdd(docId, comparisonScore * (1D / reducedTargetVectorCount));
-            }
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
         }
     }
 }

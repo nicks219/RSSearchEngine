@@ -1,19 +1,17 @@
-using System.Collections.Generic;
 using System.Threading;
-using SearchEngine.Service.Tokenizer.Wrapper;
 
-namespace SearchEngine.Service.Tokenizer.Factory;
+namespace SearchEngine.Service.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт алгоритма поиска и подсчёта сокращенной метрики.
 /// </summary>
-public interface IReducedMetricsProcessor
+public interface IReducedSearchProcessor
 {
     /// <summary>
     /// Выполнить reduced поиск, посчитать reduced метрики релевантности для поискового запроса, добавить в контейнер с результатом.
     /// </summary>
     /// <param name="text">Текст с поисковым запросом.</param>
-    /// <param name="complianceMetrics">Контейнер с ответом в виде индекса релевантности.</param>
+    /// <param name="metricsCalculator">Компонент для подсчёта метрик релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    void FindReduced(string text, Dictionary<DocId, double> complianceMetrics, CancellationToken cancellationToken);
+    void FindReduced(string text, MetricsCalculator metricsCalculator, CancellationToken cancellationToken);
 }

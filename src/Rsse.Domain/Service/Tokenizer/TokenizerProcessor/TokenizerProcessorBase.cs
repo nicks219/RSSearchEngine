@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.Dto;
 
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 /// <summary>
 /// Базовый функционал токенизатора.
 /// </summary>
-public abstract class ProcessorBase : ITokenizerProcessor
+public abstract class TokenizerProcessorBase : ITokenizerProcessor
 {
     // Сокращенный набор символов из английского алфавита.
     protected const string ReducedEnglish = "qwrtpsdfghjklzxcvbnm";

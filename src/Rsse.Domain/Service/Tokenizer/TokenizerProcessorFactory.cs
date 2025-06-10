@@ -1,6 +1,6 @@
 using System;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer.Processor;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 namespace SearchEngine.Service.Tokenizer;
 
@@ -9,8 +9,8 @@ namespace SearchEngine.Service.Tokenizer;
 /// </summary>
 public class TokenizerProcessorFactory : ITokenizerProcessorFactory
 {
-    private readonly ProcessorReduced _reducedProcessor = new();
-    private readonly ProcessorExtended _extendedProcessor = new();
+    private readonly TokenizerProcessorReduced _reducedTokenizerProcessor = new();
+    private readonly TokenizerProcessorExtended _extendedTokenizerProcessor = new();
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип процессора.</exception>
@@ -18,8 +18,8 @@ public class TokenizerProcessorFactory : ITokenizerProcessorFactory
     {
         return processorType switch
         {
-            ProcessorType.Reduced => _reducedProcessor,
-            ProcessorType.Extended => _extendedProcessor,
+            ProcessorType.Reduced => _reducedTokenizerProcessor,
+            ProcessorType.Extended => _extendedTokenizerProcessor,
             _ => throw new ArgumentOutOfRangeException(nameof(processorType), processorType, null)
         };
     }

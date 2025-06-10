@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Tokenizer.Wrapper;
+namespace SearchEngine.Service.Tokenizer.Dto;
 
 /// <summary>
 /// Контейнер с двумя векторами для заметки.

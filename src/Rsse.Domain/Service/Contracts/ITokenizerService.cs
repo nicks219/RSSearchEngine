@@ -22,11 +22,11 @@ public interface ITokenizerService
     public Task Create(int id, TextRequestDto note, CancellationToken stoppingToken);
 
     /// <summary>
-    /// Вычислить индексы соответствия хранимых заметок поисковому запросу.
+    /// Выполнить поиск и вычислить индексы соответствия хранимых заметок поисковому запросу.
     /// </summary>
-    /// <param name="text">Текст для поиска соответствий.</param>
+    /// <param name="text">Поисковый запрос.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Идентификаторы заметок и их индексы соответствия.</returns>
+    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>

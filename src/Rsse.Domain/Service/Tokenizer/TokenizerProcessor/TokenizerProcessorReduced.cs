@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Dto;
 
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 /// <summary>
 /// Основной функционал токенизатора с урезанным набором символов.
 /// </summary>
-public sealed class ProcessorReduced : ProcessorBase
+public sealed class TokenizerProcessorReduced : TokenizerProcessorBase
 {
     // полностью сформированный сокращенный набор символов для токенизации, может включать: "яыоайуеиюэъьё".
     private const string ReducedConsonantChain = "цкнгшщзхфвпрлджчсмтб" + ReducedEnglish;

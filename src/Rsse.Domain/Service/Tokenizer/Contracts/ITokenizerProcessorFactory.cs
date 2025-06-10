@@ -1,6 +1,6 @@
-using SearchEngine.Service.Tokenizer.Processor;
+using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
-namespace SearchEngine.Service.Contracts;
+namespace SearchEngine.Service.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт фабрики по созданию обработчиков векторов.

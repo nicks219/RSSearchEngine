@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SearchEngine.Service.Tokenizer.Wrapper;
+namespace SearchEngine.Service.Tokenizer.Dto;
 
 /// <summary>
 /// Вектор из хэшей, представляющий собой токенизированную заметку.

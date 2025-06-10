@@ -7,11 +7,11 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Exceptions;
-using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Service.Tokenizer.Factory;
-using SearchEngine.Service.Tokenizer.Processor;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.Dto;
+using SearchEngine.Service.Tokenizer.SearchProcessor;
+using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 namespace SearchEngine.Service.Tokenizer;
 
@@ -21,13 +21,13 @@ namespace SearchEngine.Service.Tokenizer;
 public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly ConcurrentDictionary<DocId, TokenLine> _tokenLines;
-    private readonly GinHandler _extendedGin;
-    private readonly GinHandler _reducedGin;
-    private readonly MetricsProcessorFactory _metricsProcessorFactory;
+    private readonly ConcurrentDictionary<DocId, TokenLine> _generalDirectIndex;
+    private readonly GinHandler _ginExtended;
+    private readonly GinHandler _ginReduced;
+    private readonly SearchProcessorFactory _searchProcessorFactory;
     private readonly SearchType _searchType;
 
-    private readonly ITokenizerProcessorFactory _processorFactory;
+    private readonly ITokenizerProcessorFactory _tokenizerProcessorFactory;
 
     /// <summary>
     /// Флаг инициалицации токенайзера.
@@ -37,28 +37,35 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
-    /// <param name="processorFactory">Фабрика токенайзеров.</param>
+    /// <param name="tokenizerProcessorFactory">Фабрика токенайзеров.</param>
     /// <param name="searchType">Тип оптимизации алгоритма поиска.</param>
-    public SearchEngineTokenizer(ITokenizerProcessorFactory processorFactory, SearchType searchType = SearchType.Original)
+    public SearchEngineTokenizer(
+        ITokenizerProcessorFactory tokenizerProcessorFactory,
+        SearchType searchType = SearchType.Original)
     {
-        _tokenLines = new ConcurrentDictionary<DocId, TokenLine>();
-        _processorFactory = processorFactory;
+        _generalDirectIndex = new ConcurrentDictionary<DocId, TokenLine>();
+        _tokenizerProcessorFactory = tokenizerProcessorFactory;
         _searchType = searchType;
 
-        _extendedGin = new GinHandler();
-        _reducedGin = new GinHandler();
-        _metricsProcessorFactory = new MetricsProcessorFactory(_extendedGin, _reducedGin, _tokenLines, _processorFactory, _searchType);
+        _ginExtended = new GinHandler();
+        _ginReduced = new GinHandler();
+        _searchProcessorFactory = new SearchProcessorFactory(
+            _ginExtended,
+            _ginReduced,
+            _generalDirectIndex,
+            _tokenizerProcessorFactory,
+            _searchType);
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _tokenLines;
+    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _generalDirectIndex;
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
     {
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
         var docId = new DocId(id);
-        var removed = _tokenLines.TryRemove(docId, out _);
+        var removed = _generalDirectIndex.TryRemove(docId, out _);
 
         return removed;
     }
@@ -68,10 +75,10 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
-        var createdTokenLine = CreateTokensLine(_processorFactory, note);
+        var createdTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
 
         var docId = new DocId(id);
-        var created = _tokenLines.TryAdd(docId, createdTokenLine);
+        var created = _generalDirectIndex.TryAdd(docId, createdTokenLine);
 
         return created;
     }
@@ -81,15 +88,15 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
-        var updatedTokenLine = CreateTokensLine(_processorFactory, note);
+        var updatedTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
 
         var docId = new DocId(id);
-        if (!_tokenLines.TryGetValue(docId, out var existedLine))
+        if (!_generalDirectIndex.TryGetValue(docId, out var existedLine))
         {
             return false;
         }
 
-        var updated = _tokenLines.TryUpdate(docId, updatedTokenLine, existedLine);
+        var updated = _generalDirectIndex.TryUpdate(docId, updatedTokenLine, existedLine);
         // в данной реализации ошибки получения и обновления не разделяются
         return updated;
     }
@@ -102,7 +109,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         try
         {
-            _tokenLines.Clear();
+            _generalDirectIndex.Clear();
 
             // todo: подумать, как избавиться от загрузки всех записей из таблицы
             var notes = dataProvider.GetDataAsync().WithCancellation(stoppingToken);
@@ -114,19 +121,19 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
                 var requestNote = note.MapToDto();
 
-                var tokenLine = CreateTokensLine(_processorFactory, requestNote);
+                var tokenLine = CreateTokensLine(_tokenizerProcessorFactory, requestNote);
 
                 if (_searchType != SearchType.Original)
                 {
                     var noteDocId = new DocId(note.NoteId);
                     var extendedVector = tokenLine.Extended;
                     var reducedVector = tokenLine.Reduced;
-                    _extendedGin.AddVectorToGin(extendedVector, noteDocId);
-                    _reducedGin.AddVectorToGin(reducedVector, noteDocId);
+                    _ginExtended.AddVector(extendedVector, noteDocId);
+                    _ginReduced.AddVector(reducedVector, noteDocId);
                 }
 
                 var noteDbId = new DocId(note.NoteId);
-                if (!_tokenLines.TryAdd(noteDbId, tokenLine))
+                if (!_generalDirectIndex.TryAdd(noteDbId, tokenLine))
                 {
                     throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
                 }
@@ -138,7 +145,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                                              $"'{ex.Source}' | '{ex.Message}'");
         }
 
-        var count = _tokenLines.Count;
+        var count = _generalDirectIndex.Count;
 
         _isActivated = true;
 
@@ -159,22 +166,22 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <inheritdoc/>
     public Dictionary<DocId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        var complianceMetrics = new Dictionary<DocId, double>();
+        var metricsCalculator = new MetricsCalculator();
 
-        var continueSearching = _metricsProcessorFactory
-            .ExtendedMetricsProcessor
-            .FindExtended(text, complianceMetrics, cancellationToken);
+        var continueSearching = _searchProcessorFactory
+            .ExtendedSearchProcessor
+            .FindExtended(text, metricsCalculator, cancellationToken);
 
-        if (!continueSearching)
+        if (!metricsCalculator.ContinueSearching || !continueSearching)
         {
-            return complianceMetrics;
+            return metricsCalculator.ComplianceMetrics;
         }
 
-        _metricsProcessorFactory
-            .ReducedMetricsProcessor
-            .FindReduced(text, complianceMetrics, cancellationToken);
+        _searchProcessorFactory
+            .ReducedSearchProcessor
+            .FindReduced(text, metricsCalculator, cancellationToken);
 
-        return complianceMetrics;
+        return metricsCalculator.ComplianceMetrics;
     }
 
     /// <summary>

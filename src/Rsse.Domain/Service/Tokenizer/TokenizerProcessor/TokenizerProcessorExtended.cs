@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Dto;
 
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 /// <summary>
-/// Основной функционал токенизатора с расширенным набором симвлолв.
+/// Основной функционал токенизатора с расширенным набором символов.
 /// </summary>
-public sealed class ProcessorExtended : ProcessorBase
+public sealed class TokenizerProcessorExtended : TokenizerProcessorBase
 {
     // символ для увеличения поискового веса при вычислении индекса, используется для точного совпадения.
     private const string WeightExtendedChainSymbol = "@";

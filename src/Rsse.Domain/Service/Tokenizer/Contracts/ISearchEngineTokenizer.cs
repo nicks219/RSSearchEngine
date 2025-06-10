@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Service.Tokenizer.Wrapper;
+using SearchEngine.Service.Tokenizer.Dto;
 
-namespace SearchEngine.Service.Tokenizer;
+namespace SearchEngine.Service.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт функционала поддержки токенизации заметок.
@@ -24,11 +24,11 @@ public interface ISearchEngineTokenizer : IDisposable
     public Task<bool> CreateAsync(int id, TextRequestDto note, CancellationToken stoppingToken);
 
     /// <summary>
-    /// Вычислить индексы соответствия хранимых заметок поисковому запросу.
+    /// Выполнить поиск и вычислить индексы соответствия хранимых заметок поисковому запросу.
     /// </summary>
     /// <param name="text">Поисковый запрос.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Идентификаторы заметок и их индексы соответствия.</returns>
+    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
     public Dictionary<DocId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>

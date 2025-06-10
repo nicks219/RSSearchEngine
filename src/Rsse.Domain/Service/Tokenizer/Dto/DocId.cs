@@ -1,6 +1,6 @@
 using System;
 
-namespace SearchEngine.Service.Tokenizer.Wrapper;
+namespace SearchEngine.Service.Tokenizer.Dto;
 
 /// <summary>
 /// Идентификатор заметки.
