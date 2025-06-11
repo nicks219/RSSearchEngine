@@ -10,7 +10,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается с помощью GIN индекса в процессе поиска.
 /// </summary>
-public class ReducedSearchGin : ReducedSearchProcessorBase, IReducedSearchProcessor
+public sealed class ReducedSearchGin : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
     /// <summary>
     /// Поддержка GIN-индекса.

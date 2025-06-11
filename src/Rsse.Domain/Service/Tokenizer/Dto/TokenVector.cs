@@ -18,6 +18,8 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     /// </summary>
     public int Count => _vector.Count;
 
+    internal List<int> Vector => _vector;
+
     /// <summary>
     /// Определить, содержит ли вектор токен.
     /// </summary>

@@ -22,7 +22,7 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     protected abstract string ConsonantChain { get; }
 
     /// <inheritdoc/>
-    public abstract int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector);
+    public abstract int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int index = 0);
 
     /// <inheritdoc/>
     public TokenVector TokenizeText(string text)

@@ -8,7 +8,7 @@ namespace SearchEngine.Service.Tokenizer.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса.
 /// </summary>
-public class GinHandler
+public sealed class GinHandler
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, идентификаторы заметок в качестве значения.

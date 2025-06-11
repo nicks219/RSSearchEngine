@@ -29,7 +29,7 @@ public sealed class TokenizerProcessorExtended : TokenizerProcessorBase
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector)
+    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int index = 0)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 
@@ -37,9 +37,11 @@ public sealed class TokenizerProcessorExtended : TokenizerProcessorBase
 
         var startIndex = 0;
 
-        foreach (var token in searchVector)
+        for (var i = index; i < searchVector.Vector.Count; i++)
         {
-            var intersectionIndex = targetVector.IndexOf(token, startIndex);
+            var token = searchVector.Vector[i];
+
+            var intersectionIndex = targetVector.IndexOf(new Token(token), startIndex);
             if (intersectionIndex != -1)
             {
                 comparisonScore++;
@@ -83,3 +85,24 @@ public sealed class TokenizerProcessorExtended : TokenizerProcessorBase
         return result;
     }
 }
+/*var comparisonScore = 0;
+
+        var startIndex = 0;
+
+        foreach (var token in searchVector)
+        {
+            var intersectionIndex = targetVector.IndexOf(token, startIndex);
+            if (intersectionIndex != -1)
+            {
+                comparisonScore++;
+
+                startIndex = intersectionIndex + 1;
+
+                if (startIndex >= targetVector.Count)
+                {
+                    break;
+                }
+            }
+        }
+
+        return comparisonScore;*/

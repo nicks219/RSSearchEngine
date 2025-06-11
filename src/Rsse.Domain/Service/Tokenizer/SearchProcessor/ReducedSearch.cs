@@ -8,7 +8,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта сокращенной метрики.
 /// </summary>
-public class ReducedSearch : ReducedSearchProcessorBase, IReducedSearchProcessor
+public sealed class ReducedSearch : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
     /// <inheritdoc/>
     public void FindReduced(string text, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
