@@ -42,4 +42,8 @@ public static class MySqlScript
                                    (1, '{CommonDataConstants.Email}', '{CommonDataConstants.Password}')
                                    ON DUPLICATE KEY UPDATE `Id` = `Id`;
                                    """;
+
+    public const string Index = """
+                                CREATE INDEX idx_tags_to_notes_tag_id ON TagsToNotes (TagId);
+                                """;
 }
