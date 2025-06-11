@@ -59,28 +59,30 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     /// </summary>
     /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
     /// <returns>Список векторов GIN.</returns>
-    private List<HashSet<DocId>> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
+    private List<DocIdVector> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
     {
-        var newGinVectors = new List<HashSet<DocId>>(extendedSearchVector.Count);
+        var emptyDocIdVector = new DocIdVector([]);
+        var docIdVectors = new List<DocIdVector>(extendedSearchVector.Count);
 
         foreach (var token in extendedSearchVector)
         {
-            if (GinExtended.TryGetIdentifiers(token, out var ginVector))
+            if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
             {
-                var ginVectorCopy = ginVector.ToHashSet();
-                foreach (var idVector in newGinVectors)
+                var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
+                foreach (var docIdVector in docIdVectors)
                 {
-                    ginVectorCopy.ExceptWith(idVector);
+                    docIdExtendedVectorCopy.ExceptWith(docIdVector);
                 }
 
-                newGinVectors.Add(ginVectorCopy);
+                docIdVectors.Add(docIdExtendedVectorCopy);
             }
             else
             {
-                newGinVectors.Add([]);
+                docIdVectors.Add(emptyDocIdVector);
             }
         }
 
-        return newGinVectors;
+        return docIdVectors;
     }
 }
+
