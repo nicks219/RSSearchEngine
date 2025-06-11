@@ -8,15 +8,15 @@ namespace SearchEngine.Service.Tokenizer.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса.
 /// </summary>
-public class GinHandler
+public sealed class GinHandler
 {
     /// <summary>
-    /// Инвертированный индекс: токен в качестве ключа, идентификаторы заметок в качестве значения.
+    /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
     /// </summary>
-    private readonly Dictionary<Token, HashSet<DocId>> _generalInvertedIndex = [];
+    private readonly Dictionary<Token, DocIdVector> _generalInvertedIndex = [];
 
     /// <summary>
-    /// Добавить в индекс вектор токенов и идентификатор заметки, в которой он встречается.
+    /// Добавить в индекс вектор токенов и идентификатор соответствующей ему заметки.
     /// </summary>
     /// <param name="vector">Вектор токенов.</param>
     /// <param name="id">Идентификатор заметки.</param>
@@ -32,10 +32,10 @@ public class GinHandler
     /// Получить идентификаторы заметок, в которых присутствует токен.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="ids">Сет с идентификаторами заметок.</param>
+    /// <param name="docIdVector">Вектор с идентификаторами заметок.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetIdentifiers(Token token, [MaybeNullWhen(false)] out HashSet<DocId> ids) =>
-        _generalInvertedIndex.TryGetValue(token, out ids);
+    public bool TryGetIdentifiers(Token token, [MaybeNullWhen(false)] out DocIdVector docIdVector) =>
+        _generalInvertedIndex.TryGetValue(token, out docIdVector);
 
     /// <summary>
     /// Определить, присутствует ли любой токен из вектора в заданной заметке.
@@ -47,12 +47,12 @@ public class GinHandler
     {
         foreach (var token in vector)
         {
-            if (!_generalInvertedIndex.TryGetValue(token, out var ids))
+            if (!_generalInvertedIndex.TryGetValue(token, out var docIdVector))
             {
                 continue;
             }
 
-            if (ids.Contains(id))
+            if (docIdVector.Contains(id))
             {
                 return true;
             }
@@ -68,13 +68,13 @@ public class GinHandler
     /// <param name="id">Идентификатор заметки.</param>
     private void AddToken(Token token, DocId id)
     {
-        if (!_generalInvertedIndex.TryGetValue(token, out var ids))
+        if (!_generalInvertedIndex.TryGetValue(token, out var docIdVector))
         {
-            _generalInvertedIndex[token] = [id];
+            _generalInvertedIndex[token] = new DocIdVector([id]);
         }
         else
         {
-            ids.Add(id);
+            docIdVector.Add(id);
         }
     }
 
@@ -82,13 +82,13 @@ public class GinHandler
     /// Определить, присутствует ли токен в любой из заданных заметок.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="ids">Идентификаторы заметок, в которых мы проверяем наличие токена.</param>
+    /// <param name="docIdVector">Идентификаторы заметок, в которых мы проверяем наличие токена.</param>
     /// <returns><b>true</b> - Токен присутствует в одной из заданных заметок.</returns>
     // варианты нейминга: ContainsInAny | ContainsTokenInAnyGivenIds
     [Obsolete("в данный момент не используется")]
-    public bool ContainsAnyDocForToken(Token token, HashSet<DocId> ids)
+    public bool ContainsAnyDocForToken(Token token, DocIdVector docIdVector)
     {
-        foreach (var id in ids)
+        foreach (var id in docIdVector)
         {
             if (!_generalInvertedIndex.TryGetValue(token, out var ginIds))
             {

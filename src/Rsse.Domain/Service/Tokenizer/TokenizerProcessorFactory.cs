@@ -7,7 +7,7 @@ namespace SearchEngine.Service.Tokenizer;
 /// <summary>
 /// Фабрика по созданию обработчиков векторов.
 /// </summary>
-public class TokenizerProcessorFactory : ITokenizerProcessorFactory
+public sealed class TokenizerProcessorFactory : ITokenizerProcessorFactory
 {
     private readonly TokenizerProcessorReduced _reducedTokenizerProcessor = new();
     private readonly TokenizerProcessorExtended _extendedTokenizerProcessor = new();
