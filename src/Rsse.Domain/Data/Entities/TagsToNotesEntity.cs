@@ -20,7 +20,7 @@ public class TagsToNotesEntity
     /// <summary>
     /// Служебное поле EF для создания связи.
     /// </summary>
-    public TagEntity TagsInRelationEntity { get; set; } = null!;
+    public TagEntity? TagsInRelationEntity { get; set; }
 
     /// <summary>
     /// Идентификатор заметки.
@@ -31,5 +31,5 @@ public class TagsToNotesEntity
     /// <summary>
     /// Служебное поле EF для создания связи.
     /// </summary>
-    public NoteEntity NoteInRelationEntity { get; set; } = null!;
+    public NoteEntity? NoteInRelationEntity { get; set; }
 }

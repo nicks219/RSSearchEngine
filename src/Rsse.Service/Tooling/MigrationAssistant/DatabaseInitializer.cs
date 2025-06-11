@@ -47,28 +47,18 @@ public abstract class DatabaseInitializer
     /// <param name="ct">Токен отмены.</param>
     private static async Task SeedDatabase(BaseCatalogContext context, CancellationToken ct)
     {
-        var newLine = Environment.NewLine;
         int rows;
         var database = context.Database;
         switch (database.ProviderName)
         {
             case "Npgsql.EntityFrameworkCore.PostgreSQL":
                 rows = await database.ExecuteSqlRawAsync(NpgsqlScript.DdlData, ct);
-                Console.WriteLine($"[{nameof(NpgsqlScript)}] rows affected | {rows}{newLine}");
+                Console.WriteLine($"[{nameof(NpgsqlScript)}] rows affected | {rows}");
                 break;
 
             case "Pomelo.EntityFrameworkCore.MySql":
                 rows = await database.ExecuteSqlRawAsync(MySqlScript.DdlData, ct);
-                try
-                {
-                    await database.ExecuteSqlRawAsync(MySqlScript.Index, ct);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[{nameof(MySqlScript)}] create index error | {ex.Message}{newLine}");
-                }
-
-                Console.WriteLine($"[{nameof(MySqlScript)}] rows affected | {rows}{newLine}");
+                Console.WriteLine($"[{nameof(MySqlScript)}] rows affected | {rows}");
                 break;
 
             // Контекст абстрагирует SQLite, который используется при запуске интеграционных тестов:
@@ -83,14 +73,14 @@ public abstract class DatabaseInitializer
                 if (created)
                 {
                     rows = await database.ExecuteSqlRawAsync(SqLiteIntegrationTestScript.TestData, ct);
-                    Console.WriteLine($"[{nameof(SqLiteIntegrationTestScript)}] rows affected | {rows}{newLine}");
+                    Console.WriteLine($"[{nameof(SqLiteIntegrationTestScript)}] rows affected | {rows}");
                 }
 
                 break;
 
             case "Microsoft.EntityFrameworkCore.SqlServer":
                 rows = await database.ExecuteSqlRawAsync(MsSqlScript.TestData, ct);
-                Console.WriteLine($"[{nameof(MsSqlScript)}] rows affected | {rows}{newLine}");
+                Console.WriteLine($"[{nameof(MsSqlScript)}] rows affected | {rows}");
                 break;
         }
     }
