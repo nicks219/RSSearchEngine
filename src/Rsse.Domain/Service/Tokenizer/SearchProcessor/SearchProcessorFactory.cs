@@ -98,6 +98,27 @@ public class SearchProcessorFactory
                 };
                 return;
 
+            // С GIN-индексом.
+            case SearchType.GinFast:
+                FailIfProductionEnvironment(searchType);
+                if (ginExtended == null || ginReduced == null)
+                    throw new ArgumentNullException(nameof(searchType), $"[{nameof(SearchProcessorFactory)}] GIN is null.");
+
+                ExtendedSearchProcessor = new ExtendedSearchGinOptimized
+                {
+                    GinExtended = ginExtended,
+                    GeneralDirectIndex = generalDirectIndex,
+                    TokenizerProcessorFactory = tokenizerProcessorFactory
+                };
+
+                ReducedSearchProcessor = new ReducedSearchGinFast
+                {
+                    GinReduced = ginReduced,
+                    GeneralDirectIndex = generalDirectIndex,
+                    TokenizerProcessorFactory = tokenizerProcessorFactory
+                };
+                return;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
         }

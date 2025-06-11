@@ -20,7 +20,7 @@ public class TokenizerBenchmarks
     static TokenizerBenchmarks()
     {
         var processorFactory = new TokenizerProcessorFactory();
-        Tokenizer = new SearchEngineTokenizer(processorFactory, SearchType.GinOptimized);
+        Tokenizer = new SearchEngineTokenizer(processorFactory, SearchType.GinFast);
     }
 
     [GlobalSetup]
@@ -74,7 +74,7 @@ public class TokenizerBenchmarks
     /// <summary>
     /// Инициализировать Lucene.
     /// </summary>
-    private static async Task InitializeLucene()
+    internal static async Task InitializeLucene()
     {
         Console.WriteLine($"[{nameof(LuceneWrapper)}] initializing..");
         await LuceneWrapper.InitializeAsync();
