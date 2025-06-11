@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using SearchEngine.Service.Tokenizer.Dto;
 
-namespace SearchEngine.Service.Tokenizer;
+namespace SearchEngine.Service.Tokenizer.Indexes;
 
 /// <summary>
 /// Поддержка общего инвертированного индекса.

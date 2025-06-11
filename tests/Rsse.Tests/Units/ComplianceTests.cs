@@ -30,6 +30,9 @@ public class ComplianceTests
     [DataRow("чорт з ным зо сталом", """{"res":{"1":2.3529411764705883},"error":null}""")]
     [DataRow("чёрт с ними за столом", """{"res":{"1":294.11764705882354},"error":null}""")]
     [DataRow("удача с ними за столом", """{"res":{"1":23.529411764705884},"error":null}""")]
+
+    // optimized может отличаться от original если оптимизация не учитывает порядок слов
+    [DataRow("с ними за столом чёрт", """{"res":{"1":23.529411764705884},"error":null}""")]
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
         string text, string expected)
     {
@@ -43,10 +46,10 @@ public class ComplianceTests
             var complianceController = new ComplianceSearchController(complianceManager);
             complianceController.AddHttpContext(stub.Provider);
 
-            // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+            // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
             var repo = stub.Provider.GetRequiredService<IDataRepository>();
             var dbDataProvider = new DbDataProvider(repo);
-            await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
+            await tokenizer.Initialize(dbDataProvider, _token);
 
             // act:
             var actionResult = complianceController.GetComplianceIndices(text, _token);
@@ -90,10 +93,10 @@ public class ComplianceTests
             var complianceController = new ComplianceSearchController(complianceManager);
             complianceController.AddHttpContext(stub.Provider);
 
-            // необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+            // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
             var repo = stub.Provider.GetRequiredService<IDataRepository>();
             var dbDataProvider = new DbDataProvider(repo);
-            await tokenizer.Initialize(dbDataProvider, CancellationToken.None);
+            await tokenizer.Initialize(dbDataProvider, _token);
 
             // act:
             var actionResult = complianceController.GetComplianceIndices(text, _token);

@@ -10,6 +10,7 @@ using SearchEngine.Exceptions;
 using SearchEngine.Service.Mapping;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
+using SearchEngine.Service.Tokenizer.Indexes;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 

@@ -19,12 +19,6 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     public int Count => _vector.Count;
 
     /// <summary>
-    /// Добавить хэш в вектор.
-    /// </summary>
-    /// <param name="hash">Хэш.</param>
-    internal void Add(int hash) => _vector.Add(hash);
-
-    /// <summary>
     /// Определить, содержит ли вектор токен.
     /// </summary>
     /// <param name="token">Токен.</param>

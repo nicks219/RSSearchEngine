@@ -76,6 +76,7 @@ public static class DiagnosticsProgram
 
     /// <summary>
     /// Запустить код в режиме, пригодном для профилирования.
+    /// Запускается инициализация и запросы на RSSE токенайзере.
     /// </summary>
     private static async Task RunProfiling()
     {

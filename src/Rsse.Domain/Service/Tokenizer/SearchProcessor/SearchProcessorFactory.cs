@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
+using SearchEngine.Service.Tokenizer.Indexes;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 

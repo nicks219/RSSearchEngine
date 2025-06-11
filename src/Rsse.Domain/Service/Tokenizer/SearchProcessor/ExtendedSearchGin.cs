@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.Indexes;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
