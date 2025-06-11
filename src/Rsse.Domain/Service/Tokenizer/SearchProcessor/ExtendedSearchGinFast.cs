@@ -33,15 +33,15 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var extendedGinVectorSearchSpaces = CreateExtendedSearchSpace(extendedSearchVector);
+        var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
 
-        for (var index = 0; index < extendedGinVectorSearchSpaces.Count; index++)
+        for (var index = 0; index < extendedDocIdVectorSearchSpace.Count; index++)
         {
-            var ginVector = extendedGinVectorSearchSpaces[index];
-            foreach (var docId in ginVector)
+            var docIdVector = extendedDocIdVectorSearchSpace[index];
+            foreach (var docId in docIdVector)
             {
                 var tokensLine = GeneralDirectIndex[docId];
                 var extendedTokensLine = tokensLine.Extended;
