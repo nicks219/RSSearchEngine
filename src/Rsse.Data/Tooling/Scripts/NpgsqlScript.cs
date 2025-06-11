@@ -39,6 +39,7 @@ public static class NpgsqlScript
                                   INSERT INTO public."Users" ("Id", "Email", "Password")
                                   VALUES (1, '1@2', '12')
                                   ON CONFLICT ("Id") DO NOTHING;
+                                  CREATE INDEX IF NOT EXISTS idx_tags_to_notes_tag_id ON public."TagsToNotes" ("TagId");
                                   """;
 
     /// <summary>
