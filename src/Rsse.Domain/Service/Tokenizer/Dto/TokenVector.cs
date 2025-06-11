@@ -19,13 +19,6 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     public int Count => _vector.Count;
 
     /// <summary>
-    /// Получить токен из вектора по индексу.
-    /// </summary>
-    /// <param name="index">Индекс.</param>
-    /// <returns>Токен в виде хэша.</returns>
-    internal int ElementAt(uint index) => _vector[(int)index];
-
-    /// <summary>
     /// Определить, содержит ли вектор токен.
     /// </summary>
     /// <param name="token">Токен.</param>
