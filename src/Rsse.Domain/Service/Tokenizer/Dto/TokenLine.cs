@@ -5,7 +5,7 @@ namespace SearchEngine.Service.Tokenizer.Dto;
 /// </summary>
 /// <param name="Extended">Расширенный вектор.</param>
 /// <param name="Reduced">Урезанный вектор.</param>
-public record TokenLine(
+public sealed record TokenLine(
     TokenVector Extended,
     TokenVector Reduced
 );

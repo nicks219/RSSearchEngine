@@ -23,7 +23,7 @@ namespace SearchEngine.Tests.Units;
 public class ComplianceTests
 {
     private readonly List<SearchType> _searchTypes =
-        [SearchType.GinOptimized, SearchType.GinSimple, SearchType.Original];
+        [SearchType.GinOptimized, SearchType.GinSimple, SearchType.Original, SearchType.GinFast];
     private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]

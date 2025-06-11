@@ -198,16 +198,17 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
     {
         var text = note.Text + ' ' + note.Title;
+        var preProcessedText = TokenizerProcessorBase.PreProcessTest(text);
 
         // расширенная эталонная последовательность:
         var extendedProcessor = factory.CreateProcessor(ProcessorType.Extended);
 
-        var extendedTokenLine = extendedProcessor.TokenizeText(text);
+        var extendedTokenLine = extendedProcessor.TokenizeText(preProcessedText);
 
         // урезанная эталонная последовательность:
         var reducedProcessor = factory.CreateProcessor(ProcessorType.Reduced);
 
-        var reducedTokenLine = reducedProcessor.TokenizeText(text);
+        var reducedTokenLine = reducedProcessor.TokenizeText(preProcessedText);
 
         return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }

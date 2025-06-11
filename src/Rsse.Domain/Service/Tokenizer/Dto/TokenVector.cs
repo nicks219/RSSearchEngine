@@ -40,13 +40,6 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     public Enumerator GetEnumerator() => new(_vector.GetEnumerator());
 
     /// <summary>
-    /// Получить вектор как коллекцию хэшей.
-    /// Для целей тестирования.
-    /// </summary>
-    /// <returns>Список хэшей.</returns>
-    internal List<int> ToIntList() => _vector;
-
-    /// <summary>
     /// Конвертировать в вектор с уникальными элементами.
     /// </summary>
     /// <returns>Вектор с уникальными токенами.</returns>
@@ -61,6 +54,20 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     public static bool operator ==(TokenVector left, TokenVector right) => left.Equals(right);
 
     public static bool operator !=(TokenVector left, TokenVector right) => !(left == right);
+
+    /// <summary>
+    /// Получить по индексу токен из вектора.
+    /// </summary>
+    /// <param name="index">Индекс.</param>
+    /// <returns>Токен в виде хэша.</returns>
+    internal int ElementAt(uint index) => _vector[(int)index];
+
+    /// <summary>
+    /// Получить копию вектора как коллекцию хэшей.
+    /// Для целей тестирования.
+    /// </summary>
+    /// <returns>Коллекция хэшей.</returns>
+    internal List<int> ToIntList() => _vector.ToList();
 
     /// <summary>
     /// Перечислитель для вектора.

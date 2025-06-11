@@ -78,13 +78,23 @@ public static class DiagnosticsProgram
     /// Запустить код в режиме, пригодном для профилирования.
     /// Запускается инициализация и запросы на RSSE токенайзере.
     /// </summary>
-    private static async Task RunProfiling()
+    private static async Task RunProfiling(bool runRsse = true)
     {
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         var benchmark = new TokenizerBenchmarks();
         var stopwatch = Stopwatch.StartNew();
-        await TokenizerBenchmarks.InitializeEngineTokenizer();
+
+        switch (runRsse)
+        {
+            case true:
+                await TokenizerBenchmarks.InitializeEngineTokenizer();
+                break;
+            default:
+                await TokenizerBenchmarks.InitializeLucene();
+                break;
+        }
+
         stopwatch.Stop();
         var initializeMemory = GC.GetTotalAllocatedBytes();
 
@@ -97,8 +107,15 @@ public static class DiagnosticsProgram
 
         for (var i = 0; i < WarmUpIterations; i++)
         {
-            benchmark.BenchmarkEngineTokenizer();
-            // tokenizerBenchmark.LuceneBenchmark();
+            switch (runRsse)
+            {
+                case true:
+                    benchmark.BenchmarkEngineTokenizer();
+                    break;
+                default:
+                    benchmark.BenchmarkLucene();
+                    break;
+            }
         }
         var warmupMemory = GC.GetTotalAllocatedBytes();
 
@@ -109,8 +126,15 @@ public static class DiagnosticsProgram
         stopwatch.Restart();
         for (var i = 0; i < ProfilerIterations; i++)
         {
-            benchmark.BenchmarkEngineTokenizer();
-            // tokenizerBenchmark.LuceneBenchmark();
+            switch (runRsse)
+            {
+                case true:
+                    benchmark.BenchmarkEngineTokenizer();
+                    break;
+                default:
+                    benchmark.BenchmarkLucene();
+                    break;
+            }
         }
         stopwatch.Stop();
         var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;

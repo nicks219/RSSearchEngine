@@ -15,10 +15,18 @@ public interface ITokenizerProcessor
     public TokenVector TokenizeText(string text);
 
     /// <summary>
+    /// Токенизировать разбитый на слова текст.
+    /// </summary>
+    /// <param name="words">Разбитый на слова текст.</param>
+    /// <returns>Вектор токенов, представляющий текст.</returns>
+    public TokenVector TokenizeText(string[] words);
+
+    /// <summary>
     /// Вычислить метрику сравнения двух векторов.
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <param name="searchStartIndex">Позиция, с которой следует начинать анализ по вектору с поисковым запросом.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector);
+    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0);
 }

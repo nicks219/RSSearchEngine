@@ -22,8 +22,9 @@ public sealed class TokenizerProcessorReduced : TokenizerProcessorBase
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <param name="_">Не используется.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector)
+    public override int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int _ = 0)
     {
         // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
 
