@@ -6,7 +6,7 @@ namespace SearchEngine.Service.Tokenizer;
 /// <summary>
 /// Подсчёт метрик релевантности для результатов поискового запроса.
 /// </summary>
-public class MetricsCalculator
+public sealed class MetricsCalculator
 {
     // Коэффициент extended поиска: 0.8D
     private const double ExtendedCoefficient = 0.8D;

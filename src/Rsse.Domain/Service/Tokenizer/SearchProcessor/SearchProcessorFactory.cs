@@ -10,7 +10,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Функционал, поставляющий различные алгоритмы вычисления метрик поиска.
 /// Для бенчмарков.
 /// </summary>
-public class SearchProcessorFactory
+public sealed class SearchProcessorFactory
 {
     /// <summary>
     /// Алгоритм поиска текста в extended-векторах и подсчёта расширенной метрики.
@@ -91,6 +91,27 @@ public class SearchProcessorFactory
                 };
 
                 ReducedSearchProcessor = new ReducedSearchGin
+                {
+                    GinReduced = ginReduced,
+                    GeneralDirectIndex = generalDirectIndex,
+                    TokenizerProcessorFactory = tokenizerProcessorFactory
+                };
+                return;
+
+            // С GIN-индексом.
+            case SearchType.GinFast:
+                FailIfProductionEnvironment(searchType);
+                if (ginExtended == null || ginReduced == null)
+                    throw new ArgumentNullException(nameof(searchType), $"[{nameof(SearchProcessorFactory)}] GIN is null.");
+
+                ExtendedSearchProcessor = new ExtendedSearchGinFast
+                {
+                    GinExtended = ginExtended,
+                    GeneralDirectIndex = generalDirectIndex,
+                    TokenizerProcessorFactory = tokenizerProcessorFactory
+                };
+
+                ReducedSearchProcessor = new ReducedSearchGinFast
                 {
                     GinReduced = ginReduced,
                     GeneralDirectIndex = generalDirectIndex,

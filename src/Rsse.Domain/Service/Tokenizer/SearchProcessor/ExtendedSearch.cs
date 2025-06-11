@@ -8,7 +8,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта расширенной метрики.
 /// </summary>
-public class ExtendedSearch : ExtendedSearchProcessorBase, IExtendedSearchProcessor
+public sealed class ExtendedSearch : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
     /// <inheritdoc/>
     public bool FindExtended(string text, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)

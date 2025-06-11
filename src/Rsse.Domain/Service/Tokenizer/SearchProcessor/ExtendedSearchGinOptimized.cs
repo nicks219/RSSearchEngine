@@ -12,7 +12,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public class ExtendedSearchGinOptimized : ExtendedSearchProcessorBase, IExtendedSearchProcessor
+public sealed class ExtendedSearchGinOptimized : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
     /// <summary>
     /// Поддержка GIN-индекса.

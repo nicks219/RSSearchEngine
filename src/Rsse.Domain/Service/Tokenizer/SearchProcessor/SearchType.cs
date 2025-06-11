@@ -23,5 +23,12 @@ public enum SearchType
     /// GIN используется для сокращения пространства поиска.
     /// Используются алгоритмы: <see cref="ExtendedSearchGin"/> и <see cref="ReducedSearchGin"/>
     /// </summary>
-    GinSimple = 2
+    GinSimple = 2,
+
+    /// <summary>
+    /// Вариант оптимизации на инвертированном индексе.
+    /// GIN используется для сокращения пространства поиска, применены дополнительные оптимизации.
+    /// Используются алгоритмы: <see cref="ExtendedSearchGinFast"/> и <see cref="ReducedSearchGinFast"/>
+    /// </summary>
+    GinFast = 3
 }
