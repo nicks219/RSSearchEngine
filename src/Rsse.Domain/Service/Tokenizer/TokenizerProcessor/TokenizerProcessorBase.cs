@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
 
@@ -17,6 +18,21 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     private static readonly char[] Separators = ['\r', '\n', '\t', ':', '/', '.', ' '];
 
     /// <summary>
+    /// Получить обработанный и разбитый на слова текст.
+    /// </summary>
+    /// <param name="text">Текст в формате строки.</param>
+    /// <returns>Обработанный и разбитый на слова текст.</returns>
+    public static string[] PreProcessTest(string text)
+    {
+        var words = text
+            .ToLower()
+            .Replace('ё', 'е')
+            .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+
+        return words;
+    }
+
+    /// <summary>
     /// Полный набор символов для токенизации.
     /// </summary>
     protected abstract string ConsonantChain { get; }
@@ -27,11 +43,21 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     /// <inheritdoc/>
     public TokenVector TokenizeText(string text)
     {
-        var words = text
-            .ToLower()
-            .Replace('ё', 'е')
-            .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+        var words = PreProcessTest(text);
+        var vector = TokenizeTextInternal(words);
+        return vector;
+    }
 
+    /// <inheritdoc/>
+    public TokenVector TokenizeText(string[] words)
+    {
+        var vector = TokenizeTextInternal(words);
+        return vector;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private TokenVector TokenizeTextInternal(string[] words)
+    {
         var tokens = new List<int>(words.Length);
 
         foreach (var word in words)

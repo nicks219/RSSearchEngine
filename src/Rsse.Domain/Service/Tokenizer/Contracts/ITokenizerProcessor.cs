@@ -15,6 +15,13 @@ public interface ITokenizerProcessor
     public TokenVector TokenizeText(string text);
 
     /// <summary>
+    /// Токенизировать текст.
+    /// </summary>
+    /// <param name="words">Разбитый на слова текст.</param>
+    /// <returns>Вектор токенов, представляющий текст.</returns>
+    public TokenVector TokenizeText(string[] words);
+
+    /// <summary>
     /// Вычислить метрику сравнения двух векторов.
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
