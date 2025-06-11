@@ -33,14 +33,14 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var docIdVector = CreateDocIdVectorExtended(extendedSearchVector);
+        var extendedVectorsSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
 
-        for (var index = 0; index < docIdVector.Count; index++)
+        for (var index = 0; index < extendedVectorsSearchSpace.Count; index++)
         {
-            foreach (var docId in docIdVector[index])
+            foreach (var docId in extendedVectorsSearchSpace[index])
             {
                 var tokensLine = GeneralDirectIndex[docId];
                 var extendedTokensLine = tokensLine.Extended;
@@ -53,29 +53,29 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
         return metricsCalculator.ContinueSearching;
     }
 
-    private List<HashSet<DocId>> CreateDocIdVectorExtended(TokenVector newTokensLine)
+    private List<HashSet<DocId>> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
     {
-        var docIdVector = new List<HashSet<DocId>>(newTokensLine.Count);
+        var newGinVectors = new List<HashSet<DocId>>(extendedSearchVector.Count);
 
-        foreach (var token in newTokensLine)
+        foreach (var token in extendedSearchVector)
         {
-            if (GinExtended.TryGetIdentifiers(token, out var set))
+            if (GinExtended.TryGetIdentifiers(token, out var ginVector))
             {
-                var ginVectorCopy = set.ToHashSet();
+                var ginVectorCopy = ginVector.ToHashSet();
 
-                foreach (var idVector in docIdVector)
+                foreach (var idVector in newGinVectors)
                 {
                     ginVectorCopy.ExceptWith(idVector);
                 }
-                docIdVector.Add(new HashSet<DocId>(ginVectorCopy));
+                newGinVectors.Add(ginVectorCopy);
             }
             else
             {
-                docIdVector.Add(new HashSet<DocId>(new HashSet<DocId>(0)));
+                newGinVectors.Add([]);
             }
         }
 
-        return docIdVector;
+        return newGinVectors;
     }
 }
 

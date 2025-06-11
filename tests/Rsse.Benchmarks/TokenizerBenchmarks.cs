@@ -8,6 +8,7 @@ using SearchEngine.Service.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Benchmarks;
 
+[MinColumn]
 public class TokenizerBenchmarks
 {
     private static readonly SearchEngineTokenizer Tokenizer;
