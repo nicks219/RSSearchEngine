@@ -48,7 +48,7 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
             foreach (var docId in ids)
             {
                 ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                score++;
+                ++score;
             }
         }
 

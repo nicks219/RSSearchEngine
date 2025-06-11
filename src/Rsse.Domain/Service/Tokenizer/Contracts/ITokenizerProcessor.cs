@@ -19,6 +19,7 @@ public interface ITokenizerProcessor
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
+    /// <param name="searchStartIndex">Позиция, с которой следует начинать анализ по вектору с поисковым запросом.</param>
     /// <returns>Метрика количества совпадений.</returns>
-    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int currentIndex = 0);
+    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0);
 }

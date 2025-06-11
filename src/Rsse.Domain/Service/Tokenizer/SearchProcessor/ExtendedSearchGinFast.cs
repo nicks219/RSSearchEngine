@@ -33,14 +33,15 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var extendedVectorsSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
+        var extendedGinVectorSearchSpaces = CreateExtendedSearchSpace(extendedSearchVector);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
 
-        for (var index = 0; index < extendedVectorsSearchSpace.Count; index++)
+        for (var index = 0; index < extendedGinVectorSearchSpaces.Count; index++)
         {
-            foreach (var docId in extendedVectorsSearchSpace[index])
+            var ginVector = extendedGinVectorSearchSpaces[index];
+            foreach (var docId in ginVector)
             {
                 var tokensLine = GeneralDirectIndex[docId];
                 var extendedTokensLine = tokensLine.Extended;
@@ -53,6 +54,11 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
         return metricsCalculator.ContinueSearching;
     }
 
+    /// <summary>
+    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
+    /// </summary>
+    /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
+    /// <returns>Список векторов GIN.</returns>
     private List<HashSet<DocId>> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
     {
         var newGinVectors = new List<HashSet<DocId>>(extendedSearchVector.Count);
@@ -62,11 +68,11 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             if (GinExtended.TryGetIdentifiers(token, out var ginVector))
             {
                 var ginVectorCopy = ginVector.ToHashSet();
-
                 foreach (var idVector in newGinVectors)
                 {
                     ginVectorCopy.ExceptWith(idVector);
                 }
+
                 newGinVectors.Add(ginVectorCopy);
             }
             else
