@@ -88,24 +88,3 @@ public sealed class TokenizerProcessorExtended : TokenizerProcessorBase
         return result;
     }
 }
-/*var comparisonScore = 0;
-
-        var startIndex = 0;
-
-        foreach (var token in searchVector)
-        {
-            var intersectionIndex = targetVector.IndexOf(token, startIndex);
-            if (intersectionIndex != -1)
-            {
-                comparisonScore++;
-
-                startIndex = intersectionIndex + 1;
-
-                if (startIndex >= targetVector.Count)
-                {
-                    break;
-                }
-            }
-        }
-
-        return comparisonScore;*/
