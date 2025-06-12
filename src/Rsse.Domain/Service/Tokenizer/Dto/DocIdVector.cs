@@ -14,6 +14,13 @@ public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVect
     private readonly HashSet<DocId> _vector = vector;
 
     /// <summary>
+    /// Вызов конструктора без параметров инициализирует вектор пустым токеном.
+    /// </summary>
+    public DocIdVector() : this([])
+    {
+    }
+
+    /// <summary>
     /// Получить перечислитель для вектора идентификаторов.
     /// </summary>
     /// <returns>Перечислитель.</returns>
