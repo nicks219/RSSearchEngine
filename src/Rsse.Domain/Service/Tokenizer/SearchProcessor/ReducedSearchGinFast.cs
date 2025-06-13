@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
@@ -15,9 +13,6 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
-    // Не забудь очистить при остановке приложения.
-    private static readonly ThreadLocal<Dictionary<DocId, int>> ScoresStorage = new(() => []);
-
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>

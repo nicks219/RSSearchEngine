@@ -38,6 +38,7 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     {
         var count = text.Count(e => e == ' ') + 1;
 
+        // разделить на 2 метода - для составления индекса и для токенизации строки поиска
         var tokens = new List<int>(count);
         var sequenceHashProcessor = new SequenceHashProcessor();
 

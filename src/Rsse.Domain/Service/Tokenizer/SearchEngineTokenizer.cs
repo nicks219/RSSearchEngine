@@ -215,5 +215,6 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     public void Dispose()
     {
         TokenizerLock.Dispose();
+        _searchProcessorFactory.Dispose();
     }
 }
