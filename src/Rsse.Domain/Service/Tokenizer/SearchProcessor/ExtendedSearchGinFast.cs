@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.Extensions.ObjectPool;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
@@ -14,8 +15,8 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
-    private readonly List<DocIdVector> _docIdVectors = [];
-    private readonly Lock _lock = new();
+    private readonly DefaultObjectPool<List<DocIdVector>> _vectorsPool =
+        new(new DefaultPooledObjectPolicy<List<DocIdVector>>());
 
     /// <summary>
     /// Поддержка GIN-индекса.
@@ -65,28 +66,34 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     {
         var emptyDocIdVector = new DocIdVector();
 
-        lock (_lock)
+        var docIdVectors = _vectorsPool.Get();
+        try
         {
-            _docIdVectors.Clear();
+            docIdVectors.Clear();
             foreach (var token in extendedSearchVector)
             {
                 if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
                 {
                     var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
-                    foreach (var docIdVector in _docIdVectors)
+                    foreach (var docIdVector in docIdVectors)
                     {
                         docIdExtendedVectorCopy.ToBuilder().ExceptWith(docIdVector);
                     }
 
-                    _docIdVectors.Add(docIdExtendedVectorCopy);
+                    docIdVectors.Add(docIdExtendedVectorCopy);
                 }
                 else
                 {
-                    _docIdVectors.Add(emptyDocIdVector);
+                    docIdVectors.Add(emptyDocIdVector);
                 }
             }
 
-            return _docIdVectors;
+            return docIdVectors;
+        }
+        finally
+        {
+            // docIdVectors.Clear();
+            _vectorsPool.Return(docIdVectors);
         }
     }
 }

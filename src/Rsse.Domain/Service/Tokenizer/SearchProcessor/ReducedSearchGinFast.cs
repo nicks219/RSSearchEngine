@@ -16,9 +16,8 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
-    private readonly DefaultObjectPool<Dictionary<DocId, int>> _comparisonScoresReduced =
+    private readonly DefaultObjectPool<Dictionary<DocId, int>> _scoreStoragePool =
         new(new DefaultPooledObjectPolicy<Dictionary<DocId, int>>());
-    private readonly Lock _lock = new();
 
     /// <summary>
     /// Поддержка GIN-индекса.
@@ -42,7 +41,7 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = _comparisonScoresReduced.Get();
+        var comparisonScoresReduced = _scoreStoragePool.Get();
         try
         {
             comparisonScoresReduced.Clear();
@@ -73,7 +72,8 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         }
         finally
         {
-            _comparisonScoresReduced.Return(comparisonScoresReduced);
+            // comparisonScoresReduced.Clear();
+            _scoreStoragePool.Return(comparisonScoresReduced);
         }
     }
 }
