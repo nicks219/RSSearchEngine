@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
@@ -15,6 +14,9 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
+    private readonly List<DocIdVector> _docIdVectors = [];
+    private readonly Lock _lock = new();
+
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
@@ -61,28 +63,31 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     /// <returns>Список векторов GIN.</returns>
     private List<DocIdVector> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
     {
-        var emptyDocIdVector = new DocIdVector([]);
-        var docIdVectors = new List<DocIdVector>(extendedSearchVector.Count);
+        var emptyDocIdVector = new DocIdVector();
 
-        foreach (var token in extendedSearchVector)
+        lock (_lock)
         {
-            if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
+            _docIdVectors.Clear();
+            foreach (var token in extendedSearchVector)
             {
-                var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
-                foreach (var docIdVector in docIdVectors)
+                if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
                 {
-                    docIdExtendedVectorCopy.ExceptWith(docIdVector);
+                    var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
+                    foreach (var docIdVector in _docIdVectors)
+                    {
+                        docIdExtendedVectorCopy.ToBuilder().ExceptWith(docIdVector);
+                    }
+
+                    _docIdVectors.Add(docIdExtendedVectorCopy);
                 }
+                else
+                {
+                    _docIdVectors.Add(emptyDocIdVector);
+                }
+            }
 
-                docIdVectors.Add(docIdExtendedVectorCopy);
-            }
-            else
-            {
-                docIdVectors.Add(emptyDocIdVector);
-            }
+            return _docIdVectors;
         }
-
-        return docIdVectors;
     }
 }
 

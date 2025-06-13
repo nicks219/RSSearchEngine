@@ -1,3 +1,4 @@
+using System;
 using SearchEngine.Service.Tokenizer.Dto;
 
 namespace SearchEngine.Service.Tokenizer.Contracts;
@@ -19,6 +20,7 @@ public interface ITokenizerProcessor
     /// </summary>
     /// <param name="words">Разбитый на слова текст.</param>
     /// <returns>Вектор токенов, представляющий текст.</returns>
+    [Obsolete("Используйте TokenizeTextInternal(string text)")]
     public TokenVector TokenizeText(string[] words);
 
     /// <summary>
