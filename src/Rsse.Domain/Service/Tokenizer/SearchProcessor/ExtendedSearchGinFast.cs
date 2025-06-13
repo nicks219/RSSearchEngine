@@ -15,8 +15,8 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
-    private readonly DefaultObjectPool<List<DocIdVector>> _vectorsPool =
-        new(new DefaultPooledObjectPolicy<List<DocIdVector>>());
+    // Не забудь очистить при остановке приложения.
+    private static readonly ThreadLocal<List<DocIdVector>> VectorsStorage = new(() => []);
 
     /// <summary>
     /// Поддержка GIN-индекса.
@@ -39,7 +39,8 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
         var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
 
         // поиск в векторе extended
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
 
         for (var index = 0; index < extendedDocIdVectorSearchSpace.Count; index++)
         {
@@ -66,35 +67,33 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     {
         var emptyDocIdVector = new DocIdVector();
 
-        var docIdVectors = _vectorsPool.Get();
-        try
+        var docIdVectors = VectorsStorage.Value;
+        if (docIdVectors == null)
         {
-            docIdVectors.Clear();
-            foreach (var token in extendedSearchVector)
+            throw new NullReferenceException(
+                $"[{nameof(ExtendedSearchGinFast)}] get null collection from thread local.");
+        }
+
+        docIdVectors.Clear();
+        foreach (var token in extendedSearchVector)
+        {
+            if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
             {
-                if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
+                var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
+                foreach (var docIdVector in docIdVectors)
                 {
-                    var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
-                    foreach (var docIdVector in docIdVectors)
-                    {
-                        docIdExtendedVectorCopy.ToBuilder().ExceptWith(docIdVector);
-                    }
+                    docIdExtendedVectorCopy.ToBuilder().ExceptWith(docIdVector);
+                }
 
-                    docIdVectors.Add(docIdExtendedVectorCopy);
-                }
-                else
-                {
-                    docIdVectors.Add(emptyDocIdVector);
-                }
+                docIdVectors.Add(docIdExtendedVectorCopy);
             }
+            else
+            {
+                docIdVectors.Add(emptyDocIdVector);
+            }
+        }
 
-            return docIdVectors;
-        }
-        finally
-        {
-            // docIdVectors.Clear();
-            _vectorsPool.Return(docIdVectors);
-        }
+        return docIdVectors;
     }
 }
 

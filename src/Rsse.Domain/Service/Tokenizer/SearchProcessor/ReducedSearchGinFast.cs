@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Extensions.ObjectPool;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
@@ -16,8 +15,8 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
-    private readonly DefaultObjectPool<Dictionary<DocId, int>> _scoreStoragePool =
-        new(new DefaultPooledObjectPolicy<Dictionary<DocId, int>>());
+    // Не забудь очистить при остановке приложения.
+    private static readonly ThreadLocal<Dictionary<DocId, int>> ScoresStorage = new(() => []);
 
     /// <summary>
     /// Поддержка GIN-индекса.
@@ -41,39 +40,38 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = _scoreStoragePool.Get();
-        try
+        var comparisonScoresReduced = ScoresStorage.Value;
+        if (comparisonScoresReduced == null)
         {
-            comparisonScoresReduced.Clear();
-            foreach (var token in reducedSearchVector)
-            {
-                if (!GinReduced.TryGetIdentifiers(token, out var ids))
-                {
-                    continue;
-                }
+            throw new NullReferenceException(
+                $"[{nameof(ReducedSearchGinFast)}] get null collection from thread local.");
+        }
 
-                foreach (var docId in ids)
-                {
-                    ref var score =
-                        ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                    ++score;
-                }
+        comparisonScoresReduced.Clear();
+
+        foreach (var token in reducedSearchVector)
+        {
+            if (!GinReduced.TryGetIdentifiers(token, out var ids))
+            {
+                continue;
             }
 
-            // поиск в векторе reduced
-            if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-            foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+            foreach (var docId in ids)
             {
-                var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-                metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+                ref var score =
+                    ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
+                ++score;
             }
         }
-        finally
+
+        // поиск в векторе reduced
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
         {
-            // comparisonScoresReduced.Clear();
-            _scoreStoragePool.Return(comparisonScoresReduced);
+            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
+
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
         }
     }
 }
