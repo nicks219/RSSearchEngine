@@ -16,7 +16,8 @@ public class ReducedSearchProcessorBase : IDisposable
     /// <summary>
     /// Тредлокал для временных reduced-метрик.
     /// </summary>
-    protected static readonly ThreadLocal<Dictionary<DocId, int>> ScoresStorage = new(() => []);
+    protected static readonly ThreadLocal<Dictionary<DocId, int>> ScoresStorage =
+        new(() => new(IExtendedSearchProcessor.StartTempStorageCapacity));
 
     /// <summary>
     /// Фабрика токенизаторов.

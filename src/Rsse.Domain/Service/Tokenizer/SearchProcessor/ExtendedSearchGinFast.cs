@@ -32,7 +32,17 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
+        var extendedDocIdVectorSearchSpace = VectorsStorage.Value;
+        if (extendedDocIdVectorSearchSpace == null)
+        {
+            throw new NullReferenceException(
+                $"[{nameof(ExtendedSearchGinFast)}] get null collection from thread local.");
+        }
+
+        extendedDocIdVectorSearchSpace.Clear();
+        // todo: проверить отличие с установкой ёмкости коллекции в базовом классе
+        extendedDocIdVectorSearchSpace.Capacity = IExtendedSearchProcessor.StartTempStorageCapacity;
+        CreateSearchSpaceFromVector(extendedSearchVector, extendedDocIdVectorSearchSpace);
 
         // поиск в векторе extended
         if (cancellationToken.IsCancellationRequested)
@@ -55,41 +65,34 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     }
 
     /// <summary>
-    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
+    /// Создать список с векторами из GIN ("пространство поиска") на каждый токен вектора поискового запроса.
     /// </summary>
     /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
+    /// <param name="extendedDocIdVectorSearchSpace">Формируемое пространство поиска.</param>
     /// <returns>Список векторов GIN.</returns>
-    private List<DocIdVector> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
+    private void CreateSearchSpaceFromVector(
+        TokenVector extendedSearchVector,
+        List<DocIdVector> extendedDocIdVectorSearchSpace)
     {
         var emptyDocIdVector = new DocIdVector();
 
-        var docIdVectors = VectorsStorage.Value;
-        if (docIdVectors == null)
-        {
-            throw new NullReferenceException(
-                $"[{nameof(ExtendedSearchGinFast)}] get null collection from thread local.");
-        }
-
-        docIdVectors.Clear();
         foreach (var token in extendedSearchVector)
         {
             if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
             {
                 var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
-                foreach (var docIdVector in docIdVectors)
+                foreach (var docIdVector in extendedDocIdVectorSearchSpace)
                 {
                     docIdExtendedVectorCopy.ToBuilder().ExceptWith(docIdVector);
                 }
 
-                docIdVectors.Add(docIdExtendedVectorCopy);
+                extendedDocIdVectorSearchSpace.Add(docIdExtendedVectorCopy);
             }
             else
             {
-                docIdVectors.Add(emptyDocIdVector);
+                extendedDocIdVectorSearchSpace.Add(emptyDocIdVector);
             }
         }
-
-        return docIdVectors;
     }
 }
 

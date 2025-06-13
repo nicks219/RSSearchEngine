@@ -8,6 +8,12 @@ namespace SearchEngine.Service.Tokenizer.Contracts;
 public interface IExtendedSearchProcessor
 {
     /// <summary>
+    /// Размер временных коллекций при инициализации.
+    /// Точное значение заранее неизвестно, начать можно с 1% от общего количества заметок.
+    /// </summary>
+    public const int StartTempStorageCapacity = 500;
+
+    /// <summary>
     /// Выполнить extended поиск, посчитать extended метрики релевантности для поискового запроса, добавить в контейнер с результатом.
     /// </summary>
     /// <param name="text">Текст с поисковым запросом.</param>
