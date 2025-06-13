@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.Extensions.ObjectPool;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
@@ -15,7 +16,8 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedSearchProcessor
 {
-    private readonly Dictionary<DocId, int> _comparisonScoresReduced = [];
+    private readonly DefaultObjectPool<Dictionary<DocId, int>> _comparisonScoresReduced =
+        new(new DefaultPooledObjectPolicy<Dictionary<DocId, int>>());
     private readonly Lock _lock = new();
 
     /// <summary>
@@ -40,9 +42,10 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        lock (_lock)
+        var comparisonScoresReduced = _comparisonScoresReduced.Get();
+        try
         {
-            _comparisonScoresReduced.Clear();
+            comparisonScoresReduced.Clear();
             foreach (var token in reducedSearchVector)
             {
                 if (!GinReduced.TryGetIdentifiers(token, out var ids))
@@ -53,7 +56,7 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
                 foreach (var docId in ids)
                 {
                     ref var score =
-                        ref CollectionsMarshal.GetValueRefOrAddDefault(_comparisonScoresReduced, docId, out _);
+                        ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
                     ++score;
                 }
             }
@@ -61,12 +64,16 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
             // поиск в векторе reduced
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-            foreach (var (docId, comparisonScore) in _comparisonScoresReduced)
+            foreach (var (docId, comparisonScore) in comparisonScoresReduced)
             {
                 var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
 
                 metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
             }
+        }
+        finally
+        {
+            _comparisonScoresReduced.Return(comparisonScoresReduced);
         }
     }
 }
