@@ -13,6 +13,13 @@ internal struct SequenceHashProcessor()
 
     private bool _hasValue;
 
+    private void Reset()
+    {
+        _hash = 0;
+        _tempFactor = Factor;
+        _hasValue = false;
+    }
+
     /// <summary>
     /// Добавить символ к последовательности, по которой вычисляется хэш.
     /// </summary>
@@ -30,7 +37,12 @@ internal struct SequenceHashProcessor()
     /// Получить текущий хэш на добавленную последовательность символов.
     /// </summary>
     /// <returns>Хэш.</returns>
-    public int GetHash() => _hash;
+    public int GetHashAndReset()
+    {
+        var temp = _hash;
+        Reset();
+        return temp;
+    }
 
     /// <summary>
     /// Признак наличия добавленных символов в контейнере.

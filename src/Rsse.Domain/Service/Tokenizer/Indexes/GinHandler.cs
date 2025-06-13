@@ -74,7 +74,7 @@ public sealed class GinHandler
         }
         else
         {
-            docIdVector.Add(id);
+            docIdVector.ToBuilder().Add(id);
         }
     }
 
