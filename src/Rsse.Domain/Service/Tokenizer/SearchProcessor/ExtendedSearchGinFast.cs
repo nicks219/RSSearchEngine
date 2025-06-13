@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.Extensions.ObjectPool;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
@@ -15,9 +14,6 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtendedSearchProcessor
 {
-    // Не забудь очистить при остановке приложения.
-    private static readonly ThreadLocal<List<DocIdVector>> VectorsStorage = new(() => []);
-
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>

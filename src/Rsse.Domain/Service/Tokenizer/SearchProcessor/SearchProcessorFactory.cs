@@ -10,7 +10,7 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Функционал, поставляющий различные алгоритмы вычисления метрик поиска.
 /// Для бенчмарков.
 /// </summary>
-public sealed class SearchProcessorFactory
+public sealed class SearchProcessorFactory : IDisposable
 {
     /// <summary>
     /// Алгоритм поиска текста в extended-векторах и подсчёта расширенной метрики.
@@ -21,6 +21,15 @@ public sealed class SearchProcessorFactory
     /// Алгоритм поиска текста в reduced-векторах и подсчёта сокращенной метрики.
     /// </summary>
     public IReducedSearchProcessor ReducedSearchProcessor { get; }
+
+    /// <summary>
+    /// Закрываем локальные сторы потоков.
+    /// </summary>
+    public void Dispose()
+    {
+        ((ExtendedSearchProcessorBase)ExtendedSearchProcessor).Dispose();
+        ((ReducedSearchProcessorBase)ReducedSearchProcessor).Dispose();
+    }
 
     /// <summary>
     /// Инициализация требуемого типа алгоритма.
