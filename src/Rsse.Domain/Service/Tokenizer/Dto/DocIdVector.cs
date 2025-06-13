@@ -11,7 +11,7 @@ namespace SearchEngine.Service.Tokenizer.Dto;
 public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVector>
 {
     // Коллекция уникальных идентификаторов заметок.
-    private readonly HashSet<DocId> _vector = vector;
+    internal readonly HashSet<DocId> _vector = vector;
 
     /// <summary>
     /// Вызов конструктора без параметров инициализирует вектор пустым токеном.
@@ -47,4 +47,30 @@ public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVect
     /// </summary>
     /// <returns>Копия вектора.</returns>
     internal DocIdVector GetCopyInternal() => new (_vector.ToHashSet());
+
+    public DocIdVectorBuilder ToBuilder() => new(_vector);
+}
+
+public readonly struct DocIdVectorBuilder
+{
+    private readonly HashSet<DocId> _vector;
+
+    internal DocIdVectorBuilder(HashSet<DocId> vector)
+    {
+        _vector = vector;
+    }
+
+    public DocIdVectorBuilder Add(DocId docId)
+    {
+        _vector.Add(docId);
+        return this;
+    }
+
+    public DocIdVectorBuilder ExceptWith(DocIdVector other)
+    {
+        _vector.ExceptWith(other._vector);
+        return this;
+    }
+
+    public DocIdVector Build() => new(_vector);
 }
