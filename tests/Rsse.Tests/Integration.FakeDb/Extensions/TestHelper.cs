@@ -30,7 +30,7 @@ public static class TestHelper
     {
         var fileContent = new ByteArrayContent([0x1, 0x2, 0x3, 0x4]);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
-        var json = new NoteRequest();
+        var json = new NoteRequest { Title = "<unk>", Text = string.Empty };
         var jsonContent = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
         dynamic content = appendFile ? new MultipartFormDataContent() : jsonContent;
         if (appendFile) content.Add(fileContent, "file", "file.txt");
