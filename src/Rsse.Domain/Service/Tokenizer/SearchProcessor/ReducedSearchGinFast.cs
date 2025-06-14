@@ -35,7 +35,7 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = ScoresStorage.Value;
+        var comparisonScoresReduced = ScoresTempStorage.Value;
         if (comparisonScoresReduced == null)
         {
             throw new NullReferenceException(
@@ -68,5 +68,8 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
 
             metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
         }
+
+        // Чистим коллекцию перед выходом из метода.
+        comparisonScoresReduced.Clear();
     }
 }
