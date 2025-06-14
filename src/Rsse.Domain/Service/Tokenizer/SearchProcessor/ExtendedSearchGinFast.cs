@@ -32,7 +32,7 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var extendedDocIdVectorSearchSpace = VectorsStorage.Value;
+        var extendedDocIdVectorSearchSpace = VectorsTempStorage.Value;
         if (extendedDocIdVectorSearchSpace == null)
         {
             throw new NullReferenceException(
@@ -60,6 +60,9 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
                 metricsCalculator.AppendExtended(metric, extendedSearchVector, docId, extendedTokensLine);
             }
         }
+
+        // Чистим коллекцию перед выходом из метода.
+        extendedDocIdVectorSearchSpace.Clear();
 
         return metricsCalculator.ContinueSearching;
     }

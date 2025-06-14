@@ -15,7 +15,7 @@ public abstract class ExtendedSearchProcessorBase : IDisposable
     /// <summary>
     /// Тредлокал для временного extended-пространства поиска.
     /// </summary>
-    protected static readonly ThreadLocal<List<DocIdVector>> VectorsStorage = new(() => []);
+    protected static readonly ThreadLocal<List<DocIdVector>> VectorsTempStorage = new(() => []);
 
     /// <summary>
     /// Фабрика токенизаторов.
@@ -30,5 +30,5 @@ public abstract class ExtendedSearchProcessorBase : IDisposable
     /// <summary>
     /// Закрываем локальный стор потоков.
     /// </summary>
-    public void Dispose() => VectorsStorage.Dispose();
+    public void Dispose() => VectorsTempStorage.Dispose();
 }

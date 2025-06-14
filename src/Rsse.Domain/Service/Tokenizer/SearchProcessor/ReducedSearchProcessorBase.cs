@@ -12,11 +12,10 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// </summary>
 public class ReducedSearchProcessorBase : IDisposable
 {
-    // Не забудь очистить при остановке приложения.
     /// <summary>
     /// Тредлокал для временных reduced-метрик.
     /// </summary>
-    protected static readonly ThreadLocal<Dictionary<DocId, int>> ScoresStorage =
+    protected static readonly ThreadLocal<Dictionary<DocId, int>> ScoresTempStorage =
         new(() => new(IExtendedSearchProcessor.StartTempStorageCapacity));
 
     /// <summary>
@@ -32,5 +31,5 @@ public class ReducedSearchProcessorBase : IDisposable
     /// <summary>
     /// Закрываем локальный стор потоков.
     /// </summary>
-    public void Dispose() => ScoresStorage.Dispose();
+    public void Dispose() => ScoresTempStorage.Dispose();
 }
