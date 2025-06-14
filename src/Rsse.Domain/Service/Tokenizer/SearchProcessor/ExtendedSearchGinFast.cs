@@ -39,7 +39,8 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
                 $"[{nameof(ExtendedSearchGinFast)}] get null collection from thread local.");
         }
 
-        extendedDocIdVectorSearchSpace.Clear();
+        // extendedDocIdVectorSearchSpace.Clear();
+
         // todo: проверить отличие с установкой ёмкости коллекции в базовом классе
         extendedDocIdVectorSearchSpace.Capacity = IExtendedSearchProcessor.StartTempStorageCapacity;
         CreateSearchSpaceFromVector(extendedSearchVector, extendedDocIdVectorSearchSpace);

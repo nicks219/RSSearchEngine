@@ -42,7 +42,7 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
                 $"[{nameof(ReducedSearchGinFast)}] get null collection from thread local.");
         }
 
-        comparisonScoresReduced.Clear();
+        // comparisonScoresReduced.Clear();
 
         foreach (var token in reducedSearchVector)
         {
