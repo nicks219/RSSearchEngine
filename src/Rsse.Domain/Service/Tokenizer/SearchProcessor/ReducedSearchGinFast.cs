@@ -38,9 +38,6 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         var comparisonScoresReduced = TempStoragePool.ScoresTempStorage.Get();
         try
         {
-
-            // comparisonScoresReduced.Clear();
-
             foreach (var token in reducedSearchVector)
             {
                 if (!GinReduced.TryGetIdentifiers(token, out var ids))

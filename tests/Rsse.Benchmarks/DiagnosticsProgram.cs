@@ -98,8 +98,9 @@ public static class DiagnosticsProgram
         stopwatch.Stop();
         var initializeMemory = GC.GetTotalAllocatedBytes();
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | initialize | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
-                          $"memory allocated: {initializeMemory / 1000000:N1} Mb.");
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | initialize | " +
+                          $"elapsed: '{(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4}' sec | " +
+                          $"memory allocated: '{initializeMemory / 1000000:N1}' Mb.");
 
         Console.WriteLine("Runner is ready for warm-up. Press 'enter' to continue.");
         Console.ReadLine();
@@ -149,8 +150,10 @@ public static class DiagnosticsProgram
         stopwatch.Stop();
         var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / requestCount:F4} sec | " +
-                          $"total memory allocated: {iterationsMemory / 1000000:N1} Mb | per request: {iterationsMemory / 1000 / requestCount:N1} Kb.");
+        Console.WriteLine(
+            $"{nameof(TokenizerBenchmarks)} | iterations: '{requestCount}' | total elapsed: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec | " +
+            $"per request: '{(double)stopwatch.ElapsedMilliseconds / 1000 / requestCount:F4}' sec.");
+        Console.WriteLine($"Total memory allocated: '{iterationsMemory / 1000000:N1}' Mb | per request: '{iterationsMemory / 1000 / requestCount:N1}' Kb.");
 
         Console.WriteLine("Press any key to exit.");
         Console.ReadKey();

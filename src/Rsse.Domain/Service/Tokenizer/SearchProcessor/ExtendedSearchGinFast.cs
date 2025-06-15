@@ -35,8 +35,6 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
         var extendedDocIdVectorSearchSpace = TempStoragePool.VectorsTempStorage.Get();
         try
         {
-            // extendedDocIdVectorSearchSpace.Clear();
-
             // todo: проверить отличие с установкой ёмкости коллекции в базовом классе
             extendedDocIdVectorSearchSpace.Capacity = TempStoragePool.StartTempStorageCapacity;
             CreateSearchSpaceFromVector(extendedSearchVector, extendedDocIdVectorSearchSpace);
