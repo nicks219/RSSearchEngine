@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
@@ -18,21 +18,6 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     private static readonly char[] Separators = ['\r', '\n', '\t', ':', '/', '.', ' '];
 
     /// <summary>
-    /// Получить обработанный и разбитый на слова текст.
-    /// </summary>
-    /// <param name="text">Текст в формате строки.</param>
-    /// <returns>Обработанный и разбитый на слова текст.</returns>
-    public static string[] PreProcessTest(string text)
-    {
-        var words = text
-            .ToLower()
-            .Replace('ё', 'е')
-            .Split(Separators, StringSplitOptions.RemoveEmptyEntries);
-
-        return words;
-    }
-
-    /// <summary>
     /// Полный набор символов для токенизации.
     /// </summary>
     protected abstract string ConsonantChain { get; }
@@ -41,30 +26,46 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     public abstract int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0);
 
     /// <inheritdoc/>
-    public TokenVector TokenizeText(string text)
+    public TokenVector TokenizeText(string[] words)
     {
-        var words = PreProcessTest(text);
+        // Вызывается при инициализации индекса.
         var vector = TokenizeTextInternal(words);
         return vector;
     }
 
     /// <inheritdoc/>
-    public TokenVector TokenizeText(string[] words)
+    public TokenVector TokenizeText(string words)
     {
+        // Вызывается на поисковых запросах.
         var vector = TokenizeTextInternal(words);
         return vector;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private TokenVector TokenizeTextInternal(string[] words)
+    private TokenVector TokenizeTextInternal(params string[] words)
     {
-        var tokens = new List<int>(words.Length);
+        var count = words[0].Count(e => e == ' ') + 1;
 
-        foreach (var word in words)
+        var tokens = new List<int>(count);
+        var sequenceHashProcessor = new SequenceHashProcessor();
+
+        foreach (var text in words)
         {
-            var sequenceHashProcessor = new SequenceHashProcessor();
-            foreach (var symbol in word)
+            for (var index = 0; index < text.Length; index++)
             {
+                var symbol = char.ToLower(text[index]);
+                if (symbol == 'ё') symbol = 'е';
+
+                if (Separators.Contains(symbol))
+                {
+                    if (sequenceHashProcessor.HasValue())
+                    {
+                        var hash = sequenceHashProcessor.GetHashAndReset();
+                        tokens.Add(hash);
+                    }
+
+                    continue;
+                }
+
                 if (ConsonantChain.Contains(symbol))
                 {
                     sequenceHashProcessor.AddChar(symbol);
@@ -73,7 +74,7 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
 
             if (sequenceHashProcessor.HasValue())
             {
-                var hash = sequenceHashProcessor.GetHash();
+                var hash = sequenceHashProcessor.GetHashAndReset();
                 tokens.Add(hash);
             }
         }

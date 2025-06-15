@@ -45,6 +45,7 @@ public class CreateController(
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+        if (string.IsNullOrWhiteSpace(request.Title) || request.Text == null) return StatusCode(400);
 
         var noteRequestDto = request.MapToDto();
 

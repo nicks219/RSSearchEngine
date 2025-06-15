@@ -10,16 +10,16 @@ public interface ITokenizerProcessor
     /// <summary>
     /// Обработать и токенизировать текст.
     /// </summary>
-    /// <param name="text">Необработанный текст в формате строки.</param>
+    /// <param name="text">Необработанный текст в формате массива строк.</param>
     /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public TokenVector TokenizeText(string text);
+    public TokenVector TokenizeText(params string[] text);
 
     /// <summary>
-    /// Токенизировать разбитый на слова текст.
+    /// Обработать и токенизировать текст.
     /// </summary>
-    /// <param name="words">Разбитый на слова текст.</param>
-    /// <returns>Вектор токенов, представляющий текст.</returns>
-    public TokenVector TokenizeText(string[] words);
+    /// <param name="words">Необработанный текст в формате строки.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public TokenVector TokenizeText(string words);
 
     /// <summary>
     /// Вычислить метрику сравнения двух векторов.

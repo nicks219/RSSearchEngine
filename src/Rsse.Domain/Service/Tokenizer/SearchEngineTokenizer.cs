@@ -197,18 +197,18 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
     private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
     {
-        var text = note.Text + ' ' + note.Title;
-        var preProcessedText = TokenizerProcessorBase.PreProcessTest(text);
+        if (note.Text == null || note.Title == null)
+            throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
 
         // расширенная эталонная последовательность:
         var extendedProcessor = factory.CreateProcessor(ProcessorType.Extended);
 
-        var extendedTokenLine = extendedProcessor.TokenizeText(preProcessedText);
+        var extendedTokenLine = extendedProcessor.TokenizeText(note.Text, " ", note.Title);
 
         // урезанная эталонная последовательность:
         var reducedProcessor = factory.CreateProcessor(ProcessorType.Reduced);
 
-        var reducedTokenLine = reducedProcessor.TokenizeText(preProcessedText);
+        var reducedTokenLine = reducedProcessor.TokenizeText(note.Text, " ", note.Title);
 
         return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }

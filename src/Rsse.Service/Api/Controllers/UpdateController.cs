@@ -32,6 +32,7 @@ public class UpdateController(
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+        if (string.IsNullOrWhiteSpace(request.Title) || request.Text == null) return StatusCode(400);
 
         var noteRequest = request.MapToDto();
         var noteResultDto = await updateService.UpdateNote(noteRequest, stoppingToken);
