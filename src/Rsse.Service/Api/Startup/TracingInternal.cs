@@ -23,7 +23,11 @@ public static class TracingInternal
         return builder
             .WithTracing(tracerProviderBuilder =>
             {
-                tracerProviderBuilder.AddAspNetCoreInstrumentation();
+                tracerProviderBuilder.AddAspNetCoreInstrumentation(options =>
+                {
+                    options.Filter = context =>
+                        !context.Request.Path.StartsWithSegments("/system");
+                });
 
                 tracerProviderBuilder.ConfigureResource(resourceBuilder =>
                     resourceBuilder.AddService(typeof(Program).Assembly.GetName().Name ?? "rsse"));
