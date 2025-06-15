@@ -31,7 +31,7 @@ public abstract class Constants
     // <summary>Версия API.</summary>
     internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: pre-release 3 | .NET9/React19/PostgreSQL + MySql " +
+    internal const string ApplicationFullName = $"v{ApplicationVersion}: release | .NET9/React19/PostgreSQL + MySql " +
                                                 $"| code-review | Open Telemetry";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
     internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
