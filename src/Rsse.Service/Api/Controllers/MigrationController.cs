@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tooling.Contracts;
+using Serilog;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SearchEngine.Api.Controllers;
@@ -27,6 +29,28 @@ public class MigrationController(
     IDbMigratorFactory migratorFactory,
     ITokenizerService tokenizerService) : ControllerBase
 {
+    /// <summary>
+    /// Залогировать тестовое сообщение с уровнем warning.
+    /// </summary>
+    [HttpGet("/log/warn")]
+    public ActionResult LogWarning()
+    {
+        Log.Warning($"{nameof(MigrationController)} | produce warning log for testing purposes only.");
+        return Ok("Log created.");
+    }
+
+    /// <summary>
+    /// Залогировать тестовое сообщение с уровнем warning.
+    /// </summary>
+    [HttpGet("/log/warn-with-activity")]
+    public ActionResult LogWarningWithActivity()
+    {
+        var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("trace-log-event"));
+        Log.Warning($"{nameof(MigrationController)} | produce warning log with activity for testing purposes only.");
+        return Ok("Span and log created via ActivityEvent");
+    }
+
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>

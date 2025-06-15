@@ -1,7 +1,6 @@
 using System;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SearchEngine.Service.Configuration;
 using Serilog;
@@ -29,8 +28,8 @@ public static class TracingInternal
                         !context.Request.Path.StartsWithSegments("/system");
                 });
 
-                tracerProviderBuilder.ConfigureResource(resourceBuilder =>
-                    resourceBuilder.AddService(typeof(Program).Assembly.GetName().Name ?? "rsse"));
+                // tracerProviderBuilder.ConfigureResource(resourceBuilder =>
+                //    resourceBuilder.AddService(typeof(Program).Assembly.GetName().Name ?? "rsse"));
                 // todo: удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
                 // tracerProviderBuilder.AddConsoleExporter();
 
