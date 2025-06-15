@@ -1,5 +1,5 @@
 ######################################
-FROM node:21-slim AS node-build-env
+FROM node:22-slim AS node-build-env
 WORKDIR /home/node/app
 COPY ./Rsse.Client/ClientApp/*.json ./
 COPY ./Rsse.Client/ClientApp/index.html ./
