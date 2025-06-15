@@ -6,6 +6,8 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Tests.Units.Infra;
 
@@ -15,12 +17,16 @@ public sealed class ServiceProviderStub : IDisposable
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub()
+    public ServiceProviderStub(SearchType searchType = SearchType.Original)
     {
         var services = new ServiceCollection();
 
         services.AddSingleton<IDataRepository, FakeCatalogRepository>();// один набор данных для группы тестов
-        services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
+        services.Configure<CommonBaseOptions>(options =>
+        {
+            options.TokenizerIsEnable = true;
+            options.SearchType = searchType;
+        });
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
 

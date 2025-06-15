@@ -45,7 +45,11 @@ internal class ActivatorService(
                 logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time | {Date}",
                     nameof(ActivatorService), _count.ToString(), currentDateTime);
 
-                await tokenizer.Initialize(stoppingToken);
+                using (var scope = factory.CreateScope())
+                {
+                    var dataProvider = scope.ServiceProvider.GetRequiredService<DbDataProvider>();
+                    await tokenizer.Initialize(dataProvider, stoppingToken);
+                }
 
                 logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
 

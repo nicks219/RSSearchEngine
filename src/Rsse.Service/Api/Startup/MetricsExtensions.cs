@@ -26,7 +26,7 @@ internal static class MetricsExtensions
                 // todo: подумать, стоит ли удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
                 // meterProviderBuilder.AddPrometheusExporter();
 
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName) !=
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
                     Constants.DisableValue)
                 {
                     if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");

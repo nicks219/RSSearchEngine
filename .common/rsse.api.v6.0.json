@@ -641,6 +641,16 @@
         "tags": [
           "Read"
         ],
+        "parameters": [
+          {
+            "name": "electionType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ElectionType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1031,6 +1041,15 @@
         ],
         "type": "string"
       },
+      "ElectionType": {
+        "enum": [
+          "SqlRandom",
+          "Rng",
+          "RoundRobin",
+          "Unique"
+        ],
+        "type": "string"
+      },
       "NoteRequest": {
         "type": "object",
         "properties": {
@@ -1125,8 +1144,8 @@
       "RandomElectionResponse": {
         "type": "object",
         "properties": {
-          "randomElection": {
-            "type": "boolean"
+          "electionType": {
+            "$ref": "#/components/schemas/ElectionType"
           }
         },
         "additionalProperties": false

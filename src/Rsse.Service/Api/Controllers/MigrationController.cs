@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
@@ -21,6 +22,7 @@ namespace SearchEngine.Api.Controllers;
 [Authorize, ApiController]
 [SwaggerTag("[контроллер для работы с данными]")]
 public class MigrationController(
+    DbDataProvider dbDataProvider,
     IHostApplicationLifetime lifetime,
     IDbMigratorFactory migratorFactory,
     ITokenizerService tokenizerService) : ControllerBase
@@ -38,7 +40,7 @@ public class MigrationController(
 
         var mySqlMigrator = migratorFactory.CreateMigrator(DatabaseType.MySql);
         await mySqlMigrator.CopyDbFromMysqlToNpgsql(stoppingToken);
-        await tokenizerService.Initialize(stoppingToken);
+        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = "success" };
         return Ok(response);
     }
@@ -78,7 +80,7 @@ public class MigrationController(
 
         var migrator = migratorFactory.CreateMigrator(databaseType);
         var result = await migrator.Restore(fileName, stoppingToken);
-        await tokenizerService.Initialize(stoppingToken);
+        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = Path.GetFileName(result) };
         return Ok(response);
     }

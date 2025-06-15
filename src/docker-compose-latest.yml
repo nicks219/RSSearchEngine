@@ -1,4 +1,5 @@
 version: "3.7"
+# образ сервиса подтягивается из реджистри
 
 services:
 
@@ -49,6 +50,9 @@ services:
       - default
 
   tagit:
+    # образ билдится при деплое в k3s:
+    # image: nick219nick/rsse-app:latest
+    # образ билдится по тегу `dx.x.x` либо крону:
     image: ghcr.io/nicks219/rssearchengine:latest
     container_name: rsse
     depends_on:

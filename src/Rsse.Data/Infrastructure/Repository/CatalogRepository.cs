@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -46,12 +45,11 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public ConfiguredCancelableAsyncEnumerable<NoteEntity> ReadAllNotes(CancellationToken cancellationToken)
+    public IAsyncEnumerable<NoteEntity> ReadAllNotes()
     {
         var notes = context.Notes
             .AsNoTracking()
-            .AsAsyncEnumerable()
-            .WithCancellation(cancellationToken);
+            .AsAsyncEnumerable();
 
         return notes;
     }
@@ -76,7 +74,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
         //    .Select(s => s.TextInGenreText.TextID);
 
         var noteIds = await context.Notes
-            .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
+            .Where(note => note.RelationEntityReference.Any(relation => checkedTags.Contains(relation.TagId)))
             .Select(note => note.NoteId)
             .ToListAsync(cancellationToken);
 
@@ -88,7 +86,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         return await context.Notes
             .AsNoTracking()
-            .Where(note => note.RelationEntityReference!.Any(relation => checkedTags.Contains(relation.TagId)))
+            .Where(note => note.RelationEntityReference.Any(relation => checkedTags.Contains(relation.TagId)))
             .OrderBy(r => EF.Functions.Random())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
@@ -137,7 +135,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         var tagList = await context.Tags
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new TagResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference!.Count))
+            .Select(tag => new TagResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference.Count))
             .ToListAsync(cancellationToken);
 
         return tagList;
@@ -148,8 +146,8 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     {
         var tagList = await context.Tags
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new TagMarkedResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference!.Count,
-                tag.RelationEntityReference!.Select(t => t.NoteId).Contains(nodeId)))
+            .Select(tag => new TagMarkedResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference.Count,
+                tag.RelationEntityReference.Select(t => t.NoteId).Contains(nodeId)))
             .ToListAsync(cancellationToken);
 
         return tagList;
@@ -166,7 +164,7 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
 
         var noteId = noteRequest.NoteIdExchange;
         var forDelete = await context.TagsToNotesRelation
-            .Where(relation => relation.NoteInRelationEntity!.NoteId == noteId)
+            .Where(relation => relation.NoteInRelationEntity.NoteId == noteId)
             .Select(relation => relation.TagId)
             .ToHashSetAsync(stoppingToken);
 

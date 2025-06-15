@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using SearchEngine.Api.Mapping;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
 
@@ -45,6 +45,7 @@ public class CreateController(
     {
         var stoppingToken = lifetime.ApplicationStopping;
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
+        if (string.IsNullOrWhiteSpace(request.Title) || request.Text == null) return StatusCode(400);
 
         var noteRequestDto = request.MapToDto();
 

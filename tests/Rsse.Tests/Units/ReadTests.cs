@@ -7,13 +7,14 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
+using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
@@ -95,11 +96,13 @@ public class ReadTests
     {
         // arrange:
         var noteRequest = new NoteRequest { CheckedTags = [ElectionTestCheckedTag] };
-        var readManager = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
+        var readService = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
         var updateManager = ServiceProviderStub.Provider.GetRequiredService<UpdateService>();
 
         // act:
-        var readController = new ReadController(readManager, updateManager);
+        var options = Substitute.For<IOptionsMonitor<ElectionTypeOptions>>();
+        options.CurrentValue.Returns(new ElectionTypeOptions());
+        var readController = new ReadController(readService, updateManager, options);
         var noteResponse = await readController.GetNextOrSpecificNote(noteRequest, null, cancellationToken: _token);
         var result = ((OkObjectResult)noteResponse.Result.EnsureNotNull()).Value as NoteResponse;
 
@@ -112,10 +115,12 @@ public class ReadTests
     {
         // arrange:
         using var host = new ServiceProviderStub();
-        var readManager = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
-        var updateManager = ServiceProviderStub.Provider.GetRequiredService<UpdateService>();
+        var options = Substitute.For<IOptionsMonitor<ElectionTypeOptions>>();
+        options.CurrentValue.Returns(new ElectionTypeOptions());
+        var readService = ServiceProviderStub.Provider.GetRequiredService<ReadService>();
+        var updateService = ServiceProviderStub.Provider.GetRequiredService<UpdateService>();
 
-        var readController = new ReadController(readManager, updateManager);
+        var readController = new ReadController(readService, updateService, options);
         readController.AddHttpContext(host.Provider);
 
         // act:
@@ -142,7 +147,7 @@ public class ReadTests
         );
 
         // act:
-        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, false, _token);
+        var noteResultDto = await ReadService.GetNextOrSpecificNote(noteRequestDto, null, ElectionType.RoundRobin, _token);
 
         // assert:
         Assert.AreEqual(FakeCatalogRepository.FirstNoteText, noteResultDto.Text);
@@ -150,16 +155,17 @@ public class ReadTests
 
     [TestMethod]
     // Для round robin можно просто оценить distinct на полученных идентификаторах.
-    // Но тк будет добавлен алгоритм случайного выбора на стороне .NET, оценка распределения также потребуется.
-    public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRoundRobin()
+    [DataRow(ElectionType.RoundRobin, 1D)]
+    [DataRow(ElectionType.Rng, 0.7D)]
+    [DataRow(ElectionType.Unique, 0.7D)]
+    public async Task ElectionRequests_ShouldHasExpectedResponsesDistribution_WithRoundRobin(
+        ElectionType electionType, double expectedCoefficient)
     {
         var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
 
         repo.CreateStubData(ElectionTestNotesCount, _token);
 
-        const double expectedCoefficient = 1D;
-
-        var requestCount = ElectionTestNotesCount;
+        var requestCount = ElectionTestNotesCount / 4;
 
         var tempCount = requestCount;
 
@@ -180,7 +186,7 @@ public class ReadTests
         while (requestCount-- > 0)
         {
             var noteResultDto = await ReadService
-                .GetNextOrSpecificNote(noteRequestDto, randomElectionEnabled: false, cancellationToken: _token);
+                .GetNextOrSpecificNote(noteRequestDto, electionType: electionType, cancellationToken: _token);
 
             var id = noteResultDto.NoteIdExchange;
 

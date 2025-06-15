@@ -1,6 +1,6 @@
 #!/bin/bash
 # черновик, чтоб сохранить идею. как скрипт не проверял.
-# перенеси файлы в одну папку.
+# перенеси файлы в одну папку или напиши helm-чарт.
 
 ## setup paths & filenames environments:
 
@@ -49,9 +49,40 @@ kubectl apply -f $rsse_service
 kubectl create secret tls secret-tls --key=~/"$ssl_private" --cert=~/"$ssl_cert"
 kubectl apply -f $ingress_traefik
 
+
+# traefik по ip
+kubectl apply -f ingress.traefik.ip.yml
+# traefik для notefinder
+kubectl apply -f ingress.traefik.ru.yml
+# postgres
+kubectl apply -f resource.postgres.yml
+# pvc
+kubectl apply -f pvc.k3s.yml
+# сервис rsse
+kubectl apply -f deployment.rsse.pvc.v2.yml
+
+#################
+# Grafana Cloud #
+#################
+
+# secret для otel.collector.metrics: auth.txt содержит строку `Basic base64(username:password)` из grafana cloud
+kubectl create secret generic grafana-auth --from-file=authorization=./auth.txt
+# otel со скрейпингом метрик в формате prometheus (выключен)
+kubectl apply -f otel.collector.metrics.yml
+
+# secret для otel.collector.otlp.v2: id и api-key создаются grafana cloud
+kubectl create secret generic grafana-cloud-api-key --from-file=key=./grafana-cloud-api-key.txt
+kubectl create secret generic grafana-cloud-instance-id --from-file=id=./grafana-cloud-instance-id.txt
+# otel с передачей диагностиков по otlp (активен)
+kubectl apply -f otel.collector.otlp.v2.yml
+
+####################
+# полезные команды #
+####################
+
 # exec to pod
 kubectl get pods
-kubectl exec -it rsse-app-deployment-c9ff5fbd4-fk88h /bin/sh
+kubectl exec -it rsse-app-deployment-c9ff5fbd4-fk88h -- /bin/sh
 
 # copy to host
 kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dump_.txt /root/_db_last_dump_.txt
@@ -59,12 +90,6 @@ kubectl cp rsse-app-deployment-c9ff5fbd4-fk88h:/App/ClientApp/build/_db_last_dum
 # install nano in alpine
 apk update && apk add nano
 вариант: sed -i 's/старый_текст/новый_текст/g' file_name.txt
-
-# secret for otel.collector.metrics: auth.txt содержит строку `Basic base64(username:password)`
-kubectl create secret generic grafana-auth --from-file=authorization=./auth.txt
-# secret for otel.collector.otlp: user и token созданные graphana cloud
-kubectl create secret generic grafana-cloud-api-key --from-file=key=./grafana-cloud-api-key.txt
-kubectl create secret generic grafana-cloud-instance-id --from-file=id=./grafana-cloud-instance-id.txt
 
 # temporary pod for testing purpose
 kubectl run curlpod --rm -i -t --image=curlimages/curl --namespace=default --restart=Never -- sh

@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SearchEngine.Api.Mapping;
+using Microsoft.Extensions.Options;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
+using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
+using Serilog;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -18,20 +20,23 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class ReadController(
     ReadService readService,
-    UpdateService updateService) : ControllerBase
+    UpdateService updateService,
+    IOptionsMonitor<ElectionTypeOptions> electionOptions) : ControllerBase
 {
-    private static bool _randomElection = true;
+    private readonly ElectionTypeOptions _electionTypeOptions = electionOptions.CurrentValue;
 
     /// <summary>
     /// Переключить режим выбора следующей заметки.
     /// </summary>
     [HttpGet(RouteConstants.ReadElectionGetUrl)]
-    public ActionResult<RandomElectionResponse> SwitchNodeElectionMode(CancellationToken cancellationToken)
+    public ActionResult<RandomElectionResponse> SwitchNodeElectionMode(
+        [FromQuery][Required(AllowEmptyStrings = false)] ElectionType electionType,
+        CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 
-        _randomElection = !_randomElection;
-        var response = new RandomElectionResponse(RandomElection: _randomElection);
+        _electionTypeOptions.ElectionType = electionType;
+        var response = new RandomElectionResponse(ElectionType: _electionTypeOptions.ElectionType);
         return Ok(response);
     }
 
@@ -67,9 +72,12 @@ public class ReadController(
     {
         if (cancellationToken.IsCancellationRequested) return StatusCode(503);
 
+        var electionType = _electionTypeOptions.ElectionType;
         var noteRequestDto = request?.MapToDto();
-        var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, _randomElection, cancellationToken);
+        var noteResultDto = await readService.GetNextOrSpecificNote(noteRequestDto, id, electionType, cancellationToken);
         var noteResponse = noteResultDto.MapFromDto();
+
+        Log.Debug("Elected id: {ElectedId}", noteResponse.NoteIdExchange);
         return Ok(noteResponse);
     }
 

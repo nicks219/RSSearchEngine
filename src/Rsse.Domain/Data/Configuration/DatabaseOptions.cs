@@ -1,3 +1,5 @@
+using System;
+
 namespace SearchEngine.Data.Configuration;
 
 /// <summary>
@@ -13,5 +15,6 @@ public class DatabaseOptions
     /// <summary>
     /// Применять ли скрипт с созданием таблиц на миграции для postgres.
     /// </summary>
+    [Obsolete("Не используется.")]
     public bool CreateTablesOnPgMigration { get; init; }
 }

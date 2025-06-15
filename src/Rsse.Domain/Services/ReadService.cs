@@ -50,11 +50,11 @@ public class ReadService(IDataRepository repo)
     /// </summary>
     /// <param name="request">Данные с отмеченными тегами.</param>
     /// <param name="id">Cтрока с идентификатором, если требуется.</param>
-    /// <param name="randomElectionEnabled">Алгоритм выбора следующей заметки, <b>true</b> случайный выбор.</param>
+    /// <param name="electionType">Алгоритм выбора следующей заметки.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Ответ с заметкой.</returns>
     public async Task<NoteResultDto> GetNextOrSpecificNote(NoteRequestDto? request, string? id = null,
-        bool randomElectionEnabled = true, CancellationToken cancellationToken = default)
+        ElectionType electionType = ElectionType.SqlRandom, CancellationToken cancellationToken = default)
     {
         var storedTags = await repo.ReadTags(cancellationToken);
         var enrichedTags = storedTags.Select(t => t.GetEnrichedName()).ToList();
@@ -76,7 +76,7 @@ public class ReadService(IDataRepository repo)
         }
 
         // Выбираем заметку по тегам, средствами SQL.
-        if (randomElectionEnabled)
+        if (electionType == ElectionType.SqlRandom)
         {
             var noteEntity = await repo.GetRandomNoteOrDefault(requestCheckedTags, cancellationToken);
             return noteEntity == null
@@ -84,9 +84,9 @@ public class ReadService(IDataRepository repo)
                 : new NoteResultDto(enrichedTags, noteEntity.NoteId, noteEntity.Text, noteEntity.Title);
         }
 
-        // Выбираем заметку по тегам с round robin.
+        // Выбираем заметку по тегам с round robin или rng.
         var electableNoteIds = await repo.ReadTaggedNotesIds(requestCheckedTags, cancellationToken);
-        var electedNoteId = NoteElector.ElectNextNote(electableNoteIds, randomElectionEnabled: false);
+        var electedNoteId = NoteElector.ElectNextNote(electableNoteIds, electionType: electionType);
 
         return await GetNoteOrEmpty(enrichedTags, electedNoteId, cancellationToken);
     }

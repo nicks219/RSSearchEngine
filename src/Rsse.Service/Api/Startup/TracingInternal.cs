@@ -23,14 +23,18 @@ public static class TracingInternal
         return builder
             .WithTracing(tracerProviderBuilder =>
             {
-                tracerProviderBuilder.AddAspNetCoreInstrumentation();
+                tracerProviderBuilder.AddAspNetCoreInstrumentation(options =>
+                {
+                    options.Filter = context =>
+                        !context.Request.Path.StartsWithSegments("/system");
+                });
 
                 tracerProviderBuilder.ConfigureResource(resourceBuilder =>
                     resourceBuilder.AddService(typeof(Program).Assembly.GetName().Name ?? "rsse"));
                 // todo: удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
                 // tracerProviderBuilder.AddConsoleExporter();
 
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreObservabilityDisableName) !=
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
                     Constants.DisableValue)
                 {
                     if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");

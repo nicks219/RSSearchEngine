@@ -11,8 +11,6 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
-using Serilog.Configuration;
-using Serilog.Sinks.OpenTelemetry;
 
 #if WINDOWS
 var standaloneMode = ClientLauncher.Run(args);

@@ -7,7 +7,7 @@
 
 ## Технологии
 * ```text
-  .NET 9 | MSTest | TS React 19 | Router | Vite | Vitest
+  .NET 9 | TS React 19 | OTLP
   ```    
 * ```text
   PostgreSQL | MySQL | SQLite | EF

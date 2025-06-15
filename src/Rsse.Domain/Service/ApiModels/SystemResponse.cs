@@ -15,5 +15,6 @@ public record SystemResponse
     [property: JsonPropertyName("Version")] string Version,
     [property: JsonPropertyName("DebugBuild")] bool DebugBuild,
     [property: JsonPropertyName("ReaderContext")] DatabaseType ReaderContext,
-    [property: JsonPropertyName("CreateTablesOnPgMigration")] bool CreateTablesOnPgMigration
+    [property: JsonPropertyName("CreateTablesOnPgMigration")] bool CreateTablesOnPgMigration,
+    [property: JsonPropertyName("ElectionType")] string ElectionType
 );

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
+using SearchEngine.Data.Entities;
 
 namespace SearchEngine.Service.Contracts;
 
@@ -20,11 +22,11 @@ public interface ITokenizerService
     public Task Create(int id, TextRequestDto note, CancellationToken stoppingToken);
 
     /// <summary>
-    /// Вычислить индексы соответствия хранимых заметок поисковому запросу.
+    /// Выполнить поиск и вычислить индексы соответствия хранимых заметок поисковому запросу.
     /// </summary>
-    /// <param name="text">Текст для поиска соответствий.</param>
+    /// <param name="text">Поисковый запрос.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Идентификаторы заметок и их индексы соответствия.</returns>
+    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>
@@ -45,8 +47,9 @@ public interface ITokenizerService
     /// <summary>
     /// Инициализация функционала токенизации.
     /// </summary>
+    /// <param name="dataProvider">Поставщик данных с заметками.</param>
     /// <param name="stoppingToken">Токен отмены.</param>
-    public Task Initialize(CancellationToken stoppingToken);
+    public Task Initialize(IDataProvider<NoteEntity> dataProvider, CancellationToken stoppingToken);
 
     /// <summary>
     /// Дождаться освобождения блокировки токенизатора и вернуть значение флага инициализации.

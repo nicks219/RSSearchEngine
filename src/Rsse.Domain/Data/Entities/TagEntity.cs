@@ -29,5 +29,5 @@ public class TagEntity
     /// <summary>
     /// Служебное поле EF для создания связи.
     /// </summary>
-    public ICollection<TagsToNotesEntity>? RelationEntityReference { get; set; }
+    public ICollection<TagsToNotesEntity> RelationEntityReference { get; set; } = null!;
 }

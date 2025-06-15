@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 /// <summary>
 /// Тип процессора токенизации, определяет эталонную цепочку символов и алгоритм их обработки.

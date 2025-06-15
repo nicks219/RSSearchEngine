@@ -1,4 +1,5 @@
 # setup paths & filenames environments:
+```bash
 local deployment_rsse="deployment.yml"
 local service_rsse="service.yml"
 local ingress_traefik="traefik.yml"
@@ -9,8 +10,11 @@ local ssh_public_path="/mnt/c/Users/nick2/.ssh"
 local nginx_bundle="nginx_bundle_a67352573a96.crt"
 local nginx_bundle_path="~/.crt"
 local user_direcory="/usr/share/ca-certificates/comodo"
+```
 
-# rsync: ssh & ssl crt copy, deployment - service - traefik - mysql / yml: (точно копирует отдельные файлы)
+# ssh & ssl crt copy, rsync копирование манифестов deployment, service, traefik, mysql: 
+копирует отдельные файлы
+```bash
 mkdir ~/.ssh
 ssh-copy-id -i /mnt/c/Users/nick2/.ssh/test/test.pub root@82.146.45.180
 rsync -azP -e "ssh -i .ssh/test/test -p 22" .crt/crt-private root@82.146.45.180:~/.crt/crt-private
@@ -22,10 +26,16 @@ rsync -azP -e "ssh -i ~/.ssh/test/test -p 22" ~/traefik.yml root@82.146.45.180:~
 rsync -azP -e "ssh -i ~/.ssh/test/test -p 22" ~/mysql.yml root@82.146.45.180:~/mysql.yml
 
 rsync -azP -e "ssh -i .ssh/test/test -p 22" ~/my-custom.cnf root@82.146.45.180:~/my-custom.cnf
+```
 
-# run cluster: при проблемах авторизации на kubectl эта команда переустановит бинарь сохранив все данные и восстановит работу
+# run/restart cluster: 
+при проблемах авторизации на kubectl команда переустановит бинарь, сохранив все данные, и восстановит работу
+```bash
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san 82.146.45.180" sh -
+```
+
 # проверь:
+```bash
 echo [mysqld]\nbind-address = 0.0.0.0\nport = 3306 > my-custom.cnf
 
 kubectl create namespace mysql-server
@@ -34,7 +44,13 @@ kubectl apply -f mysql.yml
 
 kubectl apply -f deployment.yml
 kubectl apply -f service.yml
+```
 
-# kubectl create secret tls secret-tls --key=/usr/share/ca-certificates/comodo/crt-private --cert=/usr/share/ca-certificates/comodo/nginx_bundle/nginx_bundle_a67352573a96.crt
+# команды деплоя секретов/ингресса:
+```bash
+kubectl create secret tls secret-tls --key=/usr/share/ca-certificates/comodo/crt-private --cert=/usr/share/ca-certificates/comodo/nginx_bundle/nginx_bundle_a67352573a96.crt
+```
+```bash
 kubectl create secret tls secret-tls --key=~/.crt/crt-private --cert=~/.crt/nginx_bundle/nginx_bundle_a67352573a96.crt
 kubectl apply -f traefik.yml
+```

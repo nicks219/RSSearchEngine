@@ -11,7 +11,7 @@ using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
+using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;
@@ -68,7 +68,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
 
@@ -80,12 +80,14 @@ public class TokenizerTests
         tokenLines.ElementAt(0)
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedFirst);
 
         tokenLines.ElementAt(0)
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedFirst);
     }
@@ -96,7 +98,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
 
         // act:
@@ -112,12 +114,14 @@ public class TokenizerTests
         tokenLines.First()
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
         tokenLines.First()
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
@@ -128,7 +132,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ProcessorFactory, options, new NoopLogger<TokenizerService>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // act:
@@ -142,12 +146,14 @@ public class TokenizerTests
         tokenLines.Last()
             .Value
             .Extended
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_extendedSecond);
 
         tokenLines.Last()
             .Value
             .Reduced
+            .ToIntList()
             .Should()
             .BeEquivalentTo(_reducedSecond);
     }
@@ -158,7 +164,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ProcessorFactory, options, new NoopLogger<TokenizerService>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
         var countBefore = tokenLines.Count;
@@ -178,7 +184,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var tokenizer = new TokenizerService(ScopeFactory, ProcessorFactory, options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerService(ProcessorFactory, options, new NoopLogger<TokenizerService>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // init asserts:

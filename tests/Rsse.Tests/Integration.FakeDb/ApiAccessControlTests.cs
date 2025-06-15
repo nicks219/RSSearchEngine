@@ -266,7 +266,7 @@ public class ApiAccessControlTests
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadElectionGetUrl}?electionType=RoundRobin", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable]
     ];
@@ -305,7 +305,7 @@ public class ApiAccessControlTests
         [SystemVersionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [$"{ReadTitleGetUrl}?id=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadTagsGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
-        [ReadElectionGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
+        [$"{ReadElectionGetUrl}?electionType=RoundRobin", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [SystemWaitWarmUpGetUrl, HttpMethod.Get, HttpStatusCode.ServiceUnavailable],
         [ReadNotePostUrl, HttpMethod.Post, HttpStatusCode.ServiceUnavailable],
         [$"{MigrationDownloadGetUrl}?filename=1", HttpMethod.Get, HttpStatusCode.ServiceUnavailable],// 404
@@ -364,19 +364,6 @@ public class ApiAccessControlTests
         // assert:
         statusCode.Should().Be(expected);
     }
-
-    // 400: закрыты [Required(AllowEmptyStrings = false)]
-    // [AccountLoginGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest], // ?email=&password= тож 400
-    // [AccountUpdateGetUrl, HttpMethod.Get, HttpStatusCode.BadRequest]
-    // [DeleteNoteUrl, HttpMethod.Delete, HttpStatusCode.BadRequest]
-    // [CatalogPageGetUrl] [CatalogNavigatePostUrl] [ComplianceIndicesGetUrl]
-    // [MigrationDownloadGetUrl] [ReadTitleGetUrl] [ReadNoteWithTagsForUpdateAuthGetUrl]
-
-    // [CreateNotePostUrl] [UpdateNotePutUrl] [MigrationUploadPostUrl]
-    // - хз как пост и пуи без нагрузки ответят
-
-    // [MigrationCreateGetUrl] [MigrationRestoreGetUrl] [GetNextOrSpecificNote] (подумать)
-    // - не трогаем, на пустой строке завязана логика
 
     public static IEnumerable<object[]> BadRequestTestData =>
     [
