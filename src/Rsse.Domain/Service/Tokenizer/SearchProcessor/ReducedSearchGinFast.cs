@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.Indexes;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
@@ -37,28 +35,42 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = new Dictionary<DocId, int>();
-        foreach (var token in reducedSearchVector)
+        var comparisonScoresReduced = TempStoragePool.ScoresTempStorage.Get();
+        try
         {
-            if (!GinReduced.TryGetIdentifiers(token, out var ids))
+
+            // comparisonScoresReduced.Clear();
+
+            foreach (var token in reducedSearchVector)
             {
-                continue;
+                if (!GinReduced.TryGetIdentifiers(token, out var ids))
+                {
+                    continue;
+                }
+
+                foreach (var docId in ids)
+                {
+                    ref var score =
+                        ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
+                    ++score;
+                }
             }
 
-            foreach (var docId in ids)
+            // поиск в векторе reduced
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+            foreach (var (docId, comparisonScore) in comparisonScoresReduced)
             {
-                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                ++score;
+                var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
+
+                metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
             }
         }
-
-        // поиск в векторе reduced
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+        finally
         {
-            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            // Чистим коллекцию перед возвращением в пул.
+            comparisonScoresReduced.Clear();
+            TempStoragePool.ScoresTempStorage.Return(comparisonScoresReduced);
         }
     }
 }

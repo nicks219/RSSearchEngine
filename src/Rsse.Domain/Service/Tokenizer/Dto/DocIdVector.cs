@@ -14,6 +14,13 @@ public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVect
     private readonly HashSet<DocId> _vector = vector;
 
     /// <summary>
+    /// Вызов конструктора без параметров инициализирует вектор пустым токеном.
+    /// </summary>
+    public DocIdVector() : this([])
+    {
+    }
+
+    /// <summary>
     /// Получить перечислитель для вектора идентификаторов.
     /// </summary>
     /// <returns>Перечислитель.</returns>
@@ -31,13 +38,23 @@ public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVect
 
     public bool Contains(DocId docId) => _vector.Contains(docId);
 
-    internal void Add(DocId docId) => _vector.Add(docId);
-
-    internal void ExceptWith(DocIdVector other) => _vector.ExceptWith(other._vector);
-
     /// <summary>
     /// Получить копию подлежащего сета идентификаторов в виде вектора.
     /// </summary>
     /// <returns>Копия вектора.</returns>
-    internal DocIdVector GetCopyInternal() => new (_vector.ToHashSet());
+    internal DocIdVector GetCopyInternal() => new(_vector.ToHashSet());
+
+    // todo: убрать методы, меняющий состояние вектора.
+
+    /// <summary>
+    /// Добавить идентификатор документа к вектору.
+    /// </summary>
+    /// <param name="docId">Идентификатор документа.</param>
+    internal void Add(DocId docId) => _vector.Add(docId);
+
+    /// <summary>
+    /// Удалить из текущего вектора все элементы второго.
+    /// </summary>
+    /// <param name="other">Вектор, элементы которого удаляются из первого.</param>
+    internal void ExceptWith(DocIdVector other) => _vector.ExceptWith(other._vector);
 }

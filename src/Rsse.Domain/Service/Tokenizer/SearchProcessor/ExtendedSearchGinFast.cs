@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
@@ -33,56 +32,71 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             return false;
         }
 
-        var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
-
-        // поиск в векторе extended
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
-
-        for (var index = 0; index < extendedDocIdVectorSearchSpace.Count; index++)
+        var extendedDocIdVectorSearchSpace = TempStoragePool.VectorsTempStorage.Get();
+        try
         {
-            var docIdVector = extendedDocIdVectorSearchSpace[index];
-            foreach (var docId in docIdVector)
+            // extendedDocIdVectorSearchSpace.Clear();
+
+            // todo: проверить отличие с установкой ёмкости коллекции в базовом классе
+            extendedDocIdVectorSearchSpace.Capacity = TempStoragePool.StartTempStorageCapacity;
+            CreateSearchSpaceFromVector(extendedSearchVector, extendedDocIdVectorSearchSpace);
+
+            // поиск в векторе extended
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
+
+            for (var index = 0; index < extendedDocIdVectorSearchSpace.Count; index++)
             {
-                var tokensLine = GeneralDirectIndex[docId];
-                var extendedTokensLine = tokensLine.Extended;
-                var metric = processor.ComputeComparisonScore(extendedTokensLine, extendedSearchVector, index);
+                var docIdVector = extendedDocIdVectorSearchSpace[index];
+                foreach (var docId in docIdVector)
+                {
+                    var tokensLine = GeneralDirectIndex[docId];
+                    var extendedTokensLine = tokensLine.Extended;
+                    var metric = processor.ComputeComparisonScore(extendedTokensLine, extendedSearchVector, index);
 
-                metricsCalculator.AppendExtended(metric, extendedSearchVector, docId, extendedTokensLine);
+                    metricsCalculator.AppendExtended(metric, extendedSearchVector, docId, extendedTokensLine);
+                }
             }
-        }
 
-        return metricsCalculator.ContinueSearching;
+            return metricsCalculator.ContinueSearching;
+        }
+        finally
+        {
+            // Чистим коллекцию перед возвращением в пул.
+            extendedDocIdVectorSearchSpace.Clear();
+            TempStoragePool.VectorsTempStorage.Return(extendedDocIdVectorSearchSpace);
+        }
     }
 
     /// <summary>
-    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
+    /// Создать список с векторами из GIN ("пространство поиска") на каждый токен вектора поискового запроса.
     /// </summary>
     /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
+    /// <param name="extendedDocIdVectorSearchSpace">Формируемое пространство поиска.</param>
     /// <returns>Список векторов GIN.</returns>
-    private List<DocIdVector> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
+    private void CreateSearchSpaceFromVector(
+        TokenVector extendedSearchVector,
+        List<DocIdVector> extendedDocIdVectorSearchSpace)
     {
-        var emptyDocIdVector = new DocIdVector([]);
-        var docIdVectors = new List<DocIdVector>(extendedSearchVector.Count);
+        var emptyDocIdVector = new DocIdVector();
 
         foreach (var token in extendedSearchVector)
         {
             if (GinExtended.TryGetIdentifiers(token, out var docIdExtendedVector))
             {
                 var docIdExtendedVectorCopy = docIdExtendedVector.GetCopyInternal();
-                foreach (var docIdVector in docIdVectors)
+                foreach (var docIdVector in extendedDocIdVectorSearchSpace)
                 {
                     docIdExtendedVectorCopy.ExceptWith(docIdVector);
                 }
 
-                docIdVectors.Add(docIdExtendedVectorCopy);
+                extendedDocIdVectorSearchSpace.Add(docIdExtendedVectorCopy);
             }
             else
             {
-                docIdVectors.Add(emptyDocIdVector);
+                extendedDocIdVectorSearchSpace.Add(emptyDocIdVector);
             }
         }
-
-        return docIdVectors;
     }
 }
 

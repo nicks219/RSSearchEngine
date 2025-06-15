@@ -78,14 +78,14 @@ public static class DiagnosticsProgram
     /// Запустить код в режиме, пригодном для профилирования.
     /// Запускается инициализация и запросы на RSSE токенайзере.
     /// </summary>
-    private static async Task RunProfiling(bool runRsse = true)
+    private static async Task RunProfiling(bool profileTokenizer = true)
     {
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         var benchmark = new TokenizerBenchmarks();
         var stopwatch = Stopwatch.StartNew();
 
-        switch (runRsse)
+        switch (profileTokenizer)
         {
             case true:
                 await TokenizerBenchmarks.InitializeEngineTokenizer();
@@ -107,7 +107,7 @@ public static class DiagnosticsProgram
 
         for (var i = 0; i < WarmUpIterations; i++)
         {
-            switch (runRsse)
+            switch (profileTokenizer)
             {
                 case true:
                     benchmark.BenchmarkEngineTokenizer();
@@ -123,24 +123,34 @@ public static class DiagnosticsProgram
         Console.ReadLine();
         Console.WriteLine($"'{ProfilerIterations}' iterations starting..");
 
+        // Запросы на поиск запустим асинхронно.
+        var requestCount = ProfilerIterations * 10;
+        var tasks = new Task[requestCount];
         stopwatch.Restart();
-        for (var i = 0; i < ProfilerIterations; i++)
+        for (var i = 0; i < requestCount; i++)
         {
-            switch (runRsse)
+            switch (profileTokenizer)
             {
                 case true:
-                    benchmark.BenchmarkEngineTokenizer();
+                    tasks[i] = new Task(() => benchmark.BenchmarkEngineTokenizer());
                     break;
                 default:
-                    benchmark.BenchmarkLucene();
+                    tasks[i] = new Task(() => benchmark.BenchmarkLucene());
                     break;
             }
         }
+
+        for (var i = 0; i < requestCount; i++)
+        {
+            tasks[i].Start();
+        }
+        await Task.WhenAll(tasks);
+
         stopwatch.Stop();
         var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
-                          $"memory allocated: {iterationsMemory / 1000000:N1} Mb.");
+        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / requestCount:F4} sec | " +
+                          $"total memory allocated: {iterationsMemory / 1000000:N1} Mb | per request: {iterationsMemory / 1000 / requestCount:N1} Kb.");
 
         Console.WriteLine("Press any key to exit.");
         Console.ReadKey();
