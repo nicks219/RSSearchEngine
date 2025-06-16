@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
-using static SearchEngine.Benchmarks.Common.Constants;
+using static SearchEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks;
+namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на Tokenizer.
@@ -21,7 +20,7 @@ public class TokenizerBenchmark : IBenchmarkRunner
     static TokenizerBenchmark()
     {
         var processorFactory = new TokenizerProcessorFactory();
-        Tokenizer = new SearchEngineTokenizer(processorFactory, SearchType.GinFast);
+        Tokenizer = new SearchEngineTokenizer(processorFactory, TokenizerSearchType);
     }
 
     [GlobalSetup]
@@ -41,7 +40,7 @@ public class TokenizerBenchmark : IBenchmarkRunner
         var results = Tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
         if (results.Count == 0)
         {
-            Console.WriteLine("TOKENIZER: EMPTY RESULTS");
+            Console.WriteLine("[Tokenizer] empty result");
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
@@ -59,6 +58,6 @@ public class TokenizerBenchmark : IBenchmarkRunner
 
         var dataProvider = new FileDataProvider();
         var result = await Tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
-        Console.WriteLine($"[{nameof(SearchEngineTokenizer)}] initialized '{result:N0}' vectors");
+        Console.WriteLine($"[{nameof(SearchEngineTokenizer)}] initialized '{result:N0}' vectors.");
     }
 }

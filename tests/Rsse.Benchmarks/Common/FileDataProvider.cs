@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Entities;
-using static SearchEngine.Benchmarks.Common.Constants;
+using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Common;
 

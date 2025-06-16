@@ -21,16 +21,14 @@
     <ProjectReference Include="..\..\src\Rsse.Domain\Rsse.Domain.csproj" />
   </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <None Update="pg_backup_.txtnotes">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
-
+  <ItemGroup>
+    <None Update="pg_backup_.txtnotes">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

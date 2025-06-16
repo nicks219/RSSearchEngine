@@ -5,7 +5,8 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using static SearchEngine.Benchmarks.Common.Constants;
+using SearchEngine.Benchmarks.Performance;
+using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks;
 
@@ -30,7 +31,9 @@ public static class DiagnosticsProgram
         if (args.Length != 1)
         {
             Console.WriteLine($"[{nameof(DiagnosticsProgram)}] invalid args, usage: <bench>|<profile>");
-            Environment.Exit(1);
+            Console.WriteLine("Run benchmarks...");
+            RunBenchmarks();
+            Environment.Exit(0);
         }
 
         var arg = args[0];
@@ -58,7 +61,6 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunBenchmarks)}] starting..");
 
         // Запуск бенчмарков с возможностью дебага, либо без неё.
-        // Job.ShortRun запустит бенчмарки в отдельных процессах.
         var config = Debugger.IsAttached
             ? new DebugInProcessConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
             : DefaultConfig.Instance
@@ -78,24 +80,27 @@ public static class DiagnosticsProgram
     /// </summary>
     private static async Task RunProfiling(bool runTokenizerBenchmarks = true)
     {
+        // Шаг для инициализации.
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks
             ? new TokenizerBenchmark()
             : new LuceneBenchmark();
+
         var stopwatch = Stopwatch.StartNew();
-
         await benchmarkRunner.Initialize();
-
         stopwatch.Stop();
+
         var initializeMemory = GC.GetTotalAllocatedBytes();
 
         Console.WriteLine($"[{nameof(RunProfiling)}] | initialize | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
                           $"memory allocated: {initializeMemory / 1000000:N1} Mb.");
 
-        Console.WriteLine("Runner is ready for warm-up. Press 'enter' to continue.");
-        Console.ReadLine();
-        Console.WriteLine("Warm-up starting..");
+        // Шаг для прогрева.
+        Console.WriteLine("---");
+        Console.WriteLine("Runner is ready for warm-up. Press any key to continue.");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine($"[{nameof(RunProfiling)}] | '{WarmUpIterations}' warm-up iterations starting..");
 
         for (var i = 0; i < WarmUpIterations; i++)
         {
@@ -104,9 +109,11 @@ public static class DiagnosticsProgram
 
         var warmupMemory = GC.GetTotalAllocatedBytes();
 
-        Console.WriteLine("Runner is ready for profiling. Press 'enter' to continue.");
-        Console.ReadLine();
-        Console.WriteLine($"[{nameof(RunProfiling)}] | '{ProfilerIterations}' iterations starting..");
+        // Шаг для профилирования.
+        Console.WriteLine("---");
+        Console.WriteLine("Runner is ready for profiling. Press any key to continue.");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine($"[{nameof(RunProfiling)}] | '{ProfilerIterations}' profiling iterations starting..");
 
         stopwatch.Restart();
         for (var i = 0; i < ProfilerIterations; i++)
@@ -122,7 +129,8 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunProfiling)}] | total memory allocated: '{iterationsMemory / 1000000:N1}' Mb.");
         Console.WriteLine($"[{nameof(RunProfiling)}] | memory allocated per request: '{iterationsMemory / 1000 / ProfilerIterations:N1}' Kb.");
 
-        Console.WriteLine("Press any key to exit.");
-        Console.ReadKey();
+        Console.WriteLine("---");
+        Console.WriteLine("Execution completed, press any key to exit.");
+        Console.ReadKey(intercept: true);
     }
 }

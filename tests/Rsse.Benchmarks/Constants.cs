@@ -1,4 +1,6 @@
-namespace SearchEngine.Benchmarks.Common;
+using SearchEngine.Service.Tokenizer.SearchProcessor;
+
+namespace SearchEngine.Benchmarks;
 
 /// <summary>
 /// Общие константы для бенчмарков.
@@ -13,12 +15,17 @@ public abstract class Constants
     /// <summary>
     /// Количество запусков в рамках профилирования.
     /// </summary>
-    internal const int ProfilerIterations = 5;
+    internal const int ProfilerIterations = 1000;
 
     /// <summary>
     /// Количество запусков в рамках прогрева.
     /// </summary>
-    internal const int WarmUpIterations = 1;
+    internal const int WarmUpIterations = 10;
+
+    /// <summary>
+    /// Измеряемый алгоритм токенизатора.
+    /// </summary>
+    internal const SearchType TokenizerSearchType = SearchType.GinFast;
 
     /// <summary>
     /// Константа с поисковым запросом.

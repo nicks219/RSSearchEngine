@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
-using static SearchEngine.Benchmarks.Common.Constants;
+using static SearchEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks;
+namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на Lucene.
@@ -32,7 +32,7 @@ public class LuceneBenchmark : IBenchmarkRunner
 
         if (result.Count == 0)
         {
-            Console.WriteLine("LUCENE: EMPTY RESULTS");
+            Console.WriteLine("[Lucene] empty result");
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkLucene)}] found: {result.Count}");

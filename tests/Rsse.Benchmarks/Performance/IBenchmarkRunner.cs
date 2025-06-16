@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace SearchEngine.Benchmarks;
+namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Контракт компонента с бенчмарками.
