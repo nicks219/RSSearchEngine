@@ -77,6 +77,11 @@ data:
             statements:
               - set(attributes["deployment.environment"], resource.attributes["deployment.environment"])
               - set(attributes["service.version"], resource.attributes["service.version"])
+      attributes/rename_trace_id:
+        actions:
+          - key: trace_id
+            new_key: traceID
+            action: update
 
       k8sattributes:
         extract:
@@ -135,6 +140,7 @@ data:
               k8sattributes,
               transform/drop_unneeded_resource_attributes,
               transform/add_resource_attributes_as_metric_attributes,
+              attributes/rename_trace_id,
               batch,
             ]
           exporters: [otlphttp/grafana_cloud]

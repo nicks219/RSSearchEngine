@@ -29,7 +29,8 @@ public static class TracingInternal
 
                 if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
 
-                tracerProviderBuilder.AddAspNetCoreInstrumentation(options =>
+                tracerProviderBuilder
+                    .AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments("/system");
