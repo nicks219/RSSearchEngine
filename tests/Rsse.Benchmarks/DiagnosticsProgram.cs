@@ -64,7 +64,7 @@ public static class DiagnosticsProgram
         var config = Debugger.IsAttached
             ? new DebugInProcessConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
             : DefaultConfig.Instance
-                .WithOptions(ConfigOptions.DisableOptimizationsValidator)
+                .WithOptions(ConfigOptions.DisableOptimizationsValidator | ConfigOptions.JoinSummary)
                 .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
