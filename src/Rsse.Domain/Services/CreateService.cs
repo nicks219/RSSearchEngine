@@ -14,6 +14,9 @@ namespace SearchEngine.Services;
 /// </summary>
 public partial class CreateService(IDataRepository repo)
 {
+    [GeneratedRegex(@"\[(.+?)\]", RegexOptions.Compiled)]
+    private static partial Regex TitleRegex();
+
     // \[([^\[\]]+)\]
     private static readonly Regex TitlePattern = TitleRegex();
 
@@ -95,6 +98,4 @@ public partial class CreateService(IDataRepository repo)
 
         await repo.CreateTagIfNotExists(tag, stoppingToken);
     }
-    [GeneratedRegex(@"\[(.+?)\]", RegexOptions.Compiled)]
-    private static partial Regex TitleRegex();
 }

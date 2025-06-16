@@ -1,7 +1,6 @@
 using System;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SearchEngine.Service.Configuration;
 using Serilog;
@@ -23,28 +22,25 @@ public static class TracingInternal
         return builder
             .WithTracing(tracerProviderBuilder =>
             {
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) == Constants.DisableValue)
+                {
+                    return;
+                }
+
                 tracerProviderBuilder.AddAspNetCoreInstrumentation(options =>
                 {
                     options.Filter = context =>
                         !context.Request.Path.StartsWithSegments("/system");
                 });
 
-                tracerProviderBuilder.ConfigureResource(resourceBuilder =>
-                    resourceBuilder.AddService(typeof(Program).Assembly.GetName().Name ?? "rsse"));
-                // todo: удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
-                // tracerProviderBuilder.AddConsoleExporter();
+                if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
 
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
-                    Constants.DisableValue)
+                tracerProviderBuilder.AddOtlpExporter(options =>
                 {
-                    if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
-                    tracerProviderBuilder.AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri(otlpEndpoint);
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                    });
-                    Log.ForContext<Startup>().Information("OTLP exporter for tracing was added");
-                }
+                    options.Endpoint = new Uri(otlpEndpoint);
+                    options.Protocol = OtlpExportProtocol.Grpc;
+                });
+                Log.ForContext<Startup>().Information("OTLP exporter for tracing was added");
             });
     }
 }

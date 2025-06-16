@@ -1,16 +1,20 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Resources;
+using SearchEngine.Api.Logger;
 using SearchEngine.Api.Startup;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
 #if WINDOWS
 var standaloneMode = ClientLauncher.Run(args);
@@ -50,9 +54,29 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile($"appsettings.{env}.json", true)
     .Build();
 
+var resourceAttributes = ResourceBuilder
+    .CreateDefault()
+    .AddService(serviceName: Constants.ServiceName,
+        serviceNamespace: Constants.ServiceNamespace,
+        serviceVersion: Constants.ApplicationVersion)
+    .Build().Attributes.ToDictionary();
+
+var otlpEndpoint = configuration.GetValue<string>("Otlp:Endpoint");
+if (string.IsNullOrEmpty(otlpEndpoint))
+{
+    throw new Exception("Otlp:Endpoint not found.");
+}
+
 Log.Logger = new LoggerConfiguration()
+    .Enrich.With<ActivityEnricher>()
     .ReadFrom
     .Configuration(configuration)
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpEndpoint;
+        options.Protocol = OtlpProtocol.Grpc;
+        options.ResourceAttributes = resourceAttributes;
+    })
     .CreateLogger();
 
 Log.ForContext<Program>().Information("Starting web host");

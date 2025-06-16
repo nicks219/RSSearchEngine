@@ -42,8 +42,8 @@
     </ItemGroup>
     <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
       <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-      <PackageReference Include="OpenTelemetry.Exporter.Console" />
-      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
+      <!-- <PackageReference Include="OpenTelemetry.Exporter.Console" /> -->
+      <!-- <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" /> -->
     </ItemGroup>
 
     <ItemGroup>

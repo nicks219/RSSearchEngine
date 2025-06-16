@@ -26,13 +26,18 @@ public abstract class Constants
     // <summary/> Расширение для архива дампа postgres.
     internal const string PostgresDumpArchiveName = "dump.zip";
 
+    // <summary>Метаданные: именование сервиса.</summary>
+    internal const string ServiceName = "rsse-app";
+    // <summary>Метаданные: именование неймспейса сервиса.</summary>
+    internal const string ServiceNamespace = "rsse-group";
+
     // <summary>Версия приложения.</summary>
     internal const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     // <summary>Версия API.</summary>
     internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: pre-release 3 | .NET9/React19/PostgreSQL + MySql " +
-                                                $"| code-review | Open Telemetry";
+    internal const string ApplicationFullName = $"v{ApplicationVersion}: release | .NET9/React19/PostgreSQL + MySql " +
+                                                $"| code-review | Open Telemetry.";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
     internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>

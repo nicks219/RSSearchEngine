@@ -23,20 +23,19 @@ internal static class MetricsExtensions
         return builder
             .WithMetrics(meterProviderBuilder =>
             {
-                // todo: подумать, стоит ли удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
-                // meterProviderBuilder.AddPrometheusExporter();
-
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) ==
                     Constants.DisableValue)
                 {
-                    if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
-                    meterProviderBuilder.AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri(otlpEndpoint);
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                        Log.ForContext<Startup>().Information("OTLP exporter for metrics was added");
-                    });
+                    return;
                 }
+
+                if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
+                meterProviderBuilder.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(otlpEndpoint);
+                    options.Protocol = OtlpExportProtocol.Grpc;
+                    Log.ForContext<Startup>().Information("OTLP exporter for metrics was added");
+                });
 
                 // kestrel_connection_duration_seconds_bucket
                 // Microsoft.AspNetCore.Server.Kestrel: 0.01 , 0.02 , 0.05 , 0.1 , 0.2 , 0.5 , 1 , 2 , 5 , 10 , 30 , 60 , 120 , 300
@@ -67,4 +66,3 @@ internal static class MetricsExtensions
     }
 }
 #endif
-

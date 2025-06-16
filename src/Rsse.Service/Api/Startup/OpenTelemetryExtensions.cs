@@ -29,15 +29,13 @@ internal static class OpenTelemetryExtensions
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 // далее service name оверрайдится на Rsse.Service
-                .AddService(serviceName: "rsse-app",
-                    serviceNamespace: "rsse-group",
+                .AddService(serviceName: Constants.ServiceName,
+                    serviceNamespace: Constants.ServiceNamespace,
                     serviceVersion: Constants.ApplicationVersion,
                     serviceInstanceId: podName
                     // autoGenerateServiceInstanceId: true
-                    )
-                .AddAttributes([
-                    new KeyValuePair<string, object>("deployment.environment", "production")
-                ]))
+                )
+                .AddAttributes([new KeyValuePair<string, object>("deployment.environment", "production")]))
             .WithTracingInternal(otlpEndpoint)
             .WithMetricsInternal(otlpEndpoint);
     }
