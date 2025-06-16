@@ -1,79 +1,82 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Authors>nick219</Authors>
-        <Company>nick219</Company>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <RootNamespace>SearchEngine</RootNamespace>
-        <ServerGarbageCollection>true</ServerGarbageCollection>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Authors>nick219</Authors>
+    <Company>nick219</Company>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>SearchEngine</RootNamespace>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
 
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <PublishSingleFile>true</PublishSingleFile>
-        <SelfContained>true</SelfContained>
-    </PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
 
-    <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
-    <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
+  <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
+  <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
      <DebugType>none</DebugType>
-    </PropertyGroup>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(EnableTelemetry)' != 'False' ">
-      <DefineConstants>$(DefineConstants);TRACING_ENABLE</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="MySqlBackup.NET" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-        <PackageReference Include="Swashbuckle.AspNetCore" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+  <PropertyGroup Condition=" '$(EnableTelemetry)' != 'False' ">
+    <DefineConstants>$(DefineConstants);TRACING_ENABLE</DefineConstants>
+  </PropertyGroup>
 
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-    </ItemGroup>
-    <ItemGroup Label="Observability">
-      <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-      <PackageReference Include="Serilog.AspNetCore" />
-      <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
-    </ItemGroup>
-    <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
-      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-      <!-- <PackageReference Include="OpenTelemetry.Exporter.Console" /> -->
-      <!-- <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" /> -->
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MySqlBackup.NET" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 
-    <ItemGroup>
-     <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
-      <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
-    </ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+  </ItemGroup>
+
+  <ItemGroup Label="Observability">
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
+  </ItemGroup>
+
+  <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <!-- <PackageReference Include="OpenTelemetry.Exporter.Console" /> -->
+    <!-- <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
+    <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+  </ItemGroup>
 
   <PropertyGroup>
     <CustomSolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'ReducedSetSearchEngineService.sln'))\</CustomSolutionDir>
   </PropertyGroup>
 
-    <PropertyGroup>
-      <RsseDomainDll>$(CustomSolutionDir)src\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
-      <Generator>$(CustomSolutionDir)src\Rsse.Generator\Rsse.Generator.csproj</Generator>
-    </PropertyGroup>
+  <PropertyGroup>
+    <RsseDomainDll>$(CustomSolutionDir)src\Rsse.Domain\bin\$(Configuration)\$(TargetFramework)\Rsse.Domain.dll</RsseDomainDll>
+    <Generator>$(CustomSolutionDir)src\Rsse.Generator\Rsse.Generator.csproj</Generator>
+  </PropertyGroup>
 
-    <!-- генерация констант -->
-    <Target Name="GenerateConstants" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true'">
-      <Message Text="Generating constants using $(Generator) for $(RsseDomainDll)" Importance="high" />
-      <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Service.Configuration.RouteConstants $(CustomSolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx"
-            ConsoleToMsBuild="true"
-            IgnoreExitCode="true" >
-          <Output TaskParameter="ConsoleOutput" PropertyName="GeneratorOutput" />
-          <Output TaskParameter="ExitCode" PropertyName="GeneratorExitCode" />
-      </Exec>
-      <Error Text="$(GeneratorOutput)" Condition="'$(GeneratorExitCode)' != '0'" />
-    </Target>
+  <!-- генерация констант -->
+  <Target Name="GenerateConstants" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true'">
+    <Message Text="Generating constants using $(Generator) for $(RsseDomainDll)" Importance="high" />
+    <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Service.Configuration.RouteConstants $(CustomSolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx"
+          ConsoleToMsBuild="true"
+          IgnoreExitCode="true" >
+      <Output TaskParameter="ConsoleOutput" PropertyName="GeneratorOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="GeneratorExitCode" />
+    </Exec>
+    <Error Text="$(GeneratorOutput)" Condition="'$(GeneratorExitCode)' != '0'" />
+  </Target>
 
-    <ItemGroup>
-      <Folder Include="ClientApp\build\dump\" />
-    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ClientApp\build\dump\" />
+  </ItemGroup>
 
 </Project>

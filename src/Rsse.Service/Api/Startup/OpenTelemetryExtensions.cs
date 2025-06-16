@@ -33,7 +33,7 @@ internal static class OpenTelemetryExtensions
                     serviceNamespace: Constants.ServiceNamespace,
                     serviceVersion: Constants.ApplicationVersion,
                     serviceInstanceId: podName
-                    // autoGenerateServiceInstanceId: true
+                // autoGenerateServiceInstanceId: true
                 )
                 .AddAttributes([new KeyValuePair<string, object>("deployment.environment", "production")]))
             .WithTracingInternal(otlpEndpoint)

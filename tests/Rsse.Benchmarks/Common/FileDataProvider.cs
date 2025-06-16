@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Entities;
+using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Common;
 
@@ -13,12 +14,12 @@ namespace SearchEngine.Benchmarks.Common;
 /// </summary>
 public sealed class FileDataProvider : IDataProvider<NoteEntity>
 {
-    // Данные дублируются DiagnosticsProgram.ProfilerIterations раз.
+    // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
     {
         Console.OutputEncoding = Encoding.UTF8;
-        var notes = new List<NoteEntity>(DiagnosticsProgram.ProfilerIterations);
+        var notes = new List<NoteEntity>(InitialDataMultiplier);
 
         await using var fileStream = File.OpenRead("pg_backup_.txtnotes");
         using var reader = new StreamReader(fileStream);
@@ -42,7 +43,7 @@ public sealed class FileDataProvider : IDataProvider<NoteEntity>
         }
 
         var counter = 0;
-        for (var i = 0; i < DiagnosticsProgram.ProfilerIterations; i++)
+        for (var i = 0; i < InitialDataMultiplier; i++)
         {
             foreach (var noteEntity in notes.Select(entity =>
                          new NoteEntity
