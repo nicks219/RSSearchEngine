@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Services;
+using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
@@ -30,14 +33,29 @@ public class MigrationController(
     ITokenizerService tokenizerService) : ControllerBase
 {
     /// <summary>
-    /// Залогировать тестовое сообщение с уровнем warning.
+    /// Залогировать тестовое сообщение с уровнем warning и отдать метрику.
     /// </summary>
-    [HttpGet("/log/warn-with-activity")]
-    public ActionResult LogWarningWithActivity()
+    [HttpGet("/observabilty/report")]
+    public ActionResult ReportTestDataWithMetrics()
     {
         var activity = Activity.Current;
         activity?.AddEvent(new ActivityEvent("trace-log-event"));
-        Log.Warning($"{nameof(MigrationController)} | produce warning log with activity for testing purposes only.");
+        MetricsExtensions.HistogramWithExemplar.Record(1D);
+        Log.Warning(
+            $"{nameof(ReportTestDataWithMetrics)} | produce warning log with activity and histogram for testing purposes only.");
+        return Ok("Span, log and histogram created via ActivityEvent");
+    }
+
+    /// <summary>
+    /// Залогировать тестовое сообщение с уровнем warning.
+    /// </summary>
+    [HttpGet("/observabilty/report-without-metrcis")]
+    public ActionResult ReportTestDataWithoutMetrics()
+    {
+        var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("trace-log-event"));
+        Log.Warning(
+            $"{nameof(ReportTestDataWithoutMetrics)} | produce warning log with activity for testing purposes only.");
         return Ok("Span and log created via ActivityEvent");
     }
 

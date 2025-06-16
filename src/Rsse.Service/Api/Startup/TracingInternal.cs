@@ -27,19 +27,21 @@ public static class TracingInternal
                     return;
                 }
 
-                tracerProviderBuilder.AddAspNetCoreInstrumentation(options =>
-                {
-                    options.Filter = context =>
-                        !context.Request.Path.StartsWithSegments("/system");
-                });
-
                 if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
 
-                tracerProviderBuilder.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri(otlpEndpoint);
-                    options.Protocol = OtlpExportProtocol.Grpc;
-                });
+                tracerProviderBuilder
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.Filter = context =>
+                            !context.Request.Path.StartsWithSegments("/system");
+                    })
+                    .AddSource("Npgsql")
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(otlpEndpoint);
+                        options.Protocol = OtlpExportProtocol.Grpc;
+                    });
+
                 Log.ForContext<Startup>().Information("OTLP exporter for tracing was added");
             });
     }

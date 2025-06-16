@@ -77,6 +77,14 @@ data:
             statements:
               - set(attributes["deployment.environment"], resource.attributes["deployment.environment"])
               - set(attributes["service.version"], resource.attributes["service.version"])
+      # бесполезно, на уровне процессоров не сработает
+      #attributes/rename_trace_id:
+      #  actions:
+      #    - key: traceID
+      #      from_attribute: trace_id
+      #      action: insert
+      #    - key: trace_id
+      #      action: delete
 
       k8sattributes:
         extract:
@@ -103,6 +111,8 @@ data:
         endpoint: "${env:GRAFANA_CLOUD_OTLP_ENDPOINT}"
         auth:
           authenticator: basicauth/grafana_cloud
+      #debug:
+      #  verbosity: detailed
 
     extensions:
       basicauth/grafana_cloud:
@@ -135,9 +145,11 @@ data:
               k8sattributes,
               transform/drop_unneeded_resource_attributes,
               transform/add_resource_attributes_as_metric_attributes,
+              #attributes/rename_trace_id,
               batch,
             ]
           exporters: [otlphttp/grafana_cloud]
+          #exporters: [debug]
         metrics/grafanacloud:
           receivers: [grafanacloud]
           processors: [batch]

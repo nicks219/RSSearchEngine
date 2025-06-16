@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,10 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.With<ActivityEnricher>()
     .ReadFrom
     .Configuration(configuration)
+    .Filter.ByExcluding(log =>
+        log.Properties.ContainsKey("RequestPath") &&
+        (log.Properties["RequestPath"].ToString().StartsWith("\"/system")
+     || log.Properties["RequestPath"].ToString().StartsWith("\"/v6/account")))
     .WriteTo.OpenTelemetry(options =>
     {
         options.Endpoint = otlpEndpoint;
