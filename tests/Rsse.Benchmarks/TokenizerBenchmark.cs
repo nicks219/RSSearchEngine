@@ -5,20 +5,20 @@ using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
+using static SearchEngine.Benchmarks.Common.Constants;
 
 namespace SearchEngine.Benchmarks;
 
+/// <summary>
+/// Инициализация и бенчмарк на Tokenizer.
+/// </summary>
 [MinColumn]
-public class TokenizerBenchmarks
+public class TokenizerBenchmark : IBenchmarkRunner
 {
     private static readonly SearchEngineTokenizer Tokenizer;
-
-    // private const string Text = "пляшем на столе за детей";
-    private const string Text = "преключиться вдруг верный друг";
-    // private const string Text = "приключится вдруг верный друг";
     private static bool _isInitialized;
 
-    static TokenizerBenchmarks()
+    static TokenizerBenchmark()
     {
         var processorFactory = new TokenizerProcessorFactory();
         Tokenizer = new SearchEngineTokenizer(processorFactory, SearchType.GinFast);
@@ -29,16 +29,16 @@ public class TokenizerBenchmarks
     {
         if (_isInitialized) return;
         _isInitialized = true;
+        Console.WriteLine($"[{nameof(TokenizerBenchmark)}] initializing..");
 
         await InitializeEngineTokenizer();
-
-        await InitializeLucene();
     }
 
+    /// <inheritdoc/>
     [Benchmark]
-    public void BenchmarkEngineTokenizer()
+    public void RunBenchmark()
     {
-        var results = Tokenizer.ComputeComplianceIndices(Text, CancellationToken.None);
+        var results = Tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
         if (results.Count == 0)
         {
             Console.WriteLine("TOKENIZER: EMPTY RESULTS");
@@ -47,37 +47,18 @@ public class TokenizerBenchmarks
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
     }
 
-    [Benchmark]
-    public void BenchmarkLucene()
-    {
-        var result = LuceneWrapper.Find(Text);
-
-        if (result.Count == 0)
-        {
-            Console.WriteLine("LUCENE: EMPTY RESULTS");
-        }
-
-        // Console.WriteLine($"[{nameof(BenchmarkLucene)}] found: {result.Count}");
-    }
+    /// <inheritdoc/>
+    public Task Initialize() => InitializeEngineTokenizer();
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
     /// </summary>
-    internal static async Task InitializeEngineTokenizer()
+    private static async Task InitializeEngineTokenizer()
     {
         Console.WriteLine($"[{nameof(SearchEngineTokenizer)}] initializing..");
 
         var dataProvider = new FileDataProvider();
         var result = await Tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
         Console.WriteLine($"[{nameof(SearchEngineTokenizer)}] initialized '{result:N0}' vectors");
-    }
-
-    /// <summary>
-    /// Инициализировать Lucene.
-    /// </summary>
-    internal static async Task InitializeLucene()
-    {
-        Console.WriteLine($"[{nameof(LuceneWrapper)}] initializing..");
-        await LuceneWrapper.InitializeAsync();
     }
 }

@@ -5,6 +5,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using static SearchEngine.Benchmarks.Common.Constants;
 
 namespace SearchEngine.Benchmarks;
 
@@ -13,9 +14,6 @@ namespace SearchEngine.Benchmarks;
 /// </summary>
 public static class DiagnosticsProgram
 {
-    internal const int ProfilerIterations = 50;
-    private const int WarmUpIterations = 1;
-
     /// <summary>
     /// Выбор между режимами измерения и профилирования производительности.
     /// </summary>
@@ -65,40 +63,34 @@ public static class DiagnosticsProgram
             ? new DebugInProcessConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
             : DefaultConfig.Instance
                 .WithOptions(ConfigOptions.DisableOptimizationsValidator)
-                .AddJob(Job.InProcess
+                .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
-                    .WithIterationCount(3))
+                    .WithIterationCount(10))
                 .AddDiagnoser(MemoryDiagnoser.Default);
 
-        BenchmarkRunner.Run<TokenizerBenchmarks>(config);
+        BenchmarkRunner.Run([typeof(TokenizerBenchmark), typeof(LuceneBenchmark)], config);
     }
 
     /// <summary>
     /// Запустить код в режиме, пригодном для профилирования.
     /// Запускается инициализация и запросы на RSSE токенайзере.
     /// </summary>
-    private static async Task RunProfiling(bool runRsse = true)
+    private static async Task RunProfiling(bool runTokenizerBenchmarks = true)
     {
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
-        var benchmark = new TokenizerBenchmarks();
+        IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks
+            ? new TokenizerBenchmark()
+            : new LuceneBenchmark();
         var stopwatch = Stopwatch.StartNew();
 
-        switch (runRsse)
-        {
-            case true:
-                await TokenizerBenchmarks.InitializeEngineTokenizer();
-                break;
-            default:
-                await TokenizerBenchmarks.InitializeLucene();
-                break;
-        }
+        await benchmarkRunner.Initialize();
 
         stopwatch.Stop();
         var initializeMemory = GC.GetTotalAllocatedBytes();
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | initialize | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
+        Console.WriteLine($"[{nameof(RunProfiling)}] | initialize | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
                           $"memory allocated: {initializeMemory / 1000000:N1} Mb.");
 
         Console.WriteLine("Runner is ready for warm-up. Press 'enter' to continue.");
@@ -107,40 +99,28 @@ public static class DiagnosticsProgram
 
         for (var i = 0; i < WarmUpIterations; i++)
         {
-            switch (runRsse)
-            {
-                case true:
-                    benchmark.BenchmarkEngineTokenizer();
-                    break;
-                default:
-                    benchmark.BenchmarkLucene();
-                    break;
-            }
+            benchmarkRunner.RunBenchmark();
         }
+
         var warmupMemory = GC.GetTotalAllocatedBytes();
 
         Console.WriteLine("Runner is ready for profiling. Press 'enter' to continue.");
         Console.ReadLine();
-        Console.WriteLine($"'{ProfilerIterations}' iterations starting..");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | '{ProfilerIterations}' iterations starting..");
 
         stopwatch.Restart();
         for (var i = 0; i < ProfilerIterations; i++)
         {
-            switch (runRsse)
-            {
-                case true:
-                    benchmark.BenchmarkEngineTokenizer();
-                    break;
-                default:
-                    benchmark.BenchmarkLucene();
-                    break;
-            }
+            benchmarkRunner.RunBenchmark();
         }
         stopwatch.Stop();
+
         var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;
 
-        Console.WriteLine($"{nameof(TokenizerBenchmarks)} | iterations | elapsed: {(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4} sec | " +
-                          $"memory allocated: {iterationsMemory / 1000000:N1} Mb.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | elapsed total: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | elapsed per request: '{(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4}' sec.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | total memory allocated: '{iterationsMemory / 1000000:N1}' Mb.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | memory allocated per request: '{iterationsMemory / 1000 / ProfilerIterations:N1}' Kb.");
 
         Console.WriteLine("Press any key to exit.");
         Console.ReadKey();

@@ -39,5 +39,5 @@ public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVect
     /// Получить копию подлежащего сета идентификаторов в виде вектора.
     /// </summary>
     /// <returns>Копия вектора.</returns>
-    internal DocIdVector GetCopyInternal() => new (_vector.ToHashSet());
+    internal DocIdVector GetCopyInternal() => new(_vector.ToHashSet());
 }
