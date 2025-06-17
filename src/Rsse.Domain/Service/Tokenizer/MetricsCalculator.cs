@@ -72,4 +72,27 @@ public sealed class MetricsCalculator
             ComplianceMetrics.TryAdd(docId, comparisonScore * (1D / reducedTargetVectorCount));
         }
     }
+
+    /// <summary>
+    /// Добавить метрики для нечеткого поиска.
+    /// </summary>
+    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
+    /// <param name="reducedSearchVector">Вектор с поисковым запросом.</param>
+    /// <param name="docId">Идентификатор, полученный при поиске.</param>
+    /// <param name="reducedTargetVectorCount">Количество токенов в reduced-векторе на котором производился поиск.</param>
+    public void AppendReduced(int comparisonScore, TokenVector reducedSearchVector, DocId docId, TokenVector reducedTargetVectorCount)
+    {
+        // III. 100% совпадение по reduced
+        if (comparisonScore == reducedSearchVector.Count)
+        {
+            ComplianceMetrics.TryAdd(docId, comparisonScore * (10D / reducedTargetVectorCount.Count));
+            return;
+        }
+
+        // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
+        if (comparisonScore >= reducedSearchVector.Count * ReducedCoefficient)
+        {
+            ComplianceMetrics.TryAdd(docId, comparisonScore * (1D / reducedTargetVectorCount.Count));
+        }
+    }
 }
