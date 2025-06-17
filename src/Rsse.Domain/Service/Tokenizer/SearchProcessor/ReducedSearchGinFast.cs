@@ -41,39 +41,58 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         var maxScore = reducedSearchVector.Count;
         var threshold = (int)(maxScore * MetricsCalculator.ReducedCoefficient) + 1;
 
-        var comparisonScoresReduced = new Dictionary<DocId, int>();
+        var comparisonScoresReduced = TempStoragePool.ScoresTempStorage.Get();
 
-        var vector = new List<DocIdVector>();
-        foreach (var token in reducedSearchVector._vector)
+        try
         {
-            if (!GinReduced.TryGetIdentifiers(new Token(token), out var ids))
+            var idsFromGin = new List<DocIdVector>();
+            foreach (var token in reducedSearchVector)
             {
-                continue;
+                if (!GinReduced.TryGetIdentifiers(token, out var ids))
+                {
+                    continue;
+                }
+
+                idsFromGin.Add(ids);
             }
 
-            vector.Add(ids);
-        }
+            if (idsFromGin.Count == 0) return;
 
-        //vector = vector.OrderBy(t => t._vector.Count).ToList();
+            idsFromGin = idsFromGin.OrderBy(docIdVector => docIdVector.Count).ToList();
 
-        for (var index = 0; index < vector.Count - 1; index++)
-        {
-            foreach (var docId in vector[index])
+            var lastIndex = idsFromGin.Count - 1;
+            for (var index = 0; index < lastIndex; index++)
             {
-                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                ++score;
+                foreach (var docId in idsFromGin[index])
+                {
+                    ref var score =
+                        ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
+                    ++score;
+                }
             }
-        }
 
-        for (var index = vector.Count - 1; index < vector.Count; index++)
-        {
-            foreach (var docId in vector[index])
+            // Отдаём метрику на самый тяжелый токен поискового запроса.
+            // for (var index = vector.Count - 1; index < vector.Count; index++)
+            foreach (var docId in idsFromGin[lastIndex])
             {
                 comparisonScoresReduced.Remove(docId, out var comparisonScore);
                 ++comparisonScore;
 
-                if (comparisonScore == reducedSearchVector.Count ||
-                    comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
+                // if (comparisonScore == reducedSearchVector.Count || comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
+                if (comparisonScore >= threshold)
+                {
+                    var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
+
+                    metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+                }
+            }
+
+            // Поиск в векторе reduced без учета самого тяжелого токена.
+            if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+            foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+            {
+                // if (comparisonScore == reducedSearchVector.Count || comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
+                if (comparisonScore >= threshold)
                 {
                     var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
 
@@ -81,44 +100,10 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
                 }
             }
         }
-
-        // поиск в векторе reduced
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-        // с сортировкой: 4550 | без сортировки: 4550 - 0.0035..36 610 кб
-        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+        finally
         {
-            if (comparisonScore == reducedSearchVector.Count ||
-                comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
-            {
-                var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-                metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
-            }
+            comparisonScoresReduced.Clear();
+            TempStoragePool.ScoresTempStorage.Return(comparisonScoresReduced);
         }
-
-        comparisonScoresReduced.Clear();
     }
 }
-
-// --- --- ---
-/*if (docTokenMatchCounts.TryGetValue(docId, out var existing))
-{
-    docTokenMatchCounts[docId] = existing + 1;
-}
-else if (pendingDocTokenCounts.TryGetValue(docId, out var temp))
-{
-    temp++;
-    if (temp == threshold)
-    {
-        pendingDocTokenCounts.Remove(docId);
-        docTokenMatchCounts[docId] = threshold;
-    }
-    else
-    {
-        pendingDocTokenCounts[docId] = temp;
-    }
-}
-else
-{
-    pendingDocTokenCounts[docId] = 1;
-}*/

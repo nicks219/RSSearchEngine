@@ -11,7 +11,7 @@ namespace SearchEngine.Service.Tokenizer.Dto;
 public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
 {
     // Токенизированная заметка.
-    internal readonly List<int> _vector = vector;
+    private readonly List<int> _vector = vector;
 
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.

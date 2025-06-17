@@ -11,7 +11,12 @@ namespace SearchEngine.Service.Tokenizer.Dto;
 public readonly struct DocIdVector(HashSet<DocId> vector) : IEquatable<DocIdVector>
 {
     // Коллекция уникальных идентификаторов заметок.
-    internal readonly HashSet<DocId> _vector = vector;
+    private readonly HashSet<DocId> _vector = vector;
+
+    /// <summary>
+    /// Получить количество токенов, содержащихся в векторе.
+    /// </summary>
+    public int Count => _vector.Count;
 
     /// <summary>
     /// Получить перечислитель для вектора идентификаторов.
