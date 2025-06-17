@@ -37,7 +37,6 @@ public sealed class ReducedSearchGin : ReducedSearchProcessorBase, IReducedSearc
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGin));
         foreach (var (docId, tokenLine) in GeneralDirectIndex)
         {
-            var reducedTargetVector = tokenLine.Reduced;
             var comparisonScore = 0;
             foreach (var token in reducedSearchVector)
             {
@@ -47,7 +46,8 @@ public sealed class ReducedSearchGin : ReducedSearchProcessorBase, IReducedSearc
                 }
             }
 
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            var reducedTargetVectorCount = tokenLine.Reduced.Count;
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVectorCount);
         }
     }
 }

@@ -37,7 +37,11 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = new Dictionary<DocId, int>();
+        var docTokenMatchCounts = new Dictionary<DocId, int>();
+        var pendingDocTokenCounts = new Dictionary<DocId, int>();
+        var maxScore = reducedSearchVector.Count;
+        var threshold = (int)(maxScore * MetricsCalculator.ReducedCoefficient) + 1;
+
         foreach (var token in reducedSearchVector)
         {
             if (!GinReduced.TryGetIdentifiers(token, out var ids))
@@ -47,24 +51,49 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
 
             foreach (var docId in ids)
             {
-                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                ++score;
+                // ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(docTokenMatchCounts, docId, out _);
+                // ++score;
+
+                // Можно сделать, чтобы 'tempScores' хранил только невостребованные значения, но условие получится сложное.
+                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(pendingDocTokenCounts, docId, out _);
+                score++;
+
+                if (score == threshold)
+                {
+                    // До определенного порога очки всё равно будут отброшены при расчете метрики в 'AppendReduced'.
+                    docTokenMatchCounts[docId] = score;
+                    continue;
+                }
+
+                if (score == maxScore)
+                {
+                    // Максимальный результат вносим сразу в метрику, минуя 'docTokenMatchCounts'.
+                    metricsCalculator.AppendReduced(score, reducedSearchVector, docId, GeneralDirectIndex[docId].Reduced.Count);
+                    continue;
+                }
+
+                if (score > threshold)
+                {
+                    // Сохраняем результат в диапазоне [threshold, maxScore).
+                    docTokenMatchCounts[docId]++;
+                }
             }
         }
 
         // поиск в векторе reduced
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-        var threshold = (int)(reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient) + 1;
-        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+        foreach (var (docId, comparisonScore) in docTokenMatchCounts)
         {
-            if (comparisonScore < threshold)
-            {
-                continue;
-            }
+            // Вместо этого условия будем собирать в словарь только необходимые данные.
+            // if (comparisonScore < threshold)
+            // {
+            //    continue;
+            // }
 
-            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
+            // выглядит так, что direct reduced-вектор в этом алгоритме вообще не нужен, нужен только его count.
+            var reducedTargetVectorCount = GeneralDirectIndex[docId].Reduced.Count;
 
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVectorCount);
         }
     }
 }
