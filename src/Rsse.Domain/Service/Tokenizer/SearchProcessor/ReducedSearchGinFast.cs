@@ -97,3 +97,26 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         }
     }
 }
+
+// --- --- ---
+/*if (docTokenMatchCounts.TryGetValue(docId, out var existing))
+{
+    docTokenMatchCounts[docId] = existing + 1;
+}
+else if (pendingDocTokenCounts.TryGetValue(docId, out var temp))
+{
+    temp++;
+    if (temp == threshold)
+    {
+        pendingDocTokenCounts.Remove(docId);
+        docTokenMatchCounts[docId] = threshold;
+    }
+    else
+    {
+        pendingDocTokenCounts[docId] = temp;
+    }
+}
+else
+{
+    pendingDocTokenCounts[docId] = 1;
+}*/
