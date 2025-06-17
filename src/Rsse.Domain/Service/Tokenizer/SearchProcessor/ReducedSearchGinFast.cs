@@ -54,8 +54,14 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
 
         // поиск в векторе reduced
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+        var threshold = (int)(reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient) + 1;
         foreach (var (docId, comparisonScore) in comparisonScoresReduced)
         {
+            if (comparisonScore < threshold)
+            {
+                continue;
+            }
+
             var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
 
             metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
