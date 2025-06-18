@@ -1,5 +1,6 @@
 #if TRACING_ENABLE
 using System;
+using System.Diagnostics.Metrics;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
@@ -13,6 +14,10 @@ namespace SearchEngine.Api.Startup;
 /// </summary>
 internal static class MetricsExtensions
 {
+    private static readonly Meter CustomMeter = new("exemplar.metrics", "1.0.0");
+    internal static readonly Histogram<double> HistogramWithExemplar =
+        CustomMeter.CreateHistogram<double>("http.server.duration_with_trace");
+
     /// <summary>
     /// Добавить функционал поставки метрик.
     /// </summary>
@@ -33,7 +38,7 @@ internal static class MetricsExtensions
                 // kestrel_connection_duration_seconds_bucket
                 // Microsoft.AspNetCore.Server.Kestrel: [0.01 , 0.02 , 0.05 , 0.1 , 0.2 , 0.5 , 1 , 2 , 5 , 10 , 30 , 60 , 120 , 300]
                 meterProviderBuilder
-                    .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel")
+                    .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "exemplar.metrics")
                     .AddView("http.server.request.duration",
                         new ExplicitBucketHistogramConfiguration
                         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Services;
+using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
@@ -32,13 +34,15 @@ public class MigrationController(
     /// <summary>
     /// Залогировать тестовое сообщение с уровнем warning.
     /// </summary>
-    [HttpGet("/log/warn-with-activity")]
-    public ActionResult LogWarningWithActivity()
+    [HttpGet("/observabilty/report")]
+    public ActionResult ReportTestData()
     {
         var activity = Activity.Current;
         activity?.AddEvent(new ActivityEvent("trace-log-event"));
+        MetricsExtensions.HistogramWithExemplar.Record(1D,
+            new KeyValuePair<string, object?>("traceID", activity?.TraceId.ToString() ?? "no-trace"));
         Log.Warning($"{nameof(MigrationController)} | produce warning log with activity for testing purposes only.");
-        return Ok("Span and log created via ActivityEvent");
+        return Ok("Span, log and histogram created via ActivityEvent");
     }
 
     /// <summary>
