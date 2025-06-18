@@ -35,6 +35,7 @@ public static class TracingInternal
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments("/system");
                     })
+                    .AddSource("Npgsql")
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);

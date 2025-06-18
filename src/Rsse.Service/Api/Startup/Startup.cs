@@ -210,6 +210,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 next.Response.ContentType = "text/plain";
                 await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
             }).RequireAuthorization();
+            endpoints.MapPrometheusScrapingEndpoint();
             endpoints.MapControllers();
 
 #if TRACING_ENABLE

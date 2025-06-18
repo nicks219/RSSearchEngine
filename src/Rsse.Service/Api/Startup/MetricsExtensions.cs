@@ -15,8 +15,14 @@ namespace SearchEngine.Api.Startup;
 internal static class MetricsExtensions
 {
     private static readonly Meter CustomMeter = new("exemplar.metrics", "1.0.0");
+    private const string HistogramWithExemplarName = "http.server.duration_with_trace";
     internal static readonly Histogram<double> HistogramWithExemplar =
-        CustomMeter.CreateHistogram<double>("http.server.duration_with_trace");
+        CustomMeter.CreateHistogram<double>(HistogramWithExemplarName);
+
+    private static readonly ExplicitBucketHistogramConfiguration CustomBuckets = new()
+    {
+        Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+    };
 
     /// <summary>
     /// Добавить функционал поставки метрик.
@@ -39,12 +45,10 @@ internal static class MetricsExtensions
                 // Microsoft.AspNetCore.Server.Kestrel: [0.01 , 0.02 , 0.05 , 0.1 , 0.2 , 0.5 , 1 , 2 , 5 , 10 , 30 , 60 , 120 , 300]
                 meterProviderBuilder
                     .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "exemplar.metrics")
-                    .AddView("http.server.request.duration",
-                        new ExplicitBucketHistogramConfiguration
-                        {
-                            Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
-                        })
+                    .AddView("http.server.request.duration", CustomBuckets)
+                    .AddView(HistogramWithExemplarName, CustomBuckets)
                     .SetExemplarFilter(ExemplarFilterType.TraceBased)
+                    .AddPrometheusExporter()
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);

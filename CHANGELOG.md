@@ -178,8 +178,22 @@
 * `k6.0.1`
   * upd: связь трейсов и логов - настройка OTLP-экспортера Serilog через код | энричер с идентификаторами
 * `k6.0.2`
+  * upd: добавлен сорс Npgsql к трассам (на проверке)
   * upd: связь метрик и трейсов через exemplar (на проверке)
-    * выборка из exemplar в атрибут traceID с помощью процессоров otel невозможна, добавляем кастомный лейбл
+    * выборка из exemplar в атрибут traceID с помощью процессоров otel невозможна (проверено)
+    * добавление кастомного лейбла приведет к высокой кардинальности и, похоже, бесполезен (не проверено)
+    * следует попробовать отправить метрики в формате open metrics (идея)
+    ```yaml
+    exporters:
+    prometheusremotewrite/grafana_cloud:
+    endpoint: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
+    headers:
+    Authorization: Basic <base64(api_key)>
+    send_exemplars: true
+    ```
+    ```yaml
+    exporters: [prometheusremotewrite/grafana_cloud]
+    ```
 
 ---
   * [ ] уменьшить время выполнения запросов на получение тегов с количеством заметок
