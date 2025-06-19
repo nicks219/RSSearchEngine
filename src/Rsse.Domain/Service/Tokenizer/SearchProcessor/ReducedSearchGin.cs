@@ -46,8 +46,7 @@ public sealed class ReducedSearchGin : ReducedSearchProcessorBase, IReducedSearc
                 }
             }
 
-            var reducedTargetVector = tokenLine.Reduced;
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, GeneralDirectIndex);
         }
     }
 }

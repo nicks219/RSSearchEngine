@@ -58,9 +58,7 @@ public sealed class ReducedSearchGinOptimized : ReducedSearchProcessorBase, IRed
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
         foreach (var (docId, comparisonScore) in comparisonScoresReduced)
         {
-            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, GeneralDirectIndex);
         }
     }
 }

@@ -38,9 +38,6 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
         reducedSearchVector = reducedSearchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var maxScore = reducedSearchVector.Count;
-        var threshold = (int)(maxScore * MetricsCalculator.ReducedCoefficient) + 1;
-
         var comparisonScoresReduced = TempStoragePool.ScoresTempStorage.Get();
 
         try
@@ -72,32 +69,19 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase, IReducedS
             }
 
             // Отдаём метрику на самый тяжелый токен поискового запроса.
-            // for (var index = vector.Count - 1; index < vector.Count; index++)
             foreach (var docId in idsFromGin[lastIndex])
             {
                 comparisonScoresReduced.Remove(docId, out var comparisonScore);
                 ++comparisonScore;
 
-                // if (comparisonScore == reducedSearchVector.Count || comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
-                if (comparisonScore >= threshold)
-                {
-                    var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-                    metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
-                }
+                metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, GeneralDirectIndex);
             }
 
             // Поиск в векторе reduced без учета самого тяжелого токена.
             if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
             foreach (var (docId, comparisonScore) in comparisonScoresReduced)
             {
-                // if (comparisonScore == reducedSearchVector.Count || comparisonScore >= reducedSearchVector.Count * MetricsCalculator.ReducedCoefficient)
-                if (comparisonScore >= threshold)
-                {
-                    var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-                    metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
-                }
+                metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, GeneralDirectIndex);
             }
         }
         finally

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SearchEngine.Service.Tokenizer.Dto;
 
@@ -56,12 +57,17 @@ public sealed class MetricsCalculator
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
     /// <param name="reducedSearchVector">Вектор с поисковым запросом.</param>
     /// <param name="docId">Идентификатор, полученный при поиске.</param>
-    /// <param name="reducedTargetVector">Количество токенов в reduced-векторе на котором производился поиск.</param>
-    public void AppendReduced(int comparisonScore, TokenVector reducedSearchVector, DocId docId, TokenVector reducedTargetVector)
+    /// <param name="generalDirectIndex">Индекс по идентификаторам.</param>
+    public void AppendReduced(
+        int comparisonScore,
+        TokenVector reducedSearchVector,
+        DocId docId,
+        ConcurrentDictionary<DocId, TokenLine> generalDirectIndex)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == reducedSearchVector.Count)
         {
+            var reducedTargetVector = generalDirectIndex[docId].Reduced;
             ComplianceMetrics.TryAdd(docId, comparisonScore * (10D / reducedTargetVector.Count));
             return;
         }
@@ -69,6 +75,7 @@ public sealed class MetricsCalculator
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
         if (comparisonScore >= reducedSearchVector.Count * ReducedCoefficient)
         {
+            var reducedTargetVector = generalDirectIndex[docId].Reduced;
             ComplianceMetrics.TryAdd(docId, comparisonScore * (1D / reducedTargetVector.Count));
         }
     }

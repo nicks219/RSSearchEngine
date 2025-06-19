@@ -33,7 +33,7 @@ public sealed class ReducedSearch : ReducedSearchProcessorBase, IReducedSearchPr
             var reducedTargetVector = tokenLine.Reduced;
             var comparisonScore = processor.ComputeComparisonScore(reducedTargetVector, reducedSearchVector);
 
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, GeneralDirectIndex);
         }
     }
 }
