@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -184,6 +185,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         app.UseRouting();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
+        app.UseMiddleware<SetActivityStatusMiddleware>();
 
         app.UseCors(Constants.DevelopmentCorsPolicy);
 
@@ -192,6 +194,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseAuthorization();
 
         app.UseRateLimiter();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHealthChecks("/system/live",
@@ -210,6 +213,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 next.Response.ContentType = "text/plain";
                 await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
             }).RequireAuthorization();
+            // endpoints.MapPrometheusScrapingEndpoint();
             endpoints.MapControllers();
 
 #if TRACING_ENABLE
