@@ -1,4 +1,4 @@
-using SearchEngine.Service.Tokenizer.Dto;
+using Rsse.Search.Dto;
 
 namespace SearchEngine.Service.Tokenizer.Contracts;
 
@@ -20,13 +20,4 @@ public interface ITokenizerProcessor
     /// <param name="words">Необработанный текст в формате строки.</param>
     /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
     public TokenVector TokenizeText(string words);
-
-    /// <summary>
-    /// Вычислить метрику сравнения двух векторов.
-    /// </summary>
-    /// <param name="targetVector">Вектор, в котором ищем.</param>
-    /// <param name="searchVector">Вектор, который ищем.</param>
-    /// <param name="searchStartIndex">Позиция, с которой следует начинать анализ по вектору с поисковым запросом.</param>
-    /// <returns>Метрика количества совпадений.</returns>
-    public int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0);
 }

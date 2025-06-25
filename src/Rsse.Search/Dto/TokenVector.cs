@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SearchEngine.Service.Tokenizer.Dto;
+namespace Rsse.Search.Dto;
 
 /// <summary>
 /// Вектор из хэшей, представляющий собой токенизированную заметку.
@@ -60,14 +60,21 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     /// </summary>
     /// <param name="index">Индекс.</param>
     /// <returns>Токен в виде хэша.</returns>
-    internal int ElementAt(uint index) => _vector[(int)index];
+    public int ElementAt(uint index) => _vector[(int)index];
 
     /// <summary>
     /// Получить копию вектора как коллекцию хэшей.
     /// Для целей тестирования.
     /// </summary>
     /// <returns>Коллекция хэшей.</returns>
-    internal List<int> ToIntList() => _vector.ToList();
+    public List<int> ToIntList() => _vector.ToList();
+
+    public HashSet<Token> Intersect(TokenVector tokenVector)
+    {
+        return _vector.Intersect(tokenVector._vector)
+            .Select(token => new Token(token))
+            .ToHashSet();
+    }
 
     /// <summary>
     /// Перечислитель для вектора.

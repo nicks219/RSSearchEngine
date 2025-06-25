@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Rsse.Search.Dto;
+using Rsse.Search.Indexes;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -10,7 +12,6 @@ using SearchEngine.Exceptions;
 using SearchEngine.Service.Mapping;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
-using SearchEngine.Service.Tokenizer.Indexes;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
@@ -22,9 +23,9 @@ namespace SearchEngine.Service.Tokenizer;
 public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly ConcurrentDictionary<DocId, TokenLine> _generalDirectIndex;
-    private readonly GinHandler? _ginExtended;
-    private readonly GinHandler? _ginReduced;
+    private readonly ConcurrentDictionary<DocumentId, TokenLine> _generalDirectIndex;
+    private readonly GinHandler<DocumentIdSet>? _ginExtended;
+    private readonly GinHandler<DocumentIdSet>? _ginReduced;
     private readonly SearchProcessorFactory _searchProcessorFactory;
     private readonly SearchType _searchType;
 
@@ -44,14 +45,14 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         ITokenizerProcessorFactory tokenizerProcessorFactory,
         SearchType searchType = SearchType.Original)
     {
-        _generalDirectIndex = new ConcurrentDictionary<DocId, TokenLine>();
+        _generalDirectIndex = new ConcurrentDictionary<DocumentId, TokenLine>();
         _tokenizerProcessorFactory = tokenizerProcessorFactory;
         _searchType = searchType;
 
         if (_searchType != SearchType.Original)
         {
-            _ginExtended = new GinHandler();
-            _ginReduced = new GinHandler();
+            _ginExtended = new GinHandler<DocumentIdSet>();
+            _ginReduced = new GinHandler<DocumentIdSet>();
         }
 
         _searchProcessorFactory = new SearchProcessorFactory(
@@ -63,13 +64,13 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _generalDirectIndex;
+    internal ConcurrentDictionary<DocumentId, TokenLine> GetTokenLines() => _generalDirectIndex;
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
     {
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
-        var docId = new DocId(id);
+        var docId = new DocumentId(id);
         var removed = _generalDirectIndex.TryRemove(docId, out _);
 
         return removed;
@@ -82,7 +83,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var createdTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
 
-        var docId = new DocId(id);
+        var docId = new DocumentId(id);
         var created = _generalDirectIndex.TryAdd(docId, createdTokenLine);
 
         return created;
@@ -95,7 +96,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var updatedTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
 
-        var docId = new DocId(id);
+        var docId = new DocumentId(id);
         if (!_generalDirectIndex.TryGetValue(docId, out var existedLine))
         {
             return false;
@@ -130,14 +131,14 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
                 if (_searchType != SearchType.Original)
                 {
-                    var noteDocId = new DocId(note.NoteId);
+                    var noteDocId = new DocumentId(note.NoteId);
                     var extendedVector = tokenLine.Extended;
                     var reducedVector = tokenLine.Reduced;
-                    _ginExtended?.AddVector(extendedVector, noteDocId);
-                    _ginReduced?.AddVector(reducedVector, noteDocId);
+                    _ginExtended?.AddVector(noteDocId, extendedVector);
+                    _ginReduced?.AddVector(noteDocId, reducedVector);
                 }
 
-                var noteDbId = new DocId(note.NoteId);
+                var noteDbId = new DocumentId(note.NoteId);
                 if (!_generalDirectIndex.TryAdd(noteDbId, tokenLine))
                 {
                     throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
@@ -169,7 +170,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     public bool IsInitialized() => _isActivated;
 
     /// <inheritdoc/>
-    public Dictionary<DocId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public Dictionary<DocumentId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
         var metricsCalculator = new MetricsCalculator();
 
@@ -177,14 +178,12 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             .ExtendedSearchProcessor
             .FindExtended(text, metricsCalculator, cancellationToken);
 
-        if (!metricsCalculator.ContinueSearching || !continueSearching)
+        if (metricsCalculator.ContinueSearching && continueSearching)
         {
-            return metricsCalculator.ComplianceMetrics;
+            _searchProcessorFactory
+                .ReducedSearchProcessor
+                .FindReduced(text, metricsCalculator, cancellationToken);
         }
-
-        _searchProcessorFactory
-            .ReducedSearchProcessor
-            .FindReduced(text, metricsCalculator, cancellationToken);
 
         return metricsCalculator.ComplianceMetrics;
     }

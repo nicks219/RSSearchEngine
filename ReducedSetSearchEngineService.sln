@@ -122,6 +122,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Integration.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Benchmarks", "tests\Rsse.Benchmarks\Rsse.Benchmarks.csproj", "{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Search", "src\Rsse.Search\Rsse.Search.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -160,6 +162,10 @@ Global
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Debug|x64.Build.0 = Debug|x64
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Release|x64.ActiveCfg = Release|x64
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Release|x64.Build.0 = Release|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Debug|x64.ActiveCfg = Debug|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Debug|x64.Build.0 = Debug|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Release|x64.ActiveCfg = Release|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +183,7 @@ Global
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}

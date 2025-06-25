@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Rsse.Search.Dto;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Service.Tokenizer.Dto;
 
 namespace SearchEngine.Service.Tokenizer.Contracts;
 
@@ -29,7 +29,7 @@ public interface ISearchEngineTokenizer : IDisposable
     /// <param name="text">Поисковый запрос.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
-    public Dictionary<DocId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
+    public Dictionary<DocumentId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>
     /// Обновить вектор для заметки.

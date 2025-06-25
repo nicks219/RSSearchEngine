@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
-using SearchEngine.Service.Tokenizer.Indexes;
-using SearchEngine.Service.Tokenizer.TokenizerProcessor;
+using Rsse.Search.Dto;
+using Rsse.Search.Indexes;
+using Rsse.Search.Processor;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
@@ -12,26 +11,15 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase
 {
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required GinHandler GinExtended { get; init; }
+    public required GinHandler<DocumentIdSet> GinExtended { get; init; }
 
-    /// <inheritdoc/>
-    public bool FindExtended(string text, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    protected override void FindExtended(TokenVector extendedSearchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        var processor = TokenizerProcessorFactory.CreateProcessor(ProcessorType.Extended);
-
-        var extendedSearchVector = processor.TokenizeText(text);
-
-        if (extendedSearchVector.Count == 0)
-        {
-            // заметки вида "123 456" не ищем, так как получим весь каталог
-            return false;
-        }
-
         var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(extendedSearchVector);
 
         // поиск в векторе extended
@@ -44,13 +32,11 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
             {
                 var tokensLine = GeneralDirectIndex[docId];
                 var extendedTokensLine = tokensLine.Extended;
-                var metric = processor.ComputeComparisonScore(extendedTokensLine, extendedSearchVector, index);
+                var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, extendedSearchVector, index);
 
                 metricsCalculator.AppendExtended(metric, extendedSearchVector, docId, extendedTokensLine);
             }
         }
-
-        return metricsCalculator.ContinueSearching;
     }
 
     /// <summary>
@@ -58,10 +44,10 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
     /// </summary>
     /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
     /// <returns>Список векторов GIN.</returns>
-    private List<DocIdVector> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
+    private List<DocumentIdSet> CreateExtendedSearchSpace(TokenVector extendedSearchVector)
     {
-        var emptyDocIdVector = new DocIdVector([]);
-        var docIdVectors = new List<DocIdVector>(extendedSearchVector.Count);
+        var emptyDocIdVector = new DocumentIdSet([]);
+        var docIdVectors = new List<DocumentIdSet>(extendedSearchVector.Count);
 
         foreach (var token in extendedSearchVector)
         {
@@ -84,4 +70,3 @@ public sealed class ExtendedSearchGinFast : ExtendedSearchProcessorBase, IExtend
         return docIdVectors;
     }
 }
-

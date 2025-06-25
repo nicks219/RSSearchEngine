@@ -1,3 +1,5 @@
+using Rsse.Search.Dto;
+
 namespace SearchEngine.Service.Tokenizer.Dto;
 
 /// <summary>

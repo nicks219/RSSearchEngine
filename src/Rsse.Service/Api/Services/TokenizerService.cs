@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Rsse.Search.Dto;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -44,7 +45,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
+    internal ConcurrentDictionary<DocumentId, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)

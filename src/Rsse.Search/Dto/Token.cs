@@ -1,12 +1,12 @@
 using System;
 
-namespace SearchEngine.Service.Tokenizer.Dto;
+namespace Rsse.Search.Dto;
 
 /// <summary>
 /// Хэш, представляющий токенизированное слово в векторе.
 /// </summary>
 /// <param name="token">Токенизированное слово.</param>
-public readonly struct Token(int token) : IEquatable<Token>
+public readonly struct Token(int token) : IEquatable<Token>, IComparable<Token>
 {
     // Токенизированное слово.
     private readonly int _token = token;
@@ -15,7 +15,7 @@ public readonly struct Token(int token) : IEquatable<Token>
     /// Получить значение токена.
     /// </summary>
     // ReSharper disable once ConvertToAutoPropertyWhenPossible
-    internal int Value => _token;
+    public int Value => _token;
 
     public bool Equals(Token other) => _token.Equals(other._token);
 
@@ -26,4 +26,14 @@ public readonly struct Token(int token) : IEquatable<Token>
     public static bool operator ==(Token left, Token right) => left.Equals(right);
 
     public static bool operator !=(Token left, Token right) => !(left == right);
+
+    public int CompareTo(Token other)
+    {
+        return _token.CompareTo(other._token);
+    }
+
+    public override string ToString()
+    {
+        return _token.ToString();
+    }
 }

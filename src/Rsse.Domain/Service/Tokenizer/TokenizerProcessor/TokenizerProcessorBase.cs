@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rsse.Search.Dto;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
 
 namespace SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
@@ -20,9 +20,6 @@ public abstract class TokenizerProcessorBase : ITokenizerProcessor
     /// Полный набор символов для токенизации.
     /// </summary>
     protected abstract string ConsonantChain { get; }
-
-    /// <inheritdoc/>
-    public abstract int ComputeComparisonScore(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0);
 
     /// <inheritdoc/>
     public TokenVector TokenizeText(string[] words)

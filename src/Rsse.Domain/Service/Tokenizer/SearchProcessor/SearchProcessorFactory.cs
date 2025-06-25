@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using Rsse.Search.Dto;
+using Rsse.Search.Indexes;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.Dto;
-using SearchEngine.Service.Tokenizer.Indexes;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
@@ -33,9 +34,9 @@ public sealed class SearchProcessorFactory
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
     public SearchProcessorFactory(
-        GinHandler? ginExtended,
-        GinHandler? ginReduced,
-        ConcurrentDictionary<DocId, TokenLine> generalDirectIndex,
+        GinHandler<DocumentIdSet>? ginExtended,
+        GinHandler<DocumentIdSet>? ginReduced,
+        ConcurrentDictionary<DocumentId, TokenLine> generalDirectIndex,
         ITokenizerProcessorFactory tokenizerProcessorFactory,
         SearchType searchType = SearchType.Original)
     {
