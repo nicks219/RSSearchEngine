@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
+using SearchEngine.Service.Tokenizer.Contracts;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
@@ -11,21 +12,27 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase
+public sealed class ReducedSearchGinFast : IReducedSearchProcessor
 {
+    /// <summary>
+    /// Индекс для всех токенизированных заметок.
+    /// </summary>
+    public required DirectIndex GeneralDirectIndex { get; init; }
+
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
     public required GinHandler<DocumentIdSet> GinReduced { get; init; }
 
-    protected override void FindReduced(TokenVector reducedSearchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public void FindReduced(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        reducedSearchVector = reducedSearchVector.DistinctAndGet();
+        searchVector = searchVector.DistinctAndGet();
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
         var comparisonScoresReduced = new Dictionary<DocumentId, int>();
-        foreach (var token in reducedSearchVector)
+        foreach (var token in searchVector)
         {
             if (!GinReduced.TryGetIdentifiers(token, out var ids))
             {
@@ -39,13 +46,14 @@ public sealed class ReducedSearchGinFast : ReducedSearchProcessorBase
             }
         }
 
-        // поиск в векторе reduced
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+
+        // поиск в векторе reduced
         foreach (var (docId, comparisonScore) in comparisonScoresReduced)
         {
             var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
 
-            metricsCalculator.AppendReduced(comparisonScore, reducedSearchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, searchVector, docId, reducedTargetVector);
         }
     }
 }

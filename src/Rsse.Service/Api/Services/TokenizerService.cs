@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Rsse.Search.Dto;
+using Rsse.Search.Indexes;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -14,7 +13,6 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
 
 namespace SearchEngine.Api.Services;
 
@@ -40,12 +38,14 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
-        var searchType = options.Value.SearchType;
-        _searchEngineTokenizer = new SearchEngineTokenizer(processorFactory, searchType);
+        var extendedSearchType = options.Value.ExtendedSearchType;
+        var reducedSearchType = options.Value.ReducedSearchType;
+        _searchEngineTokenizer = new SearchEngineTokenizer(processorFactory,
+            extendedSearchType, reducedSearchType);
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocumentId, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
+    internal DirectIndex GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using SearchEngine.Benchmarks.Performance;
 using static SearchEngine.Benchmarks.Constants;
@@ -64,14 +66,31 @@ public static class DiagnosticsProgram
         var config = Debugger.IsAttached
             ? new DebugInProcessConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
             : DefaultConfig.Instance
+                .WithSummaryStyle(DefaultConfig.Instance.SummaryStyle.WithMaxParameterColumnWidth(100))
                 .WithOptions(ConfigOptions.DisableOptimizationsValidator | ConfigOptions.JoinSummary)
                 .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
                     .WithIterationCount(10))
-                .AddDiagnoser(MemoryDiagnoser.Default);
+                .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddLogger(new ConsoleLogger(true, new Dictionary<LogKind, ConsoleColor>
+                {
+                    { LogKind.Default, ConsoleColor.Gray },
+                    { LogKind.Help, ConsoleColor.DarkGreen },
+                    { LogKind.Header, ConsoleColor.Cyan },
+                    { LogKind.Result, ConsoleColor.DarkCyan },
+                    { LogKind.Statistic, ConsoleColor.Gray },
+                    { LogKind.Info, ConsoleColor.DarkYellow },
+                    { LogKind.Error, ConsoleColor.Red },
+                    { LogKind.Warning, ConsoleColor.Yellow },
+                    { LogKind.Hint, ConsoleColor.DarkCyan }
+                }));
 
-        BenchmarkRunner.Run([typeof(TokenizerBenchmark), typeof(LuceneBenchmark)], config);
+        BenchmarkRunner.Run([
+            typeof(TokenizerBenchmark),
+            typeof(LuceneBenchmark),
+            /*typeof(DuplicatesBenchmark)*/
+        ], config);
     }
 
     /// <summary>

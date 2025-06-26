@@ -17,7 +17,8 @@ public sealed class ServiceProviderStub : IDisposable
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub(SearchType searchType = SearchType.Original)
+    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Original)
     {
         var services = new ServiceCollection();
 
@@ -25,7 +26,8 @@ public sealed class ServiceProviderStub : IDisposable
         services.Configure<CommonBaseOptions>(options =>
         {
             options.TokenizerIsEnable = true;
-            options.SearchType = searchType;
+            options.ExtendedSearchType = extendedSearchType;
+            options.ReducedSearchType = reducedSearchType;
         });
 
         services.AddSingleton<ITokenizerService, TokenizerService>();

@@ -1,6 +1,4 @@
-using Rsse.Search.Dto;
-
-namespace SearchEngine.Service.Tokenizer.Dto;
+namespace Rsse.Search.Dto;
 
 /// <summary>
 /// Контейнер с двумя векторами для заметки.

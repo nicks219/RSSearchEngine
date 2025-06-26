@@ -12,14 +12,14 @@ namespace SearchEngine.Benchmarks.Common;
 /// <summary>
 /// Компонент поставщика данных из файла.
 /// </summary>
-public sealed class FileDataProvider : IDataProvider<NoteEntity>
+public sealed class FileDataProvider(int initialDataMultiplier = InitialDataMultiplier) : IDataProvider<NoteEntity>
 {
     // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
     {
         Console.OutputEncoding = Encoding.UTF8;
-        var notes = new List<NoteEntity>(InitialDataMultiplier);
+        var notes = new List<NoteEntity>(1000);
 
         await using var fileStream = File.OpenRead("pg_backup_.txtnotes");
         using var reader = new StreamReader(fileStream);
@@ -43,7 +43,7 @@ public sealed class FileDataProvider : IDataProvider<NoteEntity>
         }
 
         var counter = 0;
-        for (var i = 0; i < InitialDataMultiplier; i++)
+        for (var i = 0; i < initialDataMultiplier; i++)
         {
             foreach (var noteEntity in notes.Select(entity =>
                          new NoteEntity

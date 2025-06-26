@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Exceptions;
 using SearchEngine.Service.Mapping;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
 using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
@@ -23,12 +21,13 @@ namespace SearchEngine.Service.Tokenizer;
 public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly ConcurrentDictionary<DocumentId, TokenLine> _generalDirectIndex;
-    private readonly GinHandler<DocumentIdSet>? _ginExtended;
-    private readonly GinHandler<DocumentIdSet>? _ginReduced;
-    private readonly SearchProcessorFactory _searchProcessorFactory;
-    private readonly SearchType _searchType;
+    private readonly SearchProcessorFactory _searchProcessorFactory = new();
+    private readonly ExtendedSearchType _extendedSearchType;
+    private readonly ReducedSearchType _reducedSearchType;
 
+    /// <summary>
+    /// Фабрика токенизаторов.
+    /// </summary>
     private readonly ITokenizerProcessorFactory _tokenizerProcessorFactory;
 
     /// <summary>
@@ -40,38 +39,29 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// Создать токенайзер.
     /// </summary>
     /// <param name="tokenizerProcessorFactory">Фабрика токенайзеров.</param>
-    /// <param name="searchType">Тип оптимизации алгоритма поиска.</param>
+    /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
+    /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
     public SearchEngineTokenizer(
         ITokenizerProcessorFactory tokenizerProcessorFactory,
-        SearchType searchType = SearchType.Original)
+        ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Original)
     {
-        _generalDirectIndex = new ConcurrentDictionary<DocumentId, TokenLine>();
         _tokenizerProcessorFactory = tokenizerProcessorFactory;
-        _searchType = searchType;
-
-        if (_searchType != SearchType.Original)
-        {
-            _ginExtended = new GinHandler<DocumentIdSet>();
-            _ginReduced = new GinHandler<DocumentIdSet>();
-        }
-
-        _searchProcessorFactory = new SearchProcessorFactory(
-            _ginExtended,
-            _ginReduced,
-            _generalDirectIndex,
-            _tokenizerProcessorFactory,
-            _searchType);
+        _extendedSearchType = extendedSearchType;
+        _reducedSearchType = reducedSearchType;
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocumentId, TokenLine> GetTokenLines() => _generalDirectIndex;
+    internal DirectIndex GetTokenLines() => _searchProcessorFactory.GetTokenLines();
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
     {
         using var __ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
-        var docId = new DocumentId(id);
-        var removed = _generalDirectIndex.TryRemove(docId, out _);
+
+        var documentId = new DocumentId(id);
+
+        var removed = _searchProcessorFactory.TryRemove(documentId);
 
         return removed;
     }
@@ -81,10 +71,10 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
-        var createdTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
-
+        var createdTokenLine = CreateTokensLine(note);
         var docId = new DocumentId(id);
-        var created = _generalDirectIndex.TryAdd(docId, createdTokenLine);
+
+        var created = _searchProcessorFactory.TryAdd(docId, createdTokenLine);
 
         return created;
     }
@@ -94,15 +84,11 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         using var _ = await TokenizerLock.AcquireExclusiveLockAsync(stoppingToken);
 
-        var updatedTokenLine = CreateTokensLine(_tokenizerProcessorFactory, note);
-
+        var updatedTokenLine = CreateTokensLine(note);
         var docId = new DocumentId(id);
-        if (!_generalDirectIndex.TryGetValue(docId, out var existedLine))
-        {
-            return false;
-        }
 
-        var updated = _generalDirectIndex.TryUpdate(docId, updatedTokenLine, existedLine);
+        var updated = _searchProcessorFactory.TryUpdate(docId, updatedTokenLine);
+
         // в данной реализации ошибки получения и обновления не разделяются
         return updated;
     }
@@ -115,7 +101,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         try
         {
-            _generalDirectIndex.Clear();
+            _searchProcessorFactory.Clear();
 
             // todo: подумать, как избавиться от загрузки всех записей из таблицы
             var notes = dataProvider.GetDataAsync().WithCancellation(stoppingToken);
@@ -126,20 +112,10 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                 if (stoppingToken.IsCancellationRequested) throw new OperationCanceledException(nameof(InitializeAsync));
 
                 var requestNote = note.MapToDto();
+                var tokenLine = CreateTokensLine(requestNote);
+                var noteDocId = new DocumentId(note.NoteId);
 
-                var tokenLine = CreateTokensLine(_tokenizerProcessorFactory, requestNote);
-
-                if (_searchType != SearchType.Original)
-                {
-                    var noteDocId = new DocumentId(note.NoteId);
-                    var extendedVector = tokenLine.Extended;
-                    var reducedVector = tokenLine.Reduced;
-                    _ginExtended?.AddVector(noteDocId, extendedVector);
-                    _ginReduced?.AddVector(noteDocId, reducedVector);
-                }
-
-                var noteDbId = new DocumentId(note.NoteId);
-                if (!_generalDirectIndex.TryAdd(noteDbId, tokenLine))
+                if (!_searchProcessorFactory.TryAdd(noteDocId, tokenLine))
                 {
                     throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
                 }
@@ -151,7 +127,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                                              $"'{ex.Source}' | '{ex.Message}'");
         }
 
-        var count = _generalDirectIndex.Count;
+        var count = _searchProcessorFactory.Count;
 
         _isActivated = true;
 
@@ -174,16 +150,36 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         var metricsCalculator = new MetricsCalculator();
 
-        var continueSearching = _searchProcessorFactory
-            .ExtendedSearchProcessor
-            .FindExtended(text, metricsCalculator, cancellationToken);
+        var extendedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Extended);
 
-        if (metricsCalculator.ContinueSearching && continueSearching)
+        var extendedSearchVector = extendedProcessor.TokenizeText(text);
+
+        if (extendedSearchVector.Count == 0)
         {
-            _searchProcessorFactory
-                .ReducedSearchProcessor
-                .FindReduced(text, metricsCalculator, cancellationToken);
+            // заметки вида "123 456" не ищем, так как получим весь каталог
+            return metricsCalculator.ComplianceMetrics;
         }
+
+        _searchProcessorFactory.FindExtended(_extendedSearchType,
+            extendedSearchVector, metricsCalculator, cancellationToken);
+
+        if (!metricsCalculator.ContinueSearching)
+        {
+            return metricsCalculator.ComplianceMetrics;
+        }
+
+        var reducedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Reduced);
+
+        TokenVector reducedSearchVector = reducedProcessor.TokenizeText(text);
+
+        if (reducedSearchVector.Count == 0)
+        {
+            // песни вида "123 456" не ищем, так как получим весь каталог
+            return metricsCalculator.ComplianceMetrics;
+        }
+
+        _searchProcessorFactory.FindReduced(_reducedSearchType,
+            reducedSearchVector, metricsCalculator, cancellationToken);
 
         return metricsCalculator.ComplianceMetrics;
     }
@@ -191,21 +187,20 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <summary>
     /// Создать два вектора токенов для заметки.
     /// </summary>
-    /// <param name="factory">Фабрика токенайзеров.</param>
     /// <param name="note">Текстовая нагрузка заметки.</param>
     /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
-    private static TokenLine CreateTokensLine(ITokenizerProcessorFactory factory, TextRequestDto note)
+    private TokenLine CreateTokensLine(TextRequestDto note)
     {
         if (note.Text == null || note.Title == null)
             throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
 
         // расширенная эталонная последовательность:
-        var extendedProcessor = factory.CreateProcessor(ProcessorType.Extended);
+        var extendedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Extended);
 
         var extendedTokenLine = extendedProcessor.TokenizeText(note.Text, " ", note.Title);
 
         // урезанная эталонная последовательность:
-        var reducedProcessor = factory.CreateProcessor(ProcessorType.Reduced);
+        var reducedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Reduced);
 
         var reducedTokenLine = reducedProcessor.TokenizeText(note.Text, " ", note.Title);
 

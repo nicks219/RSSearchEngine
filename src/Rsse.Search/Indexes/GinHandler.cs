@@ -54,7 +54,13 @@ public sealed class GinHandler<TDocumentIdCollection>
         }
     }
 
-    public void Put(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
+    /// <summary>
+    /// Обновить "заметку" (удалить + добавить).
+    /// </summary>
+    /// <param name="documentId">Идентификатор заметки.</param>
+    /// <param name="tokenVector">Новый вектор токенов, соответсвующий обновленной заметке.</param>
+    /// <param name="oldTokenVector">Старый вектор токенов, соответсвующий обновленной заметке.</param>
+    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
         tokenVector = tokenVector.DistinctAndGet();
         oldTokenVector = oldTokenVector.DistinctAndGet();
@@ -87,13 +93,11 @@ public sealed class GinHandler<TDocumentIdCollection>
     }
 
     /// <summary>
-    /// Обновить "заметку" (удалить + добавить).
+    /// Удалить идентификатор заметки (и токен если сет останется пустым) из индекса.
     /// </summary>
-    /// /// <param name="id">Идентификатор заметки.</param>
-    /// <param name="vector">Вектор токенов, соответсвующий обновленной заметке.</param>
-    public void UpdateId(DocumentId id, TokenVector vector) => throw new NotImplementedException();
-
-    public void Delete(DocumentId documentId, TokenVector tokenVector)
+    /// <param name="documentId">Идентификатор заметки.</param>
+    /// <param name="tokenVector">Вектор заметки</param>
+    public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         tokenVector = tokenVector.DistinctAndGet();
 
@@ -103,11 +107,10 @@ public sealed class GinHandler<TDocumentIdCollection>
         }
     }
 
-    /// <summary>
-    /// Удалить идентификатор заметки (и токен если сет останется пустым) из индекса.
-    /// </summary>
-    /// <param name="id">Идентификатор заметки.</param>
-    public void RemoveId(DocumentId id) => throw new NotImplementedException();
+    public void Clear()
+    {
+        _documentIdCollections.Clear();
+    }
 
     /// <summary>
     /// Получить идентификаторы заметок, в которых присутствует токен.
@@ -184,5 +187,4 @@ public sealed class GinHandler<TDocumentIdCollection>
 
         throw new NotSupportedException();
     }
-
 }

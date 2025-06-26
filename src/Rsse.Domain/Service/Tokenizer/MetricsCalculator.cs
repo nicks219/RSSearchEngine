@@ -28,13 +28,13 @@ public sealed class MetricsCalculator
     /// Добавить метрики для четкого поиска.
     /// </summary>
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
-    /// <param name="extendedSearchVector">Вектор с поисковым запросом.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="documentId">Идентификатор, полученный при поиске.</param>
     /// <param name="extendedTargetVector">Вектор с заметкой, в которой производился поиск.</param>
-    public void AppendExtended(int comparisonScore, TokenVector extendedSearchVector, DocumentId documentId, TokenVector extendedTargetVector)
+    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId, TokenVector extendedTargetVector)
     {
         // I. 100% совпадение по extended последовательности, по reduced можно не искать
-        if (comparisonScore == extendedSearchVector.Count)
+        if (comparisonScore == searchVector.Count)
         {
             ContinueSearching = false;
             ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVector.Count));
@@ -42,7 +42,7 @@ public sealed class MetricsCalculator
         }
 
         // II. extended% совпадение
-        if (comparisonScore >= extendedSearchVector.Count * ExtendedCoefficient)
+        if (comparisonScore >= searchVector.Count * ExtendedCoefficient)
         {
             // todo: можно так оценить
             // continueSearching = false;
@@ -54,20 +54,20 @@ public sealed class MetricsCalculator
     /// Добавить метрики для нечеткого поиска.
     /// </summary>
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
-    /// <param name="reducedSearchVector">Вектор с поисковым запросом.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="documentId">Идентификатор, полученный при поиске.</param>
     /// <param name="reducedTargetVector">Вектор с заметкой, в которой производился поиск.</param>
-    public void AppendReduced(int comparisonScore, TokenVector reducedSearchVector, DocumentId documentId, TokenVector reducedTargetVector)
+    public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId, TokenVector reducedTargetVector)
     {
         // III. 100% совпадение по reduced
-        if (comparisonScore == reducedSearchVector.Count)
+        if (comparisonScore == searchVector.Count)
         {
             ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVector.Count));
             return;
         }
 
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-        if (comparisonScore >= reducedSearchVector.Count * ReducedCoefficient)
+        if (comparisonScore >= searchVector.Count * ReducedCoefficient)
         {
             ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVector.Count));
         }

@@ -4,6 +4,7 @@ using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using Rsse.Search.Processor;
+using SearchEngine.Service.Tokenizer.Contracts;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
@@ -11,18 +12,24 @@ namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinOptimized : ExtendedSearchProcessorBase
+public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
 {
+    /// <summary>
+    /// Индекс для всех токенизированных заметок.
+    /// </summary>
+    public required DirectIndex GeneralDirectIndex { get; init; }
+
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
     public required GinHandler<DocumentIdSet> GinExtended { get; init; }
 
-    protected override void FindExtended(TokenVector extendedSearchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public void FindExtended(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         // выбрать только те заметки, которые пригодны для extended поиска
         var idsExtendedSearchSpace = new HashSet<DocumentId>();
-        foreach (var token in extendedSearchVector)
+        foreach (var token in searchVector)
         {
             if (!GinExtended.TryGetIdentifiers(token, out var docIds))
             {
@@ -45,10 +52,10 @@ public sealed class ExtendedSearchGinOptimized : ExtendedSearchProcessorBase
         foreach (var docId in idsExtendedSearchSpace)
         {
             var extendedTargetVector = GeneralDirectIndex[docId].Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, extendedSearchVector);
+            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
 
             // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-            metricsCalculator.AppendExtended(comparisonScore, extendedSearchVector, docId, extendedTargetVector);
+            metricsCalculator.AppendExtended(comparisonScore, searchVector, docId, extendedTargetVector);
         }
     }
 }

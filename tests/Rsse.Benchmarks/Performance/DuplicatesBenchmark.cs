@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using SearchEngine.Benchmarks.Common;
+using SearchEngine.Data.Entities;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
 using static SearchEngine.Benchmarks.Constants;
@@ -16,9 +17,11 @@ namespace SearchEngine.Benchmarks.Performance;
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class TokenizerBenchmark : IBenchmarkRunner
+public class DuplicatesBenchmark : IBenchmarkRunner
 {
     private SearchEngineTokenizer _tokenizer;
+
+    private List<NoteEntity> _noteEntities;
 
     [ParamsSource(nameof(Parameters))]
     public (ExtendedSearchType extended, ReducedSearchType reduced) SearchType;
@@ -56,10 +59,13 @@ public class TokenizerBenchmark : IBenchmarkRunner
     [Benchmark]
     public void RunBenchmark()
     {
-        var results = _tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
-        if (results.Count == 0)
+        foreach (NoteEntity noteEntity in _noteEntities)
         {
-            Console.WriteLine("[Tokenizer] empty result");
+            var results = _tokenizer.ComputeComplianceIndices(noteEntity.Text, CancellationToken.None);
+            if (results.Count == 0)
+            {
+                Console.WriteLine("[Tokenizer] empty result");
+            }
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
@@ -74,7 +80,7 @@ public class TokenizerBenchmark : IBenchmarkRunner
     private async Task InitializeTokenizer(ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
         Console.WriteLine(
-            $"[{nameof(TokenizerBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
+            $"[{nameof(DuplicatesBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
         var processorFactory = new TokenizerProcessorFactory();
         _tokenizer = new SearchEngineTokenizer(processorFactory, extendedSearchType, reducedSearchType);
@@ -82,7 +88,15 @@ public class TokenizerBenchmark : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        var dataProvider = new FileDataProvider();
+        var dataProvider = new FileDataProvider(1);
+
+        _noteEntities = new List<NoteEntity>();
+
+        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync())
+        {
+            _noteEntities.Add(noteEntity);
+        }
+
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(

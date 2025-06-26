@@ -20,5 +20,10 @@ public class CommonBaseOptions
     /// <summary>
     /// Алгоритм оптимизации поиска в токенайзере.
     /// </summary>
-    public SearchType SearchType { get; set; }
+    public ExtendedSearchType ExtendedSearchType { get; set; }
+
+    /// <summary>
+    /// Алгоритм оптимизации поиска в токенайзере.
+    /// </summary>
+    public ReducedSearchType ReducedSearchType { get; set; }
 }
