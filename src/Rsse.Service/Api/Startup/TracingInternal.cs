@@ -1,7 +1,9 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Trace;
+using SearchEngine.Api.Observability;
 using SearchEngine.Service.Configuration;
 using Serilog;
 
@@ -36,11 +38,14 @@ public static class TracingInternal
                             !context.Request.Path.StartsWithSegments("/system");
                     })
                     .AddSource("Npgsql")
+                    .SetSampler(sp => sp.GetRequiredService<ConditionalSampler>())
+                    // .AddConsoleExporter()
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);
                         options.Protocol = OtlpExportProtocol.Grpc;
-                    });
+                    })
+                    .AddProcessor(new Pyroscope.OpenTelemetry.PyroscopeSpanProcessor());
 
                 Log.ForContext<Startup>().Information("OTLP exporter for tracing was added");
             });

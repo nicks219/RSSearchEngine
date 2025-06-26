@@ -1,6 +1,6 @@
-# use d*.*.* tag (not dp*.*.*)
+# use dp*.*.* tag: for version w/profiler
 # build and publish to github registry
-name: Publish.Docker.ghcr
+name: Publish.Docker.v2.ghcr
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -12,8 +12,8 @@ on:
     - cron: '40 8 1 * *'
   push:
     # branches: [ "master" ]
-    # Publish semver tags as releases.
-    tags: [ 'd*.*.*', 'd*.*.*-*', '!dp*.*.*', '!dp*.*.*-*' ]
+    # Publish semver tags as releases
+    tags: [ 'dp*.*.*', 'dp*.*.*-*' ]
   # pull_request:
     # branches: [ "master" ]
 
@@ -86,7 +86,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          file: ./src/Dockerfile-net-react
+          file: ./src/Dockerfile.net.react.v2
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

@@ -183,13 +183,31 @@
   * upd: добавлен сорс Npgsql к трассам
   * upd: роуты `/system` и `/v6/account` исключены из логов
   * upd: явное выставление статусов для трасс в middleware
-  * upd: `проверить` возможно, трассы нуждаются в накачке энтропии на старте сервиса
-  ```bash
-  RUN apt-get install -y rng-tools && rngd -r /dev/urandom
-  ```
-  * upd: `на проверке` увеличить время перед отдачей хелсчеков
+  * upd: увеличить время перед отдачей хелсчеков
   * upd: для связки метрик с трассами в Grafana Cloud создать datasource до prometheus и переименовать лейбл для exemplar в `trace_id`
   - вместо **password** выставить токен из **access policy**, см [документацию Grafana Cloud](https://grafana.com/docs/grafana-cloud/security-and-account-management/authentication-and-permissions/access-policies/using-an-access-policy-token/#creating-a-data-source-with-a-grafana-cloud-token-in-grafana-ui).
+
+* `k6.0.3` `pyroscope`
+  * upd: `на проверке` не отдавать трассировку на инициализации сервиса
+  * upd: `в разработке` настроить сбор профилей с помощью Pyroscope `0.9.4` (файлы `*.v2`)
+    - [x] проверить сборку образа с pyroscope `dp6.0.3` (тег `dp*.*.*`)
+    - [x] проверить локально отправку профилей 
+      - загрузка образа `docker pull ghcr.io/nicks219/rssearchengine:dp6.0.3` 
+      - запуск контейнера `docker run --env-file ./v2.env.pwd -p 5100:5000 -e ASPNETCORE_ENVIRONMENT=Development --name dp6.0.3 ghcr.io/nicks219/rssearchengine:dp6.0.3`
+    - [x] настроить datasource в Grafana Cloud и данные для авторизации
+      - user на Pyroscope совпадает с OTLP, при этом создание токена на Pyroscope не аффектит OTLP-токен
+    - [x] определиться с эндпоинтом
+      - сработал эндпоинт датасорса https://profiles-prod-001.grafana.net
+      - эндпоинт OLTP не сработал (возможно из-за неправильного токена, принадлежащего датасорсу)
+    - [ ] проверить отправку профилей с пода деплоя `kp6.0.3` (тег `kp*.*.*`)
+      - необходим актуальный список переменных с проверенными значениями
+      - можно включить режимы профилирования по документации:
+        https://grafana.com/docs/pyroscope/next/configure-client/language-sdks/dotnet/#send-data-to-pyroscope-oss-or-grafana-cloud-profiles
+      - ... 
+  * todo: попробовать убрать зависимости профилирования (NET-докерфайл-манифест-пайплайны) под переменную
+  * upd: попробовать апгрейд до `1.x`: `https://grafana.com/docs/pyroscope/next/upgrade-guide/#upgrade-to-pyroscope-10`
+    - настроить отдачу профилей по OTLP
+    - настроить otel для приема/отправки профилей
 
 ---
 #### Процесс поиска решения по exemplar:
@@ -223,4 +241,8 @@
   * [ ] уменьшить время выполнения запросов на получение тегов с количеством заметок
   * [ ] попробовать на CI использовать кэш NuGet и параллельный запуск (если поддерживается)
   * [x] выпустить релиз `6.0.0` в **GitHub**
+  * [ ] возможно, трассы нуждаются в накачке энтропии на старте сервиса
+    ```bash
+    RUN apt-get install -y rng-tools && rngd -r /dev/urandom
+    ```
 ---

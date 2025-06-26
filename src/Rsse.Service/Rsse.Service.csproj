@@ -30,6 +30,8 @@
   <ItemGroup>
     <PackageReference Include="MySqlBackup.NET" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+        <PackageReference Include="Pyroscope" />
+        <PackageReference Include="Pyroscope.OpenTelemetry" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 

@@ -1,10 +1,10 @@
-# use k*.*.* tag (not kp*.*.*)
+# use kp*.*.* tag: for version w/profiler
 # publish image to dockerhub registry and run rollout
 name: Deploy.K3S
 
 on:
   push:
-    tags: [ 'k*.*.*','k*.*.*-*','!kp*.*.*','!kp*.*.*-*']
+    tags: [ 'kp*.*.*','kp*.*.*-*']
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./src
-          file: ./src/Dockerfile-net-react
+          file: ./src/Dockerfile.net.react.v2
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rsse-app
 

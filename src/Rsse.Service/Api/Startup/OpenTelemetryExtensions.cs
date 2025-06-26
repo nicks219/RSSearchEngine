@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
+using SearchEngine.Api.Observability;
 using SearchEngine.Service.Configuration;
 using Serilog;
 
@@ -24,6 +25,8 @@ internal static class OpenTelemetryExtensions
         var otlpEndpoint = configuration.GetValue<string>("Otlp:Endpoint");
         var podName = Environment.GetEnvironmentVariable("POD_NAME") ?? "uncloud";
         Log.ForContext<Startup>().Information("OTLP: `{Endpoint}` | pod: `{PodName}`", otlpEndpoint, podName);
+
+        services.AddSingleton<ConditionalSampler>();
 
         services
             .AddOpenTelemetry()

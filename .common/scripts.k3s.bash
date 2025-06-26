@@ -76,6 +76,11 @@ kubectl create secret generic grafana-cloud-instance-id --from-file=id=./grafana
 # otel с передачей диагностиков по otlp (активен)
 kubectl apply -f otel.collector.otlp.v2.yml
 
+# secret для Pyroscope: pyroscope.secret.pwd содержит строку c токеном
+# создание токена https://grafana.com/orgs/nicks219/hosted-profiles/1031458
+kubectl create secret generic pyroscope-secret --from-file=PYROSCOPE_BASIC_AUTH_PASSWORD=./pyroscope.secret.pwd
+kubectl apply -f deployment.rsse.pvc.v3.yml
+
 ####################
 # полезные команды #
 ####################
@@ -93,3 +98,7 @@ apk update && apk add nano
 
 # temporary pod for testing purpose
 kubectl run curlpod --rm -i -t --image=curlimages/curl --namespace=default --restart=Never -- sh
+
+# проверить секреты, например
+kubectl get secret pyroscope-secret -o yaml
+kubectl exec -it <pod_name> -- env | grep PYROSCOPE
