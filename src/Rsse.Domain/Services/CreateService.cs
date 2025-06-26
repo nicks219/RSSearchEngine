@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SearchEngine.Data.Common;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using static SearchEngine.Service.Configuration.ServiceErrorMessages;
+using static SearchEngine.Services.Configuration.ServiceErrorMessages;
 
 namespace SearchEngine.Services;
 

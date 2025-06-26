@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Mapping;
 using static SearchEngine.Api.Configuration.ControllerErrorMessages;
 using static SearchEngine.Api.Configuration.ControllerMessages;
 

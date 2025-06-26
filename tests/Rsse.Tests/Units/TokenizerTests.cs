@@ -10,9 +10,9 @@ using NSubstitute;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tests.Units.Infra;
+using SearchEngine.Tokenizer.Contracts;
 
 namespace SearchEngine.Tests.Units;
 

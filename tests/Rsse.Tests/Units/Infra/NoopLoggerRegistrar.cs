@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Services;
 using SearchEngine.Services;
+using CreateService = SearchEngine.Services.CreateService;
 
 namespace SearchEngine.Tests.Units.Infra;
 

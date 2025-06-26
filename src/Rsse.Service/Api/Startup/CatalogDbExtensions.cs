@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Npgsql;
 using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 
 namespace SearchEngine.Api.Startup;
 

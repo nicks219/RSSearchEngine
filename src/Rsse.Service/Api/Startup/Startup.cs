@@ -23,10 +23,10 @@ using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
+using SearchEngine.Tokenizer;
+using SearchEngine.Tokenizer.Contracts;
 using Serilog;
 
 namespace SearchEngine.Api.Startup;

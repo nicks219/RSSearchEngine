@@ -3,7 +3,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 
 namespace SearchEngine.Api.Startup;
 

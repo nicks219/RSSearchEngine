@@ -13,7 +13,7 @@ using MySqlConnector;
 using Npgsql;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Integration.FakeDb.Infra;
 using Serilog;

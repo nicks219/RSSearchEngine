@@ -7,12 +7,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
+using SearchEngine.Services.Mapping;
 using SearchEngine.Tooling.Contracts;
+using CreateService = SearchEngine.Services.CreateService;
 
 namespace SearchEngine.Api.Controllers;
 

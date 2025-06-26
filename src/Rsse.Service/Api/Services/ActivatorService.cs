@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
 using SearchEngine.Tooling.MigrationAssistant;
 
 namespace SearchEngine.Api.Services;

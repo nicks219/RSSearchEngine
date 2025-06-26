@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
 
 namespace SearchEngine.Api.Controllers;
 

@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Elector;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Elector;
 
 namespace SearchEngine.Services;
 

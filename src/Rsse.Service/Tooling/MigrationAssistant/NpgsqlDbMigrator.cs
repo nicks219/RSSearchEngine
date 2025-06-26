@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using SearchEngine.Api.Services;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tooling.Contracts;
 using SearchEngine.Tooling.Scripts;
 

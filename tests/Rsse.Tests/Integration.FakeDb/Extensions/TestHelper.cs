@@ -5,8 +5,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
 
 namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 

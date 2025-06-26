@@ -10,12 +10,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
+using SearchEngine.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Tests.Units;
 

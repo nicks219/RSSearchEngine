@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using SearchEngine.Benchmarks.Common;
-using SearchEngine.Service.Tokenizer;
+using SearchEngine.Tokenizer;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;

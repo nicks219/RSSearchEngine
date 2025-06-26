@@ -11,11 +11,11 @@ using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Startup;
-using SearchEngine.Service.ApiModels;
+using SearchEngine.Services.ApiModels;
 using SearchEngine.Tests.Integration.RealDb.Api;
 using SearchEngine.Tests.Integration.RealDb.Extensions;
 using SearchEngine.Tests.Integration.RealDb.Infra;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using static SearchEngine.Services.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 

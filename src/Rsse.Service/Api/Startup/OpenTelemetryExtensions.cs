@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using Serilog;
 
 namespace SearchEngine.Api.Startup;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SearchEngine.Api.Startup;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tests.Integration.RealDb.Api;
 
 namespace SearchEngine.Tests.Integration.RealDb.Infra;

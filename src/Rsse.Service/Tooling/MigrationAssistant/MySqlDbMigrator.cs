@@ -11,7 +11,7 @@ using MySql.Data.MySqlClient;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tooling.Contracts;
 
 namespace SearchEngine.Tooling.MigrationAssistant;

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Services;
+using CreateService = SearchEngine.Services.CreateService;
 
 namespace SearchEngine.Api.Startup;
 

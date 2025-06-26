@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SearchEngine.Data.Configuration;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
 
 namespace SearchEngine.Api.Controllers;
 

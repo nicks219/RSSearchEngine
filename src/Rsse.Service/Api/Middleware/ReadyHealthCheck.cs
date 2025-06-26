@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using SearchEngine.Service.Contracts;
+using SearchEngine.Services.Contracts;
 
 namespace SearchEngine.Api.Middleware;
 

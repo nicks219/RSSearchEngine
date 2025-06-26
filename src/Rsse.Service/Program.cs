@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
 using SearchEngine.Api.Logger;
 using SearchEngine.Api.Startup;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tooling.DevelopmentAssistant;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;

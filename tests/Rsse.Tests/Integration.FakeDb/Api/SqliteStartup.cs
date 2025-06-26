@@ -8,12 +8,12 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
+using SearchEngine.Tokenizer;
+using SearchEngine.Tokenizer.Contracts;
 
 namespace SearchEngine.Tests.Integration.FakeDb.Api;
 

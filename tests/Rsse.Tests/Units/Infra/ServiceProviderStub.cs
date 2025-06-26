@@ -3,11 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
+using SearchEngine.Tokenizer;
+using SearchEngine.Tokenizer.Contracts;
+using SearchEngine.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Tests.Units.Infra;
 

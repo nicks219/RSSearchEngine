@@ -1,4 +1,4 @@
-using SearchEngine.Service.Tokenizer.SearchProcessor;
+using SearchEngine.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Benchmarks;
 

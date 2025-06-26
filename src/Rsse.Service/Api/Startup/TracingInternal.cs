@@ -2,7 +2,7 @@ using System;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Trace;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using Serilog;
 
 namespace SearchEngine.Api.Startup;

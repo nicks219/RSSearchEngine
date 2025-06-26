@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Mapping;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
+using SearchEngine.Services.Mapping;
 
 namespace SearchEngine.Api.Controllers;
 

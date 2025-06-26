@@ -7,6 +7,7 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Services;
 using SearchEngine.Tests.Units.Infra;
+using CreateService = SearchEngine.Services.CreateService;
 
 namespace SearchEngine.Tests.Units;
 

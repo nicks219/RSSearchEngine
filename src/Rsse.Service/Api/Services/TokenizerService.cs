@@ -9,11 +9,11 @@ using Microsoft.Extensions.Options;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Dto;
+using SearchEngine.Services.Configuration;
+using SearchEngine.Services.Contracts;
+using SearchEngine.Tokenizer;
+using SearchEngine.Tokenizer.Contracts;
+using SearchEngine.Tokenizer.Dto;
 
 namespace SearchEngine.Api.Services;
 
@@ -44,7 +44,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     }
 
     // Используется для тестов.
-    internal ConcurrentDictionary<DocId, TokenLine> GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
+    internal ConcurrentDictionary<DocId, TokenVectors> GetTokenLines() => _searchEngineTokenizer.GetTokenVectors();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)

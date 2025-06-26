@@ -13,9 +13,9 @@ using NSubstitute;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Services;
+using SearchEngine.Services.ApiModels;
+using SearchEngine.Services.Configuration;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 

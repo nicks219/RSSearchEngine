@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
-using SearchEngine.Service.Configuration;
+using SearchEngine.Services.Configuration;
 using Serilog;
 
 namespace SearchEngine.Api.Startup;
