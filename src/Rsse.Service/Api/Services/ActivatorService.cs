@@ -42,7 +42,7 @@ internal class ActivatorService(
             {
                 var currentDateTime = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time | {Date}",
+                logger.LogInformation("[{Reporter}] started | prepare to runs for '{Count}' time | {Date}",
                     nameof(ActivatorService), _count.ToString(), currentDateTime);
 
                 using (var scope = factory.CreateScope())
@@ -51,7 +51,7 @@ internal class ActivatorService(
                     await tokenizer.Initialize(dataProvider, stoppingToken);
                 }
 
-                logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
+                logger.LogInformation("[{Reporter}] finished | awaited for next start", nameof(ActivatorService));
 
                 await Task.Delay(WaitMs, stoppingToken);
 

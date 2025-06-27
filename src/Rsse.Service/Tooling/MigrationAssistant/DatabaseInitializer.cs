@@ -27,6 +27,8 @@ public abstract class DatabaseInitializer
 
         try
         {
+            logger.LogInformation("[{Name}] started", nameof(DatabaseInitializer));
+
             // Исходим из того, что бд 'tagit' уже существует, например, создана при инициализации контейнера.
             await SeedDatabase(mysqlContext, ct);
             await SeedDatabase(npgsqlContext, ct);
