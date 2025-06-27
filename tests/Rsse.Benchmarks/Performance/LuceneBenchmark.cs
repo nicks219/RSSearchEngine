@@ -1,8 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using SearchEngine.Benchmarks.Common;
-using System;
-using System.Threading.Tasks;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;

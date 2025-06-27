@@ -1,4 +1,4 @@
-﻿using Rsse.Search.Dto;
+using Rsse.Search.Dto;
 
 namespace Rsse.Search.Processor
 {
