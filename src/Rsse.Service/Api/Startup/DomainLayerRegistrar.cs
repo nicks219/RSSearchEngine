@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Services;
+using SearchEngine.Service.Api;
 
 namespace SearchEngine.Api.Startup;
 
@@ -17,7 +17,7 @@ public static class DomainLayerRegistrar
         services.AddScoped<AccountService>();
         services.AddScoped<CatalogService>();
         services.AddScoped<ComplianceSearchService>();
-        services.AddScoped<CreateService>();
+        services.AddScoped<Service.Api.CreateService>();
         services.AddScoped<ReadService>();
         services.AddScoped<UpdateService>();
     }

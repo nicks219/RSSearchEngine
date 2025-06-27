@@ -11,7 +11,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
+using SearchEngine.Tokenizer;
 
 namespace SearchEngine.Api.Services;
 

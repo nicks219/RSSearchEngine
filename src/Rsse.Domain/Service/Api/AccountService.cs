@@ -8,7 +8,7 @@ using SearchEngine.Exceptions;
 using SearchEngine.Service.Configuration;
 using static SearchEngine.Service.Configuration.ServiceErrorMessages;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал авторизации.

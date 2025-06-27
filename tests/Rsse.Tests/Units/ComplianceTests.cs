@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Search;
+using SearchEngine.Api;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
+using SearchEngine.Service.Api;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Services;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
@@ -25,7 +26,7 @@ public class ComplianceTests
     private readonly List<ExtendedSearchType> _extendedSearchType =
         [ExtendedSearchType.Original, ExtendedSearchType.GinSimple, ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFast];
 
-    private readonly List<ReducedSearchType> _reducedSearchTypes = 
+    private readonly List<ReducedSearchType> _reducedSearchTypes =
         [ReducedSearchType.Original, ReducedSearchType.GinSimple, ReducedSearchType.GinOptimized, ReducedSearchType.GinFast];
 
     private readonly CancellationToken _token = CancellationToken.None;

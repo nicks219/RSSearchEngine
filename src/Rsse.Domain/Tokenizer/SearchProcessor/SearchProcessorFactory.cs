@@ -4,10 +4,10 @@ using Rsse.Search;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using Rsse.Search.Selector;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.Processor;
+using SearchEngine.Tokenizer.Contracts;
+using SearchEngine.Tokenizer.Processor;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace SearchEngine.Tokenizer.SearchProcessor;
 
 /// <summary>
 /// Функционал, поставляющий различные алгоритмы вычисления метрик поиска.

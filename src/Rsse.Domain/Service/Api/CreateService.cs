@@ -7,7 +7,7 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using static SearchEngine.Service.Configuration.ServiceErrorMessages;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал создания заметок.

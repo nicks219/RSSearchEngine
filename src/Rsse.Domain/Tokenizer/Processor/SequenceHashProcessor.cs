@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Tokenizer.Processor;
 
 /// <summary>
 /// Контейнер, вычисляющий хэш на последовательность символов по мере их добавления.

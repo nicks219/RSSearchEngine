@@ -4,7 +4,7 @@ using Rsse.Search.Algorithms;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace SearchEngine.Tokenizer.SearchProcessor;
 
 public abstract class ProductionSearchAlgorithmSelector
 {

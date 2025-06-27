@@ -10,10 +10,10 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Exceptions;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
+using SearchEngine.Tokenizer.Contracts;
+using SearchEngine.Tokenizer.SearchProcessor;
 
-namespace SearchEngine.Service.Tokenizer;
+namespace SearchEngine.Tokenizer;
 
 /// <summary>
 /// Функционал поддержки токенайзера.

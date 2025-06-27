@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Service.Tokenizer;
+namespace SearchEngine.Tokenizer;
 
 /// <summary>
 /// Блокировка в disposable-обертке.
