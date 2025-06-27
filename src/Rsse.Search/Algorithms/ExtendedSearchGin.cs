@@ -3,9 +3,8 @@ using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using Rsse.Search.Processor;
-using SearchEngine.Service.Tokenizer.Contracts;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace Rsse.Search.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта расширенной метрики.
@@ -21,10 +20,10 @@ public sealed class ExtendedSearchGin : IExtendedSearchProcessor
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required GinHandler<DocumentIdSet> GinExtended { get; init; }
+    public required InverseIndex<DocumentIdSet> GinExtended { get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGin));
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Rsse.Search;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using SearchEngine.Data.Contracts;

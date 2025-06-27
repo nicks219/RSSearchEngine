@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
-using SearchEngine.Service.Tokenizer.Contracts;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace Rsse.Search.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта сокращенной метрики.
-/// Метрика считается GIN индексе, применены дополнительные оптимизации.
+/// Метрика считается на самом GIN индексе и создаётся промежуточный результат для поиска в нём.
 /// </summary>
-public sealed class ReducedSearchGinFast : IReducedSearchProcessor
+public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
 {
     /// <summary>
     /// Индекс для всех токенизированных заметок.
@@ -22,10 +20,10 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required GinHandler<DocumentIdSet> GinReduced { get; init; }
+    public required InverseIndex<DocumentIdSet> GinReduced { get; init; }
 
     /// <inheritdoc/>
-    public void FindReduced(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
@@ -41,8 +39,11 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
 
             foreach (var docId in ids)
             {
-                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, docId, out _);
-                ++score;
+                if (!comparisonScoresReduced.TryAdd(docId, 1))
+                {
+                    // Это метрика intersect.count.
+                    comparisonScoresReduced[docId]++;
+                }
             }
         }
 

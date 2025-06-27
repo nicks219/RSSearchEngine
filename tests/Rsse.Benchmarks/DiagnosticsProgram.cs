@@ -89,7 +89,7 @@ public static class DiagnosticsProgram
         BenchmarkRunner.Run([
             typeof(TokenizerBenchmark),
             typeof(LuceneBenchmark),
-            /*typeof(DuplicatesBenchmark)*/
+            typeof(DuplicatesBenchmark)
         ], config);
     }
 

@@ -1,4 +1,4 @@
-using SearchEngine.Service.Tokenizer.SearchProcessor;
+using Rsse.Search;
 
 namespace SearchEngine.Benchmarks;
 

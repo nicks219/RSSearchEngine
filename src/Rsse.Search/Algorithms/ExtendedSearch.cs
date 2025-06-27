@@ -3,9 +3,8 @@ using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using Rsse.Search.Processor;
-using SearchEngine.Service.Tokenizer.Contracts;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace Rsse.Search.Algorithms;
 
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта расширенной метрики.
@@ -18,7 +17,7 @@ public sealed class ExtendedSearch : IExtendedSearchProcessor
     public required DirectIndex GeneralDirectIndex { get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearch));
 

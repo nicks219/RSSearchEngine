@@ -2,9 +2,8 @@ using System;
 using System.Threading;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
-using SearchEngine.Service.Tokenizer.Contracts;
 
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+namespace Rsse.Search.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта сокращенной метрики.
@@ -20,10 +19,10 @@ public sealed class ReducedSearchGin : IReducedSearchProcessor
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required GinHandler<DocumentIdSet> GinReduced { get; init; }
+    public required InverseIndex<DocumentIdSet> GinReduced { get; init; }
 
     /// <inheritdoc/>
-    public void FindReduced(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();

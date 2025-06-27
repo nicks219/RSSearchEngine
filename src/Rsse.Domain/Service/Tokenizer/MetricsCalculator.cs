@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rsse.Search;
 using Rsse.Search.Dto;
 
 namespace SearchEngine.Service.Tokenizer;
@@ -6,7 +7,7 @@ namespace SearchEngine.Service.Tokenizer;
 /// <summary>
 /// Подсчёт метрик релевантности для результатов поискового запроса.
 /// </summary>
-public sealed class MetricsCalculator
+public sealed class MetricsCalculator : IMetricsCalculator
 {
     // Коэффициент extended поиска: 0.8D
     private const double ExtendedCoefficient = 0.8D;

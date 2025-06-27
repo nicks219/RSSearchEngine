@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Rsse.Search;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
@@ -7,7 +8,6 @@ using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
 using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
 
 namespace SearchEngine.Tests.Units.Infra;
 

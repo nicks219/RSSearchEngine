@@ -1,7 +1,7 @@
-using Rsse.Search.Dto;
 using System.Threading;
+using Rsse.Search.Dto;
 
-namespace SearchEngine.Service.Tokenizer.Contracts;
+namespace Rsse.Search;
 
 /// <summary>
 /// Контракт алгоритма поиска и подсчёта сокращенной метрики.
@@ -14,5 +14,6 @@ public interface IReducedSearchProcessor
     /// <param name="searchVector">Токенизированый текст с поисковым запросом.</param>
     /// <param name="metricsCalculator">Компонент для подсчёта метрик релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    void FindReduced(TokenVector searchVector, MetricsCalculator metricsCalculator, CancellationToken cancellationToken);
+    void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken);
 }

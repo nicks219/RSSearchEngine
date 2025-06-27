@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using Rsse.Search;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;
@@ -15,7 +15,7 @@ namespace SearchEngine.Benchmarks.Performance;
 /// Инициализация и бенчмарк на Tokenizer.
 /// </summary>
 [MinColumn]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class TokenizerBenchmark : IBenchmarkRunner
 {
     private SearchEngineTokenizer _tokenizer;
@@ -52,9 +52,8 @@ public class TokenizerBenchmark : IBenchmarkRunner
         await InitializeTokenizer(SearchType.extended, SearchType.reduced);
     }
 
-    /// <inheritdoc/>
     [Benchmark]
-    public void RunBenchmark()
+    public void FindSentence()
     {
         var results = _tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
         if (results.Count == 0)
@@ -63,6 +62,12 @@ public class TokenizerBenchmark : IBenchmarkRunner
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
+    }
+
+    /// <inheritdoc/>
+    public void RunBenchmark()
+    {
+        FindSentence();
     }
 
     /// <inheritdoc/>

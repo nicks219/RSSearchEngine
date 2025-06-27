@@ -4,10 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using Rsse.Search;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Data.Entities;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;
@@ -16,7 +16,7 @@ namespace SearchEngine.Benchmarks.Performance;
 /// Инициализация и бенчмарк на Tokenizer.
 /// </summary>
 [MinColumn]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class DuplicatesBenchmark : IBenchmarkRunner
 {
     private SearchEngineTokenizer _tokenizer;
@@ -55,9 +55,8 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         await InitializeTokenizer(SearchType.extended, SearchType.reduced);
     }
 
-    /// <inheritdoc/>
     [Benchmark]
-    public void RunBenchmark()
+    public void FindText()
     {
         foreach (NoteEntity noteEntity in _noteEntities)
         {
@@ -69,6 +68,12 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
+    }
+
+    /// <inheritdoc/>
+    public void RunBenchmark()
+    {
+        FindText();
     }
 
     /// <inheritdoc/>

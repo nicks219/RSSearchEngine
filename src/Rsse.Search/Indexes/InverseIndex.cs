@@ -10,7 +10,7 @@ namespace Rsse.Search.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса.
 /// </summary>
-public sealed class GinHandler<TDocumentIdCollection>
+public sealed class InverseIndex<TDocumentIdCollection>
     where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     /// <summary>

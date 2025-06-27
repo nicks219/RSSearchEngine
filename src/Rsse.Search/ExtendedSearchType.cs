@@ -1,4 +1,6 @@
-namespace SearchEngine.Service.Tokenizer.SearchProcessor;
+using Rsse.Search.Algorithms;
+
+namespace Rsse.Search;
 
 /// <summary>
 /// Тип оптимизации поискового алгоритма.

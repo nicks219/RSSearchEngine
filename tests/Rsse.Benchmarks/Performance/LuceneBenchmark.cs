@@ -1,7 +1,8 @@
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Order;
+using SearchEngine.Benchmarks.Common;
 using System;
 using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
-using SearchEngine.Benchmarks.Common;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;
@@ -10,23 +11,17 @@ namespace SearchEngine.Benchmarks.Performance;
 /// Инициализация и бенчмарк на Lucene.
 /// </summary>
 [MinColumn]
+[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class LuceneBenchmark : IBenchmarkRunner
 {
-    private static bool _isInitialized;
-
     [GlobalSetup]
     public static async Task SetupAsync()
     {
-        if (_isInitialized) return;
-        _isInitialized = true;
-        Console.WriteLine($"[{nameof(LuceneBenchmark)}] initializing..");
-
         await InitializeLucene();
     }
 
-    /// <inheritdoc/>
     [Benchmark]
-    public void RunBenchmark()
+    public void FindSentence()
     {
         var result = LuceneWrapper.Find(SearchQuery);
 
@@ -39,6 +34,12 @@ public class LuceneBenchmark : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
+    public void RunBenchmark()
+    {
+        FindSentence();
+    }
+
+    /// <inheritdoc/>
     public Task Initialize() => InitializeLucene();
 
     /// <summary>
@@ -46,7 +47,8 @@ public class LuceneBenchmark : IBenchmarkRunner
     /// </summary>
     private static async Task InitializeLucene()
     {
-        Console.WriteLine($"[{nameof(LuceneWrapper)}] initializing..");
+        Console.WriteLine($"[{nameof(LuceneBenchmark)}] initializing..");
+
         await LuceneWrapper.InitializeAsync();
     }
 }
