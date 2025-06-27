@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using SearchEngine.Contracts;
 using SearchEngine.Dto;
 
-namespace SearchEngine.Tokenizer;
+namespace SearchEngine.Tokenizer.Common;
 
 /// <summary>
 /// Подсчёт метрик релевантности для результатов поискового запроса.

@@ -10,6 +10,7 @@ using SearchEngine.Exceptions;
 using SearchEngine.Indexes;
 using SearchEngine.SearchType;
 using SearchEngine.Service.Mapping;
+using SearchEngine.Tokenizer.Common;
 using SearchEngine.Tokenizer.Contracts;
 using SearchEngine.Tokenizer.SearchProcessor;
 
@@ -21,7 +22,7 @@ namespace SearchEngine.Tokenizer;
 public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly SearchProcessorFactory _searchProcessorFactory = new();
+    private readonly SearchProcessorFacade _searchProcessorFacade = new();
     private readonly ExtendedSearchType _extendedSearchType;
     private readonly ReducedSearchType _reducedSearchType;
 
@@ -44,7 +45,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     }
 
     // Используется для тестов.
-    internal DirectIndex GetTokenLines() => _searchProcessorFactory.GetTokenLines();
+    internal DirectIndex GetTokenLines() => _searchProcessorFacade.GetTokenLines();
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
@@ -53,7 +54,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         var documentId = new DocumentId(id);
 
-        var removed = _searchProcessorFactory.TryRemove(documentId);
+        var removed = _searchProcessorFacade.TryRemove(documentId);
 
         return removed;
     }
@@ -66,7 +67,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         var createdTokenLine = CreateTokensLine(note);
         var docId = new DocumentId(id);
 
-        var created = _searchProcessorFactory.TryAdd(docId, createdTokenLine);
+        var created = _searchProcessorFacade.TryAdd(docId, createdTokenLine);
 
         return created;
     }
@@ -79,7 +80,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
         var updatedTokenLine = CreateTokensLine(note);
         var docId = new DocumentId(id);
 
-        var updated = _searchProcessorFactory.TryUpdate(docId, updatedTokenLine);
+        var updated = _searchProcessorFacade.TryUpdate(docId, updatedTokenLine);
 
         // в данной реализации ошибки получения и обновления не разделяются
         return updated;
@@ -93,7 +94,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
         try
         {
-            _searchProcessorFactory.Clear();
+            _searchProcessorFacade.Clear();
 
             // todo: подумать, как избавиться от загрузки всех записей из таблицы
             var notes = dataProvider.GetDataAsync().WithCancellation(stoppingToken);
@@ -107,7 +108,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                 var tokenLine = CreateTokensLine(requestNote);
                 var noteDocId = new DocumentId(note.NoteId);
 
-                if (!_searchProcessorFactory.TryAdd(noteDocId, tokenLine))
+                if (!_searchProcessorFacade.TryAdd(noteDocId, tokenLine))
                 {
                     throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
                 }
@@ -119,7 +120,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
                                              $"'{ex.Source}' | '{ex.Message}'");
         }
 
-        var count = _searchProcessorFactory.Count;
+        var count = _searchProcessorFacade.Count;
 
         _isActivated = true;
 
@@ -142,7 +143,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         var metricsCalculator = new MetricsCalculator();
 
-        var extendedSearchVector = _searchProcessorFactory.ExtendedTokenizer.TokenizeText(text);
+        var extendedSearchVector = _searchProcessorFacade.ExtendedTokenizer.TokenizeText(text);
 
         if (extendedSearchVector.Count == 0)
         {
@@ -150,7 +151,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             return metricsCalculator.ComplianceMetrics;
         }
 
-        _searchProcessorFactory.FindExtended(_extendedSearchType,
+        _searchProcessorFacade.FindExtended(_extendedSearchType,
             extendedSearchVector, metricsCalculator, cancellationToken);
 
         if (!metricsCalculator.ContinueSearching)
@@ -158,7 +159,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             return metricsCalculator.ComplianceMetrics;
         }
 
-        var reducedSearchVector = _searchProcessorFactory.ReducedTokenizer.TokenizeText(text);
+        var reducedSearchVector = _searchProcessorFacade.ReducedTokenizer.TokenizeText(text);
 
         if (reducedSearchVector.Count == 0)
         {
@@ -166,7 +167,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             return metricsCalculator.ComplianceMetrics;
         }
 
-        _searchProcessorFactory.FindReduced(_reducedSearchType,
+        _searchProcessorFacade.FindReduced(_reducedSearchType,
             reducedSearchVector, metricsCalculator, cancellationToken);
 
         return metricsCalculator.ComplianceMetrics;
@@ -183,10 +184,10 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
 
         // расширенная эталонная последовательность:
-        var extendedTokenLine = _searchProcessorFactory.ExtendedTokenizer.TokenizeText(note.Text, " ", note.Title);
+        var extendedTokenLine = _searchProcessorFacade.ExtendedTokenizer.TokenizeText(note.Text, " ", note.Title);
 
         // урезанная эталонная последовательность:
-        var reducedTokenLine = _searchProcessorFactory.ReducedTokenizer.TokenizeText(note.Text, " ", note.Title);
+        var reducedTokenLine = _searchProcessorFacade.ReducedTokenizer.TokenizeText(note.Text, " ", note.Title);
 
         return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }

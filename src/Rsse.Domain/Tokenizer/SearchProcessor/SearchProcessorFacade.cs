@@ -5,16 +5,17 @@ using SearchEngine.Dto;
 using SearchEngine.Indexes;
 using SearchEngine.SearchType;
 using SearchEngine.Selector;
+using SearchEngine.Tokenizer.Common;
 using SearchEngine.Tokenizer.Contracts;
 using SearchEngine.Tokenizer.Processor;
 
 namespace SearchEngine.Tokenizer.SearchProcessor;
 
 /// <summary>
-/// Функционал, поставляющий различные алгоритмы вычисления метрик поиска.
+/// Функционал, предоставляющий доступ к различным алгоритмам поиска.
 /// Для бенчмарков.
 /// </summary>
-public sealed class SearchProcessorFactory
+public sealed class SearchProcessorFacade
 {
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
 
@@ -30,7 +31,7 @@ public sealed class SearchProcessorFactory
     /// </summary>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public SearchProcessorFactory()
+    public SearchProcessorFacade()
     {
         if (CheckIsProduction())
         {
