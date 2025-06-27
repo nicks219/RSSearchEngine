@@ -1,4 +1,5 @@
 apiVersion: networking.k8s.io/v1
+# роут по https/http notefinder.ru , редирект не отрабатывает
 kind: Ingress
 metadata:
   name: rsse-app-ingress-https-ru-https-only

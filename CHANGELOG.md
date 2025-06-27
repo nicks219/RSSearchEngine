@@ -197,9 +197,9 @@
 
 * `разработка`
   * избавиться от паразитного трафика (убрать шум в сигналах observability)
-    - [x] остановить `rsse-app-ingress-http`: т.е отрезать весь трафик, кроме https://notefinder.ru (IP и silversword)
-    - [ ] настроить редирект http -> https (проверить `rsse-app-ingress-https-ru-https-only`)
-
+    - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+    - [ ] активировать редирект http → https: остановить `rsse-app-ingress-https-ru`, включить `rsse-app-ingress-https-ru-https-only`
+      правила `rsse-app-ingress-https-ru-https-only` не сработали, вариант в `drafts` отломал серт в Chrome
 ---
 #### Идеи:
   * [x] протестировать Pyroscope для профилирования на проме и отправки в Grafana
