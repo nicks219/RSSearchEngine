@@ -1,9 +1,9 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Rsse.Search;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
+using SearchEngine.SearchType;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 

@@ -1,9 +1,10 @@
 using System;
 using System.Threading;
-using Rsse.Search;
-using Rsse.Search.Dto;
-using Rsse.Search.Indexes;
-using Rsse.Search.Selector;
+using SearchEngine.Contracts;
+using SearchEngine.Dto;
+using SearchEngine.Indexes;
+using SearchEngine.SearchType;
+using SearchEngine.Selector;
 using SearchEngine.Tokenizer.Contracts;
 using SearchEngine.Tokenizer.Processor;
 
