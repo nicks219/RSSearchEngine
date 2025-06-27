@@ -4,7 +4,7 @@ using SearchEngine.Data.Common;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал обновления заметок.

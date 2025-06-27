@@ -7,7 +7,7 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 
-namespace SearchEngine.Service.Tokenizer.Contracts;
+namespace SearchEngine.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт функционала поддержки токенизации заметок.

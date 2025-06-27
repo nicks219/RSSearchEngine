@@ -3,10 +3,12 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SearchEngine.Api;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
-using SearchEngine.Services;
+using SearchEngine.Service.Api;
 using SearchEngine.Tests.Units.Infra;
+using CreateService = SearchEngine.Service.Api.CreateService;
 
 namespace SearchEngine.Tests.Units;
 

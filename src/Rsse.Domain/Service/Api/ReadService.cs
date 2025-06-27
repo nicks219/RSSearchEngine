@@ -7,7 +7,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Elector;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал чтения заметок.

@@ -7,7 +7,7 @@ using BenchmarkDotNet.Order;
 using Rsse.Search;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Data.Entities;
-using SearchEngine.Service.Tokenizer;
+using SearchEngine.Tokenizer;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using SearchEngine.Service.Contracts;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал поиска заметок.

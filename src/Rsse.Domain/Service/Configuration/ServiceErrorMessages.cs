@@ -1,4 +1,5 @@
-using SearchEngine.Services;
+using SearchEngine.Service.Api;
+using CreateService = SearchEngine.Service.Api.CreateService;
 
 namespace SearchEngine.Service.Configuration;
 

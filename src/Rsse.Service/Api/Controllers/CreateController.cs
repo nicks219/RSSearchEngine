@@ -11,7 +11,6 @@ using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
 
 namespace SearchEngine.Api.Controllers;
@@ -24,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 public class CreateController(
     IHostApplicationLifetime lifetime,
     ITokenizerService tokenizerService,
-    CreateService createService,
+    Service.Api.CreateService createService,
     IDbMigratorFactory migratorFactory,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions) : ControllerBase

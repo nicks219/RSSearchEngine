@@ -1,6 +1,6 @@
 using Rsse.Search.Dto;
 
-namespace SearchEngine.Service.Tokenizer.Contracts;
+namespace SearchEngine.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт функционала токенизации заметок.

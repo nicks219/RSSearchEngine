@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rsse.Search.Dto;
-using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Tokenizer.Contracts;
 
-namespace SearchEngine.Service.Tokenizer.Processor;
+namespace SearchEngine.Tokenizer.Processor;
 
 /// <summary>
 /// Базовый функционал токенизатора.

@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SearchEngine.Data.Contracts;
 
-namespace SearchEngine.Services;
+namespace SearchEngine.Service.Api;
 
 /// <summary>
 /// Функционал удаления заметок.
