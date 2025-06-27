@@ -4,6 +4,8 @@ using Rsse.Search;
 using Rsse.Search.Dto;
 using Rsse.Search.Indexes;
 using Rsse.Search.Selector;
+using SearchEngine.Service.Tokenizer.Contracts;
+using SearchEngine.Service.Tokenizer.Processor;
 
 namespace SearchEngine.Service.Tokenizer.SearchProcessor;
 
@@ -40,6 +42,22 @@ public sealed class SearchProcessorFactory
             _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(_generalDirectIndex);
         }
     }
+
+    /// <summary>
+    /// Токенизатор с расширенным набором символов.
+    /// </summary>
+    public ITokenizerProcessor ExtendedTokenizer
+    {
+        get;
+    } = new TokenizerProcessor.Extended();
+
+    /// <summary>
+    /// Токенизатор с урезанным набором символов.
+    /// </summary>
+    public ITokenizerProcessor ReducedTokenizer
+    {
+        get;
+    } = new TokenizerProcessor.Reduced();
 
     public int Count => _generalDirectIndex.Count;
 

@@ -81,8 +81,7 @@ public class TokenizerBenchmark : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(TokenizerBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        var processorFactory = new TokenizerProcessorFactory();
-        _tokenizer = new SearchEngineTokenizer(processorFactory, extendedSearchType, reducedSearchType);
+        _tokenizer = new SearchEngineTokenizer(extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");

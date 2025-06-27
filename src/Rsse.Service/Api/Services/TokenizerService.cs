@@ -12,7 +12,6 @@ using SearchEngine.Data.Entities;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
 
 namespace SearchEngine.Api.Services;
 
@@ -28,11 +27,9 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// <summary>
     /// Создать сервис токенайзера.
     /// </summary>
-    /// <param name="processorFactory">Фабрика токенайзеров.</param>
     /// <param name="options">Настройки.</param>
     /// <param name="logger">Логер.</param>
     public TokenizerService(
-        ITokenizerProcessorFactory processorFactory,
         IOptions<CommonBaseOptions> options,
         ILogger<TokenizerService> logger)
     {
@@ -40,7 +37,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
-        _searchEngineTokenizer = new SearchEngineTokenizer(processorFactory,
+        _searchEngineTokenizer = new SearchEngineTokenizer(
             extendedSearchType, reducedSearchType);
     }
 

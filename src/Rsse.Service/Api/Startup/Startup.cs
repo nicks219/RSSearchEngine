@@ -25,8 +25,6 @@ using SearchEngine.Infrastructure.Context;
 using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
 using Serilog;
 
 namespace SearchEngine.Api.Startup;
@@ -58,8 +56,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddHostedService<ActivatorService>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         services.AddHttpContextAccessor();
 

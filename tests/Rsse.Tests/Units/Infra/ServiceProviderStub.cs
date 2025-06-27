@@ -6,8 +6,6 @@ using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
 
 namespace SearchEngine.Tests.Units.Infra;
 
@@ -31,8 +29,6 @@ public sealed class ServiceProviderStub : IDisposable
         });
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         // для тестов create
         services.AddDomainLayerDependencies();

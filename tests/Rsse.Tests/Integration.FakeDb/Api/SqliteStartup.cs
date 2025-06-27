@@ -10,8 +10,6 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
@@ -32,8 +30,6 @@ internal class SqliteStartup(IConfiguration configuration)
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, NoopLogger<SqliteStartup>>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();

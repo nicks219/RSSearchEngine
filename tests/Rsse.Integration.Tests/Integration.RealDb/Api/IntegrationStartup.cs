@@ -16,8 +16,6 @@ using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Repository;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
 
 namespace SearchEngine.Tests.Integration.RealDb.Api;
 
@@ -41,8 +39,6 @@ public class IntegrationStartup(IConfiguration configuration)
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         //services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
 
         services.AddSingleton<ITokenizerService, TokenizerService>();
         services.AddHostedService<ActivatorService>();

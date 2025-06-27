@@ -12,7 +12,6 @@ using SearchEngine.Exceptions;
 using SearchEngine.Service.Mapping;
 using SearchEngine.Service.Tokenizer.Contracts;
 using SearchEngine.Service.Tokenizer.SearchProcessor;
-using SearchEngine.Service.Tokenizer.TokenizerProcessor;
 
 namespace SearchEngine.Service.Tokenizer;
 
@@ -27,11 +26,6 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     private readonly ReducedSearchType _reducedSearchType;
 
     /// <summary>
-    /// Фабрика токенизаторов.
-    /// </summary>
-    private readonly ITokenizerProcessorFactory _tokenizerProcessorFactory;
-
-    /// <summary>
     /// Флаг инициалицации токенайзера.
     /// </summary>
     private volatile bool _isActivated;
@@ -39,15 +33,12 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
-    /// <param name="tokenizerProcessorFactory">Фабрика токенайзеров.</param>
     /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
     public SearchEngineTokenizer(
-        ITokenizerProcessorFactory tokenizerProcessorFactory,
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
         ReducedSearchType reducedSearchType = ReducedSearchType.Original)
     {
-        _tokenizerProcessorFactory = tokenizerProcessorFactory;
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
     }
@@ -151,9 +142,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     {
         var metricsCalculator = new MetricsCalculator();
 
-        var extendedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Extended);
-
-        var extendedSearchVector = extendedProcessor.TokenizeText(text);
+        var extendedSearchVector = _searchProcessorFactory.ExtendedTokenizer.TokenizeText(text);
 
         if (extendedSearchVector.Count == 0)
         {
@@ -169,9 +158,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             return metricsCalculator.ComplianceMetrics;
         }
 
-        var reducedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Reduced);
-
-        TokenVector reducedSearchVector = reducedProcessor.TokenizeText(text);
+        TokenVector reducedSearchVector = _searchProcessorFactory.ReducedTokenizer.TokenizeText(text);
 
         if (reducedSearchVector.Count == 0)
         {
@@ -196,14 +183,10 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
 
         // расширенная эталонная последовательность:
-        var extendedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Extended);
-
-        var extendedTokenLine = extendedProcessor.TokenizeText(note.Text, " ", note.Title);
+        var extendedTokenLine = _searchProcessorFactory.ExtendedTokenizer.TokenizeText(note.Text, " ", note.Title);
 
         // урезанная эталонная последовательность:
-        var reducedProcessor = _tokenizerProcessorFactory.CreateProcessor(ProcessorType.Reduced);
-
-        var reducedTokenLine = reducedProcessor.TokenizeText(note.Text, " ", note.Title);
+        var reducedTokenLine = _searchProcessorFactory.ReducedTokenizer.TokenizeText(note.Text, " ", note.Title);
 
         return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }

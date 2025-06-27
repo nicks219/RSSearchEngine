@@ -87,8 +87,7 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        var processorFactory = new TokenizerProcessorFactory();
-        _tokenizer = new SearchEngineTokenizer(processorFactory, extendedSearchType, reducedSearchType);
+        _tokenizer = new SearchEngineTokenizer(extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
