@@ -1,8 +1,9 @@
 using System;
-using Rsse.Search;
-using Rsse.Search.Algorithms;
-using Rsse.Search.Dto;
-using Rsse.Search.Indexes;
+using SearchEngine.Algorithms;
+using SearchEngine.Contracts;
+using SearchEngine.Dto;
+using SearchEngine.Indexes;
+using SearchEngine.SearchType;
 
 namespace SearchEngine.Tokenizer.SearchProcessor;
 

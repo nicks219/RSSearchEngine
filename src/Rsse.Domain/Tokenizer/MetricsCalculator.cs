@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Rsse.Search;
-using Rsse.Search.Dto;
+using SearchEngine.Contracts;
+using SearchEngine.Dto;
 
 namespace SearchEngine.Tokenizer;
 

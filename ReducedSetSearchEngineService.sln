@@ -123,7 +123,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Integration.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Benchmarks", "tests\Rsse.Benchmarks\Rsse.Benchmarks.csproj", "{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Search", "src\Rsse.Search\Rsse.Search.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine", "src\Rsse.Engine\Rsse.Engine.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

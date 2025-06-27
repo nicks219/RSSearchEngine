@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Rsse.Search;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Data.Entities;
+using SearchEngine.SearchType;
 using SearchEngine.Tokenizer;
 using static SearchEngine.Benchmarks.Constants;
 
