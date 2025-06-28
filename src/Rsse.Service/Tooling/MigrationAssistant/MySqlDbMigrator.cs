@@ -8,9 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Rsse.Infrastructure.Context;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
-using SearchEngine.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
 

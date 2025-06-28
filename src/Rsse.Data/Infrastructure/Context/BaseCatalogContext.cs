@@ -3,7 +3,7 @@ using SearchEngine.Data.Entities;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace SearchEngine.Infrastructure.Context;
+namespace Rsse.Infrastructure.Context;
 
 /// <summary>
 /// Базовый класс для контекста источников данных.

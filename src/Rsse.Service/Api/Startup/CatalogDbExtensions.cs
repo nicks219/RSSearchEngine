@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Infrastructure.Context;
+using Rsse.Infrastructure.Context;
 using SearchEngine.Service.Configuration;
 
 namespace SearchEngine.Api.Startup;
