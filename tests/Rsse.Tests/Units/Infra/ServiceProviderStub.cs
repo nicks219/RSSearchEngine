@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
 using SearchEngine.SearchType;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Tests.Units.Infra;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;

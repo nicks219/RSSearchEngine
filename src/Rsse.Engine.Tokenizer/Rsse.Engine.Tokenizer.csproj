@@ -8,4 +8,9 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+    <ProjectReference Include="..\Rsse.Engine\Rsse.Engine.csproj" />
+  </ItemGroup>
+
 </Project>
