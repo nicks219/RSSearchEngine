@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Api.Startup;
+using Rsse.Api.Startup;
 
 namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 

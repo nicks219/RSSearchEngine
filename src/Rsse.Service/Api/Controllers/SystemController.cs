@@ -7,7 +7,7 @@ using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер, поставляющий системную информацию.

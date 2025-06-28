@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Rsse.Domain.Exceptions;
 
-namespace SearchEngine.Api.Middleware;
+namespace Rsse.Api.Middleware;
 
 /// <summary>
 /// Компонент централизованной обработки исключений.

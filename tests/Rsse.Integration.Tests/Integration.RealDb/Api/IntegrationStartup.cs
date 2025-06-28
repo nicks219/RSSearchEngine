@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Rsse.Api.Authorization;
+using Rsse.Api.Configuration;
+using Rsse.Api.Middleware;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
 using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Middleware;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
 
 namespace SearchEngine.Tests.Integration.RealDb.Api;
 

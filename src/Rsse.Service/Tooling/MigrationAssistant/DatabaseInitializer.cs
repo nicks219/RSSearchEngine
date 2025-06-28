@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Rsse.Infrastructure.Context;
 using Rsse.Tooling.Scripts;
 
-namespace SearchEngine.Tooling.MigrationAssistant;
+namespace Rsse.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Создание и первоначальное заполнение базы данных.

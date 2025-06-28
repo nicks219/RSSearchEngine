@@ -6,7 +6,7 @@
     <Company>nick219</Company>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>SearchEngine</RootNamespace>
+    <RootNamespace>Rsse</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
 
     <InvariantGlobalization>true</InvariantGlobalization>

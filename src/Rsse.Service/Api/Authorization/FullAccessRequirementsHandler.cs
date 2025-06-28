@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Api.Authorization;
+namespace Rsse.Api.Authorization;
 
 /// <summary>
 /// Обработчик правила авторизации <see cref="FullAccessRequirement"/>.

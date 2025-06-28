@@ -7,7 +7,7 @@ using OpenTelemetry.Metrics;
 using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение функционала поставки метрик.

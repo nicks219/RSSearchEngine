@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Rsse.Api.Configuration;
 using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.Api;
@@ -12,10 +13,9 @@ using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Tooling.Contracts;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для создания заметок.

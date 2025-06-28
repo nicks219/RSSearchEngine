@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Api.Services;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Api.Services;
+using Rsse.Tooling.Contracts;
+using Rsse.Tooling.MigrationAssistant;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение, регистрирующее функционал тулинга.

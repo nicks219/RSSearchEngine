@@ -6,12 +6,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MySqlConnector;
 using Npgsql;
+using Rsse.Api.Controllers;
+using Rsse.Api.Startup;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Startup;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Tooling.Contracts;
+using Rsse.Tooling.MigrationAssistant;
 using Serilog;
 
 namespace SearchEngine.Tests.Integration.RealDb.Api;

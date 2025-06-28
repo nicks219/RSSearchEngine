@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Rsse.Api.Services;
 using Rsse.Domain.Service.Api;
-using SearchEngine.Api.Services;
 using CreateService = Rsse.Domain.Service.Api.CreateService;
 
 namespace SearchEngine.Tests.Units.Infra;

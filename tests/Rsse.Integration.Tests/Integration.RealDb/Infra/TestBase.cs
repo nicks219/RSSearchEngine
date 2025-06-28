@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rsse.Api.Startup;
 using Rsse.Domain.Service.Configuration;
-using SearchEngine.Api.Startup;
 using SearchEngine.Tests.Integration.RealDb.Api;
 
 namespace SearchEngine.Tests.Integration.RealDb.Infra;

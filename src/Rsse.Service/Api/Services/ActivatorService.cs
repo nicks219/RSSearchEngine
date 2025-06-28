@@ -7,9 +7,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Tooling.MigrationAssistant;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Сервис запуска по расписанию инициализации функционала токенизатора.

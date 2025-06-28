@@ -10,7 +10,7 @@ using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для обновления заметки.

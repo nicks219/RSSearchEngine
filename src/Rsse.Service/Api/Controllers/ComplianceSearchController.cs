@@ -5,7 +5,7 @@ using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска.
