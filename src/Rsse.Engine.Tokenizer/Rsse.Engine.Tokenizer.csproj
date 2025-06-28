@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
-    <ProjectReference Include="..\Rsse.Engine\Rsse.Engine.csproj" />
+    <ProjectReference Include="..\Rsse.Engine.VectorSearch\Rsse.Engine.VectorSearch.csproj" />
   </ItemGroup>
 
 </Project>
