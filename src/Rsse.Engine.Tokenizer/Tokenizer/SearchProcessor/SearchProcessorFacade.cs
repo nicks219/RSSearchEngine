@@ -1,15 +1,15 @@
 using System;
 using System.Threading;
+using RsseEngine.Tokenizer.Common;
+using RsseEngine.Tokenizer.Contracts;
+using RsseEngine.Tokenizer.Processor;
 using SearchEngine.Contracts;
 using SearchEngine.Dto;
 using SearchEngine.Indexes;
 using SearchEngine.SearchType;
 using SearchEngine.Selector;
-using SearchEngine.Tokenizer.Common;
-using SearchEngine.Tokenizer.Contracts;
-using SearchEngine.Tokenizer.Processor;
 
-namespace SearchEngine.Tokenizer.SearchProcessor;
+namespace RsseEngine.Tokenizer.SearchProcessor;
 
 /// <summary>
 /// Функционал, предоставляющий доступ к различным алгоритмам поиска.

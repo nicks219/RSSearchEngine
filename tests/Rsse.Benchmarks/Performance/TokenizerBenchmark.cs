@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using RsseEngine;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.SearchType;
 using static SearchEngine.Benchmarks.Constants;

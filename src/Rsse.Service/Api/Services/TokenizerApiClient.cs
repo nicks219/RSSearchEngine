@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RsseEngine;
+using RsseEngine.Tokenizer.Contracts;
 using SearchEngine.Api.Configuration;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Indexes;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Tokenizer.Contracts;
 
 namespace SearchEngine.Api.Services;
 

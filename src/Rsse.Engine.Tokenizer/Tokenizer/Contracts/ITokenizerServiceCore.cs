@@ -7,7 +7,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Dto;
 
-namespace SearchEngine.Tokenizer.Contracts;
+namespace RsseEngine.Tokenizer.Contracts;
 
 /// <summary>
 /// Контракт, фиксирующий функционал токенизации документов, в коде не используется.
