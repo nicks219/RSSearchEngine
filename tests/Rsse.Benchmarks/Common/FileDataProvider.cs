@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Entities;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Common;

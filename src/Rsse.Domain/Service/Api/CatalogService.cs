@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
 
-namespace SearchEngine.Service.Api;
+namespace Rsse.Domain.Service.Api;
 
 /// <summary>
 /// Функционал каталога.

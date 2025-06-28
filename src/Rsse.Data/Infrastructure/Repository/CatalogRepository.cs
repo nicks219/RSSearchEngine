@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
+using Rsse.Domain.Exceptions;
 using Rsse.Infrastructure.Context;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
-using SearchEngine.Exceptions;
 
 namespace Rsse.Infrastructure.Repository;
 

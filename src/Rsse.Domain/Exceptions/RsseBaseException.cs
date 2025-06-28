@@ -1,6 +1,6 @@
 using System;
 
-namespace SearchEngine.Exceptions;
+namespace Rsse.Domain.Exceptions;
 
 /// <summary>
 /// Базовый класс исключений.

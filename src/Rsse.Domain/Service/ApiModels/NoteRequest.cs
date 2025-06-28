@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контракт запроса с заметкой.

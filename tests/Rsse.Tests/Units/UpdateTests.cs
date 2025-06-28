@@ -2,9 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.Api;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 

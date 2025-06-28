@@ -1,4 +1,4 @@
-namespace SearchEngine.Data.Dto;
+namespace Rsse.Domain.Data.Dto;
 
 /// <summary>
 /// Контейнер с ответом, представляющим тег с признаком соответствия обрабатываемой заметке.

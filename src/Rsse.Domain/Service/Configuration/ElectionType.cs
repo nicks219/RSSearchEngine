@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Configuration;
+namespace Rsse.Domain.Service.Configuration;
 
 /// <summary>
 /// Алгоритм выбора следующей заметки.

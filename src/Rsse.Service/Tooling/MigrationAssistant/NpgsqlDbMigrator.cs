@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Rsse.Domain.Service.Configuration;
 using Rsse.Tooling.Scripts;
 using SearchEngine.Api.Services;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Tooling.Contracts;
 
 namespace SearchEngine.Tooling.MigrationAssistant;

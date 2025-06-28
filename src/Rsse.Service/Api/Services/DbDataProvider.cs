@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Entities;
 
 namespace SearchEngine.Api.Services;
 

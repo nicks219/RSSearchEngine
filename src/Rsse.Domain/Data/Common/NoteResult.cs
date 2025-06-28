@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Data.Dto;
+using Rsse.Domain.Data.Dto;
 
-namespace SearchEngine.Data.Common;
+namespace Rsse.Domain.Data.Common;
 
 /// <summary>
 /// Компонент, инкапсулирующий логику создания dto.

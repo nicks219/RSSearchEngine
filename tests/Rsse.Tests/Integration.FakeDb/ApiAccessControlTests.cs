@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rsse.Domain.Service.Configuration;
 using SearchEngine.Api.Startup;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Tests.Integration.FakeDb.Api;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 

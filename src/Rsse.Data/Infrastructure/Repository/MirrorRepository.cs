@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
 using Rsse.Infrastructure.Context;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
 
 namespace Rsse.Infrastructure.Repository;
 

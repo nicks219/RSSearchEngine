@@ -1,4 +1,4 @@
-namespace SearchEngine.Exceptions;
+namespace Rsse.Domain.Exceptions;
 
 /// <summary>
 /// Исключение компонента поиска.

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
 
-namespace SearchEngine.Service.Contracts;
+namespace Rsse.Domain.Service.Contracts;
 
 /// <summary>
 /// Контракт использования функционала токенизации документов.

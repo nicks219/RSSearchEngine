@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Configuration;
+namespace Rsse.Domain.Service.Configuration;
 
 /// <summary>
 /// Настройка способа выбора следующего ответа.

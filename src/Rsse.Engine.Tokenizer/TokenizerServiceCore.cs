@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
+using Rsse.Domain.Exceptions;
+using Rsse.Domain.Service.Mapping;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 using RsseEngine.Tokenizer.Common;
 using RsseEngine.Tokenizer.Contracts;
 using RsseEngine.Tokenizer.SearchManager;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
-using SearchEngine.Exceptions;
-using SearchEngine.Service.Mapping;
 
 namespace RsseEngine;
 

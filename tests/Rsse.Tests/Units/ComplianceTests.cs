@@ -7,13 +7,13 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Contracts;
 using RsseEngine.SearchType;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Services;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 

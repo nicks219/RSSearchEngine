@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Entities;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 

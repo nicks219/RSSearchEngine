@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 

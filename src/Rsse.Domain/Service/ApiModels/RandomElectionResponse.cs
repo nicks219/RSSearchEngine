@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контракт ответа изменения алгоритма выбора.

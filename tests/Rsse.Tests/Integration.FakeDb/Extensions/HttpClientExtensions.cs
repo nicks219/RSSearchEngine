@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 
