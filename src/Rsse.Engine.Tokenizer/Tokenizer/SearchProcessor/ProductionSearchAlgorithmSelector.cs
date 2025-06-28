@@ -5,7 +5,7 @@ using SearchEngine.Dto;
 using SearchEngine.Indexes;
 using SearchEngine.SearchType;
 
-namespace SearchEngine.Tokenizer.SearchProcessor;
+namespace RsseEngine.Tokenizer.SearchProcessor;
 
 public abstract class ProductionSearchAlgorithmSelector
 {

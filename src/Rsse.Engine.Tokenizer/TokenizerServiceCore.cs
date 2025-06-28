@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using RsseEngine.Tokenizer.Common;
+using RsseEngine.Tokenizer.Contracts;
+using RsseEngine.Tokenizer.SearchProcessor;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
@@ -10,11 +13,8 @@ using SearchEngine.Exceptions;
 using SearchEngine.Indexes;
 using SearchEngine.SearchType;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Tokenizer.Common;
-using SearchEngine.Tokenizer.Contracts;
-using SearchEngine.Tokenizer.SearchProcessor;
 
-namespace SearchEngine;
+namespace RsseEngine;
 
 /// <summary>
 /// Функционал поддержки токенайзера.
