@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace SearchEngine.Service.Elector;
+namespace Rsse.Domain.Service.Elector;
 
 /// <summary>
 /// Расширение для дополнительной рандомизации.

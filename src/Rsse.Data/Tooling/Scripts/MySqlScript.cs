@@ -1,4 +1,4 @@
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 
 namespace Rsse.Tooling.Scripts;
 

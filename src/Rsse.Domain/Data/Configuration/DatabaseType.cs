@@ -1,4 +1,4 @@
-namespace SearchEngine.Data.Configuration;
+namespace Rsse.Domain.Data.Configuration;
 
 /// <summary>
 /// Тип бд либо мигратора.

@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Mapping;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Mapping;
 using Serilog;
 
 namespace SearchEngine.Api.Controllers;

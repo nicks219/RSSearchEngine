@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 
-namespace SearchEngine.Data.Entities;
+namespace Rsse.Domain.Data.Entities;
 
 /// <summary>
 /// Представление строки таблицы бд с заметкой.

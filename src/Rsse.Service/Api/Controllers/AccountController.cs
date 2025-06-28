@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Mapping;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Mapping;
 using static SearchEngine.Api.Configuration.ControllerErrorMessages;
 using static SearchEngine.Api.Configuration.ControllerMessages;
 

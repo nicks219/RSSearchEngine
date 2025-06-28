@@ -1,10 +1,10 @@
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Common;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
+using Rsse.Domain.Data.Common;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
 
-namespace SearchEngine.Service.Api;
+namespace Rsse.Domain.Service.Api;
 
 /// <summary>
 /// Функционал обновления заметок.

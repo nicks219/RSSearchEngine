@@ -1,8 +1,8 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.ApiModels;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
 
 namespace SearchEngine.Tests.Integration.RealDb.Extensions;
 

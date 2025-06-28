@@ -1,11 +1,11 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Contracts;
 using RsseEngine.SearchType;
 using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Tests.Units.Infra;
 

@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
 using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 

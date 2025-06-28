@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 using SearchEngine.Tooling.Contracts;
 
 namespace SearchEngine.Tooling.MigrationAssistant;

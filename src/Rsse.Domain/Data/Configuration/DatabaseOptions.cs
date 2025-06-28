@@ -1,6 +1,6 @@
 using System;
 
-namespace SearchEngine.Data.Configuration;
+namespace Rsse.Domain.Data.Configuration;
 
 /// <summary>
 /// Настройки доступа к данным.

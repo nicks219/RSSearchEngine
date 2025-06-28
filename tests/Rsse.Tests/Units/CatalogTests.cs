@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.Contracts;
 using SearchEngine.Api.Controllers;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 

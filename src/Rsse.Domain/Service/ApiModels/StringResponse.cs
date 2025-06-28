@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контракт ответа со строками - контроллера миграций и ручки чтения.

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Service.Elector;
+namespace Rsse.Domain.Service.Elector;
 
 /// <summary>
 /// Функционал для выбора заметок.
