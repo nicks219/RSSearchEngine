@@ -64,7 +64,7 @@ public class TokenizerApiClientTests
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         await CreateTestNote(tokenizer);
-        var tokenLines = tokenizer.GetTokenLines();
+        var tokenLines = tokenizer.GetDirectIndex();
 
         // act:
         tokenLines.Should().NotBeNull();
@@ -102,7 +102,7 @@ public class TokenizerApiClientTests
                 Title = FakeCatalogRepository.SecondNoteTitle,
                 Text = FakeCatalogRepository.SecondNoteText
             }, _token);
-        var tokenLines = tokenizer.GetTokenLines();
+        var tokenLines = tokenizer.GetDirectIndex();
 
         // assert:
         tokenLines.First()
@@ -127,7 +127,7 @@ public class TokenizerApiClientTests
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
-        var tokenLines = tokenizer.GetTokenLines();
+        var tokenLines = tokenizer.GetDirectIndex();
 
         // act:
         await tokenizer.Create(2, new TextRequestDto
@@ -160,7 +160,7 @@ public class TokenizerApiClientTests
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
         var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         await CreateTestNote(tokenizer);
-        var tokenLines = tokenizer.GetTokenLines();
+        var tokenLines = tokenizer.GetDirectIndex();
         var countBefore = tokenLines.Count;
 
         // act:
@@ -179,7 +179,7 @@ public class TokenizerApiClientTests
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
         var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
-        var tokenLines = tokenizer.GetTokenLines();
+        var tokenLines = tokenizer.GetDirectIndex();
 
         // init asserts:
         VectorsShouldBeEmpty();

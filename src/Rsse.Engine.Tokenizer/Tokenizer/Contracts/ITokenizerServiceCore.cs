@@ -10,7 +10,7 @@ using RsseEngine.Dto;
 namespace RsseEngine.Tokenizer.Contracts;
 
 /// <summary>
-/// Контракт, фиксирующий функционал токенизации документов, в коде не используется.
+/// Контракт, фиксирующий функционал сервиса токенайзера (в коде не используется).
 /// </summary>
 public interface ITokenizerServiceCore : IDisposable
 {

@@ -6,7 +6,7 @@ using RsseEngine.Tokenizer.Contracts;
 namespace RsseEngine.Tokenizer.Processor;
 
 /// <summary>
-/// Базовый функционал токенизатора.
+/// Базовый функционал токенизатора текста.
 /// </summary>
 public abstract class TokenizerProcessor
 {
@@ -16,19 +16,19 @@ public abstract class TokenizerProcessor
     // Разделители слов в заметке.
     private static readonly char[] Separators = ['\r', '\n', '\t', ':', '/', '.', ' '];
 
-    private TokenizerProcessor()
-    {
-        // Do nothing;
-    }
+    // Архитектурное ограничение.
+    private TokenizerProcessor() { }
 
     /// <summary>
     /// Полный набор символов для токенизации.
     /// </summary>
-    protected abstract string ConsonantChain
-    {
-        get;
-    }
+    protected abstract string ConsonantChain { get; }
 
+    /// <summary>
+    /// Токенизировать текст в виде массива строк.
+    /// </summary>
+    /// <param name="words">Текст в виде массива строк.</param>
+    /// <returns>Результат в виде вектора.</returns>
     public TokenVector TokenizeText(params string[] words)
     {
         // Вызывается при инициализации индекса.
@@ -36,6 +36,11 @@ public abstract class TokenizerProcessor
         return vector;
     }
 
+    /// <summary>
+    /// Токенизировать текст в виде строки.
+    /// </summary>
+    /// <param name="words">Текст в виде строки.</param>
+    /// <returns>Результат в виде вектора.</returns>
     public TokenVector TokenizeText(string words)
     {
         // Вызывается на поисковых запросах.
@@ -43,6 +48,7 @@ public abstract class TokenizerProcessor
         return vector;
     }
 
+    // Токенизировать текст.
     private TokenVector TokenizeTextInternal(params string[] words)
     {
         var count = words[0].Count(e => e == ' ') + 1;
@@ -88,7 +94,7 @@ public abstract class TokenizerProcessor
     }
 
     /// <summary>
-    /// Основной функционал токенизатора с расширенным набором символов.
+    /// Токенизатор, использующий расширенный набор символов.
     /// </summary>
     public sealed class Extended : TokenizerProcessor, ITokenizerProcessor
     {
@@ -108,7 +114,7 @@ public abstract class TokenizerProcessor
     }
 
     /// <summary>
-    /// Основной функционал токенизатора с урезанным набором символов.
+    /// Токенизатор, использующий урезанный набор символов.
     /// </summary>
     public sealed class Reduced : TokenizerProcessor, ITokenizerProcessor
     {

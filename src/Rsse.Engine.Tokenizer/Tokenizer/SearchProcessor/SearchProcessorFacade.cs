@@ -12,8 +12,7 @@ using RsseEngine.Tokenizer.Processor;
 namespace RsseEngine.Tokenizer.SearchProcessor;
 
 /// <summary>
-/// Функционал, предоставляющий доступ к различным алгоритмам поиска.
-/// Для бенчмарков.
+/// Доступ к различным алгоритмам поиска.
 /// </summary>
 public sealed class SearchProcessorFacade
 {
@@ -22,7 +21,7 @@ public sealed class SearchProcessorFacade
     private readonly ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor> _reducedSearchAlgorithmSelector;
 
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
+    /// Общий индекс для всех токенизированных заметок.
     /// </summary>
     private readonly DirectIndex _generalDirectIndex = new();
 
@@ -48,26 +47,29 @@ public sealed class SearchProcessorFacade
     /// <summary>
     /// Токенизатор с расширенным набором символов.
     /// </summary>
-    public ITokenizerProcessor ExtendedTokenizer
-    {
-        get;
-    } = new TokenizerProcessor.Extended();
+    public ITokenizerProcessor ExtendedTokenizer { get; } = new TokenizerProcessor.Extended();
 
     /// <summary>
     /// Токенизатор с урезанным набором символов.
     /// </summary>
-    public ITokenizerProcessor ReducedTokenizer
-    {
-        get;
-    } = new TokenizerProcessor.Reduced();
+    public ITokenizerProcessor ReducedTokenizer { get; } = new TokenizerProcessor.Reduced();
 
-    public int Count => _generalDirectIndex.Count;
+    /// <summary>
+    /// Получить размер общего индекса.
+    /// </summary>
+    public int DirectIndexCount => _generalDirectIndex.Count;
 
-    public DirectIndex GetTokenLines()
-    {
-        return _generalDirectIndex;
-    }
+    /// <summary>
+    /// Получить общий индекс.
+    /// </summary>
+    public DirectIndex GetDirectIndex() => _generalDirectIndex;
 
+    /// <summary>
+    /// Добавить в индексы идентификатор документа и его extended/reduced векторы.
+    /// </summary>
+    /// <param name="documentId">Идентификатор документа.</param>
+    /// <param name="tokenLine">Контейнер с extended/reduced векторами.</param>
+    /// <returns>Признак успешного выполнения.</returns>
     public bool TryAdd(DocumentId documentId, TokenLine tokenLine)
     {
         if (!_generalDirectIndex.TryAdd(documentId, tokenLine))
@@ -81,6 +83,12 @@ public sealed class SearchProcessorFacade
         return true;
     }
 
+    /// <summary>
+    /// Обновить в индексах extended/reduced векторы для заданного документа.
+    /// </summary>
+    /// <param name="documentId">Идентификатор документа.</param>
+    /// <param name="tokenLine">Контейнер с extended/reduced векторами.</param>
+    /// <returns>Признак успешного выполнения.</returns>
     public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
     {
         if (!_generalDirectIndex.TryUpdate(documentId, tokenLine, out var oldTokenLine))
@@ -94,6 +102,11 @@ public sealed class SearchProcessorFacade
         return true;
     }
 
+    /// <summary>
+    /// Удалить из индексов требуемый документ.
+    /// </summary>
+    /// <param name="documentId">Идентификатор документа.</param>
+    /// <returns>Признак успешного выполнения.</returns>
     public bool TryRemove(DocumentId documentId)
     {
         if (!_generalDirectIndex.TryRemove(documentId, out var tokenLine))
@@ -107,6 +120,9 @@ public sealed class SearchProcessorFacade
         return true;
     }
 
+    /// <summary>
+    /// Очистить общие индексы.
+    /// </summary>
     public void Clear()
     {
         _generalDirectIndex.Clear();
@@ -115,37 +131,37 @@ public sealed class SearchProcessorFacade
     }
 
     /// <summary>
-    /// Алгоритм поиска текста в extended-векторах и подсчёта расширенной метрики.
+    /// Найти текст в extended-векторах и добавить результат поиска в расширенную метрику.
     /// </summary>
     /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
     /// <param name="extendedSearchVector">Токенизированый текст с поисковым запросом.</param>
-    /// <param name="metricsCalculator">Компонент для подсчёта метрик релевантности.</param>
+    /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <exception cref="NotSupportedException"></exception>
     public void FindExtended(ExtendedSearchType extendedSearchType, TokenVector extendedSearchVector,
         MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        _extendedSearchAlgorithmSelector.GetSearchProcessor(extendedSearchType)
+        _extendedSearchAlgorithmSelector
+            .GetSearchProcessor(extendedSearchType)
             .FindExtended(extendedSearchVector, metricsCalculator, cancellationToken);
     }
 
     /// <summary>
-    /// Алгоритм поиска текста в reduced-векторах и подсчёта сокращенной метрики.
+    /// Найти текст в reduced-векторах и добавить результат поиска в сокращенную метрику.
     /// </summary>
     /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
     /// <param name="reducedSearchVector">Токенизированый текст с поисковым запросом.</param>
-    /// <param name="metricsCalculator">Компонент для подсчёта метрик релевантности.</param>
+    /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <exception cref="NotSupportedException"></exception>
     public void FindReduced(ReducedSearchType reducedSearchType, TokenVector reducedSearchVector,
         MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        _reducedSearchAlgorithmSelector.GetSearchProcessor(reducedSearchType)
+        _reducedSearchAlgorithmSelector
+            .GetSearchProcessor(reducedSearchType)
             .FindReduced(reducedSearchVector, metricsCalculator, cancellationToken);
     }
 
     /// <summary>
-    /// Упасть при запуске в производственном окружении.
+    /// Вернуть признак запуска в производственном окружении.
     /// </summary>
     private static bool CheckIsProduction()
     {
