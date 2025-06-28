@@ -24,7 +24,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     private readonly ExtendedSearchGinFast _extendedSearchGinFast;
 
     /// <summary>
-    /// Инициализировать extended-алгоритмы.
+    /// Компонент с extended-алгоритмами.
     /// </summary>
     /// <param name="generalDirectIndex">Общий индекс.</param>
     public ExtendedSearchAlgorithmSelector(DirectIndex generalDirectIndex)

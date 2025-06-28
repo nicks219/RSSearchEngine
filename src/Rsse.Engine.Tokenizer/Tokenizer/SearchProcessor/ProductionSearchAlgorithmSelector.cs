@@ -8,7 +8,7 @@ using RsseEngine.SearchType;
 namespace RsseEngine.Tokenizer.SearchProcessor;
 
 /// <summary>
-/// Выбор алгоритма для эксплуатации в производственном окружении.
+/// Компонент с алгоритмами для производственного окружения.
 /// </summary>
 public abstract class ProductionSearchAlgorithmSelector
 {

@@ -24,7 +24,7 @@ public sealed class ReducedSearchAlgorithmSelector
     private readonly ReducedSearchGinFast _reducedSearchGinFast;
 
     /// <summary>
-    /// Инициализировать reduced-алгоритмы.
+    /// Компонент с reduced-алгоритмами.
     /// </summary>
     /// <param name="generalDirectIndex">Общий индекс.</param>
     public ReducedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
