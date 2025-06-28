@@ -3,7 +3,7 @@ using RsseEngine.Dto;
 namespace RsseEngine.Contracts;
 
 /// <summary>
-/// Подсчёт метрик релевантности для результатов поискового запроса.
+/// Контракт подсчёта метрик релевантности для результатов поискового запроса.
 /// </summary>
 public interface IMetricsCalculator
 {

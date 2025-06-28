@@ -13,7 +13,7 @@ namespace RsseEngine.Algorithms;
 public sealed class ReducedSearchLegacy : IReducedSearchProcessor
 {
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
+    /// Общий индекс: идентификатор-вектор.
     /// </summary>
     public required DirectIndex GeneralDirectIndex { get; init; }
 

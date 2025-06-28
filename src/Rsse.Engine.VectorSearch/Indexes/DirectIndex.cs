@@ -6,6 +6,9 @@ using RsseEngine.Dto;
 
 namespace RsseEngine.Indexes;
 
+/// <summary>
+/// Поддержка общего индекса "идентификатор-токены".
+/// </summary>
 public sealed class DirectIndex
 {
     private readonly ConcurrentDictionary<DocumentId, TokenLine> _directIndex = new();

@@ -9,9 +9,9 @@ using RsseEngine.Dto;
 namespace RsseEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего инвертированного индекса.
+/// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class InverseIndex<TDocumentIdCollection>
+public sealed class InvertedIndex<TDocumentIdCollection>
     where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     /// <summary>

@@ -6,9 +6,9 @@ using RsseEngine.Contracts;
 namespace RsseEngine.Dto;
 
 /// <summary>
-/// Сортированый вектор с уникальными идентификаторами документов, используется в GIN.
+/// Сортированный вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
-/// <param name="list">Сет идентификаторов документов.</param>
+/// <param name="list">Список идентификаторов документов.</param>
 public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<DocumentIdList>, IDocumentIdCollection
 {
     // Коллекция уникальных идентификаторов заметок.

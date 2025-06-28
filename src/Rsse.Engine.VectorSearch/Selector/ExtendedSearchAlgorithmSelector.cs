@@ -13,7 +13,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <summary>
     /// Поддержка GIN-индекса для расширенного поиска и метрик.
     /// </summary>
-    private readonly InverseIndex<DocumentIdSet> _ginExtended = new();
+    private readonly InvertedIndex<DocumentIdSet> _ginExtended = new();
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGin _extendedSearchGin;

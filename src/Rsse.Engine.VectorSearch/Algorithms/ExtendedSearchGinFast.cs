@@ -15,14 +15,14 @@ namespace RsseEngine.Algorithms;
 public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
 {
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
+    /// Общий индекс: идентификатор-вектор.
     /// </summary>
     public required DirectIndex GeneralDirectIndex { get; init; }
 
     /// <summary>
-    /// Поддержка GIN-индекса.
+    /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InverseIndex<DocumentIdSet> GinExtended { get; init; }
+    public required InvertedIndex<DocumentIdSet> GinExtended { get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)

@@ -13,7 +13,7 @@ public sealed class ReducedSearchAlgorithmSelector
     /// <summary>
     /// Поддержка GIN-индекса для сокращенного поиска и метрик.
     /// </summary>
-    private readonly InverseIndex<DocumentIdSet> _ginReduced = new();
+    private readonly InvertedIndex<DocumentIdSet> _ginReduced = new();
 
     private readonly ReducedSearchLegacy _reducedSearchLegacy;
     private readonly ReducedSearchGin _reducedSearchGin;
