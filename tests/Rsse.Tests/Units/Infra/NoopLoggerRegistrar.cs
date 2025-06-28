@@ -24,6 +24,6 @@ public static class NoopLoggerRegistrar
         services.AddSingleton<ILogger<ReadService>, NoopLogger<ReadService>>();
         services.AddSingleton<ILogger<UpdateService>, NoopLogger<UpdateService>>();
 
-        services.AddSingleton<ILogger<TokenizerService>, NoopLogger<TokenizerService>>();
+        services.AddSingleton<ILogger<TokenizerApiClient>, NoopLogger<TokenizerApiClient>>();
     }
 }

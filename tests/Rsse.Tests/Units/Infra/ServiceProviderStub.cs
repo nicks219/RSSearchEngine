@@ -28,7 +28,7 @@ public sealed class ServiceProviderStub : IDisposable
             options.ReducedSearchType = reducedSearchType;
         });
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         // для тестов create
         services.AddDomainLayerDependencies();

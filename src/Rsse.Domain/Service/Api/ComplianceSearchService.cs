@@ -8,7 +8,7 @@ namespace SearchEngine.Service.Api;
 /// <summary>
 /// Функционал поиска заметок.
 /// </summary>
-public sealed class ComplianceSearchService(ITokenizerService tokenizer)
+public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
 {
     /// <summary>
     /// Порог актуального значения индекса. Низкий вес не стоит учитывать, если результатов много.

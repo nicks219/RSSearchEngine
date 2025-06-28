@@ -55,7 +55,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         services.AddHostedService<ActivatorService>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         services.AddHttpContextAccessor();
 

@@ -31,7 +31,7 @@ internal class SqliteStartup(IConfiguration configuration)
 
         services.AddSingleton<ILogger, NoopLogger<SqliteStartup>>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
         services.AddHostedService<ActivatorService>();
         services.AddSingleton<MigratorState>();
 

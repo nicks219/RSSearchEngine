@@ -46,7 +46,7 @@ public class ComplianceTests
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
-                var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
                 var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
                 var complianceController = new ComplianceSearchController(complianceManager);
@@ -96,7 +96,7 @@ public class ComplianceTests
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
-                var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
                 var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
                 var complianceController = new ComplianceSearchController(complianceManager);

@@ -9,9 +9,9 @@ using SearchEngine.Data.Entities;
 namespace SearchEngine.Service.Contracts;
 
 /// <summary>
-/// Контракт сервиса поддержки токенизации заметок.
+/// Контракт использования функционала токенизации документов.
 /// </summary>
-public interface ITokenizerService
+public interface ITokenizerApiClient
 {
     /// <summary>
     /// Создать вектор для заметки.

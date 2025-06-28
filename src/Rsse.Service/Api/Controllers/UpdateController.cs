@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
+    ITokenizerApiClient tokenizerApiClient,
     UpdateService updateService) : ControllerBase
 {
     /// <summary>
@@ -42,7 +42,7 @@ public class UpdateController(
             Text = noteRequest.Text
         };
 
-        await tokenizerService.Update(noteRequest.NoteIdExchange, textRequestDto, stoppingToken);
+        await tokenizerApiClient.Update(noteRequest.NoteIdExchange, textRequestDto, stoppingToken);
 
         var noteResponse = noteResultDto.MapFromDto();
 

@@ -41,7 +41,7 @@ public class IntegrationStartup(IConfiguration configuration)
 
         //services.AddSingleton<ILogger, NoopLogger<IntegrationStartup>>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
         services.AddHostedService<ActivatorService>();
         services.AddToolingDependencies();
 
