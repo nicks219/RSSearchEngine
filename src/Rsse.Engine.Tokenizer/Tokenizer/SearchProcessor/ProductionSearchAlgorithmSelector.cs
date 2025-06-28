@@ -34,12 +34,12 @@ public abstract class ProductionSearchAlgorithmSelector
         // Do nothing
     }
 
-    public sealed class Extended(DirectIndex generalDirectIndex) :
+    public sealed class ExtendedLegacy(DirectIndex generalDirectIndex) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
     {
         // Без GIN-индекса.
-        private readonly ExtendedSearch _extendedSearch = new()
+        private readonly ExtendedSearchLegacy _extendedSearchLegacy = new()
         {
             GeneralDirectIndex = generalDirectIndex
         };
@@ -48,19 +48,19 @@ public abstract class ProductionSearchAlgorithmSelector
         {
             return searchType switch
             {
-                ExtendedSearchType.Original => _extendedSearch,
+                ExtendedSearchType.Legacy => _extendedSearchLegacy,
                 _ => throw new NotSupportedException(
                     $"Extended[{searchType.ToString()}] GIN optimization is not supported in production yet.")
             };
         }
     }
 
-    public sealed class Reduced(DirectIndex generalDirectIndex) :
+    public sealed class ReducedLegacy(DirectIndex generalDirectIndex) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
     {
         // Без GIN-индекса.
-        private readonly ReducedSearch _reducedSearch = new()
+        private readonly ReducedSearchLegacy _reducedSearchLegacy = new()
         {
             GeneralDirectIndex = generalDirectIndex
         };
@@ -69,7 +69,7 @@ public abstract class ProductionSearchAlgorithmSelector
         {
             return searchType switch
             {
-                ReducedSearchType.Original => _reducedSearch,
+                ReducedSearchType.Legacy => _reducedSearchLegacy,
                 _ => throw new NotSupportedException(
                     $"Reduced[{searchType.ToString()}] GIN optimization is not supported in production yet.")
             };

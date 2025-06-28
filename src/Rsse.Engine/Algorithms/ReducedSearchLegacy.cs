@@ -10,7 +10,7 @@ namespace SearchEngine.Algorithms;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта сокращенной метрики.
 /// </summary>
-public sealed class ReducedSearch : IReducedSearchProcessor
+public sealed class ReducedSearchLegacy : IReducedSearchProcessor
 {
     /// <summary>
     /// Индекс для всех токенизированных заметок.
@@ -23,7 +23,7 @@ public sealed class ReducedSearch : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearch));
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchLegacy));
 
         // поиск в векторе reduced
         foreach (var (docId, tokenLine) in GeneralDirectIndex)

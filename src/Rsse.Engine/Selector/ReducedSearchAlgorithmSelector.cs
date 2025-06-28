@@ -15,7 +15,7 @@ public sealed class ReducedSearchAlgorithmSelector
     /// </summary>
     private readonly InverseIndex<DocumentIdSet> _ginReduced = new();
 
-    private readonly ReducedSearch _reducedSearch;
+    private readonly ReducedSearchLegacy _reducedSearchLegacy;
     private readonly ReducedSearchGin _reducedSearchGin;
     private readonly ReducedSearchGinOptimized _reducedSearchGinOptimized;
     private readonly ReducedSearchGinFast _reducedSearchGinFast;
@@ -23,7 +23,7 @@ public sealed class ReducedSearchAlgorithmSelector
     public ReducedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
     {
         // Без GIN-индекса.
-        _reducedSearch = new ReducedSearch
+        _reducedSearchLegacy = new ReducedSearchLegacy
         {
             GeneralDirectIndex = generalDirectIndex
         };
@@ -54,7 +54,7 @@ public sealed class ReducedSearchAlgorithmSelector
     {
         return searchType switch
         {
-            ReducedSearchType.Original => _reducedSearch,
+            ReducedSearchType.Legacy => _reducedSearchLegacy,
             ReducedSearchType.GinSimple => _reducedSearchGin,
             ReducedSearchType.GinOptimized => _reducedSearchGinOptimized,
             ReducedSearchType.GinFast => _reducedSearchGinFast,

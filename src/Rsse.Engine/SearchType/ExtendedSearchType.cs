@@ -9,9 +9,9 @@ public enum ExtendedSearchType
 {
     /// <summary>
     /// Поиск без оптимизации, инвертированный индекс не используется.
-    /// Используются алгоритмы: <see cref="ExtendedSearch"/> и <see cref="ReducedSearch"/>
+    /// Используются алгоритмы: <see cref="ExtendedSearchLegacy"/> и <see cref="ReducedSearchLegacy"/>
     /// </summary>
-    Original = 0,
+    Legacy = 0,
 
     /// <summary>
     /// Вариант оптимизации на инвертированном индексе.

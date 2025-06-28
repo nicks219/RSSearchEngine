@@ -23,10 +23,10 @@ namespace SearchEngine.Tests.Units;
 public class ComplianceTests
 {
     private readonly List<ExtendedSearchType> _extendedSearchType =
-        [ExtendedSearchType.Original, ExtendedSearchType.GinSimple, ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFast];
+        [ExtendedSearchType.Legacy, ExtendedSearchType.GinSimple, ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFast];
 
     private readonly List<ReducedSearchType> _reducedSearchTypes =
-        [ReducedSearchType.Original, ReducedSearchType.GinSimple, ReducedSearchType.GinOptimized, ReducedSearchType.GinFast];
+        [ReducedSearchType.Legacy, ReducedSearchType.GinSimple, ReducedSearchType.GinOptimized, ReducedSearchType.GinFast];
 
     private readonly CancellationToken _token = CancellationToken.None;
 

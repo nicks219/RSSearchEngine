@@ -15,7 +15,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// </summary>
     private readonly InverseIndex<DocumentIdSet> _ginExtended = new();
 
-    private readonly ExtendedSearch _extendedSearch;
+    private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGin _extendedSearchGin;
     private readonly ExtendedSearchGinOptimized _extendedSearchGinOptimized;
     private readonly ExtendedSearchGinFast _extendedSearchGinFast;
@@ -23,7 +23,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     public ExtendedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
     {
         // Без GIN-индекса.
-        _extendedSearch = new ExtendedSearch
+        _extendedSearchLegacy = new ExtendedSearchLegacy
         {
             GeneralDirectIndex = generalDirectIndex
         };
@@ -54,7 +54,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     {
         return searchType switch
         {
-            ExtendedSearchType.Original => _extendedSearch,
+            ExtendedSearchType.Legacy => _extendedSearchLegacy,
             ExtendedSearchType.GinSimple => _extendedSearchGin,
             ExtendedSearchType.GinOptimized => _extendedSearchGinOptimized,
             ExtendedSearchType.GinFast => _extendedSearchGinFast,

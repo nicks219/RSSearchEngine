@@ -35,8 +35,8 @@ public sealed class SearchProcessorFacade
     {
         if (CheckIsProduction())
         {
-            _extendedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.Extended(_generalDirectIndex);
-            _reducedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.Reduced(_generalDirectIndex);
+            _extendedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
+            _reducedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndex);
         }
         else
         {

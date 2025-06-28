@@ -18,7 +18,7 @@ namespace SearchEngine.Benchmarks.Performance;
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class DuplicatesBenchmark : IBenchmarkRunner
 {
-    private SearchEngineTokenizer _tokenizer;
+    private TokenizerServiceCore _tokenizer;
 
     private List<NoteEntity> _noteEntities;
 
@@ -27,7 +27,7 @@ public class DuplicatesBenchmark : IBenchmarkRunner
 
     public IEnumerable<(ExtendedSearchType extended, ReducedSearchType reduced)> Parameters =>
     [
-        (ExtendedSearchType.Original, ReducedSearchType.Original),
+        (ExtendedSearchType.Legacy, ReducedSearchType.Legacy),
         /*(ExtendedSearchType.Original, ReducedSearchType.GinSimple),
         (ExtendedSearchType.Original, ReducedSearchType.GinOptimized),
         (ExtendedSearchType.Original, ReducedSearchType.GinFast),
@@ -86,10 +86,10 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new SearchEngineTokenizer(extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
-            $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
+            $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
         var dataProvider = new FileDataProvider(1);
 
@@ -103,6 +103,6 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(
-            $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initialized '{result:N0}' vectors.");
+            $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initialized '{result:N0}' vectors.");
     }
 }
