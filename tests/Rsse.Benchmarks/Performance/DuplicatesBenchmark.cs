@@ -13,38 +13,40 @@ using static SearchEngine.Benchmarks.Constants;
 namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
-/// Инициализация и бенчмарк на Tokenizer.
+/// Инициализация и бенчмарк на TokenizerServiceCore.
+/// Производится поиск дубликатов во всех документах.
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class DuplicatesBenchmark : IBenchmarkRunner
 {
-    private TokenizerServiceCore _tokenizer;
+    private TokenizerServiceCore _tokenizer = null!;
 
-    private List<NoteEntity> _noteEntities;
+    private List<NoteEntity> _noteEntities = null!;
 
-    [ParamsSource(nameof(Parameters))]
-    public (ExtendedSearchType extended, ReducedSearchType reduced) SearchType;
-
-    public IEnumerable<(ExtendedSearchType extended, ReducedSearchType reduced)> Parameters =>
+    public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
-        (ExtendedSearchType.Legacy, ReducedSearchType.Legacy),
+        (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
         /*(ExtendedSearchType.Original, ReducedSearchType.GinSimple),
         (ExtendedSearchType.Original, ReducedSearchType.GinOptimized),
         (ExtendedSearchType.Original, ReducedSearchType.GinFast),
         (ExtendedSearchType.GinSimple, ReducedSearchType.Original),*/
-        (ExtendedSearchType.GinSimple, ReducedSearchType.GinSimple),
+        (Extended: ExtendedSearchType.GinSimple, Reduced: ReducedSearchType.GinSimple),
         /*(ExtendedSearchType.GinSimple, ReducedSearchType.GinOptimized),
         (ExtendedSearchType.GinSimple, ReducedSearchType.GinFast),
         (ExtendedSearchType.GinOptimized, ReducedSearchType.Original),
         (ExtendedSearchType.GinOptimized, ReducedSearchType.GinSimple),*/
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.GinOptimized),
+        (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimized),
         /*(ExtendedSearchType.GinOptimized, ReducedSearchType.GinFast),
         (ExtendedSearchType.GinFast, ReducedSearchType.Original),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinSimple),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinOptimized),*/
-        (ExtendedSearchType.GinFast, ReducedSearchType.GinFast)
+        (Extended: ExtendedSearchType.GinFast, Reduced: ReducedSearchType.GinFast)
     ];
+
+    [ParamsSource(nameof(Parameters))]
+    // ReSharper disable once UnassignedField.Global
+    public (ExtendedSearchType Extended, ReducedSearchType Reduced) SearchType;
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
@@ -52,7 +54,7 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     [GlobalSetup]
     public async Task SetupAsync()
     {
-        await InitializeTokenizer(SearchType.extended, SearchType.reduced);
+        await InitializeTokenizer(SearchType.Extended, SearchType.Reduced);
     }
 
     [Benchmark]

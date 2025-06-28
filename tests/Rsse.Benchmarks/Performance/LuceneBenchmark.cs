@@ -9,6 +9,7 @@ namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на Lucene.
+/// Производится поиск тестового запроса во всех документах.
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
