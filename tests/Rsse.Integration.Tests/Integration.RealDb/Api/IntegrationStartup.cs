@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SearchEngine.Api.Authorization;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;

@@ -7,7 +7,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;

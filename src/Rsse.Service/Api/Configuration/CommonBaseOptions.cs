@@ -1,6 +1,6 @@
 using SearchEngine.SearchType;
 
-namespace SearchEngine.Service.Configuration;
+namespace SearchEngine.Api.Configuration;
 
 /// <summary>
 /// Общие настройки сервиса.

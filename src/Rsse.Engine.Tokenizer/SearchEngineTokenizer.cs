@@ -14,7 +14,7 @@ using SearchEngine.Tokenizer.Common;
 using SearchEngine.Tokenizer.Contracts;
 using SearchEngine.Tokenizer.SearchProcessor;
 
-namespace SearchEngine.Tokenizer;
+namespace SearchEngine;
 
 /// <summary>
 /// Функционал поддержки токенайзера.
