@@ -15,10 +15,9 @@ using SearchEngine.Tests.Units.Infra;
 namespace SearchEngine.Tests.Units;
 
 [TestClass]
-public class TokenizerTests
+public class TokenizerApiClientTests
 {
     public required ServiceProviderStub ServiceProviderStub;
-    public required IServiceScopeFactory ScopeFactory;
 
     private readonly CancellationToken _token = CancellationToken.None;
 
@@ -47,7 +46,6 @@ public class TokenizerTests
     public void Initialize()
     {
         ServiceProviderStub = new ServiceProviderStub();
-        ScopeFactory = ServiceProviderStub.Provider.GetRequiredService<IServiceScopeFactory>();
         var repo = (FakeCatalogRepository)ServiceProviderStub.Provider.GetRequiredService<IDataRepository>();
         repo.RemoveStubData(400, _token);
     }
@@ -64,7 +62,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
 
@@ -94,7 +92,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         await CreateTestNote(tokenizer);
 
         // act:
@@ -128,7 +126,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // act:
@@ -160,7 +158,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerService(options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         await CreateTestNote(tokenizer);
         var tokenLines = tokenizer.GetTokenLines();
         var countBefore = tokenLines.Count;
@@ -180,7 +178,7 @@ public class TokenizerTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = false });
-        var tokenizer = new TokenizerService(options, new NoopLogger<TokenizerService>());
+        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
         var tokenLines = tokenizer.GetTokenLines();
 
         // init asserts:
@@ -217,8 +215,8 @@ public class TokenizerTests
         }
     }
 
-    private async Task CreateTestNote(TokenizerService tokenizerService) =>
-        await tokenizerService.Create(id: 1, new TextRequestDto
+    private async Task CreateTestNote(TokenizerApiClient tokenizerApiClient) =>
+        await tokenizerApiClient.Create(id: 1, new TextRequestDto
         {
             Title = FakeCatalogRepository.FirstNoteTitle,
             Text = FakeCatalogRepository.FirstNoteText

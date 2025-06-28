@@ -16,7 +16,7 @@ namespace SearchEngine.Api.Controllers;
 public class SystemController(
     IOptionsSnapshot<DatabaseOptions> databaseOptions,
     IOptionsMonitor<ElectionTypeOptions> electionType,
-    ITokenizerService tokenizerService) : ControllerBase
+    ITokenizerApiClient tokenizerApiClient) : ControllerBase
 {
     /// <summary>
     /// Дефолтный таймаут ожидания прогрева сервиса, используется в <see cref="WaitReadinessWithTimeout"/>.
@@ -58,7 +58,7 @@ public class SystemController(
         while (true)
         {
             if (timeoutToken.IsCancellationRequested) return StatusCode(503, nameof(WaitReadinessWithTimeout));
-            if (await tokenizerService.WaitWarmUp(timeoutToken)) break;
+            if (await tokenizerApiClient.WaitWarmUp(timeoutToken)) break;
         }
 
         return Ok();

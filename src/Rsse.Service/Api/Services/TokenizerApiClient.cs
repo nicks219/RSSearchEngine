@@ -16,12 +16,13 @@ using SearchEngine.Tokenizer.Contracts;
 namespace SearchEngine.Api.Services;
 
 /// <summary>
-/// Сервис поддержки токенайзера.
+/// Сервис, поддерживающий настройку и использование функционала токенайзера, в т.ч поиск и инициализацию.
 /// </summary>
-public sealed class TokenizerService : ITokenizerService, IDisposable
+public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
 {
+    // todo: заменить на TokenizerServiceCore
     private readonly ITokenizerServiceCore _tokenizerServiceCore;
-    private readonly ILogger<TokenizerService> _logger;
+    private readonly ILogger<TokenizerApiClient> _logger;
     private readonly bool _isEnabled;
 
     /// <summary>
@@ -29,9 +30,9 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     /// </summary>
     /// <param name="options">Настройки.</param>
     /// <param name="logger">Логер.</param>
-    public TokenizerService(
+    public TokenizerApiClient(
         IOptions<CommonBaseOptions> options,
-        ILogger<TokenizerService> logger)
+        ILogger<TokenizerApiClient> logger)
     {
         _logger = logger;
         _isEnabled = options.Value.TokenizerIsEnable;
@@ -53,7 +54,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         if (!removed)
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] vector deletion error");
+            _logger.LogError($"[{nameof(TokenizerApiClient)}] vector deletion error");
         }
     }
 
@@ -66,7 +67,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         if (!created)
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] vector creation error");
+            _logger.LogError($"[{nameof(TokenizerApiClient)}] vector creation error");
         }
     }
 
@@ -79,7 +80,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
         if (!updated)
         {
-            _logger.LogError($"[{nameof(TokenizerService)}] vector update error");
+            _logger.LogError($"[{nameof(TokenizerApiClient)}] vector update error");
         }
     }
 
@@ -97,11 +98,11 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         catch (Exception ex)
         {
             _logger.LogError("[{Reporter}] initialization system error | '{Source}' | '{Message}'",
-                nameof(TokenizerService), ex.Source, ex.Message);
+                nameof(TokenizerApiClient), ex.Source, ex.Message);
         }
 
         _logger.LogInformation("[{Reporter}] initialization finished | data amount '{TokenLinesCount}'",
-            nameof(TokenizerService), result);
+            nameof(TokenizerApiClient), result);
     }
 
     /// <inheritdoc/>

@@ -18,7 +18,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
+    ITokenizerApiClient tokenizerApiClient,
     DeleteService deleteService,
     CatalogService catalogService) : ControllerBase
 {
@@ -38,7 +38,7 @@ public class DeleteController(
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
 
         await deleteService.DeleteNote(id, stoppingToken);
-        await tokenizerService.Delete(id, stoppingToken);
+        await tokenizerApiClient.Delete(id, stoppingToken);
         var catalogResultDto = await catalogService.ReadPage(pg, stoppingToken);
         var catalogResponse = catalogResultDto.MapFromDto();
         return Ok(catalogResponse);

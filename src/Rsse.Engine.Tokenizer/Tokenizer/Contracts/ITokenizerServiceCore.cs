@@ -10,7 +10,7 @@ using SearchEngine.Dto;
 namespace SearchEngine.Tokenizer.Contracts;
 
 /// <summary>
-/// Контракт функционала поддержки токенизации заметок.
+/// Контракт, фиксирующий функционал токенизации документов, в коде не используется.
 /// </summary>
 public interface ITokenizerServiceCore : IDisposable
 {

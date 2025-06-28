@@ -106,7 +106,7 @@ public class CatalogTests
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
         var lifetime = Substitute.For<IHostApplicationLifetime>();
-        var tokenizerService = Substitute.For<ITokenizerService>();
+        var tokenizerService = Substitute.For<ITokenizerApiClient>();
         var deleteController = new DeleteController(
             lifetime,
             tokenizerService,
@@ -128,7 +128,7 @@ public class CatalogTests
         // arrange:
         const int invalidPageId = -300;
         const int invalidPageNumber = -200;
-        var tokenizer = Substitute.For<ITokenizerService>();
+        var tokenizer = Substitute.For<ITokenizerApiClient>();
         var lifetime = Substitute.For<IHostApplicationLifetime>();
 
         var catalogController = new DeleteController(lifetime, tokenizer, DeleteService, CatalogService);

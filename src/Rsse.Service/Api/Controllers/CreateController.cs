@@ -23,7 +23,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
+    ITokenizerApiClient tokenizerApiClient,
     Service.Api.CreateService createService,
     IDbMigratorFactory migratorFactory,
     IOptions<CommonBaseOptions> options,
@@ -63,7 +63,7 @@ public class CreateController(
             };
         }
 
-        await tokenizerService.Create(
+        await tokenizerApiClient.Create(
             noteResultDto.NoteIdExchange,
             new TextRequestDto
             {

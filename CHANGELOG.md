@@ -199,10 +199,13 @@
   * избавиться от паразитного трафика (убрать шум в сигналах observability)
     - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
     - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
- * [ ] отрефакторить токенайзер и связанный функционал:
-   - **TokenizerService** зависит от **ILogger** и **ITokenizerServiceCore**  
+ * [ ] отрефакторить токенайзер и связанный функционал, подумать и разобраться:
+   - **TokenizerApiClient** зависит от **ILogger** и **ITokenizerServiceCore**  
    - **ITokenizerServiceCore** зависит от типов из **Rsse.Engine**  
    - в **CommonBaseOptions** есть типы из **Rsse.Engine**
+   - два практически идентичных контракта **ITokenizerServiceCore** и **ITokenizerApiClient**
+
+
 ---
 #### Идеи:
   * [x] протестировать Pyroscope для профилирования на проме и отправки в Grafana

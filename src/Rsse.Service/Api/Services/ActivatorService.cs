@@ -16,7 +16,7 @@ namespace SearchEngine.Api.Services;
 /// </summary>
 internal class ActivatorService(
     MigratorState migratorState,
-    ITokenizerService tokenizer,
+    ITokenizerApiClient tokenizer,
     IServiceScopeFactory factory,
     ILogger<ActivatorService> logger) : BackgroundService
 {
