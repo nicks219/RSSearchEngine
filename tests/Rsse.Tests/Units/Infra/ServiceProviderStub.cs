@@ -15,8 +15,8 @@ public sealed class ServiceProviderStub : IDisposable
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
-        ReducedSearchType reducedSearchType = ReducedSearchType.Original)
+    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         var services = new ServiceCollection();
 

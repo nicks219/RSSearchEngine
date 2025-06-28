@@ -10,7 +10,7 @@ namespace SearchEngine.Algorithms;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта расширенной метрики.
 /// </summary>
-public sealed class ExtendedSearch : IExtendedSearchProcessor
+public sealed class ExtendedSearchLegacy : IExtendedSearchProcessor
 {
     /// <summary>
     /// Индекс для всех токенизированных заметок.
@@ -20,7 +20,7 @@ public sealed class ExtendedSearch : IExtendedSearchProcessor
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearch));
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
 
         // поиск в векторе extended
         foreach (var (docId, tokenLine) in GeneralDirectIndex)

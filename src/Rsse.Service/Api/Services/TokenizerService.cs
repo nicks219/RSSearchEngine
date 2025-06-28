@@ -11,6 +11,7 @@ using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
 using SearchEngine.Indexes;
 using SearchEngine.Service.Contracts;
+using SearchEngine.Tokenizer.Contracts;
 
 namespace SearchEngine.Api.Services;
 
@@ -19,7 +20,7 @@ namespace SearchEngine.Api.Services;
 /// </summary>
 public sealed class TokenizerService : ITokenizerService, IDisposable
 {
-    private readonly SearchEngineTokenizer _searchEngineTokenizer;
+    private readonly ITokenizerServiceCore _tokenizerServiceCore;
     private readonly ILogger<TokenizerService> _logger;
     private readonly bool _isEnabled;
 
@@ -36,19 +37,19 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
-        _searchEngineTokenizer = new SearchEngineTokenizer(
+        _tokenizerServiceCore = new TokenizerServiceCore(
             extendedSearchType, reducedSearchType);
     }
 
     // Используется для тестов.
-    internal DirectIndex GetTokenLines() => _searchEngineTokenizer.GetTokenLines();
+    internal DirectIndex GetTokenLines() => ((TokenizerServiceCore)_tokenizerServiceCore).GetTokenLines();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)
     {
         if (!_isEnabled) return;
 
-        var removed = await _searchEngineTokenizer.DeleteAsync(id, stoppingToken);
+        var removed = await _tokenizerServiceCore.DeleteAsync(id, stoppingToken);
 
         if (!removed)
         {
@@ -61,7 +62,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        var created = await _searchEngineTokenizer.CreateAsync(id, note, stoppingToken);
+        var created = await _tokenizerServiceCore.CreateAsync(id, note, stoppingToken);
 
         if (!created)
         {
@@ -74,7 +75,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (!_isEnabled) return;
 
-        var updated = await _searchEngineTokenizer.UpdateAsync(id, note, stoppingToken);
+        var updated = await _tokenizerServiceCore.UpdateAsync(id, note, stoppingToken);
 
         if (!updated)
         {
@@ -91,7 +92,7 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
         var result = 0;
         try
         {
-            result = await _searchEngineTokenizer.InitializeAsync(dataProvider, stoppingToken);
+            result = await _tokenizerServiceCore.InitializeAsync(dataProvider, stoppingToken);
         }
         catch (Exception ex)
         {
@@ -108,20 +109,20 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
     {
         if (_isEnabled == false) return true;
 
-        var isActivated = await _searchEngineTokenizer.WaitWarmUpAsync(timeoutToken);
+        var isActivated = await _tokenizerServiceCore.WaitWarmUpAsync(timeoutToken);
 
         return isActivated;
     }
 
     /// <inheritdoc/>
-    public bool IsInitialized() => _searchEngineTokenizer.IsInitialized();
+    public bool IsInitialized() => _tokenizerServiceCore.IsInitialized();
 
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
     /// <inheritdoc/>
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        var complianceIndices = _searchEngineTokenizer.ComputeComplianceIndices(text, cancellationToken);
+        var complianceIndices = _tokenizerServiceCore.ComputeComplianceIndices(text, cancellationToken);
 
         return complianceIndices
             .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
@@ -130,6 +131,6 @@ public sealed class TokenizerService : ITokenizerService, IDisposable
 
     public void Dispose()
     {
-        _searchEngineTokenizer.Dispose();
+        _tokenizerServiceCore.Dispose();
     }
 }

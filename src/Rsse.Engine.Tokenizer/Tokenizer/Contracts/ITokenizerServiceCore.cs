@@ -12,7 +12,7 @@ namespace SearchEngine.Tokenizer.Contracts;
 /// <summary>
 /// Контракт функционала поддержки токенизации заметок.
 /// </summary>
-public interface ISearchEngineTokenizer : IDisposable
+public interface ITokenizerServiceCore : IDisposable
 {
     /// <summary>
     /// Создать вектор для заметки.

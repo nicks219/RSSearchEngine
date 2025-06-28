@@ -19,7 +19,7 @@ namespace SearchEngine;
 /// <summary>
 /// Функционал поддержки токенайзера.
 /// </summary>
-public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
+public sealed class TokenizerServiceCore : ITokenizerServiceCore
 {
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly SearchProcessorFacade _searchProcessorFacade = new();
@@ -36,9 +36,9 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
     /// </summary>
     /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
-    public SearchEngineTokenizer(
-        ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
-        ReducedSearchType reducedSearchType = ReducedSearchType.Original)
+    public TokenizerServiceCore(
+        ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
@@ -110,13 +110,13 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
 
                 if (!_searchProcessorFacade.TryAdd(noteDocId, tokenLine))
                 {
-                    throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] vector initialization error");
+                    throw new RsseTokenizerException($"[{nameof(TokenizerServiceCore)}] vector initialization error");
                 }
             }
         }
         catch (Exception ex)
         {
-            throw new RsseTokenizerException($"[{nameof(SearchEngineTokenizer)}] initialization system error | " +
+            throw new RsseTokenizerException($"[{nameof(TokenizerServiceCore)}] initialization system error | " +
                                              $"'{ex.Source}' | '{ex.Message}'");
         }
 
