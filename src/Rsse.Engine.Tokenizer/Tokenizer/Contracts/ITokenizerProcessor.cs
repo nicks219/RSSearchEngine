@@ -3,7 +3,7 @@ using RsseEngine.Dto;
 namespace RsseEngine.Tokenizer.Contracts;
 
 /// <summary>
-/// Контракт функционала токенизации заметок.
+/// Контракт функционала токенизации документов.
 /// </summary>
 public interface ITokenizerProcessor
 {

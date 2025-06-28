@@ -1,7 +1,7 @@
 namespace RsseEngine.Tokenizer.Processor;
 
 /// <summary>
-/// Контейнер, вычисляющий хэш на последовательность символов по мере их добавления.
+/// Вычисление хэша на последовательность символов по мере их добавления.
 /// </summary>
 internal struct SequenceHashProcessor()
 {

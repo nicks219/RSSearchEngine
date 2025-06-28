@@ -17,7 +17,7 @@ using SearchEngine.Service.Mapping;
 namespace RsseEngine;
 
 /// <summary>
-/// Функционал поддержки токенайзера.
+/// Сервис токенайзера (в т.ч инициализация и поиск).
 /// </summary>
 public sealed class TokenizerServiceCore : ITokenizerServiceCore
 {
@@ -27,15 +27,15 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
     private readonly ReducedSearchType _reducedSearchType;
 
     /// <summary>
-    /// Флаг инициалицации токенайзера.
+    /// Флаг инициалицации сервиса токенайзера.
     /// </summary>
     private volatile bool _isActivated;
 
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
-    /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
-    /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
+    /// <param name="extendedSearchType">Тип оптимизации расширенного алгоритма поиска.</param>
+    /// <param name="reducedSearchType">Тип оптимизации сокращенного алгоритма поиска.</param>
     public TokenizerServiceCore(
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
@@ -45,7 +45,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
     }
 
     // Используется для тестов.
-    internal DirectIndex GetTokenLines() => _searchProcessorFacade.GetTokenLines();
+    internal DirectIndex GetDirectIndex() => _searchProcessorFacade.GetDirectIndex();
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)
@@ -120,7 +120,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
                                              $"'{ex.Source}' | '{ex.Message}'");
         }
 
-        var count = _searchProcessorFacade.Count;
+        var count = _searchProcessorFacade.DirectIndexCount;
 
         _isActivated = true;
 
@@ -192,8 +192,8 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
         return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
     }
 
-    public void Dispose()
-    {
-        TokenizerLock.Dispose();
-    }
+    /// <summary>
+    /// Освобождаем ресурсы блокировки.
+    /// </summary>
+    public void Dispose() => TokenizerLock.Dispose();
 }

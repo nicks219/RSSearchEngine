@@ -7,43 +7,29 @@ using RsseEngine.SearchType;
 
 namespace RsseEngine.Tokenizer.SearchProcessor;
 
+/// <summary>
+/// Выбор алгоритма для эксплуатации в производственном окружении.
+/// </summary>
 public abstract class ProductionSearchAlgorithmSelector
 {
-    private ProductionSearchAlgorithmSelector()
-    {
-        // Do nothing
-    }
+    // Архитектурное ограничение.
+    private ProductionSearchAlgorithmSelector() { }
 
-    public void AddVector(DocumentId documentId, TokenVector tokenVector)
-    {
-        // Do nothing
-    }
-
-    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
-    {
-        // Do nothing
-    }
-
-    public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
-    {
-        // Do nothing
-    }
-
-    public void Clear()
-    {
-        // Do nothing
-    }
-
+    /// <summary>
+    /// Legacy-алгоритм расширенного поиска.
+    /// </summary>
+    /// <param name="generalDirectIndex">Общий индекс идентификатор-вектор.</param>
     public sealed class ExtendedLegacy(DirectIndex generalDirectIndex) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
     {
-        // Без GIN-индекса.
+        // Legacy-алгоритм без GIN-индекса.
         private readonly ExtendedSearchLegacy _extendedSearchLegacy = new()
         {
             GeneralDirectIndex = generalDirectIndex
         };
 
+        /// <inheritdoc/>
         public IExtendedSearchProcessor GetSearchProcessor(ExtendedSearchType searchType)
         {
             return searchType switch
@@ -55,16 +41,21 @@ public abstract class ProductionSearchAlgorithmSelector
         }
     }
 
+    /// <summary>
+    /// Legacy-алгоритм сокращенного поиска.
+    /// </summary>
+    /// <param name="generalDirectIndex">Общий индекс идентификатор-вектор.</param>
     public sealed class ReducedLegacy(DirectIndex generalDirectIndex) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
     {
-        // Без GIN-индекса.
+        // Legacy-алгоритм без GIN-индекса.
         private readonly ReducedSearchLegacy _reducedSearchLegacy = new()
         {
             GeneralDirectIndex = generalDirectIndex
         };
 
+        /// <inheritdoc/>
         public IReducedSearchProcessor GetSearchProcessor(ReducedSearchType searchType)
         {
             return searchType switch
@@ -75,4 +66,16 @@ public abstract class ProductionSearchAlgorithmSelector
             };
         }
     }
+
+    // Необходимость пустого метода диктуется контрактом.
+    public void AddVector(DocumentId documentId, TokenVector tokenVector) { }
+
+    // Необходимость пустого метода диктуется контрактом.
+    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector) { }
+
+    // Необходимость пустого метода диктуется контрактом.
+    public void RemoveVector(DocumentId documentId, TokenVector tokenVector) { }
+
+    // Необходимость пустого метода диктуется контрактом.
+    public void Clear() { }
 }
