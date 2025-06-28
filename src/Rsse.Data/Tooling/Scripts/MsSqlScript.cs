@@ -1,4 +1,4 @@
-namespace SearchEngine.Tooling.Scripts;
+namespace Rsse.Tooling.Scripts;
 
 /// <summary>
 /// Инициализация таблицы тегов для MsSql.
