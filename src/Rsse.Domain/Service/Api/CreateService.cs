@@ -80,7 +80,7 @@ public partial class CreateService(IDataRepository repo)
     /// </summary>
     /// <param name="noteDto">Данные для создания тега.</param>
     /// <param name="stoppingToken">Токен отмены.</param>
-    internal async Task CreateTagFromTitle(NoteRequestDto? noteDto, CancellationToken stoppingToken)
+    public async Task CreateTagFromTitle(NoteRequestDto? noteDto, CancellationToken stoppingToken)
     {
         const string tagPattern = "[]";
 

@@ -9,7 +9,7 @@ public abstract class Constants
 #if DEBUG
     internal const bool IsDebug = true;
 #else
-    internal const bool IsDebug = false;
+    public const bool IsDebug = false;
 #endif
 
     /// <summary/> Мажорная версия.
@@ -20,51 +20,51 @@ public abstract class Constants
     private const string PatchVersion = "0";
 
     // <summary/> Рут для статики.
-    internal const string StaticDirectory = "ClientApp/build";
+    public const string StaticDirectory = "ClientApp/build";
     // <summary/> Расширение для дампа mysql.
-    internal const string MySqlDumpExt = ".dump";
+    public const string MySqlDumpExt = ".dump";
     // <summary/> Расширение для архива дампа postgres.
-    internal const string PostgresDumpArchiveName = "dump.zip";
+    public const string PostgresDumpArchiveName = "dump.zip";
 
     // <summary>Метаданные: именование сервиса.</summary>
-    internal const string ServiceName = "rsse-app";
+    public const string ServiceName = "rsse-app";
     // <summary>Метаданные: именование неймспейса сервиса.</summary>
-    internal const string ServiceNamespace = "rsse-group";
+    public const string ServiceNamespace = "rsse-group";
 
     // <summary>Версия приложения.</summary>
-    internal const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
+    public const string ApplicationVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     // <summary>Версия API.</summary>
-    internal const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
+    public const string ApiVersion = $"{MajorVersion}.{MinorVersion}";
     // <summary>Полное название версии приложения.</summary>
-    internal const string ApplicationFullName = $"v{ApplicationVersion}: release | .NET9/React19/PostgreSQL + MySql " +
-                                                $"| code-review | Open Telemetry | k6.0.2";
+    public const string ApplicationFullName = $"v{ApplicationVersion}: release | .NET9/React19/PostgreSQL + MySql " +
+                                              $"| code-review | Open Telemetry | k6.0.2";
     // <summary>Именование документации OpenAPI, транслируется в сегмент пути к описанию.</summary>
-    internal const string SwaggerDocNameSegment = $"v{MajorVersion}";
+    public const string SwaggerDocNameSegment = $"v{MajorVersion}";
     // <summary>Именование заголовка Swagger.</summary>
-    internal const string SwaggerTitle = "RSSearchEngine API";
+    public const string SwaggerTitle = "RSSearchEngine API";
     // <summary>Именование политики полного доступа.</summary>
-    internal const string FullAccessPolicyName = nameof(FullAccessPolicyName);
+    public const string FullAccessPolicyName = nameof(FullAccessPolicyName);
     // <summary>Именование политики CORS для разработки.</summary>
-    internal const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
+    public const string DevelopmentCorsPolicy = nameof(DevelopmentCorsPolicy);
     // <summary>Именование политики RL для технической ручки.</summary>
-    internal const string MetricsHandlerPolicy = nameof(MetricsHandlerPolicy);
+    public const string MetricsHandlerPolicy = nameof(MetricsHandlerPolicy);
     // <summary>Утверждение для проверки внутреннего идентификатора.</summary>
-    internal const string IdInternalClaimType = nameof(IdInternalClaimType);
+    public const string IdInternalClaimType = nameof(IdInternalClaimType);
     // <summary>Идентификатор администратора.</summary>
-    internal const string AdminId = "1";
+    public const string AdminId = "1";
 
     // <summary>Именование окружения для тестирования.</summary>
-    internal const string TestingEnvironment = "Testing";
+    public const string TestingEnvironment = "Testing";
     // <summary>Именование переменной, задающей имя окружения.</summary>
-    internal const string AspNetCoreEnvironmentName = "ASPNETCORE_ENVIRONMENT";
+    public const string AspNetCoreEnvironmentName = "ASPNETCORE_ENVIRONMENT";
 
     // <summary>Именование переменной, задающей имя окружения.</summary>
-    internal const string AspNetCoreOtlpExportersDisable = "ASPNETCORE_OTLP_EXPORTERS_DISABLE";
+    public const string AspNetCoreOtlpExportersDisable = "ASPNETCORE_OTLP_EXPORTERS_DISABLE";
     // <summary>Именование окружения для тестирования.</summary>
-    internal const string DisableValue = "Disable";
+    public const string DisableValue = "Disable";
 
     // <summary>Заголовок для челенджа аутентификации.</summary>
-    internal const string ShiftHeaderName = "Shift";
+    public const string ShiftHeaderName = "Shift";
     // <summary>Значение заголовка для челенджа.</summary>
-    internal const string ShiftHeaderValue = "301 Cancelled";
+    public const string ShiftHeaderValue = "301 Cancelled";
 }
