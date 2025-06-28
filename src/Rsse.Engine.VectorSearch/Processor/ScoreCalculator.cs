@@ -1,6 +1,6 @@
-using SearchEngine.Dto;
+using RsseEngine.Dto;
 
-namespace SearchEngine.Processor
+namespace RsseEngine.Processor
 {
     /// <summary>
     /// Вычисляет метрику сравнения двух векторов.

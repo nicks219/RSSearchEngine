@@ -1,6 +1,6 @@
 using System;
 
-namespace SearchEngine.Dto;
+namespace RsseEngine.Dto;
 
 /// <summary>
 /// Идентификатор заметки.

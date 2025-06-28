@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using SearchEngine.Contracts;
-using SearchEngine.Dto;
-using SearchEngine.Indexes;
+using RsseEngine.Contracts;
+using RsseEngine.Dto;
+using RsseEngine.Indexes;
 
-namespace SearchEngine.Algorithms;
+namespace RsseEngine.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта сокращенной метрики.

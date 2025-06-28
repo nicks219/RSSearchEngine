@@ -1,11 +1,11 @@
 using System;
-using SearchEngine.Algorithms;
-using SearchEngine.Contracts;
-using SearchEngine.Dto;
-using SearchEngine.Indexes;
-using SearchEngine.SearchType;
+using RsseEngine.Algorithms;
+using RsseEngine.Contracts;
+using RsseEngine.Dto;
+using RsseEngine.Indexes;
+using RsseEngine.SearchType;
 
-namespace SearchEngine.Selector;
+namespace RsseEngine.Selector;
 
 public sealed class ReducedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>

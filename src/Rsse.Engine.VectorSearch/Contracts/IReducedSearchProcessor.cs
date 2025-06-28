@@ -1,7 +1,7 @@
 using System.Threading;
-using SearchEngine.Dto;
+using RsseEngine.Dto;
 
-namespace SearchEngine.Contracts;
+namespace RsseEngine.Contracts;
 
 /// <summary>
 /// Контракт алгоритма поиска и подсчёта сокращенной метрики.

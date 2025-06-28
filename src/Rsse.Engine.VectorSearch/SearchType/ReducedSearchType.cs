@@ -1,6 +1,6 @@
-using SearchEngine.Algorithms;
+using RsseEngine.Algorithms;
 
-namespace SearchEngine.SearchType;
+namespace RsseEngine.SearchType;
 
 /// <summary>
 /// Тип оптимизации поискового алгоритма.
