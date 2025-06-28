@@ -3,7 +3,7 @@ using RsseEngine.Dto;
 namespace RsseEngine.Processor
 {
     /// <summary>
-    /// Вычисляет метрику сравнения двух векторов.
+    /// Вычисление метрики сравнения двух векторов.
     /// </summary>
     public static class ScoreCalculator
     {
@@ -13,7 +13,7 @@ namespace RsseEngine.Processor
         /// </summary>
         /// <param name="targetVector">Вектор, в котором ищем.</param>
         /// <param name="searchVector">Вектор, который ищем.</param>
-        /// <param name="searchStartIndex">Позиция, с которой начинать анализ по вектору, в котором ищем.</param>
+        /// <param name="searchStartIndex">Стартовая позиция для анализа внутри вектора с поисковым запросом.</param>
         /// <returns>Метрика количества совпадений.</returns>
         public static int ComputeOrdered(TokenVector targetVector, TokenVector searchVector, int searchStartIndex = 0)
         {

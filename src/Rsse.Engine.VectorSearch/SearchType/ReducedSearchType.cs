@@ -3,12 +3,12 @@ using RsseEngine.Algorithms;
 namespace RsseEngine.SearchType;
 
 /// <summary>
-/// Тип оптимизации поискового алгоритма.
+/// Тип оптимизации reduced-алгоритмов поиска.
 /// </summary>
 public enum ReducedSearchType
 {
     /// <summary>
-    /// Поиск без оптимизации, инвертированный индекс не используется.
+    /// "Оригинальный" поиск без оптимизации, инвертированный индекс не используется.
     /// Используются алгоритмы: <see cref="ExtendedSearchLegacy"/> и <see cref="ReducedSearchLegacy"/>
     /// </summary>
     Legacy = 0,

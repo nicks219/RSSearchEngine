@@ -7,11 +7,14 @@ using RsseEngine.SearchType;
 
 namespace RsseEngine.Selector;
 
+/// <summary>
+/// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
+/// </summary>
 public sealed class ReducedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
 {
     /// <summary>
-    /// Поддержка GIN-индекса для сокращенного поиска и метрик.
+    /// Поддержка инвертированного индекса для сокращенного поиска и метрик.
     /// </summary>
     private readonly InvertedIndex<DocumentIdSet> _ginReduced = new();
 
@@ -20,6 +23,10 @@ public sealed class ReducedSearchAlgorithmSelector
     private readonly ReducedSearchGinOptimized _reducedSearchGinOptimized;
     private readonly ReducedSearchGinFast _reducedSearchGinFast;
 
+    /// <summary>
+    /// Инициализировать reduced-алгоритмы.
+    /// </summary>
+    /// <param name="generalDirectIndex">Общий индекс.</param>
     public ReducedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
     {
         // Без GIN-индекса.
@@ -50,6 +57,7 @@ public sealed class ReducedSearchAlgorithmSelector
         };
     }
 
+    /// <inheritdoc/>
     public IReducedSearchProcessor GetSearchProcessor(ReducedSearchType searchType)
     {
         return searchType switch
@@ -63,21 +71,25 @@ public sealed class ReducedSearchAlgorithmSelector
         };
     }
 
+    /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginReduced.AddVector(documentId, tokenVector);
     }
 
+    /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
         _ginReduced.UpdateVector(documentId, tokenVector, oldTokenVector);
     }
 
+    /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginReduced.RemoveVector(documentId, tokenVector);
     }
 
+    /// <inheritdoc/>
     public void Clear()
     {
         _ginReduced.Clear();

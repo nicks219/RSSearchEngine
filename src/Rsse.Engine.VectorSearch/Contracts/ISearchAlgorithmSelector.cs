@@ -4,29 +4,29 @@ using RsseEngine.Dto;
 namespace RsseEngine.Contracts;
 
 /// <summary>
-/// Контракт выбора алгоритма поиска.
+/// Контракт компонента, предоставляющего доступ к различным алгоритмам поиска.
 /// </summary>
 /// <typeparam name="TSearchType">Оптимизация для требуемого алгоритма поиска.</typeparam>
-/// <typeparam name="TSearchProcessor">Тип выбираемого алгоритма поиска.</typeparam>
+/// <typeparam name="TSearchProcessor">Тип требуемого алгоритма поиска.</typeparam>
 public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     where TSearchType : Enum
 {
     /// <summary>
-    /// Получить алгоритм поиска с требуемой оптимизацией.
+    /// Получить необходимый функционал поиска с требуемой оптимизацией.
     /// </summary>
     /// <param name="searchType">Оптимизация для требуемого алгоритма поиска.</param>
-    /// <returns>Выбираемый алгоритм поиска.</returns>
+    /// <returns>Функционал поиска с запрошенным алгоритмом.</returns>
     TSearchProcessor GetSearchProcessor(TSearchType searchType);
 
     /// <summary>
-    /// Добавить идентификатор документа и его вектор к индексу алгоритма поиска.
+    /// Добавить идентификатор документа и его вектор к общему индексу алгоритмов поиска.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenVector">Вектор с токенами, представляющими содержание документа.</param>
     void AddVector(DocumentId documentId, TokenVector tokenVector);
 
     /// <summary>
-    /// Актуализировать индекс поиска для обновленного документа.
+    /// Актуализировать общий индекс алгоритмов поиска для обновленного документа.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenVector">Новый вектор с токенами, представляющими обновленное содержание документа.</param>
@@ -34,14 +34,14 @@ public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector);
 
     /// <summary>
-    /// Удалить идентификатор документа и ассоциированный с ним вектор из индекса алгоритма поиска.
+    /// Удалить идентификатор документа и ассоциированный с ним вектор из общего индекса алгоритмов поиска.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenVector">Вектор с токенами, представляющими содержание документа.</param>
     void RemoveVector(DocumentId documentId, TokenVector tokenVector);
 
     /// <summary>
-    /// Очистить индекс алгоритма поиска.
+    /// Очистить общий индекс алгоритмов поиска.
     /// </summary>
     void Clear();
 }

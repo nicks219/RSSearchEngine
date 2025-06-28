@@ -7,11 +7,14 @@ using RsseEngine.SearchType;
 
 namespace RsseEngine.Selector;
 
+/// <summary>
+/// Компонент, предоставляющий доступ к различным алгоритмам extended-поиска.
+/// </summary>
 public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
 {
     /// <summary>
-    /// Поддержка GIN-индекса для расширенного поиска и метрик.
+    /// Поддержка инвертированного индекса для расширенного поиска и метрик.
     /// </summary>
     private readonly InvertedIndex<DocumentIdSet> _ginExtended = new();
 
@@ -20,6 +23,10 @@ public sealed class ExtendedSearchAlgorithmSelector
     private readonly ExtendedSearchGinOptimized _extendedSearchGinOptimized;
     private readonly ExtendedSearchGinFast _extendedSearchGinFast;
 
+    /// <summary>
+    /// Инициализировать extended-алгоритмы.
+    /// </summary>
+    /// <param name="generalDirectIndex">Общий индекс.</param>
     public ExtendedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
     {
         // Без GIN-индекса.
@@ -50,6 +57,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
     }
 
+    /// <inheritdoc/>
     public IExtendedSearchProcessor GetSearchProcessor(ExtendedSearchType searchType)
     {
         return searchType switch
@@ -63,21 +71,25 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
     }
 
+    /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginExtended.AddVector(documentId, tokenVector);
     }
 
+    /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
         _ginExtended.UpdateVector(documentId, tokenVector, oldTokenVector);
     }
 
+    /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginExtended.RemoveVector(documentId, tokenVector);
     }
 
+    /// <inheritdoc/>
     public void Clear()
     {
         _ginExtended.Clear();
