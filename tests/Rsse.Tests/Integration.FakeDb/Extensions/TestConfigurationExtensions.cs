@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rsse.Api.Controllers;
+using Rsse.Api.Startup;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Startup;
 
 namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
 

@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Rsse.Api.Configuration;
+using Rsse.Api.Services;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Services;
 using SearchEngine.Tests.Units.Infra;
 
 namespace SearchEngine.Tests.Units;

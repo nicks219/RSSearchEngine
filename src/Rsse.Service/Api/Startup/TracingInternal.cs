@@ -5,7 +5,7 @@ using OpenTelemetry.Trace;
 using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение функционала поставки трассировок.

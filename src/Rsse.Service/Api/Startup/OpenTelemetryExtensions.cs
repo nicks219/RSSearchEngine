@@ -7,7 +7,7 @@ using OpenTelemetry.Resources;
 using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для функционала поставки диагностиков.

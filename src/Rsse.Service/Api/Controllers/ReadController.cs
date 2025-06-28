@@ -11,7 +11,7 @@ using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Mapping;
 using Serilog;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для чтения заметок.

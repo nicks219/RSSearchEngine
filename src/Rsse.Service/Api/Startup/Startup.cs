@@ -15,19 +15,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rsse.Api.Authorization;
+using Rsse.Api.Configuration;
+using Rsse.Api.Middleware;
+using Rsse.Api.Services;
 using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Middleware;
-using SearchEngine.Api.Services;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Настройка зависимостей и пайплайна запроса сервиса.

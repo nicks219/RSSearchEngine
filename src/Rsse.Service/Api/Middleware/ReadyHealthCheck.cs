@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Rsse.Domain.Service.Contracts;
 
-namespace SearchEngine.Api.Middleware;
+namespace Rsse.Api.Middleware;
 
 /// <summary>
 /// Проверка готовности сервиса принимать трафик.

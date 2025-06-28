@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace SearchEngine.Api.Authorization;
+namespace Rsse.Api.Authorization;
 
 /// <summary>
 /// Требование получения полных прав авторизации (прав редактирования).

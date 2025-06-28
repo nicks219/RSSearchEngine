@@ -9,7 +9,7 @@ using Npgsql;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Infrastructure.Context;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для регистрации требуемых хранилищ данных.
