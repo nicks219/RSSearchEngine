@@ -1,13 +1,13 @@
 using System;
 using System.Threading;
+using RsseEngine.Contracts;
+using RsseEngine.Dto;
+using RsseEngine.Indexes;
+using RsseEngine.SearchType;
+using RsseEngine.Selector;
 using RsseEngine.Tokenizer.Common;
 using RsseEngine.Tokenizer.Contracts;
 using RsseEngine.Tokenizer.Processor;
-using SearchEngine.Contracts;
-using SearchEngine.Dto;
-using SearchEngine.Indexes;
-using SearchEngine.SearchType;
-using SearchEngine.Selector;
 
 namespace RsseEngine.Tokenizer.SearchProcessor;
 

@@ -1,7 +1,7 @@
 using System;
-using SearchEngine.Dto;
+using RsseEngine.Dto;
 
-namespace SearchEngine.Contracts;
+namespace RsseEngine.Contracts;
 
 public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     where TSearchType : Enum

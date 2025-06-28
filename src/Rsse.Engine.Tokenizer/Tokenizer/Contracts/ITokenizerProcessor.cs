@@ -1,4 +1,4 @@
-using SearchEngine.Dto;
+using RsseEngine.Dto;
 
 namespace RsseEngine.Tokenizer.Contracts;
 

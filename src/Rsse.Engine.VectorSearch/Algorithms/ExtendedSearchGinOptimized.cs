@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using SearchEngine.Contracts;
-using SearchEngine.Dto;
-using SearchEngine.Indexes;
-using SearchEngine.Processor;
+using RsseEngine.Contracts;
+using RsseEngine.Dto;
+using RsseEngine.Indexes;
+using RsseEngine.Processor;
 
-namespace SearchEngine.Algorithms;
+namespace RsseEngine.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта расширенной метрики.

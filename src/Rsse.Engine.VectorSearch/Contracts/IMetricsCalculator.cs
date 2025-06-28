@@ -1,6 +1,6 @@
-using SearchEngine.Dto;
+using RsseEngine.Dto;
 
-namespace SearchEngine.Contracts;
+namespace RsseEngine.Contracts;
 
 /// <summary>
 /// Подсчёт метрик релевантности для результатов поискового запроса.

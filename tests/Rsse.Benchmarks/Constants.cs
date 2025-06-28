@@ -1,4 +1,4 @@
-using SearchEngine.SearchType;
+using RsseEngine.SearchType;
 
 namespace SearchEngine.Benchmarks;
 

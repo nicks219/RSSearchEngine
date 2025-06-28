@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using RsseEngine.Dto;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Data.Dto;
 using SearchEngine.Data.Entities;
-using SearchEngine.Dto;
 
 namespace RsseEngine.Tokenizer.Contracts;
 

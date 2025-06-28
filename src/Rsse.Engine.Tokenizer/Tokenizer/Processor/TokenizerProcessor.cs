@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using RsseEngine.Dto;
 using RsseEngine.Tokenizer.Contracts;
-using SearchEngine.Dto;
 
 namespace RsseEngine.Tokenizer.Processor;
 

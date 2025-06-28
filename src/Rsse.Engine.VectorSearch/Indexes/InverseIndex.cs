@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using SearchEngine.Contracts;
-using SearchEngine.Dto;
+using RsseEngine.Contracts;
+using RsseEngine.Dto;
 
-namespace SearchEngine.Indexes;
+namespace RsseEngine.Indexes;
 
 /// <summary>
 /// Поддержка общего инвертированного индекса.

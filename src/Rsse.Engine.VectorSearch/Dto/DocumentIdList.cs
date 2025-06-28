@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Contracts;
+using RsseEngine.Contracts;
 
-namespace SearchEngine.Dto;
+namespace RsseEngine.Dto;
 
 /// <summary>
 /// Сортированый вектор с уникальными идентификаторами документов, используется в GIN.
