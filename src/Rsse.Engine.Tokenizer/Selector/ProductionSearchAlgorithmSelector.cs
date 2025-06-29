@@ -5,7 +5,7 @@ using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 
-namespace RsseEngine.Tokenizer.SearchManager;
+namespace RsseEngine.Selector;
 
 /// <summary>
 /// Компонент с алгоритмами для производственного окружения.

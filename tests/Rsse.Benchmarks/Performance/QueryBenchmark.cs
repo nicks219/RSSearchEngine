@@ -6,6 +6,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
+using RsseEngine.Service;
 using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks.Performance;

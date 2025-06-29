@@ -3,7 +3,7 @@ using System.Linq;
 using RsseEngine.Dto;
 using RsseEngine.Tokenizer.Contracts;
 
-namespace RsseEngine.Tokenizer.Processors;
+namespace RsseEngine.Tokenizer.Processor;
 
 /// <summary>
 /// Базовый функционал токенизатора текста.
