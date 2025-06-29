@@ -58,7 +58,7 @@ public sealed class FileDataProvider(int initialDataMultiplier = InitialDataMult
             }
         }
 
-        Console.WriteLine($"[{nameof(FileDataProvider)}] sent total data: '{counter:N0}' entries.");
+        Console.WriteLine($"[{nameof(FileDataProvider)}] sent total data: '{counter:N0}' entries | {initialDataMultiplier:N0}x.");
         Console.WriteLine("---");
     }
 }

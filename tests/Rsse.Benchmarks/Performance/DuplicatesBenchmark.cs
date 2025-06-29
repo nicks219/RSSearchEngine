@@ -27,18 +27,18 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
         (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
-        /*(ExtendedSearchType.Original, ReducedSearchType.GinSimple),
-        (ExtendedSearchType.Original, ReducedSearchType.GinOptimized),
-        (ExtendedSearchType.Original, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinSimple, ReducedSearchType.Original),*/
+        /*(ExtendedSearchType.Legacy, ReducedSearchType.GinSimple),
+        (ExtendedSearchType.Legacy, ReducedSearchType.GinOptimized),
+        (ExtendedSearchType.Legacy, ReducedSearchType.GinFast),
+        (ExtendedSearchType.GinSimple, ReducedSearchType.Legacy),*/
         (Extended: ExtendedSearchType.GinSimple, Reduced: ReducedSearchType.GinSimple),
         /*(ExtendedSearchType.GinSimple, ReducedSearchType.GinOptimized),
         (ExtendedSearchType.GinSimple, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.Original),
+        (ExtendedSearchType.GinOptimized, ReducedSearchType.Legacy),
         (ExtendedSearchType.GinOptimized, ReducedSearchType.GinSimple),*/
         (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimized),
         /*(ExtendedSearchType.GinOptimized, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinFast, ReducedSearchType.Original),
+        (ExtendedSearchType.GinFast, ReducedSearchType.Legacy),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinSimple),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinOptimized),*/
         (Extended: ExtendedSearchType.GinFast, Reduced: ReducedSearchType.GinFast)
