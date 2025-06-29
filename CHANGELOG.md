@@ -176,10 +176,10 @@
   * [сравнение тегов 6.0.0-pre-3 с k6.0.0 в github](https://github.com/nicks219/RSSearchEngine/compare/6.0.0-pre-release-3...k6.0.0)
 
 
-* `k6.0.1` `open-telemetry`
+* `k6.0.1` `open-telemetry` `ok`
   * upd: связь трейсов и логов - настройка OTLP-экспортера Serilog через код | энричер с идентификаторами
 
-* `k6.0.2` `exemplar`
+* `k6.0.2` `exemplar` `ok`
   * upd: добавлен сорс Npgsql к трассам
   * upd: роуты `/system` и `/v6/account` исключены из логов
   * upd: явное выставление статусов для трасс в middleware
@@ -191,33 +191,18 @@
   * upd: для связки метрик с трассами в Grafana Cloud создать datasource до prometheus и переименовать лейбл для exemplar в `trace_id`
   - вместо **password** выставить токен из **access policy**, см [документацию Grafana Cloud](https://grafana.com/docs/grafana-cloud/security-and-account-management/authentication-and-permissions/access-policies/using-an-access-policy-token/#creating-a-data-source-with-a-grafana-cloud-token-in-grafana-ui).
 
----
-#### Процесс поиска решения по exemplar:
-  * upd: связь метрик и трейсов через exemplar (на проверке)
-    * выборка из exemplar в атрибут traceID с помощью процессоров otel невозможна (проверено)
-    * добавление кастомного лейбла traceID приведет к высокой кардинальности, 
-      но на метрике при PromQL запросе `histogram_quantile(0.95, sum(rate(http_server_duration_with_trace_bucket{}[$__rate_interval])) by (le))` 
-      в Grafana Cloud появится "синяя кнопка": `Query with grafanacloud-...-traces` (проверено)
-    * попробовать отправить метрики в формате open metrics (идея)
-    ```yaml
-    exporters:
-    prometheusremotewrite/grafana_cloud:
-    endpoint: https://prometheus-blocks-prod-us-central1.grafana.net/api/prom/push
-    headers:
-    Authorization: Basic <base64(api_key)>
-    send_exemplars: true
-    ```
-    ```yaml
-    exporters: [prometheusremotewrite/grafana_cloud]
-    ```
-  * почитать про фичи Grafana по связке датасорсов, например:
-    - [Trace correlaction](https://grafana.com/docs/grafana/latest/datasources/tempo/traces-in-grafana/trace-correlations/)
-    - [Trace to metrics](https://grafana.com/docs/grafana/next/datasources/tempo/configure-tempo-data-source/#trace-to-metrics)
-    - [Derived fields](https://grafana.com/docs/grafana/next/datasources/loki/configure-loki-data-source/#derived-fields)
+* `k6.0.3` `pyroscope` `отмена`
+  * upd: `исследование` настроить сбор профилей с помощью Pyroscope `0.9.4` (файлы `*.v2`)
+  - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
+
+* `разработка`
+  * избавиться от паразитного трафика (убрать шум в сигналах observability)
+    - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+    - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
 
 ---
 #### Идеи:
-  * [ ] протестировать Pyroscope для профилирования на проме и отправки в Grafana
+  * [x] протестировать Pyroscope для профилирования на проме и отправки в Grafana
   - [.NET Pyroscope](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/dotnet/?utm_source=chatgpt.com)
   - [Traces to profiles](https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/dotnet-span-profiles/?utm_source=chatgpt.com)
   * [ ] уменьшить время выполнения запросов на получение тегов с количеством заметок

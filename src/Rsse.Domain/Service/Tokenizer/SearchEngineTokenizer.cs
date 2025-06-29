@@ -158,7 +158,7 @@ public sealed class SearchEngineTokenizer : ISearchEngineTokenizer
             return metricsCalculator.ComplianceMetrics;
         }
 
-        TokenVector reducedSearchVector = _searchProcessorFactory.ReducedTokenizer.TokenizeText(text);
+        var reducedSearchVector = _searchProcessorFactory.ReducedTokenizer.TokenizeText(text);
 
         if (reducedSearchVector.Count == 0)
         {

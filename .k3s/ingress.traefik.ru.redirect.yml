@@ -1,0 +1,57 @@
+# middleware http->https:  kubectl get crd | grep traefik
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-https
+  namespace: default
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# http редирект
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rsse-app-http
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: redirect-to-https@kubernetescrd
+spec:
+  rules:
+    - host: notefinder.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+---
+# https
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rsse-app-https
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  rules:
+    - host: notefinder.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+  tls:
+    - hosts:
+        - notefinder.ru
+      secretName: secret-tls-ru
