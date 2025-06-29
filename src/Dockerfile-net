@@ -7,6 +7,9 @@ COPY Directory.Packages.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
 COPY ./Rsse.Domain/ ./Rsse.Domain/
+# скопируем функционал токенизатора
+COPY ./Rsse.Engine.Tokenizer ./Rsse.Engine.Tokenizer
+COPY ./Rsse.Engine.VectorSearch ./Rsse.Engine.VectorSearch
 # скопируем предварительно собранный фронт
 COPY ./Rsse.Client/ClientApp/build/ ./Rsse.Service/ClientApp/build/
 

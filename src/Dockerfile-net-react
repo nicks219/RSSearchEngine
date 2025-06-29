@@ -19,6 +19,9 @@ COPY Directory.Packages.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
 COPY ./Rsse.Domain/ ./Rsse.Domain/
+# скопируем функционал токенизатора
+COPY ./Rsse.Engine.Tokenizer ./Rsse.Engine.Tokenizer
+COPY ./Rsse.Engine.VectorSearch ./Rsse.Engine.VectorSearch
 
 # JS: копируем папку с файлами фронта
 COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/
