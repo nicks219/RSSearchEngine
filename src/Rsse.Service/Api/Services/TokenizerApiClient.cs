@@ -21,8 +21,7 @@ namespace SearchEngine.Api.Services;
 /// </summary>
 public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
 {
-    // todo: заменить на TokenizerServiceCore
-    private readonly ITokenizerServiceCore _tokenizerServiceCore;
+    private readonly TokenizerServiceCore _tokenizerServiceCore;
     private readonly ILogger<TokenizerApiClient> _logger;
     private readonly bool _isEnabled;
 

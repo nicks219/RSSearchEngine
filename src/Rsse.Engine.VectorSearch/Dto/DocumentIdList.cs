@@ -37,6 +37,10 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
         return _list.BinarySearch(documentId) >= 0;
     }
 
+    /// <summary>
+    /// Добавить идентификатор документа в вектор с сохранением сортировки.
+    /// </summary>
+    /// <param name="documentId">Идентификатор документа.</param>
     public void Add(DocumentId documentId)
     {
         if (_list.Count == 0 || _list[_list.Count - 1].Value < documentId.Value)
@@ -48,12 +52,18 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
             int itemIndex = _list.BinarySearch(documentId);
             if (itemIndex < 0)
             {
-                itemIndex = ~itemIndex; // bitwise complement - index is next larger index
+                // при побитовом дополнении значение будет указывать на следующий больший индекс
+                // "bitwise complement - index is next larger index"
+                itemIndex = ~itemIndex;
                 _list.Insert(itemIndex, documentId);
             }
         }
     }
 
+    /// <summary>
+    /// Удалить идентификатор документа из вектора.
+    /// </summary>
+    /// <param name="documentId">Идентификатор документа.</param>
     public void Remove(DocumentId documentId)
     {
         int itemIndex = _list.BinarySearch(documentId);

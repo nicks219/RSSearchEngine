@@ -19,6 +19,11 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// </summary>
     private readonly Dictionary<Token, TDocumentIdCollection> _documentIdCollections = new();
 
+    /// <summary>
+    /// Получить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// </summary>
+    /// <param name="tokenVector">Вектор с целевыми токенами.</param>
+    /// <returns>Коллекция векторов с идентификаторами.</returns>
     public List<TDocumentIdCollection> Get(TokenVector tokenVector)
     {
         List<TDocumentIdCollection> result = new();
@@ -56,11 +61,11 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     }
 
     /// <summary>
-    /// Обновить "заметку" (удалить + добавить).
+    /// Обновить индекс для обновляемого документа.
     /// </summary>
     /// <param name="documentId">Идентификатор заметки.</param>
     /// <param name="tokenVector">Новый вектор токенов, соответсвующий обновленной заметке.</param>
-    /// <param name="oldTokenVector">Старый вектор токенов, соответсвующий обновленной заметке.</param>
+    /// <param name="oldTokenVector">Старый вектор токенов, соответсвующий обновляемой заметке.</param>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
         tokenVector = tokenVector.DistinctAndGet();
@@ -94,10 +99,10 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     }
 
     /// <summary>
-    /// Удалить идентификатор заметки (и токен если сет останется пустым) из индекса.
+    /// Удалить документ из индекса.
     /// </summary>
     /// <param name="documentId">Идентификатор заметки.</param>
-    /// <param name="tokenVector">Вектор заметки</param>
+    /// <param name="tokenVector">Вектор, соответсвующий удаляемой заметке.</param>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         tokenVector = tokenVector.DistinctAndGet();
@@ -108,6 +113,9 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         }
     }
 
+    /// <summary>
+    /// Очистить индекс.
+    /// </summary>
     public void Clear()
     {
         _documentIdCollections.Clear();
@@ -172,6 +180,11 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         return false;
     }
 
+    /// <summary>
+    /// Создать экземпляр коллекции требуемого типа.
+    /// </summary>
+    /// <returns>Экземпляр коллекции типа <b>TDocumentIdCollection</b>.</returns>
+    /// <exception cref="NotSupportedException">Требуемый тип не поддерживается.</exception>
     private static TDocumentIdCollection CreateCollection()
     {
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))

@@ -199,11 +199,8 @@
   * избавиться от паразитного трафика (убрать шум в сигналах observability)
     - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
     - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
- * [ ] отрефакторить токенайзер и связанный функционал, подумать и разобраться:
-   - **TokenizerApiClient** зависит от **ILogger** и **ITokenizerServiceCore**  
-   - **ITokenizerServiceCore** зависит от типов из **Rsse.Engine**  
-   - в **CommonBaseOptions** есть типы из **Rsse.Engine**
-   - два практически идентичных контракта **ITokenizerServiceCore** и **ITokenizerApiClient**
+ * [ ] подумать над компоновкой токенайзера и связанного функционала
+   - в **CommonBaseOptions** используются типы из **Rsse.Engine**
 
 
 ---
