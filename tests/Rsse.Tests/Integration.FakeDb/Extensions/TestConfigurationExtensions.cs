@@ -6,7 +6,7 @@ using Rsse.Api.Startup;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
+namespace Rsse.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов с использованием sqlite.

@@ -14,7 +14,7 @@ using Rsse.Tooling.Contracts;
 using Rsse.Tooling.MigrationAssistant;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов на контейнеризованных бд.

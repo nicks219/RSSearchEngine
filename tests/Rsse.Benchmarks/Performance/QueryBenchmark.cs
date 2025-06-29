@@ -4,12 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using RsseEngine;
+using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
-using SearchEngine.Benchmarks.Common;
-using static SearchEngine.Benchmarks.Constants;
+using static RsseEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks.Performance;
+namespace RsseEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на TokenizerServiceCore.

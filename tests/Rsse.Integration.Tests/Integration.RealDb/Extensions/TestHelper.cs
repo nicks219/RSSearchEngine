@@ -6,7 +6,7 @@ using MySqlConnector;
 using Npgsql;
 using Rsse.Api.Startup;
 
-namespace SearchEngine.Tests.Integration.RealDb.Extensions;
+namespace Rsse.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Контейнер с вспомогательным функционалом для тестов.

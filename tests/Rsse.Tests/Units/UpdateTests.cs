@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.Api;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
 [TestClass]
 public class UpdateTests

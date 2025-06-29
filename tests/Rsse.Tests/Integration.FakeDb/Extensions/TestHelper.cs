@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
+namespace Rsse.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Контейнер с вспомогательным функционалом для тестов.

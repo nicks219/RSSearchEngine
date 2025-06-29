@@ -1,4 +1,4 @@
-namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
+namespace Rsse.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Глагол http вызова.

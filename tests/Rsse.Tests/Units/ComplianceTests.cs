@@ -13,11 +13,11 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Contracts;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Units.Infra;
 using RsseEngine.SearchType;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
 [TestClass]
 public class ComplianceTests

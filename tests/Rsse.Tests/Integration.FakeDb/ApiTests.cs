@@ -9,14 +9,14 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Domain.Service.Configuration;
-using SearchEngine.Tests.Integration.FakeDb.Api;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Integration.FakeDb.Infra;
+using Rsse.Tests.Integration.FakeDb.Api;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Integration.FakeDb.Infra;
 using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-namespace SearchEngine.Tests.Integration.FakeDb;
+namespace Rsse.Tests.Integration.FakeDb;
 
 [TestClass]
 public class ApiTests

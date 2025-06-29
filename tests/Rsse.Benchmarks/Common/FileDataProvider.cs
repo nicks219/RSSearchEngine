@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Entities;
-using static SearchEngine.Benchmarks.Constants;
+using static RsseEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks.Common;
+namespace RsseEngine.Benchmarks.Common;
 
 /// <summary>
 /// Компонент поставщика данных из файла.

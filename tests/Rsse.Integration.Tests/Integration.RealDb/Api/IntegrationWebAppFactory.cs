@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Rsse.Domain.Service.Configuration;
-using SearchEngine.Tests.Integration.RealDb.Infra;
+using Rsse.Tests.Integration.RealDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
 public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {

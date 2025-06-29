@@ -10,10 +10,10 @@ using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Api;
+namespace Rsse.Tests.Integration.FakeDb.Api;
 
 /// <summary>
 /// Используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html

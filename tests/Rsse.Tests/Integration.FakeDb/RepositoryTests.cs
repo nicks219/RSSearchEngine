@@ -12,11 +12,11 @@ using Rsse.Api.Startup;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
-using SearchEngine.Tests.Integration.FakeDb.Api;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Integration.FakeDb.Api;
+using Rsse.Tests.Integration.FakeDb.Extensions;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
-namespace SearchEngine.Tests.Integration.FakeDb;
+namespace Rsse.Tests.Integration.FakeDb;
 
 [TestClass]
 public class RepositoryTests

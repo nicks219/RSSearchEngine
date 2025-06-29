@@ -10,9 +10,9 @@ using Rsse.Api.Configuration;
 using Rsse.Api.Services;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
 [TestClass]
 public class TokenizerApiClientTests

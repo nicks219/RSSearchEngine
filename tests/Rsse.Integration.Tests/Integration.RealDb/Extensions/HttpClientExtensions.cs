@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Rsse.Domain.Service.Configuration.RouteConstants;
 
-namespace SearchEngine.Tests.Integration.RealDb.Extensions;
+namespace Rsse.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Расширения для запросов на различные ручки сервиса.

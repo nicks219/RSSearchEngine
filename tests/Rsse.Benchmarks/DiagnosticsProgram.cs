@@ -7,10 +7,10 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
-using SearchEngine.Benchmarks.Performance;
-using static SearchEngine.Benchmarks.Constants;
+using RsseEngine.Benchmarks.Performance;
+using static RsseEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks;
+namespace RsseEngine.Benchmarks;
 
 /// <summary>
 /// Бенчмарки и профилирование.

@@ -6,10 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.Api;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Tests.Units.Infra;
 using CreateService = Rsse.Domain.Service.Api.CreateService;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
 [TestClass]
 public class CreateTests

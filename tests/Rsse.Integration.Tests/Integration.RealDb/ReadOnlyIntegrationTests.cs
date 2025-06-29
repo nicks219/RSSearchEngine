@@ -15,11 +15,11 @@ using Rsse.Api.Startup;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
-using SearchEngine.Tests.Integration.RealDb.Api;
-using SearchEngine.Tests.Integration.RealDb.Extensions;
-using SearchEngine.Tests.Integration.RealDb.Infra;
+using Rsse.Tests.Integration.RealDb.Api;
+using Rsse.Tests.Integration.RealDb.Extensions;
+using Rsse.Tests.Integration.RealDb.Infra;
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace Rsse.Tests.Integration.RealDb;
 
 [TestClass]
 public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable

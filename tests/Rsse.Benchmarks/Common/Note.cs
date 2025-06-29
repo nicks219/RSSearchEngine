@@ -1,4 +1,4 @@
-namespace SearchEngine.Benchmarks.Common;
+namespace RsseEngine.Benchmarks.Common;
 
 public class Note(int noteId, string title, string text)
 {

@@ -4,7 +4,7 @@ using Rsse.Api.Services;
 using Rsse.Domain.Service.Api;
 using CreateService = Rsse.Domain.Service.Api.CreateService;
 
-namespace SearchEngine.Tests.Units.Infra;
+namespace Rsse.Tests.Units.Infra;
 
 /// <summary>
 /// Регистратор логгеров для тестов.

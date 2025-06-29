@@ -18,7 +18,7 @@ using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.

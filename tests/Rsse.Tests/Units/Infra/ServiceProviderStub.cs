@@ -7,7 +7,7 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Contracts;
 using RsseEngine.SearchType;
 
-namespace SearchEngine.Tests.Units.Infra;
+namespace Rsse.Tests.Units.Infra;
 
 /// <summary/> Для тестов, с двумя логгерами.
 public sealed class ServiceProviderStub : IDisposable

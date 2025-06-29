@@ -4,7 +4,7 @@ using System.Text.Json;
 using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.ApiModels;
 
-namespace SearchEngine.Tests.Integration.RealDb.Extensions;
+namespace Rsse.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Коллекция контента для тестовых запросов.

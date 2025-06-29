@@ -9,7 +9,7 @@ using Lucene.Net.Search.Spans;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
 
-namespace SearchEngine.Benchmarks.Common;
+namespace RsseEngine.Benchmarks.Common;
 
 /// <summary>
 /// Компонент с Lucene.
