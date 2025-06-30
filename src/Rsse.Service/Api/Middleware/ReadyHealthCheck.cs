@@ -8,7 +8,7 @@ namespace SearchEngine.Api.Middleware;
 /// <summary>
 /// Проверка готовности сервиса принимать трафик.
 /// </summary>
-public class ReadyHealthCheck(ITokenizerService tokenizer) : IHealthCheck
+public class ReadyHealthCheck(ITokenizerApiClient tokenizer) : IHealthCheck
 {
     /// <summary>
     /// Проверить доступность сервиса. Считаем доступным если инициализация токенизатора прошла успешно.

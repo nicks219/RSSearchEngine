@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Rsse.Search;
+using RsseEngine.SearchType;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 
 namespace SearchEngine.Tests.Units.Infra;
@@ -15,8 +15,8 @@ public sealed class ServiceProviderStub : IDisposable
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Original,
-        ReducedSearchType reducedSearchType = ReducedSearchType.Original)
+    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         var services = new ServiceCollection();
 
@@ -28,7 +28,7 @@ public sealed class ServiceProviderStub : IDisposable
             options.ReducedSearchType = reducedSearchType;
         });
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         // для тестов create
         services.AddDomainLayerDependencies();

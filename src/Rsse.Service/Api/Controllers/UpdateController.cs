@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Data.Dto;
+using SearchEngine.Service.Api;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Services;
 
 namespace SearchEngine.Api.Controllers;
 
@@ -19,7 +19,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class UpdateController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
+    ITokenizerApiClient tokenizerApiClient,
     UpdateService updateService) : ControllerBase
 {
     /// <summary>
@@ -42,7 +42,7 @@ public class UpdateController(
             Text = noteRequest.Text
         };
 
-        await tokenizerService.Update(noteRequest.NoteIdExchange, textRequestDto, stoppingToken);
+        await tokenizerApiClient.Update(noteRequest.NoteIdExchange, textRequestDto, stoppingToken);
 
         var noteResponse = noteResultDto.MapFromDto();
 

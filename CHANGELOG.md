@@ -199,6 +199,9 @@
   * избавиться от паразитного трафика (убрать шум в сигналах observability)
     - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
     - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+ * [ ] подумать над компоновкой токенайзера и связанного функционала
+   - в **CommonBaseOptions** используются типы из **Rsse.Engine**
+
 
 ---
 #### Идеи:

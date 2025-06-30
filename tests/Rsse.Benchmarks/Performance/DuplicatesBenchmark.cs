@@ -4,47 +4,49 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Rsse.Search;
+using RsseEngine;
+using RsseEngine.SearchType;
 using SearchEngine.Benchmarks.Common;
 using SearchEngine.Data.Entities;
-using SearchEngine.Service.Tokenizer;
 using static SearchEngine.Benchmarks.Constants;
 
 namespace SearchEngine.Benchmarks.Performance;
 
 /// <summary>
-/// Инициализация и бенчмарк на Tokenizer.
+/// Инициализация и бенчмарк на TokenizerServiceCore.
+/// Производится поиск дубликатов во всех документах.
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
 public class DuplicatesBenchmark : IBenchmarkRunner
 {
-    private SearchEngineTokenizer _tokenizer;
+    private TokenizerServiceCore _tokenizer = null!;
 
-    private List<NoteEntity> _noteEntities;
+    private List<NoteEntity> _noteEntities = null!;
 
-    [ParamsSource(nameof(Parameters))]
-    public (ExtendedSearchType extended, ReducedSearchType reduced) SearchType;
-
-    public IEnumerable<(ExtendedSearchType extended, ReducedSearchType reduced)> Parameters =>
+    public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
-        (ExtendedSearchType.Original, ReducedSearchType.Original),
-        /*(ExtendedSearchType.Original, ReducedSearchType.GinSimple),
-        (ExtendedSearchType.Original, ReducedSearchType.GinOptimized),
-        (ExtendedSearchType.Original, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinSimple, ReducedSearchType.Original),*/
-        (ExtendedSearchType.GinSimple, ReducedSearchType.GinSimple),
+        (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
+        /*(ExtendedSearchType.Legacy, ReducedSearchType.GinSimple),
+        (ExtendedSearchType.Legacy, ReducedSearchType.GinOptimized),
+        (ExtendedSearchType.Legacy, ReducedSearchType.GinFast),
+        (ExtendedSearchType.GinSimple, ReducedSearchType.Legacy),*/
+        (Extended: ExtendedSearchType.GinSimple, Reduced: ReducedSearchType.GinSimple),
         /*(ExtendedSearchType.GinSimple, ReducedSearchType.GinOptimized),
         (ExtendedSearchType.GinSimple, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.Original),
+        (ExtendedSearchType.GinOptimized, ReducedSearchType.Legacy),
         (ExtendedSearchType.GinOptimized, ReducedSearchType.GinSimple),*/
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.GinOptimized),
+        (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimized),
         /*(ExtendedSearchType.GinOptimized, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinFast, ReducedSearchType.Original),
+        (ExtendedSearchType.GinFast, ReducedSearchType.Legacy),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinSimple),
         (ExtendedSearchType.GinFast, ReducedSearchType.GinOptimized),*/
-        (ExtendedSearchType.GinFast, ReducedSearchType.GinFast)
+        (Extended: ExtendedSearchType.GinFast, Reduced: ReducedSearchType.GinFast)
     ];
+
+    [ParamsSource(nameof(Parameters))]
+    // ReSharper disable once UnassignedField.Global
+    public (ExtendedSearchType Extended, ReducedSearchType Reduced) SearchType;
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
@@ -52,7 +54,7 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     [GlobalSetup]
     public async Task SetupAsync()
     {
-        await InitializeTokenizer(SearchType.extended, SearchType.reduced);
+        await InitializeTokenizer(SearchType.Extended, SearchType.Reduced);
     }
 
     [Benchmark]
@@ -87,10 +89,10 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new SearchEngineTokenizer(extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
-            $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
+            $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
         var dataProvider = new FileDataProvider(1);
 
@@ -104,6 +106,6 @@ public class DuplicatesBenchmark : IBenchmarkRunner
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(
-            $"[{nameof(SearchEngineTokenizer)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initialized '{result:N0}' vectors.");
+            $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initialized '{result:N0}' vectors.");
     }
 }

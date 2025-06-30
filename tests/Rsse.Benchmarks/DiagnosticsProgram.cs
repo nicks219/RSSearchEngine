@@ -87,7 +87,7 @@ public static class DiagnosticsProgram
                 }));
 
         BenchmarkRunner.Run([
-            typeof(TokenizerBenchmark),
+            typeof(QueryBenchmark),
             typeof(LuceneBenchmark),
             typeof(DuplicatesBenchmark)
         ], config);
@@ -103,7 +103,7 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks
-            ? new TokenizerBenchmark()
+            ? new QueryBenchmark()
             : new LuceneBenchmark();
 
         var stopwatch = Stopwatch.StartNew();

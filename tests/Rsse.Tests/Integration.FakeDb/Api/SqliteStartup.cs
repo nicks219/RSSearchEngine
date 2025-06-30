@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Api.Startup;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Contracts;
 using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
@@ -31,7 +31,7 @@ internal class SqliteStartup(IConfiguration configuration)
 
         services.AddSingleton<ILogger, NoopLogger<SqliteStartup>>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
         services.AddHostedService<ActivatorService>();
         services.AddSingleton<MigratorState>();
 

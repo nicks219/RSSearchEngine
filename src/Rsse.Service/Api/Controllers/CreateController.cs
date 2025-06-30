@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Data.Configuration;
 using SearchEngine.Data.Dto;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Configuration;
 using SearchEngine.Service.Contracts;
 using SearchEngine.Service.Mapping;
-using SearchEngine.Services;
 using SearchEngine.Tooling.Contracts;
 
 namespace SearchEngine.Api.Controllers;
@@ -23,8 +23,8 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class CreateController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
-    CreateService createService,
+    ITokenizerApiClient tokenizerApiClient,
+    Service.Api.CreateService createService,
     IDbMigratorFactory migratorFactory,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions) : ControllerBase
@@ -63,7 +63,7 @@ public class CreateController(
             };
         }
 
-        await tokenizerService.Create(
+        await tokenizerApiClient.Create(
             noteResultDto.NoteIdExchange,
             new TextRequestDto
             {

@@ -7,13 +7,13 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rsse.Search;
+using RsseEngine.SearchType;
 using SearchEngine.Api.Controllers;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Contracts;
+using SearchEngine.Service.Api;
 using SearchEngine.Service.ApiModels;
 using SearchEngine.Service.Contracts;
-using SearchEngine.Services;
 using SearchEngine.Tests.Integration.FakeDb.Extensions;
 using SearchEngine.Tests.Units.Infra;
 
@@ -23,10 +23,10 @@ namespace SearchEngine.Tests.Units;
 public class ComplianceTests
 {
     private readonly List<ExtendedSearchType> _extendedSearchType =
-        [ExtendedSearchType.Original, ExtendedSearchType.GinSimple, ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFast];
+        [ExtendedSearchType.Legacy, ExtendedSearchType.GinSimple, ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFast];
 
-    private readonly List<ReducedSearchType> _reducedSearchTypes = 
-        [ReducedSearchType.Original, ReducedSearchType.GinSimple, ReducedSearchType.GinOptimized, ReducedSearchType.GinFast];
+    private readonly List<ReducedSearchType> _reducedSearchTypes =
+        [ReducedSearchType.Legacy, ReducedSearchType.GinSimple, ReducedSearchType.GinOptimized, ReducedSearchType.GinFast];
 
     private readonly CancellationToken _token = CancellationToken.None;
 
@@ -46,7 +46,7 @@ public class ComplianceTests
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
-                var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
                 var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
                 var complianceController = new ComplianceSearchController(complianceManager);
@@ -96,7 +96,7 @@ public class ComplianceTests
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
-                var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
                 var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
                 var complianceController = new ComplianceSearchController(complianceManager);

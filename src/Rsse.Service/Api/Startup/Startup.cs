@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -17,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SearchEngine.Api.Authorization;
+using SearchEngine.Api.Configuration;
 using SearchEngine.Api.Middleware;
 using SearchEngine.Api.Services;
 using SearchEngine.Data.Configuration;
@@ -55,7 +55,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         services.AddHostedService<ActivatorService>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         services.AddHttpContextAccessor();
 

@@ -52,6 +52,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Rsse.Data\Rsse.Data.csproj" />
     <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+    <ProjectReference Include="..\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

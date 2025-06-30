@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +28,7 @@ public class MigrationController(
     DbDataProvider dbDataProvider,
     IHostApplicationLifetime lifetime,
     IDbMigratorFactory migratorFactory,
-    ITokenizerService tokenizerService) : ControllerBase
+    ITokenizerApiClient tokenizerApiClient) : ControllerBase
 {
     /// <summary>
     /// Залогировать тестовое сообщение с уровнем warning и отдать метрику.
@@ -72,7 +70,7 @@ public class MigrationController(
 
         var mySqlMigrator = migratorFactory.CreateMigrator(DatabaseType.MySql);
         await mySqlMigrator.CopyDbFromMysqlToNpgsql(stoppingToken);
-        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
+        await tokenizerApiClient.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = "success" };
         return Ok(response);
     }
@@ -112,7 +110,7 @@ public class MigrationController(
 
         var migrator = migratorFactory.CreateMigrator(databaseType);
         var result = await migrator.Restore(fileName, stoppingToken);
-        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
+        await tokenizerApiClient.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = Path.GetFileName(result) };
         return Ok(response);
     }
