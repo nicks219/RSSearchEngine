@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
-using SearchEngine.Exceptions;
-using SearchEngine.Infrastructure.Context;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
+using Rsse.Domain.Exceptions;
+using Rsse.Infrastructure.Context;
 
-namespace SearchEngine.Infrastructure.Repository;
+namespace Rsse.Infrastructure.Repository;
 
 /// <summary>
 /// Репозиторий слоя данных.

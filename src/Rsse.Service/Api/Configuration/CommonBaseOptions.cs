@@ -1,6 +1,6 @@
 using RsseEngine.SearchType;
 
-namespace SearchEngine.Api.Configuration;
+namespace Rsse.Api.Configuration;
 
 /// <summary>
 /// Общие настройки сервиса.

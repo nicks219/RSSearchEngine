@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.Api;
-using SearchEngine.Tests.Units.Infra;
-using CreateService = SearchEngine.Service.Api.CreateService;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
+using Rsse.Tests.Units.Infra;
+using CreateService = Rsse.Domain.Service.Api.CreateService;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
 [TestClass]
 public class CreateTests

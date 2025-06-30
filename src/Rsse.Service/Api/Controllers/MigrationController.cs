@@ -7,17 +7,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Tooling.Contracts;
 using Serilog;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для работы с миграциями бд.

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Tooling.MigrationAssistant;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Сервис запуска по расписанию инициализации функционала токенизатора.

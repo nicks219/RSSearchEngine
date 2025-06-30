@@ -1,4 +1,4 @@
-namespace RsseEngine.Tokenizer.Processors;
+namespace RsseEngine.Tokenizer.Processor;
 
 /// <summary>
 /// Вычисление хэша на последовательность символов по мере их добавления.

@@ -3,9 +3,9 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для регистрации функционала рейтлимитера.

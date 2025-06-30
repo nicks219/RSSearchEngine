@@ -5,16 +5,15 @@ using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 using RsseEngine.Selector;
-using RsseEngine.Tokenizer.Common;
 using RsseEngine.Tokenizer.Contracts;
-using RsseEngine.Tokenizer.Processors;
+using RsseEngine.Tokenizer.Processor;
 
-namespace RsseEngine.Tokenizer.SearchManager;
+namespace RsseEngine.Service;
 
 /// <summary>
 /// Доступ к функционалу различных алгоритмов поиска.
 /// </summary>
-public sealed class VectorSearchManager
+public sealed class SearchEngineManager
 {
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
 
@@ -30,7 +29,7 @@ public sealed class VectorSearchManager
     /// </summary>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public VectorSearchManager()
+    public SearchEngineManager()
     {
         if (CheckIsProduction())
         {

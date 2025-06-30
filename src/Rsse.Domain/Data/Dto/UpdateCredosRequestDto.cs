@@ -1,4 +1,4 @@
-namespace SearchEngine.Data.Dto;
+namespace Rsse.Domain.Data.Dto;
 
 /// <summary>
 /// Контейнер запроса для обновления данных авторизации.

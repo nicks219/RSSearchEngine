@@ -8,15 +8,15 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Tests.Integration.FakeDb.Api;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Infrastructure.Context;
+using Rsse.Infrastructure.Repository;
+using Rsse.Tests.Integration.FakeDb.Api;
+using Rsse.Tests.Integration.FakeDb.Extensions;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
-namespace SearchEngine.Tests.Integration.FakeDb;
+namespace Rsse.Tests.Integration.FakeDb;
 
 [TestClass]
 public class RepositoryTests

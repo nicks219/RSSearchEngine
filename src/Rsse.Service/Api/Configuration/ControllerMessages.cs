@@ -1,6 +1,6 @@
-using SearchEngine.Api.Controllers;
+using Rsse.Api.Controllers;
 
-namespace SearchEngine.Api.Configuration;
+namespace Rsse.Api.Configuration;
 
 /// <summary>
 /// Сообщения контроллеров.

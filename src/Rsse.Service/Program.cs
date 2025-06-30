@@ -9,10 +9,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
-using SearchEngine.Api.Logger;
-using SearchEngine.Api.Startup;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tooling.DevelopmentAssistant;
+using Rsse.Api.Logger;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Tooling.DevelopmentAssistant;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
 

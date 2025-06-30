@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Tooling.Contracts;
+namespace Rsse.Tooling.Contracts;
 
 /// <summary>
 /// Контракт функционала работы с миграциями бд.

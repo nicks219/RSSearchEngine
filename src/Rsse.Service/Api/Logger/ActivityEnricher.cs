@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace SearchEngine.Api.Logger;
+namespace Rsse.Api.Logger;
 
 /// <summary>
 /// Функционал для явного обогащения логов идентификаторами трасс.

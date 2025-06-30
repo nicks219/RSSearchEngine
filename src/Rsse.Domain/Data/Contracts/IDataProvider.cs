@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SearchEngine.Data.Contracts;
+namespace Rsse.Domain.Data.Contracts;
 
 /// <summary>
 /// Контракт асинхронного источника данных.

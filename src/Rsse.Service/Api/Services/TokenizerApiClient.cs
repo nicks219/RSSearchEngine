@@ -5,16 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RsseEngine;
+using Rsse.Api.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
+using Rsse.Domain.Service.Contracts;
 using RsseEngine.Indexes;
-using RsseEngine.Tokenizer.Contracts;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
-using SearchEngine.Service.Contracts;
+using RsseEngine.Service;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Сервис, поддерживающий настройку и использование функционала токенайзера, в т.ч поиск и инициализацию.

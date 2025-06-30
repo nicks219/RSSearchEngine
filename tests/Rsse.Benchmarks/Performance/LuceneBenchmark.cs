@@ -2,10 +2,10 @@ using System;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using SearchEngine.Benchmarks.Common;
-using static SearchEngine.Benchmarks.Constants;
+using RsseEngine.Benchmarks.Common;
+using static RsseEngine.Benchmarks.Constants;
 
-namespace SearchEngine.Benchmarks.Performance;
+namespace RsseEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на Lucene.

@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
-using SearchEngine.Service.Api;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер обработки индексов соответствия для функционала поиска.

@@ -5,16 +5,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Mapping;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Api.Configuration;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Domain.Service.Mapping;
+using Rsse.Tooling.Contracts;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для создания заметок.
@@ -24,7 +25,7 @@ namespace SearchEngine.Api.Controllers;
 public class CreateController(
     IHostApplicationLifetime lifetime,
     ITokenizerApiClient tokenizerApiClient,
-    Service.Api.CreateService createService,
+    CreateService createService,
     IDbMigratorFactory migratorFactory,
     IOptions<CommonBaseOptions> options,
     IOptionsSnapshot<DatabaseOptions> dbOptions) : ControllerBase

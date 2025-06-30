@@ -4,10 +4,10 @@ using System.Diagnostics.Metrics;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение функционала поставки метрик.

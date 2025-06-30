@@ -1,4 +1,4 @@
-namespace SearchEngine.Exceptions;
+namespace Rsse.Domain.Exceptions;
 
 /// <summary>
 /// Данные уже существуют.

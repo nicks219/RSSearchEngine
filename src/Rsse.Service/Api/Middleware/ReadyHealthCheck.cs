@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using SearchEngine.Service.Contracts;
+using Rsse.Domain.Service.Contracts;
 
-namespace SearchEngine.Api.Middleware;
+namespace Rsse.Api.Middleware;
 
 /// <summary>
 /// Проверка готовности сервиса принимать трафик.

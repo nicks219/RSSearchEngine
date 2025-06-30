@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 
-namespace RsseEngine.Tokenizer.Common;
+namespace RsseEngine.Service;
 
 /// <summary>
 /// Подсчёт метрик релевантности для результатов поискового запроса.

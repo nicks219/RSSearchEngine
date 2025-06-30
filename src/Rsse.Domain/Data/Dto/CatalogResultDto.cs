@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SearchEngine.Data.Dto;
+namespace Rsse.Domain.Data.Dto;
 
 /// <summary>
 /// Контейнер с ответом, содержащий страницу каталога.

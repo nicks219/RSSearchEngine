@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Infrastructure.Context;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для регистрации требуемых хранилищ данных.

@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using SearchEngine.Exceptions;
-using SearchEngine.Service.Configuration;
-using static SearchEngine.Service.Configuration.ServiceErrorMessages;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Exceptions;
+using Rsse.Domain.Service.Configuration;
+using static Rsse.Domain.Service.Configuration.ServiceErrorMessages;
 
-namespace SearchEngine.Service.Api;
+namespace Rsse.Domain.Service.Api;
 
 /// <summary>
 /// Функционал авторизации.

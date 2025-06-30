@@ -2,12 +2,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Common;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Dto;
-using static SearchEngine.Service.Configuration.ServiceErrorMessages;
+using Rsse.Domain.Data.Common;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Dto;
+using static Rsse.Domain.Service.Configuration.ServiceErrorMessages;
 
-namespace SearchEngine.Service.Api;
+namespace Rsse.Domain.Service.Api;
 
 /// <summary>
 /// Функционал создания заметок.

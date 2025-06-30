@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Startup;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository;
+using Rsse.Api.Controllers;
+using Rsse.Api.Startup;
+using Rsse.Infrastructure.Context;
+using Rsse.Infrastructure.Repository;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
+namespace Rsse.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов с использованием sqlite.

@@ -6,15 +6,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Startup;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Api.Controllers;
+using Rsse.Api.Startup;
+using Rsse.Infrastructure.Context;
+using Rsse.Infrastructure.Repository;
+using Rsse.Tooling.Contracts;
+using Rsse.Tooling.MigrationAssistant;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Расширение функционала регистрации служб для тестов на контейнеризованных бд.

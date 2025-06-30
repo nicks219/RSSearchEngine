@@ -1,6 +1,6 @@
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 
-namespace SearchEngine.Tooling.Contracts;
+namespace Rsse.Tooling.Contracts;
 
 /// <summary>
 /// Контракт фабрики по созданию миграторов.

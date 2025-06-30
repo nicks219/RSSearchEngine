@@ -52,6 +52,10 @@
   ```yaml
   exporters: [prometheusremotewrite/grafana_cloud]
   ```
+* upd: `проверить` возможно, трассы нуждаются в накачке энтропии на старте сервиса
+  ```bash
+  RUN apt-get install -y rng-tools && rngd -r /dev/urandom
+  ```
 * почитать про фичи Grafana по связке датасорсов, например:
     - [Trace correlaction](https://grafana.com/docs/grafana/latest/datasources/tempo/traces-in-grafana/trace-correlations/)
     - [Trace to metrics](https://grafana.com/docs/grafana/next/datasources/tempo/configure-tempo-data-source/#trace-to-metrics)

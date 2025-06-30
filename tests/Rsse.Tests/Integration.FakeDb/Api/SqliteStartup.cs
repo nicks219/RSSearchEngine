@@ -2,18 +2,18 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Middleware;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Api.Configuration;
+using Rsse.Api.Middleware;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Infrastructure.Repository;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Api;
+namespace Rsse.Tests.Integration.FakeDb.Api;
 
 /// <summary>
 /// Используется SQLite, информация по данной бд: https://www.sqlite.org/lang.html

@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Rsse.Api.Configuration;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Contracts;
 using RsseEngine.SearchType;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Contracts;
 
-namespace SearchEngine.Tests.Units.Infra;
+namespace Rsse.Tests.Units.Infra;
 
 /// <summary/> Для тестов, с двумя логгерами.
 public sealed class ServiceProviderStub : IDisposable

@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using SearchEngine.Api.Services;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tooling.Contracts;
-using SearchEngine.Tooling.Scripts;
+using Rsse.Api.Services;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Tooling.Contracts;
+using Rsse.Tooling.Scripts;
 
-namespace SearchEngine.Tooling.MigrationAssistant;
+namespace Rsse.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Функционал работы с миграциями MySql.

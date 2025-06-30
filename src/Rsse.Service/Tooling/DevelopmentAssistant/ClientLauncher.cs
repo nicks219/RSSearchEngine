@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 #pragma warning disable CS0162 // Unreachable code detected
 
-namespace SearchEngine.Tooling.DevelopmentAssistant;
+namespace Rsse.Tooling.DevelopmentAssistant;
 
 /// <summary>
 /// Подъём и остановка среды разработки JS.

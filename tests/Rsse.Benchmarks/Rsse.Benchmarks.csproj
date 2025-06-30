@@ -7,7 +7,7 @@
     <IsPublishable>false</IsPublishable>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>SearchEngine.Benchmarks</RootNamespace>
+    <RootNamespace>RsseEngine.Benchmarks</RootNamespace>
     <Configurations>Debug;Release</Configurations>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>

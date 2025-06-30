@@ -179,26 +179,28 @@
 * `k6.0.1` `open-telemetry` `ok`
   * upd: связь трейсов и логов - настройка OTLP-экспортера Serilog через код | энричер с идентификаторами
 
+
 * `k6.0.2` `exemplar` `ok`
   * upd: добавлен сорс Npgsql к трассам
   * upd: роуты `/system` и `/v6/account` исключены из логов
-  * upd: явное выставление статусов для трасс в middleware
-  * upd: `проверить` возможно, трассы нуждаются в накачке энтропии на старте сервиса
-  ```bash
-  RUN apt-get install -y rng-tools && rngd -r /dev/urandom
-  ```
-  * upd: `на проверке` увеличить время перед отдачей хелсчеков
+  * upd: явно выставлять статусы для трасс в middleware
+  * upd: увеличить время перед отдачей хелсчеков
   * upd: для связки метрик с трассами в Grafana Cloud создать datasource до prometheus и переименовать лейбл для exemplar в `trace_id`
-  - вместо **password** выставить токен из **access policy**, см [документацию Grafana Cloud](https://grafana.com/docs/grafana-cloud/security-and-account-management/authentication-and-permissions/access-policies/using-an-access-policy-token/#creating-a-data-source-with-a-grafana-cloud-token-in-grafana-ui).
+    - вместо **password** выставить токен из **access policy**, см [документацию Grafana Cloud](https://grafana.com/docs/grafana-cloud/security-and-account-management/authentication-and-permissions/access-policies/using-an-access-policy-token/#creating-a-data-source-with-a-grafana-cloud-token-in-grafana-ui).
+
 
 * `k6.0.3` `pyroscope` `отмена`
+  * upd: `не слито` запретить трассировку на инициализации сервиса
   * upd: `исследование` настроить сбор профилей с помощью Pyroscope `0.9.4` (файлы `*.v2`)
-  - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
+    - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
 
-* `разработка`
-  * избавиться от паразитного трафика (убрать шум в сигналах observability)
-    - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
-    - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+
+* `в разработке`
+* [x] `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
+  - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+  - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+ * [x] выделить поиск и токенайзер в отдельные проекты
+ * [x] "освободить" **SearchEngine** для именования класса
  * [ ] подумать над компоновкой токенайзера и связанного функционала
    - в **CommonBaseOptions** используются типы из **Rsse.Engine**
 
@@ -206,8 +208,8 @@
 ---
 #### Идеи:
   * [x] протестировать Pyroscope для профилирования на проме и отправки в Grafana
-  - [.NET Pyroscope](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/dotnet/?utm_source=chatgpt.com)
-  - [Traces to profiles](https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/dotnet-span-profiles/?utm_source=chatgpt.com)
+    - [.NET Pyroscope](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/dotnet/?utm_source=chatgpt.com)
+    - [Traces to profiles](https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/dotnet-span-profiles/?utm_source=chatgpt.com)
   * [ ] уменьшить время выполнения запросов на получение тегов с количеством заметок
   * [ ] попробовать на CI использовать кэш NuGet и параллельный запуск (если поддерживается)
   * [x] выпустить релиз `6.0.0` в **GitHub**

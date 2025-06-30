@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Contracts;
+using Rsse.Domain.Data.Contracts;
 
-namespace SearchEngine.Service.Api;
+namespace Rsse.Domain.Service.Api;
 
 /// <summary>
 /// Функционал удаления заметок.

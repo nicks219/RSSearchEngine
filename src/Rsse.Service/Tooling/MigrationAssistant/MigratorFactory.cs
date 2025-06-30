@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Tooling.Contracts;
 
-namespace SearchEngine.Tooling.MigrationAssistant;
+namespace Rsse.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Фабрика по созданию миграторов.

@@ -1,7 +1,7 @@
-using SearchEngine.Service.Api;
-using CreateService = SearchEngine.Service.Api.CreateService;
+using Rsse.Domain.Service.Api;
+using CreateService = Rsse.Domain.Service.Api.CreateService;
 
-namespace SearchEngine.Service.Configuration;
+namespace Rsse.Domain.Service.Configuration;
 
 /// <summary>
 /// Ошибки сервисов.

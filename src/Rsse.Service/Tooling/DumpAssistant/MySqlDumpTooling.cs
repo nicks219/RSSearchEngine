@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Tooling.Contracts;
 
-namespace SearchEngine.Tooling.DumpAssistant;
+namespace Rsse.Tooling.DumpAssistant;
 
 /// <summary>
 /// Тулинг для конвертации дампа MySql и переименования таблиц.

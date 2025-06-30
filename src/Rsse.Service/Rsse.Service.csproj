@@ -6,7 +6,7 @@
     <Company>nick219</Company>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>SearchEngine</RootNamespace>
+    <RootNamespace>Rsse</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
 
     <InvariantGlobalization>true</InvariantGlobalization>
@@ -67,7 +67,7 @@
   <!-- генерация констант -->
   <Target Name="GenerateConstants" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true'">
     <Message Text="Generating constants using $(Generator) for $(RsseDomainDll)" Importance="high" />
-    <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) SearchEngine.Service.Configuration.RouteConstants $(CustomSolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx"
+    <Exec Command="dotnet run --project ..\Rsse.Generator\Rsse.Generator.csproj -- $(RsseDomainDll) Rsse.Domain.Service.Configuration.RouteConstants $(CustomSolutionDir)src\Rsse.Client\ClientApp\src\api-routes.tsx"
           ConsoleToMsBuild="true"
           IgnoreExitCode="true" >
       <Output TaskParameter="ConsoleOutput" PropertyName="GeneratorOutput" />

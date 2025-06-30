@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Tests.Integration.RealDb.Api;
-using SearchEngine.Tests.Integration.RealDb.Extensions;
-using SearchEngine.Tests.Integration.RealDb.Infra;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Tests.Integration.RealDb.Api;
+using Rsse.Tests.Integration.RealDb.Extensions;
+using Rsse.Tests.Integration.RealDb.Infra;
+using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace Rsse.Tests.Integration.RealDb;
 
 [TestClass]
 public sealed class DestructiveIntegrationTests : TestBase, IDisposable

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Service.Api;
+using Rsse.Domain.Service.Api;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение, регистрирующее зависимости для слоя бизнес-логики.
@@ -17,7 +17,7 @@ public static class DomainLayerRegistrar
         services.AddScoped<AccountService>();
         services.AddScoped<CatalogService>();
         services.AddScoped<ComplianceSearchService>();
-        services.AddScoped<Service.Api.CreateService>();
+        services.AddScoped<CreateService>();
         services.AddScoped<ReadService>();
         services.AddScoped<UpdateService>();
     }

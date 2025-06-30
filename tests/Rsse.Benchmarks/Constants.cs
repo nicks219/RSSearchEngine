@@ -1,6 +1,6 @@
 using RsseEngine.SearchType;
 
-namespace SearchEngine.Benchmarks;
+namespace RsseEngine.Benchmarks;
 
 /// <summary>
 /// Общие константы для бенчмарков.

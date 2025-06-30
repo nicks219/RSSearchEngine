@@ -7,18 +7,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Configuration;
-using SearchEngine.Api.Middleware;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
+using Rsse.Api.Authorization;
+using Rsse.Api.Configuration;
+using Rsse.Api.Middleware;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Infrastructure.Repository;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
 /// <summary>
 /// Используются провайдеры до mysql и postgres.

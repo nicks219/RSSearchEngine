@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для функционала поставки диагностиков.

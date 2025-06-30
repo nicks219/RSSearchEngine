@@ -1,4 +1,4 @@
-namespace SearchEngine.Tooling.DevelopmentAssistant;
+namespace Rsse.Tooling.DevelopmentAssistant;
 
 /// <summary>
 /// Выбор контроля за процессом при использовании dev-сервера.

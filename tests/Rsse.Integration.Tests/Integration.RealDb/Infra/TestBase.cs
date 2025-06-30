@@ -4,11 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integration.RealDb.Api;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Tests.Integration.RealDb.Api;
 
-namespace SearchEngine.Tests.Integration.RealDb.Infra;
+namespace Rsse.Tests.Integration.RealDb.Infra;
 
 /// <summary>
 /// Базовый класс для тестов.

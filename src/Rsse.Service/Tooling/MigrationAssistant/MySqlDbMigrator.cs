@@ -8,13 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Infrastructure.Context;
+using Rsse.Tooling.Contracts;
 
-namespace SearchEngine.Tooling.MigrationAssistant;
+namespace Rsse.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Функционал работы с миграциями MySql.
