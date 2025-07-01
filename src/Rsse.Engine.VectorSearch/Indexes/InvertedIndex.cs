@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using RsseEngine.Contracts;
@@ -17,7 +16,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
     /// </summary>
-    private readonly Dictionary<Token, TDocumentIdCollection> _documentIdCollections = new();
+    private readonly Dictionary<Token, TDocumentIdCollection> _invertedIndex = new();
 
     /// <summary>
     /// Получить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
@@ -28,9 +27,9 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     {
         List<TDocumentIdCollection> result = new();
 
-        foreach (Token token in tokenVector)
+        foreach (var token in tokenVector)
         {
-            if (_documentIdCollections.TryGetValue(token, out TDocumentIdCollection documentIdVector))
+            if (_invertedIndex.TryGetValue(token, out TDocumentIdCollection documentIdVector))
             {
                 result.Add(documentIdVector);
             }
@@ -49,7 +48,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         foreach (Token token in tokenVector)
         {
             ref TDocumentIdCollection collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
-                _documentIdCollections, token, out bool exists);
+                _invertedIndex, token, out bool exists);
 
             if (!exists)
             {
@@ -71,13 +70,13 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         tokenVector = tokenVector.DistinctAndGet();
         oldTokenVector = oldTokenVector.DistinctAndGet();
 
-        HashSet<Token> intersection = tokenVector.Intersect(oldTokenVector);
+        var intersection = tokenVector.Intersect(oldTokenVector);
 
         foreach (Token token in oldTokenVector)
         {
             if (!intersection.Contains(token))
             {
-                _documentIdCollections[token].Remove(documentId);
+                _invertedIndex[token].Remove(documentId);
             }
         }
 
@@ -86,7 +85,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
             if (!intersection.Contains(token))
             {
                 ref TDocumentIdCollection collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
-                    _documentIdCollections, token, out bool exists);
+                    _invertedIndex, token, out bool exists);
 
                 if (!exists)
                 {
@@ -107,9 +106,9 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     {
         tokenVector = tokenVector.DistinctAndGet();
 
-        foreach (Token token in tokenVector)
+        foreach (var token in tokenVector)
         {
-            _documentIdCollections[token].Remove(documentId);
+            _invertedIndex[token].Remove(documentId);
         }
     }
 
@@ -118,34 +117,32 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// </summary>
     public void Clear()
     {
-        _documentIdCollections.Clear();
+        _invertedIndex.Clear();
     }
 
     /// <summary>
     /// Получить идентификаторы заметок, в которых присутствует токен.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="documentIdSet">Вектор с идентификаторами заметок.</param>
+    /// <param name="documentIdVector">Вектор с идентификаторами заметок.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetIdentifiers(Token token, [MaybeNullWhen(false)] out TDocumentIdCollection documentIdSet) =>
-        _documentIdCollections.TryGetValue(token, out documentIdSet);
+    public bool TryGetNonEmptyDocumentIdVector(Token token, out TDocumentIdCollection documentIdVector)
+    {
+        return _invertedIndex.TryGetValue(token, out documentIdVector)
+            && documentIdVector.Count > 0;
+    }
 
     /// <summary>
     /// Определить, присутствует ли любой токен из вектора в заданной заметке.
     /// </summary>
     /// <param name="vector">Вектор токенов.</param>
-    /// <param name="id">Идентификатор заметки, для которой мы проверяем наличие любого токена из вектора.</param>
+    /// <param name="documentId">Идентификатор заметки, для которой мы проверяем наличие любого токена из вектора.</param>
     /// <returns><b>true</b> - Один из токенов присутствует в заданной заметке.</returns>
-    public bool ContainsAnyTokenForDoc(TokenVector vector, DocumentId id)
+    public bool ContainsAnyTokenForDoc(TokenVector vector, DocumentId documentId)
     {
         foreach (var token in vector)
         {
-            if (!_documentIdCollections.TryGetValue(token, out var docIdVector))
-            {
-                continue;
-            }
-
-            if (docIdVector.Contains(id))
+            if (ContainsDocumentIdForToken(token, documentId))
             {
                 return true;
             }
@@ -155,29 +152,15 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     }
 
     /// <summary>
-    /// Определить, присутствует ли токен в любой из заданных заметок.
+    /// Определить, присутствует ли идентификатор заметки для токена.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="documentIdSet">Идентификаторы заметок, в которых мы проверяем наличие токена.</param>
-    /// <returns><b>true</b> - Токен присутствует в одной из заданных заметок.</returns>
-    // варианты нейминга: ContainsInAny | ContainsTokenInAnyGivenIds
-    [Obsolete("в данный момент не используется")]
-    public bool ContainsAnyDocForToken(Token token, DocumentIdSet documentIdSet)
+    /// <param name="documentId">Идентификатор заметки.</param>
+    /// <returns><b>true</b> - Идентификатор заметки присутствует для токена.</returns>
+    public bool ContainsDocumentIdForToken(Token token, DocumentId documentId)
     {
-        foreach (var id in documentIdSet)
-        {
-            if (!_documentIdCollections.TryGetValue(token, out var ginIds))
-            {
-                continue;
-            }
-
-            if (ginIds.Contains(id))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return TryGetNonEmptyDocumentIdVector(token, out var reducedTokens)
+               && reducedTokens.Contains(documentId);
     }
 
     /// <summary>
@@ -189,13 +172,13 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     {
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
         {
-            DocumentIdSet documentIdList = new DocumentIdSet(new HashSet<DocumentId>());
-            return Unsafe.As<DocumentIdSet, TDocumentIdCollection>(ref documentIdList);
+            var documentIdSet = new DocumentIdSet([]);
+            return Unsafe.As<DocumentIdSet, TDocumentIdCollection>(ref documentIdSet);
         }
 
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
         {
-            DocumentIdList documentIdList = new DocumentIdList(new List<DocumentId>());
+            var documentIdList = new DocumentIdList([]);
             return Unsafe.As<DocumentIdList, TDocumentIdCollection>(ref documentIdList);
         }
 

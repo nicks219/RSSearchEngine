@@ -9,49 +9,43 @@ public enum ReducedSearchType
 {
     /// <summary>
     /// "Оригинальный" поиск без оптимизации, инвертированный индекс не используется.
-    /// Используются алгоритмы: <see cref="ExtendedSearchLegacy"/> и <see cref="ReducedSearchLegacy"/>
+    /// Используется алгоритм <see cref="ReducedSearchLegacy"/>
     /// </summary>
     Legacy = 0,
 
     /// <summary>
-    /// Вариант оптимизации на инвертированном индексе.
-    /// GIN используется для сокращения пространства поиска.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGin"/> и <see cref="ReducedSearchGin"/>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ReducedSearchGinSimple"/>
     /// </summary>
     GinSimple = 1,
 
     /// <summary>
-    /// Вариант оптимизации на инвертированном индексе.
-    /// GIN используется для сокращения пространства поиска.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGin"/> и <see cref="ReducedSearchGin"/>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ReducedSearchGinOptimized"/>
     /// </summary>
-    GinSimpleFilter = 2,
+    GinOptimized = 2,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// GIN используется для формирования пространства поиска.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGinOptimized"/> и <see cref="ReducedSearchGinOptimized"/>
+    /// Используется алгоритм <see cref="ReducedSearchGinOptimizedFilter"/>
     /// </summary>
-    GinOptimized = 3,
+    GinOptimizedFilter = 3,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// GIN используется для формирования пространства поиска.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGinOptimized"/> и <see cref="ReducedSearchGinOptimized"/>
+    /// Используется алгоритм <see cref="ReducedSearchGinFilter"/>
     /// </summary>
-    GinOptimizedFilter = 4,
+    GinFilter = 4,
 
     /// <summary>
-    /// Вариант оптимизации на инвертированном индексе.
-    /// GIN используется для сокращения пространства поиска, применены дополнительные оптимизации.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGinFast"/> и <see cref="ReducedSearchGinFast"/>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ReducedSearchGinFast"/>
     /// </summary>
     GinFast = 5,
 
     /// <summary>
-    /// Вариант оптимизации на инвертированном индексе.
-    /// GIN используется для сокращения пространства поиска, применены дополнительные оптимизации.
-    /// Используются алгоритмы: <see cref="ExtendedSearchGinFast"/> и <see cref="ReducedSearchGinFast"/>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ReducedSearchGinFastFilter"/>
     /// </summary>
     GinFastFilter = 6
 }

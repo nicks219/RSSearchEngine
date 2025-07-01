@@ -21,7 +21,7 @@ namespace RsseEngine.Service;
 public sealed class TokenizerServiceCore : ITokenizerServiceCore
 {
     private TokenizerLock TokenizerLock { get; } = new();
-    private readonly SearchEngineManager _searchEngineManager = new();
+    private readonly SearchEngineManager _searchEngineManager;
     private readonly ExtendedSearchType _extendedSearchType;
     private readonly ReducedSearchType _reducedSearchType;
 
@@ -33,12 +33,15 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
+    /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <param name="extendedSearchType">Тип оптимизации расширенного алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации сокращенного алгоритма поиска.</param>
     public TokenizerServiceCore(
+        bool enableTempStoragePool,
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
+        _searchEngineManager = new SearchEngineManager(enableTempStoragePool);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
     }

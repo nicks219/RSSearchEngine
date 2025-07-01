@@ -7,6 +7,7 @@ using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
+using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
 
@@ -14,7 +15,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinFast : IReducedSearchProcessor
+public sealed class ReducedSearchGinFastFilter : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -27,6 +28,8 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
     public required InvertedIndex<DocumentIdSet> GinReduced { private get; init; }
+
+    public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
@@ -61,6 +64,12 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
             }
             default:
             {
+                var filteredDocuments = RelevanceFilter.ProcessToSet(GinReduced, searchVector);
+                if (filteredDocuments.Count == 0)
+                {
+                    return;
+                }
+
                 idsFromGin = idsFromGin.OrderBy(docIdVector => docIdVector.Count).ToList();
 
                 // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
@@ -72,23 +81,76 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
 
                     for (var index = 0; index < lastIndex; index++)
                     {
-                        foreach (var docId in idsFromGin[index])
-                        {
-                            ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced,
-                                docId, out _);
+                        DocumentIdSet documentIdSet = idsFromGin[index];
 
-                            ++score;
+                        if (filteredDocuments.Count <= documentIdSet.Count)
+                        {
+                            foreach (var docId in filteredDocuments)
+                            {
+                                if (!documentIdSet.Contains(docId))
+                                {
+                                    continue;
+                                }
+
+                                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced,
+                                    docId, out _);
+
+                                ++score;
+                            }
+                        }
+                        else
+                        {
+                            foreach (var docId in documentIdSet)
+                            {
+                                if (!filteredDocuments.Contains(docId))
+                                {
+                                    continue;
+                                }
+
+                                ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced,
+                                    docId, out _);
+
+                                ++score;
+                            }
                         }
                     }
 
                     // Отдаём метрику на самый тяжелый токен поискового запроса.
-                    foreach (var docId in idsFromGin[lastIndex])
                     {
-                        comparisonScoresReduced.Remove(docId, out var comparisonScore);
-                        ++comparisonScore;
+                        DocumentIdSet documentIdSet = idsFromGin[lastIndex];
 
-                        metricsCalculator.AppendReduced(comparisonScore, searchVector, docId,
-                            GeneralDirectIndex);
+                        if (filteredDocuments.Count <= documentIdSet.Count)
+                        {
+                            foreach (var docId in filteredDocuments)
+                            {
+                                if (!documentIdSet.Contains(docId))
+                                {
+                                    continue;
+                                }
+
+                                comparisonScoresReduced.Remove(docId, out var comparisonScore);
+                                ++comparisonScore;
+
+                                metricsCalculator.AppendReduced(comparisonScore, searchVector, docId,
+                                    GeneralDirectIndex);
+                            }
+                        }
+                        else
+                        {
+                            foreach (var docId in documentIdSet)
+                            {
+                                if (!filteredDocuments.Contains(docId))
+                                {
+                                    continue;
+                                }
+
+                                comparisonScoresReduced.Remove(docId, out var comparisonScore);
+                                ++comparisonScore;
+
+                                metricsCalculator.AppendReduced(comparisonScore, searchVector, docId,
+                                    GeneralDirectIndex);
+                            }
+                        }
                     }
 
                     if (cancellationToken.IsCancellationRequested)
@@ -97,6 +159,11 @@ public sealed class ReducedSearchGinFast : IReducedSearchProcessor
                     // Поиск в векторе reduced без учета самого тяжелого токена.
                     foreach (var (docId, comparisonScore) in comparisonScoresReduced)
                     {
+                        /*if (!filteredDocuments.Contains(docId))
+                        {
+                            continue;
+                        }*/
+
                         metricsCalculator.AppendReduced(comparisonScore, searchVector, docId,
                             GeneralDirectIndex);
                     }

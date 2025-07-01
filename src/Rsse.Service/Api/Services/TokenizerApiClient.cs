@@ -38,7 +38,7 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
         _tokenizerServiceCore = new TokenizerServiceCore(
-            extendedSearchType, reducedSearchType);
+            false, extendedSearchType, reducedSearchType);
     }
 
     // Используется для тестов.

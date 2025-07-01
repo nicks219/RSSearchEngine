@@ -3,6 +3,7 @@ using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Pools;
 using RsseEngine.SearchType;
 
 namespace RsseEngine.Selector;
@@ -26,6 +27,7 @@ public abstract class ProductionSearchAlgorithmSelector
         // Legacy-алгоритм без GIN-индекса.
         private readonly ExtendedSearchLegacy _extendedSearchLegacy = new()
         {
+            TempStoragePool = new TempStoragePool(false),
             GeneralDirectIndex = generalDirectIndex
         };
 
@@ -52,6 +54,7 @@ public abstract class ProductionSearchAlgorithmSelector
         // Legacy-алгоритм без GIN-индекса.
         private readonly ReducedSearchLegacy _reducedSearchLegacy = new()
         {
+            TempStoragePool = new TempStoragePool(false),
             GeneralDirectIndex = generalDirectIndex
         };
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -25,13 +24,22 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
 {
     private TokenizerServiceCore _tokenizer = null!;
 
-    public static List<ReducedSearchType> Parameters =>
-        ((ReducedSearchType[])Enum.GetValuesAsUnderlyingType<ReducedSearchType>())
-        .ToList();
+    public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
+    [
+        new(ReducedSearchType.Legacy),
+        new(ReducedSearchType.GinSimple),
+        new(ReducedSearchType.GinOptimized),
+        new(ReducedSearchType.GinOptimizedFilter),
+        new(ReducedSearchType.GinFilter),
+        new(ReducedSearchType.GinFast),
+        new(ReducedSearchType.GinFast, true),
+        new(ReducedSearchType.GinFastFilter),
+        new(ReducedSearchType.GinFastFilter, true)
+    ];
 
     [ParamsSource(nameof(Parameters))]
     // ReSharper disable once UnassignedField.Global
-    public ReducedSearchType SearchType;
+    public required BenchmarkParameter<ReducedSearchType> SearchType;
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
@@ -39,7 +47,7 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
     [GlobalSetup]
     public async Task SetupAsync()
     {
-        await InitializeTokenizer(SearchType);
+        await InitializeTokenizer(SearchType.SearchType, SearchType.Pool);
     }
 
     [Benchmark]
@@ -55,17 +63,17 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
-    public Task Initialize() => InitializeTokenizer(TokenizerReducedSearchType);
+    public Task Initialize() => InitializeTokenizer(TokenizerReducedSearchType, false);
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
     /// </summary>
-    private async Task InitializeTokenizer(ReducedSearchType reducedSearchType)
+    private async Task InitializeTokenizer(ReducedSearchType reducedSearchType, bool pool)
     {
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(ExtendedSearchType.Legacy, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(pool, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");

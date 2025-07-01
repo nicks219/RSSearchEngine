@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
+using RsseEngine.Indexes;
 
 namespace RsseEngine.Service;
 
@@ -25,14 +26,9 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// </summary>
     internal Dictionary<DocumentId, double> ComplianceMetrics { get; } = [];
 
-    /// <summary>
-    /// Добавить метрики для четкого поиска.
-    /// </summary>
-    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <param name="documentId">Идентификатор, полученный при поиске.</param>
-    /// <param name="extendedTargetVector">Вектор с заметкой, в которой производился поиск.</param>
-    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId, TokenVector extendedTargetVector)
+    /// <inheritdoc/>
+    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        TokenVector extendedTargetVector)
     {
         // I. 100% совпадение по extended последовательности, по reduced можно не искать
         if (comparisonScore == searchVector.Count)
@@ -51,14 +47,36 @@ public sealed class MetricsCalculator : IMetricsCalculator
         }
     }
 
-    /// <summary>
-    /// Добавить метрики для нечеткого поиска.
-    /// </summary>
-    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <param name="documentId">Идентификатор, полученный при поиске.</param>
-    /// <param name="reducedTargetVector">Вектор с заметкой, в которой производился поиск.</param>
-    public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId, TokenVector reducedTargetVector)
+    /// <inheritdoc/>
+    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        DirectIndex directIndex)
+    {
+        // I. 100% совпадение по extended последовательности, по reduced можно не искать
+        if (comparisonScore == searchVector.Count)
+        {
+            var tokensLine = directIndex[documentId];
+            var extendedTargetVector = tokensLine.Extended;
+
+            ContinueSearching = false;
+            ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVector.Count));
+            return;
+        }
+
+        // II. extended% совпадение
+        if (comparisonScore >= searchVector.Count * ExtendedCoefficient)
+        {
+            var tokensLine = directIndex[documentId];
+            var extendedTargetVector = tokensLine.Extended;
+
+            // todo: можно так оценить
+            // continueSearching = false;
+            ComplianceMetrics.Add(documentId, comparisonScore * (100D / extendedTargetVector.Count));
+        }
+    }
+
+    /// <inheritdoc/>
+    public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        TokenVector reducedTargetVector)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)
@@ -70,6 +88,26 @@ public sealed class MetricsCalculator : IMetricsCalculator
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
         if (comparisonScore >= searchVector.Count * ReducedCoefficient)
         {
+            ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVector.Count));
+        }
+    }
+
+    /// <inheritdoc/>
+    public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        DirectIndex directIndex)
+    {
+        // III. 100% совпадение по reduced
+        if (comparisonScore == searchVector.Count)
+        {
+            var reducedTargetVector = directIndex[documentId].Reduced;
+            ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVector.Count));
+            return;
+        }
+
+        // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
+        if (comparisonScore >= searchVector.Count * ReducedCoefficient)
+        {
+            var reducedTargetVector = directIndex[documentId].Reduced;
             ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVector.Count));
         }
     }

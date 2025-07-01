@@ -8,6 +8,11 @@ namespace RsseEngine.Contracts;
 public interface IDocumentIdCollection
 {
     /// <summary>
+    /// Длина вектора.
+    /// </summary>
+    int Count { get; }
+
+    /// <summary>
     /// Добавить идентификатор документа в вектор.
     /// </summary>
     /// <param name="docId">Идентификатор документа.</param>

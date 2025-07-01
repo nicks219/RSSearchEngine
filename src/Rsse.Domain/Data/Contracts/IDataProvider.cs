@@ -10,7 +10,6 @@ public interface IDataProvider<out T>
     /// <summary>
     /// Асинхронно отдавать последовательность данных.
     /// </summary>
-    /// <param name="ct"></param>
     /// <returns></returns>
     IAsyncEnumerable<T> GetDataAsync();
 }

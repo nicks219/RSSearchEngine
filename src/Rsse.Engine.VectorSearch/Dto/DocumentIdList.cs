@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using RsseEngine.Contracts;
 
 namespace RsseEngine.Dto;
@@ -73,13 +72,23 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
         }
     }
 
-    public void ExceptWith(DocumentIdList other)
+    /// <summary>
+    /// Получить копию подлежащего сета идентификаторов в виде вектора за исключением существующих данных.
+    /// </summary>
+    /// <param name="exceptSet">Коллекция с существующими данными.</param>
+    /// <returns>Копия вектора.</returns>
+    public DocumentIdList CopyExcept(HashSet<DocumentId> exceptSet)
     {
-        foreach (DocumentId documentId in other._list)
-        {
-            _list.Remove(documentId);
-        }
-    }
+        DocumentIdList expectResult = new DocumentIdList(new List<DocumentId>());
 
-    public DocumentIdList GetCopyInternal() => new(_list.ToList());
+        foreach (DocumentId documentId in _list)
+        {
+            if (exceptSet.Add(documentId))
+            {
+                expectResult.Add(documentId);
+            }
+        }
+
+        return expectResult;
+    }
 }

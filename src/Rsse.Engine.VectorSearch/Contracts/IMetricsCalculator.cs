@@ -1,4 +1,5 @@
 using RsseEngine.Dto;
+using RsseEngine.Indexes;
 
 namespace RsseEngine.Contracts;
 
@@ -18,6 +19,16 @@ public interface IMetricsCalculator
         TokenVector extendedTargetVector);
 
     /// <summary>
+    /// Добавить метрики для четкого поиска.
+    /// </summary>
+    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="documentId">Идентификатор, полученный при поиске.</param>
+    /// <param name="directIndex">Индекс по идентификаторам заметок.</param>
+    void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        DirectIndex directIndex);
+
+    /// <summary>
     /// Добавить метрики для нечеткого поиска.
     /// </summary>
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
@@ -26,4 +37,14 @@ public interface IMetricsCalculator
     /// <param name="reducedTargetVector">Вектор с заметкой, в которой производился поиск.</param>
     void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
         TokenVector reducedTargetVector);
+
+    /// <summary>
+    /// Добавить метрики для нечеткого поиска.
+    /// </summary>
+    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="documentId">Идентификатор, полученный при поиске.</param>
+    /// <param name="directIndex">Индекс по идентификаторам заметок.</param>
+    void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        DirectIndex directIndex);
 }

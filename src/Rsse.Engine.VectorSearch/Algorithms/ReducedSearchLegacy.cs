@@ -3,6 +3,7 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Pools;
 using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
@@ -12,10 +13,12 @@ namespace RsseEngine.Algorithms;
 /// </summary>
 public sealed class ReducedSearchLegacy : IReducedSearchProcessor
 {
+    public required TempStoragePool TempStoragePool { private get; init; }
+
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
-    public required DirectIndex GeneralDirectIndex { get; init; }
+    public required DirectIndex GeneralDirectIndex { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)

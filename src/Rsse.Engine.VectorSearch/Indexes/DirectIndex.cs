@@ -14,6 +14,11 @@ public sealed class DirectIndex
     private readonly ConcurrentDictionary<DocumentId, TokenLine> _directIndex = new();
 
     /// <summary>
+    /// Получить количество элементов в индексе.
+    /// </summary>
+    public int Count => _directIndex.Count;
+
+    /// <summary>
     /// Получить перечислитель для индекса.
     /// </summary>
     /// <returns>Перечислитель.</returns>
@@ -21,11 +26,6 @@ public sealed class DirectIndex
     {
         return _directIndex.GetEnumerator();
     }
-
-    /// <summary>
-    /// Получить количество элементов в индексе.
-    /// </summary>
-    public int Count => _directIndex.Count;
 
     /// <summary>
     /// Индексатор по идентификатору.

@@ -146,7 +146,7 @@ public class SearchResultValidation
     private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
-        var tokenizer = new TokenizerServiceCore(extendedSearchType, reducedSearchType);
+        var tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
 
         var result = await tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -13,7 +12,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -27,34 +26,21 @@ public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
     /// </summary>
     public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
 
+    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        // выбрать только те заметки, которые пригодны для extended поиска
-        var idsExtendedSearchSpace = new HashSet<DocumentId>();
-
-        foreach (var token in searchVector)
+        var filteredDocuments = RelevanceFilter.ProcessToSet(GinExtended, searchVector);
+        if (filteredDocuments.Count == 0)
         {
-            if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIds))
-            {
-                continue;
-            }
-
-            // если в gin есть токен, перебираем id заметок в которых он присутствует и формируем пространство поиска
-            foreach (var documentId in docIds)
-            {
-                // выигрывает по нагрузке на GC:
-                // if (!tokenLinesExtendedSearchSpace.TryGetValue(docId, out var tokenLine)) {
-                // var originalTokenLine = GeneralDirectIndex[docId];
-                // tokenLinesExtendedSearchSpace[docId] = originalTokenLine with { Reduced = emptyReducedVector };
-
-                idsExtendedSearchSpace.Add(documentId);
-            }
+            return;
         }
 
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinOptimized));
+        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFilter));
 
-        foreach (var documentId in idsExtendedSearchSpace)
+        // поиск в векторе extended
+        foreach (var documentId in filteredDocuments)
         {
             var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
             var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);

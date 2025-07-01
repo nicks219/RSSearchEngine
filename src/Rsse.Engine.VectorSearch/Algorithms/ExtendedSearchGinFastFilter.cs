@@ -13,7 +13,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -27,9 +27,17 @@ public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
     /// </summary>
     public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
 
+    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
+        var filteredDocuments = RelevanceFilter.ProcessToSet(GinExtended, searchVector);
+        if (filteredDocuments.Count == 0)
+        {
+            return;
+        }
+
         var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(searchVector);
 
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
@@ -40,11 +48,14 @@ public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
             var docIdVector = extendedDocIdVectorSearchSpace[searchStartIndex];
             foreach (var documentId in docIdVector)
             {
-                var tokensLine = GeneralDirectIndex[documentId];
-                var extendedTokensLine = tokensLine.Extended;
-                var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+                if (filteredDocuments.Contains(documentId))
+                {
+                    var tokensLine = GeneralDirectIndex[documentId];
+                    var extendedTokensLine = tokensLine.Extended;
+                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
 
-                metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                }
             }
         }
     }

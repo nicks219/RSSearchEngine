@@ -24,14 +24,15 @@ public class ComplianceTests
 {
     private readonly List<ExtendedSearchType> _extendedSearchType =
         [ExtendedSearchType.Legacy,
-            ExtendedSearchType.GinSimple, ExtendedSearchType.GinSimpleFilter,
-            ExtendedSearchType.GinOptimized, ExtendedSearchType.GinOptimizedFilter,
+            ExtendedSearchType.GinSimple,
+            ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFilter,
             ExtendedSearchType.GinFast, ExtendedSearchType.GinFastFilter];
 
     private readonly List<ReducedSearchType> _reducedSearchTypes =
         [ReducedSearchType.Legacy,
-            ReducedSearchType.GinSimple,ReducedSearchType.GinSimpleFilter,
-            ReducedSearchType.GinOptimized,ReducedSearchType.GinOptimizedFilter,
+            ReducedSearchType.GinSimple,
+            ReducedSearchType.GinOptimized, ReducedSearchType.GinOptimizedFilter,
+            ReducedSearchType.GinFilter,
             ReducedSearchType.GinFast, ReducedSearchType.GinFastFilter];
 
     private readonly CancellationToken _token = CancellationToken.None;

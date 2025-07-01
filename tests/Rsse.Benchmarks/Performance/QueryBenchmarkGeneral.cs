@@ -25,9 +25,9 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
     [
         (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
         (Extended: ExtendedSearchType.GinSimple, Reduced: ReducedSearchType.GinSimple),
-        (Extended: ExtendedSearchType.GinSimpleFilter, Reduced:ReducedSearchType.GinSimpleFilter),
         (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimized),
-        (Extended: ExtendedSearchType.GinOptimizedFilter, Reduced:ReducedSearchType.GinOptimizedFilter),
+        (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimizedFilter),
+        (Extended: ExtendedSearchType.GinFilter, Reduced:ReducedSearchType.GinFilter),
         (Extended: ExtendedSearchType.GinFast, Reduced:ReducedSearchType.GinFast),
         (Extended: ExtendedSearchType.GinFastFilter, Reduced:ReducedSearchType.GinFastFilter)
     ];
@@ -74,7 +74,7 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkGeneral)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");

@@ -32,11 +32,11 @@ public sealed class GinRelevanceFilter
     private List<DocumentIdSet> Process(InvertedIndex<DocumentIdSet> inverseIndex, TokenVector searchVector)
     {
         var emptyDocIdVector = new DocumentIdSet([]);
-        List<DocumentIdSet> idsFromGin = new List<DocumentIdSet>();
+        var idsFromGin = new List<DocumentIdSet>();
 
         foreach (Token token in searchVector)
         {
-            if (inverseIndex.TryGetIdentifiers(token, out DocumentIdSet ids))
+            if (inverseIndex.TryGetNonEmptyDocumentIdVector(token, out var ids))
             {
                 idsFromGin.Add(ids);
             }
@@ -66,13 +66,13 @@ public sealed class GinRelevanceFilter
     {
         var minCount = CalculateMinCount(searchVector);
 
-        List<DocumentIdSet> idsFromGin = new List<DocumentIdSet>();
+        var idsFromGin = new List<DocumentIdSet>();
 
         var emptyCounter = 0;
 
         foreach (Token token in searchVector)
         {
-            if (inverseIndex.TryGetIdentifiers(token, out DocumentIdSet ids))
+            if (inverseIndex.TryGetNonEmptyDocumentIdVector(token, out var ids))
             {
                 idsFromGin.Add(ids);
             }
@@ -88,9 +88,7 @@ public sealed class GinRelevanceFilter
         }
 
         idsFromGin.Sort((left, right) => Comparer.Default.Compare(left.Count, right.Count));
-        idsFromGin = idsFromGin.Take(minCount - emptyCounter).ToList();
-
-        var filteredDocuments = idsFromGin;
+        var filteredDocuments = idsFromGin.Take(minCount - emptyCounter).ToList();
 
         var documentIdFilter = new HashSet<DocumentId>();
 
@@ -103,6 +101,57 @@ public sealed class GinRelevanceFilter
         }
 
         return documentIdFilter;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="inverseIndex"></param>
+    /// <param name="searchVector"></param>
+    /// <returns></returns>
+    public (Dictionary<DocumentId, int> Dictionary, List<DocumentIdSet> List) ProcessToDictionary(
+        InvertedIndex<DocumentIdSet> inverseIndex, TokenVector searchVector)
+    {
+        var minCount = CalculateMinCount(searchVector);
+
+        var idsFromGin = new List<DocumentIdSet>();
+
+        var emptyCounter = 0;
+
+        var emptyDictionary = new Dictionary<DocumentId, int>();
+        var emptyList = new List<DocumentIdSet>();
+
+        foreach (Token token in searchVector)
+        {
+            if (inverseIndex.TryGetNonEmptyDocumentIdVector(token, out var ids))
+            {
+                idsFromGin.Add(ids);
+            }
+            else
+            {
+                emptyCounter++;
+
+                if (emptyCounter >= minCount)
+                {
+                    return new(emptyDictionary, emptyList);
+                }
+            }
+        }
+
+        idsFromGin.Sort((left, right) => Comparer.Default.Compare(left.Count, right.Count));
+        var filteredDocuments = idsFromGin.Take(minCount - emptyCounter).ToList();
+
+        var documentIdFilter = new Dictionary<DocumentId, int>();
+
+        foreach (var documentIdSet in filteredDocuments)
+        {
+            foreach (var documentId in documentIdSet)
+            {
+                documentIdFilter.TryAdd(documentId, 0);
+            }
+        }
+
+        return (documentIdFilter, idsFromGin);
     }
 
     /// <summary>

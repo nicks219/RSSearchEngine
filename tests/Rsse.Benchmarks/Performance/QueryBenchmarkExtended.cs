@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -25,13 +24,21 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
 {
     private TokenizerServiceCore _tokenizer = null!;
 
-    public static List<ExtendedSearchType> Parameters =>
-        ((ExtendedSearchType[])Enum.GetValuesAsUnderlyingType<ExtendedSearchType>())
-        .ToList();
+    public static List<BenchmarkParameter<ExtendedSearchType>> Parameters =>
+    [
+        new(ExtendedSearchType.Legacy),
+        new(ExtendedSearchType.GinSimple),
+        new(ExtendedSearchType.GinOptimized),
+        new(ExtendedSearchType.GinFilter),
+        new(ExtendedSearchType.GinFast),
+        new(ExtendedSearchType.GinFast, true),
+        new(ExtendedSearchType.GinFastFilter),
+        new(ExtendedSearchType.GinFastFilter, true)
+    ];
 
     [ParamsSource(nameof(Parameters))]
     // ReSharper disable once UnassignedField.Global
-    public ExtendedSearchType SearchType;
+    public required BenchmarkParameter<ExtendedSearchType> SearchType;
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
@@ -39,7 +46,7 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     [GlobalSetup]
     public async Task SetupAsync()
     {
-        await InitializeTokenizer(SearchType);
+        await InitializeTokenizer(SearchType.SearchType, SearchType.Pool);
     }
 
     [Benchmark]
@@ -55,17 +62,17 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
-    public Task Initialize() => InitializeTokenizer(TokenizerExtendedSearchType);
+    public Task Initialize() => InitializeTokenizer(TokenizerExtendedSearchType, false);
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
     /// </summary>
-    private async Task InitializeTokenizer(ExtendedSearchType extendedSearchType)
+    private async Task InitializeTokenizer(ExtendedSearchType extendedSearchType, bool pool)
     {
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(extendedSearchType, ReducedSearchType.Legacy);
+        _tokenizer = new TokenizerServiceCore(pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");

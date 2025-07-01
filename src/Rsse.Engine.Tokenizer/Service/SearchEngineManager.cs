@@ -3,6 +3,7 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Pools;
 using RsseEngine.SearchType;
 using RsseEngine.Selector;
 using RsseEngine.Tokenizer.Contracts;
@@ -27,9 +28,10 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Инициализация требуемого типа алгоритма.
     /// </summary>
+    /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public SearchEngineManager()
+    public SearchEngineManager(bool enableTempStoragePool)
     {
         if (CheckIsProduction())
         {
@@ -40,10 +42,11 @@ public sealed class SearchEngineManager
         }
         else
         {
-            _extendedSearchAlgorithmSelector =
-                new ExtendedSearchAlgorithmSelector(_generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
-            _reducedSearchAlgorithmSelector =
-                new ReducedSearchAlgorithmSelector(_generalDirectIndex, MetricsCalculator.ReducedCoefficient);
+            var tempStoragePool = new TempStoragePool(enableTempStoragePool);
+            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
+                tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(
+                tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
         }
     }
 

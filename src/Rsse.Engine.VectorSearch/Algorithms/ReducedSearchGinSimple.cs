@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -11,9 +9,9 @@ namespace RsseEngine.Algorithms;
 
 /// <summary>
 /// Класс с алгоритмом подсчёта сокращенной метрики.
-/// Метрика считается на самом GIN индексе и создаётся промежуточный результат для поиска в нём.
+/// Метрика считается с помощью GIN индекса в процессе поиска.
 /// </summary>
-public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
+public sealed class ReducedSearchGinSimple : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -33,33 +31,23 @@ public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = new Dictionary<DocumentId, int>();
-
-        foreach (var token in searchVector)
-        {
-            if (!GinReduced.TryGetNonEmptyDocumentIdVector(token, out var ids))
-            {
-                continue;
-            }
-
-            foreach (var documentId in ids)
-            {
-                ref var score =
-                    ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, documentId, out _);
-                ++score;
-            }
-        }
-
         if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
+            throw new OperationCanceledException(nameof(ReducedSearchGinSimple));
 
         // поиск в векторе reduced
-        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+        foreach (var (documentId, tokenLine) in GeneralDirectIndex)
         {
-            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
+            var reducedTargetVector = tokenLine.Reduced;
+            var comparisonScore = 0;
+            foreach (var token in searchVector)
+            {
+                if (GinReduced.ContainsDocumentIdForToken(token, documentId))
+                {
+                    comparisonScore++;
+                }
+            }
 
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
         }
     }
 }
