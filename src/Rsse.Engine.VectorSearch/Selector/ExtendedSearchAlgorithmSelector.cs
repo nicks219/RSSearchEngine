@@ -3,6 +3,7 @@ using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Processor;
 using RsseEngine.SearchType;
 
 namespace RsseEngine.Selector;
@@ -20,15 +21,31 @@ public sealed class ExtendedSearchAlgorithmSelector
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGin _extendedSearchGin;
+    private readonly ExtendedSearchGin _extendedSearchGinFilter;
     private readonly ExtendedSearchGinOptimized _extendedSearchGinOptimized;
+    private readonly ExtendedSearchGinOptimized _extendedSearchGinOptimizedFilter;
     private readonly ExtendedSearchGinFast _extendedSearchGinFast;
+    private readonly ExtendedSearchGinFast _extendedSearchGinFastFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
     /// </summary>
     /// <param name="generalDirectIndex">Общий индекс.</param>
-    public ExtendedSearchAlgorithmSelector(DirectIndex generalDirectIndex)
+    /// <param name="relevancyThreshold">Порог релевантности</param>
+    public ExtendedSearchAlgorithmSelector(DirectIndex generalDirectIndex, double relevancyThreshold)
     {
+        GinRelevanceFilter disabledFilter = new GinRelevanceFilter
+        {
+            Enabled = false,
+            Threshold = relevancyThreshold
+        };
+
+        GinRelevanceFilter enabledFilter = new GinRelevanceFilter
+        {
+            Enabled = true,
+            Threshold = relevancyThreshold
+        };
+
         // Без GIN-индекса.
         _extendedSearchLegacy = new ExtendedSearchLegacy
         {
@@ -39,21 +56,45 @@ public sealed class ExtendedSearchAlgorithmSelector
         _extendedSearchGin = new ExtendedSearchGin
         {
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _ginExtended,
+            RelevanceFilter = disabledFilter
+        };
+
+        _extendedSearchGinFilter = new ExtendedSearchGin
+        {
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginExtended,
+            RelevanceFilter = enabledFilter
         };
 
         // С GIN-индексом.
         _extendedSearchGinOptimized = new ExtendedSearchGinOptimized
         {
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _ginExtended,
+            RelevanceFilter = disabledFilter
+        };
+
+        _extendedSearchGinOptimizedFilter = new ExtendedSearchGinOptimized
+        {
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginExtended,
+            RelevanceFilter = enabledFilter
         };
 
         // С GIN-индексом.
         _extendedSearchGinFast = new ExtendedSearchGinFast
         {
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _ginExtended,
+            RelevanceFilter = disabledFilter
+        };
+
+        _extendedSearchGinFastFilter = new ExtendedSearchGinFast
+        {
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginExtended,
+            RelevanceFilter = enabledFilter
         };
     }
 
@@ -66,6 +107,9 @@ public sealed class ExtendedSearchAlgorithmSelector
             ExtendedSearchType.GinSimple => _extendedSearchGin,
             ExtendedSearchType.GinOptimized => _extendedSearchGinOptimized,
             ExtendedSearchType.GinFast => _extendedSearchGinFast,
+            ExtendedSearchType.GinSimpleFilter => _extendedSearchGinFilter,
+            ExtendedSearchType.GinOptimizedFilter => _extendedSearchGinOptimizedFilter,
+            ExtendedSearchType.GinFastFilter => _extendedSearchGinFastFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };

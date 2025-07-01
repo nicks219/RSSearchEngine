@@ -32,6 +32,24 @@ public interface ITokenizerServiceCore : IDisposable
     public Dictionary<DocumentId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Выполнить extended-поиск и вычислить индекс соответствия хранимых заметок поисковому запросу.
+    /// Используется для бенчмарков.
+    /// </summary>
+    /// <param name="text">Поисковый запрос.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
+    public Dictionary<DocumentId, double> ComputeComplianceIndexExtended(string text, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Выполнить reduced-поиск и вычислить индекс соответствия хранимых заметок поисковому запросу.
+    /// Используется для бенчмарков.
+    /// </summary>
+    /// <param name="text">Поисковый запрос.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
+    public Dictionary<DocumentId, double> ComputeComplianceIndexReduced(string text, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Обновить вектор для заметки.
     /// </summary>
     /// <param name="id">Идентификатор заметки.</param>

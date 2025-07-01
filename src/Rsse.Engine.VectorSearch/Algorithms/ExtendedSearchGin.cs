@@ -23,23 +23,53 @@ public sealed class ExtendedSearchGin : IExtendedSearchProcessor
     /// </summary>
     public required InvertedIndex<DocumentIdSet> GinExtended { get; init; }
 
+    public required GinRelevanceFilter RelevanceFilter { get; init; }
+
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGin));
-
-        // поиск в векторе extended
-        foreach (var (docId, tokenLine) in GeneralDirectIndex)
+        if (!RelevanceFilter.Enabled)
         {
-            if (!GinExtended.ContainsAnyTokenForDoc(searchVector, docId))
+            if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGin));
+
+            // поиск в векторе extended
+            foreach (var (docId, tokenLine) in GeneralDirectIndex)
             {
-                continue;
+                if (!GinExtended.ContainsAnyTokenForDoc(searchVector, docId))
+                {
+                    continue;
+                }
+
+                var extendedTargetVector = tokenLine.Extended;
+                var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
+
+                metricsCalculator.AppendExtended(comparisonScore, searchVector, docId, extendedTargetVector);
             }
+        }
+        else
+        {
+            var filteredDocuments = RelevanceFilter.ProcessToSet(GinExtended, searchVector);
 
-            var extendedTargetVector = tokenLine.Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
+            if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGin));
 
-            metricsCalculator.AppendExtended(comparisonScore, searchVector, docId, extendedTargetVector);
+            // поиск в векторе extended
+            foreach (var (docId, tokenLine) in GeneralDirectIndex)
+            {
+                if (!filteredDocuments.Contains(docId))
+                {
+                    continue;
+                }
+
+                if (!GinExtended.ContainsAnyTokenForDoc(searchVector, docId))
+                {
+                    continue;
+                }
+
+                var extendedTargetVector = tokenLine.Extended;
+                var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
+
+                metricsCalculator.AppendExtended(comparisonScore, searchVector, docId, extendedTargetVector);
+            }
         }
     }
 }

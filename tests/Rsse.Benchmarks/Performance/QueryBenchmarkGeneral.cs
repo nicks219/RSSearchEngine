@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Rsse.Domain.Data.Entities;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
@@ -14,34 +13,23 @@ namespace RsseEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на TokenizerServiceCore.
-/// Производится поиск дубликатов во всех документах.
+/// Производится поиск тестового запроса во всех документах, используя extended/reduced алгоритмы.
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical)]
-public class DuplicatesBenchmark : IBenchmarkRunner
+public class QueryBenchmarkGeneral : IBenchmarkRunner
 {
     private TokenizerServiceCore _tokenizer = null!;
-
-    private List<NoteEntity> _noteEntities = null!;
 
     public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
         (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
-        /*(ExtendedSearchType.Legacy, ReducedSearchType.GinSimple),
-        (ExtendedSearchType.Legacy, ReducedSearchType.GinOptimized),
-        (ExtendedSearchType.Legacy, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinSimple, ReducedSearchType.Legacy),*/
         (Extended: ExtendedSearchType.GinSimple, Reduced: ReducedSearchType.GinSimple),
-        /*(ExtendedSearchType.GinSimple, ReducedSearchType.GinOptimized),
-        (ExtendedSearchType.GinSimple, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.Legacy),
-        (ExtendedSearchType.GinOptimized, ReducedSearchType.GinSimple),*/
+        (Extended: ExtendedSearchType.GinSimpleFilter, Reduced:ReducedSearchType.GinSimpleFilter),
         (Extended: ExtendedSearchType.GinOptimized, Reduced: ReducedSearchType.GinOptimized),
-        /*(ExtendedSearchType.GinOptimized, ReducedSearchType.GinFast),
-        (ExtendedSearchType.GinFast, ReducedSearchType.Legacy),
-        (ExtendedSearchType.GinFast, ReducedSearchType.GinSimple),
-        (ExtendedSearchType.GinFast, ReducedSearchType.GinOptimized),*/
-        (Extended: ExtendedSearchType.GinFast, Reduced: ReducedSearchType.GinFast)
+        (Extended: ExtendedSearchType.GinOptimizedFilter, Reduced:ReducedSearchType.GinOptimizedFilter),
+        (Extended: ExtendedSearchType.GinFast, Reduced:ReducedSearchType.GinFast),
+        (Extended: ExtendedSearchType.GinFastFilter, Reduced:ReducedSearchType.GinFastFilter)
     ];
 
     [ParamsSource(nameof(Parameters))]
@@ -58,15 +46,12 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     }
 
     [Benchmark]
-    public void FindText()
+    public void QueryExtendedAndReduced()
     {
-        foreach (NoteEntity noteEntity in _noteEntities)
+        var results = _tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
+        if (results.Count == 0)
         {
-            var results = _tokenizer.ComputeComplianceIndices(noteEntity.Text, CancellationToken.None);
-            if (results.Count == 0)
-            {
-                Console.WriteLine("[Tokenizer] empty result");
-            }
+            Console.WriteLine("[Tokenizer] empty result");
         }
 
         // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
@@ -75,7 +60,7 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     /// <inheritdoc/>
     public void RunBenchmark()
     {
-        FindText();
+        QueryExtendedAndReduced();
     }
 
     /// <inheritdoc/>
@@ -87,22 +72,14 @@ public class DuplicatesBenchmark : IBenchmarkRunner
     private async Task InitializeTokenizer(ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
         Console.WriteLine(
-            $"[{nameof(DuplicatesBenchmark)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
+            $"[{nameof(QueryBenchmarkGeneral)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
         _tokenizer = new TokenizerServiceCore(extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        var dataProvider = new FileDataProvider(1);
-
-        _noteEntities = new List<NoteEntity>();
-
-        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync())
-        {
-            _noteEntities.Add(noteEntity);
-        }
-
+        var dataProvider = new FileDataProvider();
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(

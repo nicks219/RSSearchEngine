@@ -33,13 +33,17 @@ public sealed class SearchEngineManager
     {
         if (CheckIsProduction())
         {
-            _extendedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
-            _reducedSearchAlgorithmSelector = new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndex);
+            _extendedSearchAlgorithmSelector =
+                new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
+            _reducedSearchAlgorithmSelector =
+                new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndex);
         }
         else
         {
-            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(_generalDirectIndex);
-            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(_generalDirectIndex);
+            _extendedSearchAlgorithmSelector =
+                new ExtendedSearchAlgorithmSelector(_generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+            _reducedSearchAlgorithmSelector =
+                new ReducedSearchAlgorithmSelector(_generalDirectIndex, MetricsCalculator.ReducedCoefficient);
         }
     }
 

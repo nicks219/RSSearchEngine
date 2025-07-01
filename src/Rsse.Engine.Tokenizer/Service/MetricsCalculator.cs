@@ -10,10 +10,10 @@ namespace RsseEngine.Service;
 public sealed class MetricsCalculator : IMetricsCalculator
 {
     // Коэффициент extended поиска: 0.8D
-    private const double ExtendedCoefficient = 0.8D;
+    internal const double ExtendedCoefficient = 0.8D;
 
     // Коэффициент reduced поиска: 0.4D
-    private const double ReducedCoefficient = 0.6D; // 0.6 .. 0.75
+    internal const double ReducedCoefficient = 0.6D; // 0.6 .. 0.75
 
     /// <summary>
     /// Продолжать ли поиск.

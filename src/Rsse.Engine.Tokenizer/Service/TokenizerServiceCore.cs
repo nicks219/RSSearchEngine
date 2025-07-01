@@ -172,6 +172,44 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
         return metricsCalculator.ComplianceMetrics;
     }
 
+    /// <inheritdoc/>
+    public Dictionary<DocumentId, double> ComputeComplianceIndexExtended(string text, CancellationToken cancellationToken)
+    {
+        var metricsCalculator = new MetricsCalculator();
+
+        var extendedSearchVector = _searchEngineManager.ExtendedTokenizer.TokenizeText(text);
+
+        if (extendedSearchVector.Count == 0)
+        {
+            // заметки вида "123 456" не ищем, так как получим весь каталог
+            return metricsCalculator.ComplianceMetrics;
+        }
+
+        _searchEngineManager.FindExtended(_extendedSearchType,
+            extendedSearchVector, metricsCalculator, cancellationToken);
+
+        return metricsCalculator.ComplianceMetrics;
+    }
+
+    /// <inheritdoc/>
+    public Dictionary<DocumentId, double> ComputeComplianceIndexReduced(string text, CancellationToken cancellationToken)
+    {
+        var metricsCalculator = new MetricsCalculator();
+
+        var reducedSearchVector = _searchEngineManager.ReducedTokenizer.TokenizeText(text);
+
+        if (reducedSearchVector.Count == 0)
+        {
+            // песни вида "123 456" не ищем, так как получим весь каталог
+            return metricsCalculator.ComplianceMetrics;
+        }
+
+        _searchEngineManager.FindReduced(_reducedSearchType,
+            reducedSearchVector, metricsCalculator, cancellationToken);
+
+        return metricsCalculator.ComplianceMetrics;
+    }
+
     /// <summary>
     /// Создать два вектора токенов для заметки.
     /// </summary>

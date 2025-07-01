@@ -7,7 +7,7 @@ public abstract class Constants
 {
     /// <summary/> Выставляется для отладочной сборки.
 #if DEBUG
-    internal const bool IsDebug = true;
+    public const bool IsDebug = true;
 #else
     public const bool IsDebug = false;
 #endif

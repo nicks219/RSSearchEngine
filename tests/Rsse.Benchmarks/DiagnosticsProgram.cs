@@ -7,6 +7,8 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
+using Perfolizer.Horology;
+using Perfolizer.Metrology;
 using RsseEngine.Benchmarks.Performance;
 using static RsseEngine.Benchmarks.Constants;
 
@@ -66,14 +68,17 @@ public static class DiagnosticsProgram
         var config = Debugger.IsAttached
             ? new DebugInProcessConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
             : DefaultConfig.Instance
-                .WithSummaryStyle(DefaultConfig.Instance.SummaryStyle.WithMaxParameterColumnWidth(100))
+                .WithSummaryStyle(DefaultConfig.Instance.SummaryStyle
+                    .WithMaxParameterColumnWidth(100)
+                    .WithSizeUnit(SizeUnit.KB)
+                    .WithTimeUnit(TimeUnit.Millisecond))
                 .WithOptions(ConfigOptions.DisableOptimizationsValidator | ConfigOptions.JoinSummary)
                 .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
                     .WithIterationCount(10))
                 .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddLogger(new ConsoleLogger(true, new Dictionary<LogKind, ConsoleColor>
+                .AddLogger(new ConsoleLogger(false, new Dictionary<LogKind, ConsoleColor>
                 {
                     { LogKind.Default, ConsoleColor.Gray },
                     { LogKind.Help, ConsoleColor.DarkGreen },
@@ -87,9 +92,13 @@ public static class DiagnosticsProgram
                 }));
 
         BenchmarkRunner.Run([
-            typeof(QueryBenchmark),
+            /*typeof(QueryBenchmark),
             typeof(LuceneBenchmark),
-            typeof(DuplicatesBenchmark)
+            typeof(DuplicatesBenchmark),*/
+            typeof(DuplicatesBenchmarkExtended),
+            typeof(DuplicatesBenchmarkReduced),
+            typeof(QueryBenchmarkExtended),
+            typeof(QueryBenchmarkReduced),
         ], config);
     }
 
@@ -103,7 +112,7 @@ public static class DiagnosticsProgram
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
         IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks
-            ? new QueryBenchmark()
+            ? new QueryBenchmarkGeneral()
             : new LuceneBenchmark();
 
         var stopwatch = Stopwatch.StartNew();
