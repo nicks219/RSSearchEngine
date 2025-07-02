@@ -64,4 +64,10 @@ public interface ITokenizerApiClient
     /// </summary>
     /// <returns><b>true</b> - Инициализация завершена успешно.</returns>
     public bool IsInitialized();
+
+    /// <summary>
+    /// Получить функционал для выбора алгоритмов поиска.
+    /// </summary>
+    /// <returns></returns>
+    public IAlgorithmConfigurable GetTokenizerServiceCore();
 }

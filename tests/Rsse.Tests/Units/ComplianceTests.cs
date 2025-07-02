@@ -22,13 +22,13 @@ namespace Rsse.Tests.Units;
 [TestClass]
 public class ComplianceTests
 {
-    private readonly List<ExtendedSearchType> _extendedSearchType =
+    internal static readonly List<ExtendedSearchType> ExtendedSearchTypes =
         [ExtendedSearchType.Legacy,
             ExtendedSearchType.GinSimple,
             ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFilter,
             ExtendedSearchType.GinFast, ExtendedSearchType.GinFastFilter];
 
-    private readonly List<ReducedSearchType> _reducedSearchTypes =
+    internal static readonly List<ReducedSearchType> ReducedSearchTypes =
         [ReducedSearchType.Legacy,
             ReducedSearchType.GinSimple,
             ReducedSearchType.GinOptimized, ReducedSearchType.GinOptimizedFilter,
@@ -47,9 +47,9 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
         string text, string expected)
     {
-        foreach (var extendedSearchType in _extendedSearchType)
+        foreach (var extendedSearchType in ExtendedSearchTypes)
         {
-            foreach (var reducedSearchTypes in _reducedSearchTypes)
+            foreach (var reducedSearchTypes in ReducedSearchTypes)
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
@@ -97,9 +97,9 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnNullResult_WhenFindGarbageTextOnStubData(
         string text, string expected)
     {
-        foreach (var extendedSearchType in _extendedSearchType)
+        foreach (var extendedSearchType in ExtendedSearchTypes)
         {
-            foreach (var reducedSearchTypes in _reducedSearchTypes)
+            foreach (var reducedSearchTypes in ReducedSearchTypes)
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);

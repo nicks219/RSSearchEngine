@@ -117,6 +117,8 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
     /// <inheritdoc/>
     public bool IsInitialized() => _tokenizerServiceCore.IsInitialized();
 
+    public IAlgorithmConfigurable GetTokenizerServiceCore() => _tokenizerServiceCore;
+
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
     /// <inheritdoc/>

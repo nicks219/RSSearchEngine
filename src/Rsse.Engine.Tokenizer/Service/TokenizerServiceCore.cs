@@ -6,6 +6,7 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Exceptions;
+using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
@@ -18,12 +19,12 @@ namespace RsseEngine.Service;
 /// <summary>
 /// Сервис токенайзера (в т.ч инициализация и поиск).
 /// </summary>
-public sealed class TokenizerServiceCore : ITokenizerServiceCore
+public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConfigurable
 {
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly SearchEngineManager _searchEngineManager;
-    private readonly ExtendedSearchType _extendedSearchType;
-    private readonly ReducedSearchType _reducedSearchType;
+    private ExtendedSearchType _extendedSearchType;
+    private ReducedSearchType _reducedSearchType;
 
     /// <summary>
     /// Флаг инициалицации сервиса токенайзера.
@@ -236,4 +237,15 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore
     /// Освобождаем ресурсы блокировки.
     /// </summary>
     public void Dispose() => TokenizerLock.Dispose();
+
+    /// <summary>
+    /// Сконфигурировать алгоритмы поиска.
+    /// </summary>
+    /// <param name="extendedSearchType">Алгоритм четкого поиска.</param>
+    /// <param name="reducedSearchType">Алгоритм нечеткого поиска.</param>
+    internal void ConfigureSearchEngine(ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
+    {
+        _extendedSearchType = extendedSearchType;
+        _reducedSearchType = reducedSearchType;
+    }
 }
