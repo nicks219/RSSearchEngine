@@ -1,4 +1,6 @@
 using System;
+using System.Data;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Api.Services;
+using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Context;
 using Rsse.Tests.Integration.FakeDb.Api;
@@ -30,16 +33,87 @@ public class ComplianceGeneralTests
     [ClassInitialize]
     public static async Task Initialize(TestContext _)
     {
+        FileDataProvider fileDataProvider = new FileDataProvider();
+
         _factory = new CustomWebAppFactory<SqliteStartup>();
         using var client = _factory.CreateClient(Options);
         // Cигнатура выбрана из-за конфликта в перегрузках `Microsoft.Testing`.
         await using var context = (NpgsqlCatalogContext)_factory?.Services.GetService(typeof(NpgsqlCatalogContext))!;
         var db = context.Database;
+
         // метрики будут соответствовать тесту ReadOnlyIntegrationTests.ComplianceRequest_ShouldReturn_ExpectedDocumentWeights если убрать \r\n
+
         // await db.ExecuteSqlRawAsync(ExampleWithoutLineEnds2, NoneToken);
-        await db.ExecuteSqlRawAsync(Example10, NoneToken);
-        await db.ExecuteSqlRawAsync(Example444, NoneToken);
-        await db.ExecuteSqlRawAsync(Example243, NoneToken);
+        //await db.ExecuteSqlRawAsync(Example10, NoneToken);
+        //await db.ExecuteSqlRawAsync(Example444, NoneToken);
+        //await db.ExecuteSqlRawAsync(Example243, NoneToken);
+
+        await using (DbConnection connection = db.GetDbConnection())
+        {
+            await connection.OpenAsync();
+
+            await using (DbCommand cmd = connection.CreateCommand())
+            {
+                // TODO удаляем всё из таблицы потому что DatabaseInitializer зачем то вставляет одну запись - запись мешается
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "DELETE FROM [Note]";
+
+                var result = await cmd.ExecuteNonQueryAsync();
+            }
+
+            await foreach (NoteEntity noteEntity in fileDataProvider.GetDataAsync())
+            {
+                await using (DbCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "INSERT INTO [Note] ([NoteId], [Title], [Text]) VALUES (@param1, @param2, @param3)";
+
+                    DbParameter param1 = cmd.CreateParameter();
+                    param1.ParameterName = "param1";
+                    param1.Value = noteEntity.NoteId;
+                    param1.DbType = DbType.Int32;
+                    cmd.Parameters.Add(param1);
+
+                    DbParameter param2 = cmd.CreateParameter();
+                    param2.ParameterName = "param2";
+                    param2.Value = noteEntity.Title;
+                    param2.DbType = DbType.String;
+                    cmd.Parameters.Add(param2);
+
+                    DbParameter param3 = cmd.CreateParameter();
+                    param3.ParameterName = "param3";
+                    param3.Value = noteEntity.Text;
+                    param3.DbType = DbType.String;
+                    cmd.Parameters.Add(param3);
+
+                    var result = await cmd.ExecuteNonQueryAsync();
+                    if (result != 1)
+                    {
+                        throw new Exception("INSERT не прошёл");
+                    }
+                }
+            }
+
+            // можно проверить что вставили
+            /*await using (DbCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT * FROM [Note]";
+
+                var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    var result0 = reader.GetInt64(0);
+                    var result1 = reader.GetString(1);
+                    var result2 = reader.GetString(2);
+
+                    Console.WriteLine($"\t{result0}\t{result1}");
+                }
+
+                await reader.CloseAsync();
+            }*/
+        }
 
         // Для поиска необходимо заново инициализировать токенайзер.
         var tokenizer = (ITokenizerApiClient)_factory?.Services.GetService(typeof(ITokenizerApiClient))!;
@@ -51,19 +125,38 @@ public class ComplianceGeneralTests
     public static void ClassCleanup() => _factory?.Dispose();
 
     [TestMethod]
-    [DataRow("чёрт с ними за столом", """{"res":{"1":59.523809523809526},"error":null}""")]
-    [DataRow("поём на", """{"res":{"1":23.80952380952381},"error":null}""")]
-    [DataRow("с ними за столом чёрт", """{"res":{"1":4.761904761904762},"error":null}""")]
-    [DataRow("чорт з ным зо сталом", """{"res":{"1":0.4878048780487805},"error":null}""")]
+    // TODO тут добавлены новые метрики помимо ReadOnlyIntegrationTests.ComplianceRequest_ShouldReturn_ExpectedDocumentWeights
+    /*
+    [DataRow("чёрт с ними за столом", """{"res":{"1":52.631578947368425},"error":null}""")]
+    [DataRow("поём на", """{"res":{"456":31.25,"250":28.169014084507044,"1":21.05263157894737,"275":15.748031496062993},"error":null}""")]
+    [DataRow("с ними за столом чёрт", """{"res":{"1":4.2105263157894735},"error":null}""")]
+    [DataRow("чорт з ным зо сталом", """{"res":{"1":0.43478260869565216},"error":null}""")]
 
-    [DataRow("ты шла по палубе в молчаний", """{"res":{"10":0.0641025641025641},"error":null}""")]
-    [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.0641025641025641},"error":null}""")]
+    [DataRow("ты шла по палубе в молчаний", """{"res":{"10":5.154639175257731},"error":null}""")]
+    [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.6818181818181818},"error":null}""")]
 
-    [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.38095238095238093,"243":0.02112676056338028},"error":null}""")]
-    [DataRow("приключится вдруг верный друг", """{"res":{"444":37.38317757009346},"error":null}""")]
+    [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.35714285714285715,"243":0.02},"error":null}""")]
+    [DataRow("приключится вдруг верный друг", """{"res":{"444":35.08771929824562},"error":null}""")]
 
     // Ошибочные поисковые запросы.
-    [DataRow("пляшем на", """{"res":null,"error":null}""")]
+    [DataRow("пляшем на", """{"res":{"1":21.05263157894737},"error":null}""")]
+    [DataRow("123 456 иии", """{"res":null,"error":null}""")]
+    [DataRow("aa bb cc dd .,/#", """{"res":null,"error":null}""")]
+    [DataRow(" |", """{"res":null,"error":null}""")]
+    */
+
+    // TODO Скопировал метрики из ReadOnlyIntegrationTests.ComplianceRequest_ShouldReturn_ExpectedDocumentWeights
+
+    // Валидные поисковые запросы.
+    [DataRow("чорт з ным зо сталом", """{"res":{"1":0.43478260869565216},"error":null}""")]
+    [DataRow("чёрт с ними за столом", """{"res":{"1":52.631578947368425},"error":null}""")]
+    [DataRow("с ними за столом чёрт", """{"res":{"1":4.2105263157894735},"error":null}""")]
+    [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.35714285714285715,"243":0.02},"error":null}""")]
+    [DataRow("приключится вдруг верный друг", """{"res":{"444":35.08771929824562},"error":null}""")]
+    [DataRow("пляшем на", """{"res":{"1":21.05263157894737},"error":null}""")]
+    [DataRow("ты шла по палубе в молчаний", """{"res":{"10":5.154639175257731},"error":null}""")]
+    [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.6818181818181818},"error":null}""")]
+    // Мусорные поисковые запросы.
     [DataRow("123 456 иии", """{"res":null,"error":null}""")]
     [DataRow("aa bb cc dd .,/#", """{"res":null,"error":null}""")]
     [DataRow(" |", """{"res":null,"error":null}""")]
@@ -89,7 +182,7 @@ public class ComplianceGeneralTests
 
                 // assert:
                 // Console.WriteLine(request + " " + complianceResponse);
-                complianceResponse.Should().Be(expected);
+                complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
             }
         }
     }
