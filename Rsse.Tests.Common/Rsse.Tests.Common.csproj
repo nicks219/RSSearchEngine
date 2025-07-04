@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- <LangVersion>12</LangVersion> -->
+        <RootNamespace>Rsse.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Update="pg_backup_.txtnotes">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\src\Rsse.Domain\Rsse.Domain.csproj" />
+      <ProjectReference Include="..\src\Rsse.Engine.VectorSearch\Rsse.Engine.VectorSearch.csproj" />
+    </ItemGroup>
+
+</Project>

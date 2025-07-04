@@ -1,20 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Entities;
 
-namespace Rsse.Tests.Integration.FakeDb;
+namespace Rsse.Tests.Common;
 
 /// <summary>
-/// Компонент поставщика данных из файла.
+/// Компонент поставщика однократной копии данных из файла.
 /// </summary>
-public sealed class FileDataProvider : IDataProvider<NoteEntity>
+public sealed class FileDataOnceProvider : IDataProvider<NoteEntity>
 {
-    private readonly int initialDataMultiplier = 1;
-
     // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
@@ -44,23 +38,9 @@ public sealed class FileDataProvider : IDataProvider<NoteEntity>
             notes.Add(noteEntity);
         }
 
-        //var counter = 0;
-        for (var i = 0; i < initialDataMultiplier; i++)
+        foreach (var noteEntity in notes)
         {
-            foreach (var noteEntity in notes/*.Select(entity =>
-                         new NoteEntity
-                         {
-                             NoteId = counter,
-                             Title = entity.Title,
-                             Text = entity.Text,
-                         })*/)
-            {
-                //counter++;
-                yield return noteEntity;
-            }
+            yield return noteEntity;
         }
-
-        //Console.WriteLine($"[{nameof(FileDataProvider)}] sent total data: '{counter:N0}' entries | {initialDataMultiplier:N0}x.");
-        //Console.WriteLine("---");
     }
 }

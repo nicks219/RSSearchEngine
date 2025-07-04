@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
+using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.Dto;
 using RsseEngine.SearchType;
@@ -77,7 +78,7 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        var dataProvider = new FileDataProvider();
+        var dataProvider = new FileDataMultipleProvider();
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(

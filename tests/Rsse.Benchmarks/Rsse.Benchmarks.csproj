@@ -18,17 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Rsse.Tests.Common\Rsse.Tests.Common.csproj" />
     <ProjectReference Include="..\..\src\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="pg_backup_.txtnotes">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

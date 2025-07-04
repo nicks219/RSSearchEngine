@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Rsse.Tests.Common\Rsse.Tests.Common.csproj" />
     <ProjectReference Include="..\..\src\Rsse.Service\Rsse.Service.csproj" />
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -34,9 +35,6 @@
 
   <ItemGroup>
     <None Update="ClientApp\build\backup_9.dump">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="pg_backup_.txtnotes">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
