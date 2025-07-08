@@ -87,9 +87,9 @@ public class DuplicateBenchmarkGeneral : IBenchmarkRunner
 
         var dataProvider = new FileDataMultipleProvider(1);
 
-        _noteEntities = new List<NoteEntity>();
+        _noteEntities = [];
 
-        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync())
+        await foreach (var noteEntity in dataProvider.GetDataAsync())
         {
             _noteEntities.Add(noteEntity);
         }

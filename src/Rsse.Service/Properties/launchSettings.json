@@ -40,7 +40,20 @@
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://127.0.0.1:5000"
+    },
+
+    "ServerOnlyForLoadTesting": {
+      "commandName": "Project",
+      "commandLineArgs": "--js false",
+      "launchBrowser": false,
+      "launchUrl": "version",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Load"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://127.0.0.1:5000/system/version"
     }
   },
+
   "$schema": "https://json.schemastore.org/launchsettings.json"
 }

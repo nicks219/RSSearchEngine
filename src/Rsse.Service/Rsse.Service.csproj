@@ -40,11 +40,11 @@
   <ItemGroup Label="Observability">
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="Serilog.AspNetCore" />
-    <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
   </ItemGroup>
 
   <ItemGroup Label="Tracing" Condition=" $(DefineConstants.Contains(TRACING_ENABLE)) " >
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
     <!-- <PackageReference Include="OpenTelemetry.Exporter.Console" /> -->
     <!-- <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" /> -->
   </ItemGroup>
