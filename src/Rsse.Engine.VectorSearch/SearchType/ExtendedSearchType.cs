@@ -59,5 +59,15 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterHs = 8
+    GinArrayDirectFilterHs = 8,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinMergeFilter1"/>
+    /// </summary>
+    GinMergeFilter1 = 9,
+
+    GinFast1 = 10,
+
+    GinFastFilter1 = 11,
 }

@@ -30,6 +30,16 @@ public interface IMetricsCalculator
         int extendedTargetVectorSize);
 
     /// <summary>
+    /// Добавить метрики для четкого поиска.
+    /// </summary>
+    /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="documentId">Идентификатор, полученный при поиске.</param>
+    /// <param name="directIndex">Индекс по идентификаторам заметок.</param>
+    void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
+        DirectIndex directIndex);
+
+    /// <summary>
     /// Добавить метрики для нечеткого поиска.
     /// </summary>
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>

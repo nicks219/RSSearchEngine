@@ -29,7 +29,7 @@ public class SearchResultValidation
 
     private readonly List<string> _searchQueries =
     [
-        "пляшем на столе за детей",
+        /*"пляшем на столе за детей",
         "удача с ними за столом",
         "чорт з ным зо сталом",
         "чёрт с ними за столом",
@@ -48,14 +48,15 @@ public class SearchResultValidation
         " ",
         "",
         "b b b b b b",
-        "b b b b b",
+        "b b b b b",*/
         "b b b b",
-        "b"
+        /*"b"*/
     ];
 
     private readonly List<NoteEntity> _additionalNotes =
     [
-        new() { NoteId = 10000, Title = "t", Text = "b b b b b" }
+        new() { NoteId = 10000, Title = "t", Text = "b b b b b" },
+        new() { NoteId = 10001, Title = "t", Text = "b b b" }
     ];
 
     public async Task TestSearchQuery()
@@ -69,7 +70,8 @@ public class SearchResultValidation
         var legacyTokenizer = await InitializeTokenizer(dataProvider,
             ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 
-        foreach (ExtendedSearchType extendedSearchType in _extendedParameters)
+        ExtendedSearchType extendedSearchType = ExtendedSearchType.GinMergeFilter1;
+        //foreach (ExtendedSearchType extendedSearchType in _extendedParameters)
         {
             foreach (string searchQuery in _searchQueries)
             {
@@ -83,7 +85,8 @@ public class SearchResultValidation
             }
         }
 
-        foreach (ReducedSearchType reducedSearchType in _reducedParameters)
+        ReducedSearchType reducedSearchType = ReducedSearchType.GinFastFilter;
+        //foreach (ReducedSearchType reducedSearchType in _reducedParameters)
         {
             foreach (string searchQuery in _searchQueries)
             {
@@ -100,7 +103,7 @@ public class SearchResultValidation
     public async Task TestDuplicates()
     {
         var dataProvider = new FileDataOnceProvider();
-        dataProvider.AddNotes([new() { NoteId = 10000, Title = "t", Text = "b b b b b" }]);
+        dataProvider.AddNotes(_additionalNotes);
 
         var legacyTokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 

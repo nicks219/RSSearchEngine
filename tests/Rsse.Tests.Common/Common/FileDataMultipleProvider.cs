@@ -11,6 +11,8 @@ public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constan
 {
     private List<NoteEntity>? _notes;
 
+    private readonly List<NoteEntity> _additionalNotes = new();
+
     // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
@@ -74,7 +76,14 @@ public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constan
             _notes.Add(noteEntity);
         }
 
+        _notes.AddRange(_additionalNotes);
+
         Console.WriteLine($"[{nameof(FileDataMultipleProvider)}] sent total data: '{(_notes.Count * initialDataMultiplier):N0}' entries | {initialDataMultiplier:N0}x.");
         Console.WriteLine("---");
+    }
+
+    public void AddNotes(List<NoteEntity> notes)
+    {
+        _additionalNotes.AddRange(notes);
     }
 }

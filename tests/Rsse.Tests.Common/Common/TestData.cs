@@ -20,7 +20,10 @@ public abstract class TestData
         ExtendedSearchType.GinArrayDirectBs,
         ExtendedSearchType.GinArrayDirectFilterBs,
         ExtendedSearchType.GinArrayDirectHs,
-        ExtendedSearchType.GinArrayDirectFilterHs
+        ExtendedSearchType.GinArrayDirectFilterHs,
+        ExtendedSearchType.GinMergeFilter1,
+        ExtendedSearchType.GinFast1,
+        ExtendedSearchType.GinFastFilter1
     ];
 
     /// <summary>

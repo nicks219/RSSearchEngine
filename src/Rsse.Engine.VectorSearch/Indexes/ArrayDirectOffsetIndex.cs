@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Dto.Offsets;
 
@@ -9,7 +10,7 @@ namespace RsseEngine.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSearchType dataPointSearchType)
+public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSearchType dataPointSearchType) : IOffsetIndex
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.

@@ -14,12 +14,16 @@ namespace RsseEngine.Pools;
 /// <param name="enable">Пул активирован.</param>
 public sealed class TempStoragePool(bool enable)
 {
-    /// <summary>
-    /// Пул для временных reduced-метрик.
-    /// </summary>
     internal readonly CollectionPool<Dictionary<DocumentId, int>, KeyValuePair<DocumentId, int>> ScoresStorage = new(enable);
 
+    /// <summary>
+    /// Пул для временного extended-пространства поиска.
+    /// </summary>
+    internal readonly CollectionPool<HashSet<DocumentId>, DocumentId> DocumentIdSetsStorage = new(enable);
+
     internal readonly CollectionPool<List<DocumentId>, DocumentId> DocumentIdListsStorage = new(enable);
+
+    internal readonly CollectionPool<HashSet<Token>, Token> TokenSetsStorage = new(enable);
 
     internal readonly CollectionPool<List<DocumentListEnumerator>, DocumentListEnumerator> ListEnumeratorListsStorage = new(enable);
 
@@ -29,17 +33,19 @@ public sealed class TempStoragePool(bool enable)
 
     public readonly CollectionPool<HashSet<int>, int> IntSetsStorage = new(enable);
 
+    internal readonly CollectionPool<Dictionary<DocumentIdList, int>, KeyValuePair<DocumentIdList, int>> DocumentIdListCountStorage = new(enable);
+
     internal readonly CollectionPool<Dictionary<InternalDocumentIdList, int>, KeyValuePair<InternalDocumentIdList, int>> InternalDocumentIdListCountStorage = new(enable);
 
     internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> TokenOffsetEnumeratorListsStorage = new(enable);
-
-    internal readonly CollectionPool<List<InternalDocumentIdList>, InternalDocumentIdList> InternalDocumentIdListsStorage = new(enable);
 
     internal readonly CollectionPool<List<InternalDocumentIdsWithToken>, InternalDocumentIdsWithToken> InternalDocumentIdListsWithTokenStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdList>, DocumentIdList> _documentIdListListsStorage = new(enable);
+
+    internal readonly CollectionPool<List<InternalDocumentIdList>, InternalDocumentIdList> InternalDocumentIdListsStorage = new(enable);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal List<TDocumentIdCollection> GetDocumentIdCollectionList<TDocumentIdCollection>()

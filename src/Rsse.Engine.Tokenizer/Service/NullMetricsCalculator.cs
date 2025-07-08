@@ -50,6 +50,29 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
         }
     }
 
+    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId, DirectIndex directIndex)
+    {
+        // I. 100% совпадение по extended последовательности, по reduced можно не искать
+        if (comparisonScore == searchVector.Count)
+        {
+            var extendedTargetVector = directIndex[documentId].Extended;
+            ContinueSearching = false;
+            DocumentId = documentId;
+            Metric = comparisonScore * (1000D / extendedTargetVector.Count);
+            return;
+        }
+
+        // II. extended% совпадение
+        if (comparisonScore >= searchVector.Count * MetricsCalculator.ExtendedCoefficient)
+        {
+            var extendedTargetVector = directIndex[documentId].Extended;
+            DocumentId = documentId;
+            // todo: можно так оценить
+            // continueSearching = false;
+            Metric = comparisonScore * (100D / extendedTargetVector.Count);
+        }
+    }
+
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
         int reducedTargetVectorSize)

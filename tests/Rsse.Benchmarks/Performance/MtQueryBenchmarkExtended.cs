@@ -45,7 +45,13 @@ public class MtQueryBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinArrayDirectHs),
         new(ExtendedSearchType.GinArrayDirectHs, true),
         new(ExtendedSearchType.GinArrayDirectFilterHs),
-        new(ExtendedSearchType.GinArrayDirectFilterHs, true)
+        new(ExtendedSearchType.GinArrayDirectFilterHs, true),
+        new(ExtendedSearchType.GinMergeFilter1),
+        new(ExtendedSearchType.GinMergeFilter1, true),
+        new(ExtendedSearchType.GinFast1),
+        new(ExtendedSearchType.GinFast1, true),
+        new(ExtendedSearchType.GinFastFilter1),
+        new(ExtendedSearchType.GinFastFilter1, true)
     ];
 
     public static List<string> SearchQueries =>

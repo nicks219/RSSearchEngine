@@ -1,4 +1,3 @@
-using System;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -7,6 +6,7 @@ using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
 using RsseEngine.SearchType;
+using System;
 
 namespace RsseEngine.Selector;
 
@@ -25,6 +25,8 @@ public sealed class ExtendedSearchAlgorithmSelector
 
     private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndexHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
 
+    private readonly InvertedIndex<DocumentIdList> _ginExtended = new();
+
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGinOffset _extendedSearchGinOffset;
     private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
@@ -34,6 +36,9 @@ public sealed class ExtendedSearchAlgorithmSelector
     private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterBs;
     private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectHs;
     private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterHs;
+    private readonly ExtendedSearchGinMergeFilter1 _extendedSearchGinMergeFilter1;
+    private readonly ExtendedSearchGinFast1 _extendedSearchGinFast1;
+    private readonly ExtendedSearchGinFastFilter1 _extendedSearchGinFastFilter1;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -112,6 +117,29 @@ public sealed class ExtendedSearchAlgorithmSelector
             RelevanceFilter = relevanceFilter,
             PositionSearchType = PositionSearchType.LinearScan
         };
+
+        _extendedSearchGinMergeFilter1 = new ExtendedSearchGinMergeFilter1
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
+            RelevanceFilter = relevanceFilter
+        };
+
+        _extendedSearchGinFast1 = new ExtendedSearchGinFast1
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginExtended
+        };
+
+        _extendedSearchGinFastFilter1 = new ExtendedSearchGinFastFilter1
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginExtended,
+            RelevanceFilter = relevanceFilter
+        };
     }
 
     /// <inheritdoc/>
@@ -128,6 +156,9 @@ public sealed class ExtendedSearchAlgorithmSelector
             ExtendedSearchType.GinArrayDirectFilterBs => _extendedSearchGinArrayDirectFilterBs,
             ExtendedSearchType.GinArrayDirectHs => _extendedSearchGinArrayDirectHs,
             ExtendedSearchType.GinArrayDirectFilterHs => _extendedSearchGinArrayDirectFilterHs,
+            ExtendedSearchType.GinMergeFilter1 => _extendedSearchGinMergeFilter1,
+            ExtendedSearchType.GinFast1 => _extendedSearchGinFast1,
+            ExtendedSearchType.GinFastFilter1 => _extendedSearchGinFastFilter1,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };
@@ -139,6 +170,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _ginExtended.AddVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -147,6 +179,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _ginExtended.UpdateVector(documentId, tokenVector, oldTokenVector);
     }
 
     /// <inheritdoc/>
@@ -155,6 +188,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _invertedOffsetIndex.RemoveVector(documentId);
         _arrayDirectOffsetIndex.RemoveVector(documentId);
         _arrayDirectOffsetIndexHs.RemoveVector(documentId);
+        _ginExtended.RemoveVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -163,5 +197,6 @@ public sealed class ExtendedSearchAlgorithmSelector
         _invertedOffsetIndex.Clear();
         _arrayDirectOffsetIndex.Clear();
         _arrayDirectOffsetIndexHs.Clear();
+        _ginExtended.Clear();
     }
 }

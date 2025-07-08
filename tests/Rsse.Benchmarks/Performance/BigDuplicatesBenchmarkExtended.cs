@@ -20,7 +20,7 @@ namespace RsseEngine.Benchmarks.Performance;
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
-public class DuplicatesBenchmarkExtended : IBenchmarkRunner
+public class BigDuplicatesBenchmarkExtended : IBenchmarkRunner
 {
     private TokenizerServiceCore _tokenizer = null!;
 
@@ -67,7 +67,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     }
 
     [Benchmark]
-    public void DuplicatesExtended()
+    public void BigDuplicatesExtended()
     {
         foreach (NoteEntity noteEntity in _noteEntities)
         {
@@ -80,7 +80,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
 
                 if (metricsCalculator.ComplianceMetrics.Count == 0)
                 {
-                    Console.WriteLine("[Tokenizer] empty result");
+                    Console.WriteLine("Result is empty [" + noteEntity.Text + "]");
                 }
             }
             finally
@@ -93,7 +93,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     /// <inheritdoc/>
     public void RunBenchmark()
     {
-        DuplicatesExtended();
+        BigDuplicatesExtended();
     }
 
     /// <inheritdoc/>
@@ -107,17 +107,17 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
             pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        var dataProvider = new FileDataMultipleProvider(1);
+        var dataProvider = new BigFileDataMultipleProvider(1);
 
         _noteEntities = new List<NoteEntity>();
 
-        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync())
+        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync2())
         {
             _noteEntities.Add(noteEntity);
         }

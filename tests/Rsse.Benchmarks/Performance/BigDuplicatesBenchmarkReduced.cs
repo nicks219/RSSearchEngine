@@ -1,0 +1,120 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Order;
+using Rsse.Domain.Data.Entities;
+using Rsse.Tests.Common;
+using RsseEngine.Benchmarks.Common;
+using RsseEngine.SearchType;
+using RsseEngine.Service;
+
+namespace RsseEngine.Benchmarks.Performance;
+
+/// <summary>
+/// Инициализация и бенчмарк на TokenizerServiceCore.
+/// Производится поиск дубликатов во всех документах.
+/// </summary>
+[MinColumn]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
+public class BigDuplicatesBenchmarkReduced : IBenchmarkRunner
+{
+    private TokenizerServiceCore _tokenizer = null!;
+
+    private List<NoteEntity> _noteEntities = null!;
+
+    public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
+    [
+        new(ReducedSearchType.Legacy),
+        new(ReducedSearchType.GinOptimized),
+        new(ReducedSearchType.GinOptimized, true),
+        new(ReducedSearchType.GinOptimizedFilter),
+        new(ReducedSearchType.GinOptimizedFilter, true),
+        new(ReducedSearchType.GinFast),
+        new(ReducedSearchType.GinFast, true),
+        new(ReducedSearchType.GinFastFilter),
+        new(ReducedSearchType.GinFastFilter, true),
+        new(ReducedSearchType.GinMerge),
+        new(ReducedSearchType.GinMerge, true),
+        new(ReducedSearchType.GinMergeFilter),
+        new(ReducedSearchType.GinMergeFilter, true)
+    ];
+
+    [ParamsSource(nameof(Parameters))]
+    // ReSharper disable once UnassignedField.Global
+    public required BenchmarkParameter<ReducedSearchType> SearchType;
+
+    /// <summary>
+    /// Инициализировать RSSE токенайзер.
+    /// </summary>
+    [GlobalSetup]
+    public async Task SetupAsync()
+    {
+        await InitializeTokenizer(SearchType.SearchType, SearchType.Pool);
+    }
+
+    [Benchmark]
+    public void BigDuplicatesReduced()
+    {
+        foreach (NoteEntity noteEntity in _noteEntities)
+        {
+            var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+            try
+            {
+                _tokenizer.ComputeComplianceIndexReduced(noteEntity.Text,
+                    metricsCalculator, CancellationToken.None);
+
+                if (metricsCalculator.ComplianceMetrics.Count == 0)
+                {
+                    Console.WriteLine("Result is empty [" + noteEntity.Text + "]");
+                }
+            }
+            finally
+            {
+                _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public void RunBenchmark()
+    {
+        BigDuplicatesReduced();
+    }
+
+    /// <inheritdoc/>
+    public Task Initialize() => InitializeTokenizer(Constants.TokenizerReducedSearchType, false);
+
+    /// <summary>
+    /// Инициализировать RSSE токенайзер.
+    /// </summary>
+    private async Task InitializeTokenizer(ReducedSearchType reducedSearchType, bool pool)
+    {
+        Console.WriteLine(
+            $"[{nameof(DuplicatesBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
+
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
+            pool, ExtendedSearchType.Legacy, reducedSearchType);
+
+        Console.WriteLine(
+            $"[{nameof(TokenizerServiceCore)}] reduced[{reducedSearchType}] initializing..");
+
+        var dataProvider = new BigFileDataMultipleProvider(1);
+
+        _noteEntities = new List<NoteEntity>();
+
+        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync2())
+        {
+            _noteEntities.Add(noteEntity);
+        }
+
+        var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
+
+        Console.WriteLine(
+            $"[{nameof(TokenizerServiceCore)}] reduced[{reducedSearchType}] initialized '{result:N0}' vectors.");
+    }
+}
