@@ -38,12 +38,12 @@ public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
 
         foreach (var token in searchVector)
         {
-            if (!GinReduced.TryGetNonEmptyDocumentIdVector(token, out var ids))
+            if (!GinReduced.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
             {
                 continue;
             }
 
-            foreach (var documentId in ids)
+            foreach (var documentId in documentIds)
             {
                 ref var score =
                     ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, documentId, out _);

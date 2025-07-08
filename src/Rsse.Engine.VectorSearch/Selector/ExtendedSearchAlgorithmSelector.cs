@@ -21,11 +21,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private readonly InvertedIndex<DocumentIdSet> _ginExtended = new();
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
-    private readonly ExtendedSearchGinSimple _extendedSearchGinSimple;
-    private readonly ExtendedSearchGinOptimized _extendedSearchGinOptimized;
-    private readonly ExtendedSearchGinFilter _extendedSearchGinFilter;
-    private readonly ExtendedSearchGinFast _extendedSearchGinFast;
-    private readonly ExtendedSearchGinFastFilter _extendedSearchGinFastFilter;
+    private readonly ExtendedSearchGinSimple<DocumentIdSet> _extendedSearchGinSimple;
+    private readonly ExtendedSearchGinOptimized<DocumentIdSet> _extendedSearchGinOptimized;
+    private readonly ExtendedSearchGinFilter<DocumentIdSet> _extendedSearchGinFilter;
+    private readonly ExtendedSearchGinFast<DocumentIdSet> _extendedSearchGinFast;
+    private readonly ExtendedSearchGinFastFilter<DocumentIdSet> _extendedSearchGinFastFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -49,21 +49,21 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _extendedSearchGinSimple = new ExtendedSearchGinSimple
+        _extendedSearchGinSimple = new ExtendedSearchGinSimple<DocumentIdSet>
         {
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
         // С GIN-индексом.
-        _extendedSearchGinOptimized = new ExtendedSearchGinOptimized
+        _extendedSearchGinOptimized = new ExtendedSearchGinOptimized<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
-        _extendedSearchGinFilter = new ExtendedSearchGinFilter
+        _extendedSearchGinFilter = new ExtendedSearchGinFilter<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -72,14 +72,14 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _extendedSearchGinFast = new ExtendedSearchGinFast
+        _extendedSearchGinFast = new ExtendedSearchGinFast<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
-        _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter
+        _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,

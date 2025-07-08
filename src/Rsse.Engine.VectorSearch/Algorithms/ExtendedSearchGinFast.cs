@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -12,7 +13,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -24,17 +26,17 @@ public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
+            throw new OperationCanceledException(nameof(ExtendedSearchGinFast<TDocumentIdCollection>));
 
-        var idsExtendedSearchSpace = TempStoragePool.SetsTempStorage.Get();
-        var tokens = TempStoragePool.TokenSetsTempStorage.Get();
+        var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+        var processedTokens = TempStoragePool.TokenSetsStorage.Get();
 
         try
         {
@@ -43,35 +45,47 @@ public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
             {
                 var token = searchVector.ElementAt(searchStartIndex);
 
-                if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIds))
+                if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
                 {
                     continue;
                 }
 
-                if (!tokens.Add(token))
+                if (!processedTokens.Add(token))
                 {
                     continue;
                 }
 
-                // если в gin есть токен, перебираем id заметок в которых он присутствует и формируем пространство поиска
-                foreach (var documentId in docIds)
-                {
-                    if (!idsExtendedSearchSpace.Add(documentId))
-                    {
-                        continue;
-                    }
+                DocumentIdsForEachVisitor visitor = new(GeneralDirectIndex, searchVector, metricsCalculator,
+                    processedDocuments, searchStartIndex);
 
-                    var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-                }
+                documentIds.ForEach(ref visitor);
             }
         }
         finally
         {
-            TempStoragePool.TokenSetsTempStorage.Return(tokens);
-            TempStoragePool.SetsTempStorage.Return(idsExtendedSearchSpace);
+            TempStoragePool.TokenSetsStorage.Return(processedTokens);
+            TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
+        }
+    }
+
+    private readonly ref struct DocumentIdsForEachVisitor(DirectIndex generalDirectIndex, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, HashSet<DocumentId> processedDocuments, int searchStartIndex)
+        : IForEachVisitor<DocumentId>
+    {
+        /// <inheritdoc/>
+        public bool Visit(DocumentId documentId)
+        {
+            if (!processedDocuments.Add(documentId))
+            {
+                return true;
+            }
+
+            var extendedTokensLine = generalDirectIndex[documentId].Extended;
+            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+
+            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+
+            return true;
         }
     }
 }

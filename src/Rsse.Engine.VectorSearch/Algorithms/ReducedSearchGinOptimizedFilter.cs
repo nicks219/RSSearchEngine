@@ -49,13 +49,13 @@ public sealed class ReducedSearchGinOptimizedFilter : IReducedSearchProcessor
         var comparisonScoresReduced = filteredDocuments.Dictionary;
 
         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        foreach (var ids in filteredDocuments.List)
+        foreach (var documentIds in filteredDocuments.List)
         {
-            if (comparisonScoresReduced.Count < ids.Count)
+            if (comparisonScoresReduced.Count < documentIds.Count)
             {
                 foreach (var (documentId, _) in comparisonScoresReduced)
                 {
-                    if (ids.Contains(documentId))
+                    if (documentIds.Contains(documentId))
                     {
                         IncrementCounter(comparisonScoresReduced, documentId);
                     }
@@ -63,7 +63,7 @@ public sealed class ReducedSearchGinOptimizedFilter : IReducedSearchProcessor
             }
             else
             {
-                foreach (var documentId in ids)
+                foreach (var documentId in documentIds)
                 {
                     IncrementCounter(comparisonScoresReduced, documentId);
                 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -12,7 +13,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtendedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -24,7 +26,7 @@ public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -32,21 +34,21 @@ public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var filteredDocuments = TempStoragePool.SetsTempStorage.Get();
-        var idsFromGin = TempStoragePool.DocumentIdSetListsTempStorage.Get();
+        var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.ProcessToSet(GinExtended, searchVector, filteredDocuments, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocuments(GinExtended, searchVector, filteredDocuments, idsFromGin))
             {
                 return;
             }
 
             if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException(nameof(ExtendedSearchGinFastFilter));
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFastFilter<TDocumentIdCollection>));
 
-            var idsExtendedSearchSpace = TempStoragePool.SetsTempStorage.Get();
-            var tokens = TempStoragePool.TokenSetsTempStorage.Get();
+            var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+            var processedTokens = TempStoragePool.TokenSetsStorage.Get();
 
             try
             {
@@ -54,66 +56,54 @@ public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
                 for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
                 {
                     var token = searchVector.ElementAt(searchStartIndex);
-                    var docIds = idsFromGin[searchStartIndex];
+                    var documentIds = idsFromGin[searchStartIndex];
 
-                    if (docIds.Count == 0)
+                    if (documentIds.Count == 0)
                     {
                         continue;
                     }
 
-                    if (!tokens.Add(token))
+                    if (!processedTokens.Add(token))
                     {
                         continue;
                     }
 
-                    if (docIds.Count > filteredDocuments.Count)
+                    if (documentIds.Count > filteredDocuments.Count)
                     {
                         foreach (var documentId in filteredDocuments)
                         {
-                            if (!docIds.Contains(documentId))
+                            if (!documentIds.Contains(documentId))
                             {
                                 continue;
                             }
 
-                            idsExtendedSearchSpace.Add(documentId);
+                            processedDocuments.Add(documentId);
 
                             var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine,
+                                searchVector, searchStartIndex);
 
                             metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
 
-                            if (filteredDocuments.Count == idsExtendedSearchSpace.Count)
+                            if (filteredDocuments.Count == processedDocuments.Count)
                             {
                                 break;
                             }
                         }
 
-                        foreach (var documentId in idsExtendedSearchSpace)
+                        foreach (var documentId in processedDocuments)
                         {
                             filteredDocuments.Remove(documentId);
                         }
 
-                        idsExtendedSearchSpace.Clear();
+                        processedDocuments.Clear();
                     }
                     else
                     {
-                        foreach (var documentId in docIds)
-                        {
-                            if (!filteredDocuments.Remove(documentId))
-                            {
-                                continue;
-                            }
+                        DocumentIdsForEachVisitor visitor = new DocumentIdsForEachVisitor(GeneralDirectIndex,
+                            searchVector, metricsCalculator, filteredDocuments, searchStartIndex);
 
-                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-
-                            if (filteredDocuments.Count == 0)
-                            {
-                                break;
-                            }
-                        }
+                        documentIds.ForEach(ref visitor);
                     }
 
                     if (filteredDocuments.Count == 0)
@@ -124,14 +114,36 @@ public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
             }
             finally
             {
-                TempStoragePool.TokenSetsTempStorage.Return(tokens);
-                TempStoragePool.SetsTempStorage.Return(idsExtendedSearchSpace);
+                TempStoragePool.TokenSetsStorage.Return(processedTokens);
+                TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
             }
         }
         finally
         {
-            TempStoragePool.DocumentIdSetListsTempStorage.Return(idsFromGin);
-            TempStoragePool.SetsTempStorage.Return(filteredDocuments);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
+        }
+    }
+
+    private readonly ref struct DocumentIdsForEachVisitor(DirectIndex generalDirectIndex, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, HashSet<DocumentId> filteredDocuments, int searchStartIndex)
+        : IForEachVisitor<DocumentId>
+    {
+        /// <inheritdoc/>
+        public bool Visit(DocumentId documentId)
+        {
+            if (!filteredDocuments.Remove(documentId))
+            {
+                return true;
+            }
+
+            var extendedTokensLine = generalDirectIndex[documentId].Extended;
+            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector,
+                searchStartIndex);
+
+            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+
+            return filteredDocuments.Count != 0;
         }
     }
 }

@@ -41,9 +41,9 @@ public sealed class ReducedSearchGinFastFilter : IReducedSearchProcessor
 
         foreach (var token in searchVector)
         {
-            if (GinReduced.TryGetNonEmptyDocumentIdVector(token, out var ids))
+            if (GinReduced.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
             {
-                idsFromGin.Add(ids);
+                idsFromGin.Add(documentIds);
             }
         }
 
@@ -73,7 +73,7 @@ public sealed class ReducedSearchGinFastFilter : IReducedSearchProcessor
                     idsFromGin = idsFromGin.OrderBy(docIdVector => docIdVector.Count).ToList();
 
                     // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-                    var comparisonScoresReduced = TempStoragePool.ScoresTempStorage.Get();
+                    var comparisonScoresReduced = TempStoragePool.ScoresStorage.Get();
 
                     try
                     {
@@ -170,7 +170,7 @@ public sealed class ReducedSearchGinFastFilter : IReducedSearchProcessor
                     }
                     finally
                     {
-                        TempStoragePool.ScoresTempStorage.Return(comparisonScoresReduced);
+                        TempStoragePool.ScoresStorage.Return(comparisonScoresReduced);
                     }
 
                     break;

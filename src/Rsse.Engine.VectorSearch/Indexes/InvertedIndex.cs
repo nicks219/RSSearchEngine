@@ -168,7 +168,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// </summary>
     /// <returns>Экземпляр коллекции типа <b>TDocumentIdCollection</b>.</returns>
     /// <exception cref="NotSupportedException">Требуемый тип не поддерживается.</exception>
-    private static TDocumentIdCollection CreateCollection()
+    public static TDocumentIdCollection CreateCollection()
     {
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
         {
@@ -182,6 +182,6 @@ public sealed class InvertedIndex<TDocumentIdCollection>
             return Unsafe.As<DocumentIdList, TDocumentIdCollection>(ref documentIdList);
         }
 
-        throw new NotSupportedException();
+        throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
     }
 }

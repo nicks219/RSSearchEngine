@@ -12,7 +12,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -24,7 +25,7 @@ public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -32,18 +33,18 @@ public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var filteredDocuments = TempStoragePool.SetsTempStorage.Get();
-        var idsFromGin = TempStoragePool.DocumentIdSetListsTempStorage.Get();
+        var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.ProcessToSet(GinExtended, searchVector, filteredDocuments, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocuments(GinExtended, searchVector, filteredDocuments, idsFromGin))
             {
                 return;
             }
 
             if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException(nameof(ExtendedSearchGinFilter));
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFilter<TDocumentIdCollection>));
 
             // поиск в векторе extended
             foreach (var documentId in filteredDocuments)
@@ -57,8 +58,8 @@ public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.DocumentIdSetListsTempStorage.Return(idsFromGin);
-            TempStoragePool.SetsTempStorage.Return(filteredDocuments);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
         }
     }
 }

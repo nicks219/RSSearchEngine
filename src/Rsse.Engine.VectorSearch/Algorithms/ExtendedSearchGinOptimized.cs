@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -12,7 +13,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinOptimized<TDocumentIdCollection> : IExtendedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -24,41 +26,39 @@ public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsExtendedSearchSpace = TempStoragePool.SetsTempStorage.Get();
-        var tokens = TempStoragePool.TokenSetsTempStorage.Get();
+        var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+        var processedTokens = TempStoragePool.TokenSetsStorage.Get();
 
         try
         {
             // выбрать только те заметки, которые пригодны для extended поиска
             foreach (var token in searchVector)
             {
-                if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIds))
+                if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
                 {
                     continue;
                 }
 
-                if (!tokens.Add(token))
+                if (!processedTokens.Add(token))
                 {
                     continue;
                 }
 
-                // если в gin есть токен, перебираем id заметок в которых он присутствует и формируем пространство поиска
-                foreach (var documentId in docIds)
-                {
-                    idsExtendedSearchSpace.Add(documentId);
-                }
+                DocumentIdsForEachVisitor visitor = new(processedDocuments);
+
+                documentIds.ForEach(ref visitor);
             }
 
             if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException(nameof(ExtendedSearchGinOptimized));
+                throw new OperationCanceledException(nameof(ExtendedSearchGinOptimized<TDocumentIdCollection>));
 
-            foreach (var documentId in idsExtendedSearchSpace)
+            foreach (var documentId in processedDocuments)
             {
                 var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
                 var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
@@ -69,8 +69,20 @@ public sealed class ExtendedSearchGinOptimized : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.TokenSetsTempStorage.Return(tokens);
-            TempStoragePool.SetsTempStorage.Return(idsExtendedSearchSpace);
+            TempStoragePool.TokenSetsStorage.Return(processedTokens);
+            TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
+        }
+    }
+
+    private readonly ref struct DocumentIdsForEachVisitor(HashSet<DocumentId> processedDocuments)
+        : IForEachVisitor<DocumentId>
+    {
+        /// <inheritdoc/>
+        public bool Visit(DocumentId documentId)
+        {
+            processedDocuments.Add(documentId);
+
+            return true;
         }
     }
 }

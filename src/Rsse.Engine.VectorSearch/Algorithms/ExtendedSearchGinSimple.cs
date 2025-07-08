@@ -11,7 +11,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска сокращается с помощью выбора из GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinSimple : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinSimple<TDocumentIdCollection> : IExtendedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
@@ -21,14 +22,14 @@ public sealed class ExtendedSearchGinSimple : IExtendedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ExtendedSearchGinSimple));
+            throw new OperationCanceledException(nameof(ExtendedSearchGinSimple<TDocumentIdCollection>));
 
         // поиск в векторе extended
         foreach (var (documentId, tokenLine) in GeneralDirectIndex)

@@ -91,4 +91,21 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
 
         return expectResult;
     }
+
+    /// <summary>
+    /// Перебирает коллекцию в цикле.
+    /// </summary>
+    /// <typeparam name="TVisitor">Тип посетителя цикла.</typeparam>
+    /// <param name="visitor">Посетитель цикла - применяется для каждого элемента.</param>
+    public void ForEach<TVisitor>(ref TVisitor visitor)
+        where TVisitor : IForEachVisitor<DocumentId>, allows ref struct
+    {
+        foreach (var documentId in _list)
+        {
+            if (!visitor.Visit(documentId))
+            {
+                break;
+            }
+        }
+    }
 }
