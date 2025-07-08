@@ -8,11 +8,6 @@ namespace RsseEngine.Benchmarks;
 public abstract class Constants
 {
     /// <summary>
-    /// Сколько раз раскопировать тестовые данные.
-    /// </summary>
-    internal const int InitialDataMultiplier = 50;
-
-    /// <summary>
     /// Количество запусков в рамках профилирования.
     /// </summary>
     internal const int ProfilerIterations = 1000;

@@ -6,6 +6,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Rsse.Domain.Data.Entities;
+using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
@@ -87,7 +88,7 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] reduced[{reducedSearchType}] initializing..");
 
-        var dataProvider = new FileDataProvider(1);
+        var dataProvider = new FileDataMultipleProvider(1);
 
         _noteEntities = new List<NoteEntity>();
 

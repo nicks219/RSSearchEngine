@@ -6,6 +6,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Rsse.Domain.Data.Entities;
+using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
@@ -86,7 +87,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        var dataProvider = new FileDataProvider(1);
+        var dataProvider = new FileDataMultipleProvider(1);
 
         _noteEntities = new List<NoteEntity>();
 

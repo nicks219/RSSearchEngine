@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -13,28 +12,18 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Contracts;
+using Rsse.Tests.Common;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Units.Infra;
-using RsseEngine.SearchType;
 
 namespace Rsse.Tests.Units;
 
+/// <summary>
+/// Тестирование поисковых метрик по всем алгоритмам на стабе данных.
+/// </summary>
 [TestClass]
 public class ComplianceTests
 {
-    private readonly List<ExtendedSearchType> _extendedSearchType =
-        [ExtendedSearchType.Legacy,
-            ExtendedSearchType.GinSimple,
-            ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFilter,
-            ExtendedSearchType.GinFast, ExtendedSearchType.GinFastFilter];
-
-    private readonly List<ReducedSearchType> _reducedSearchTypes =
-        [ReducedSearchType.Legacy,
-            ReducedSearchType.GinSimple,
-            ReducedSearchType.GinOptimized, ReducedSearchType.GinOptimizedFilter,
-            ReducedSearchType.GinFilter,
-            ReducedSearchType.GinFast, ReducedSearchType.GinFastFilter];
-
     private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
@@ -47,9 +36,9 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
         string text, string expected)
     {
-        foreach (var extendedSearchType in _extendedSearchType)
+        foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
-            foreach (var reducedSearchTypes in _reducedSearchTypes)
+            foreach (var reducedSearchTypes in TestData.ReducedSearchTypes)
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
@@ -97,9 +86,9 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnNullResult_WhenFindGarbageTextOnStubData(
         string text, string expected)
     {
-        foreach (var extendedSearchType in _extendedSearchType)
+        foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
-            foreach (var reducedSearchTypes in _reducedSearchTypes)
+            foreach (var reducedSearchTypes in TestData.ReducedSearchTypes)
             {
                 // arrange:
                 using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);

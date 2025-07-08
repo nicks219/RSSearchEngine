@@ -15,6 +15,7 @@ using Rsse.Api.Startup;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.ApiModels;
 using Rsse.Domain.Service.Configuration;
+using Rsse.Tests.Common;
 using Rsse.Tests.Integration.RealDb.Api;
 using Rsse.Tests.Integration.RealDb.Extensions;
 using Rsse.Tests.Integration.RealDb.Infra;
@@ -144,20 +145,11 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
         }
     }
 
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceTestData;
+
     [TestMethod]
-    // Валидные поисковые запросы.
-    [DataRow("чорт з ным зо сталом", """{"res":{"1":0.43478260869565216},"error":null}""")]
-    [DataRow("чёрт с ними за столом", """{"res":{"1":52.631578947368425},"error":null}""")]
-    [DataRow("с ними за столом чёрт", """{"res":{"1":4.2105263157894735},"error":null}""")]
-    [DataRow("преключиться вдруг верный друг", """{"res":{"444":0.35714285714285715,"243":0.02},"error":null}""")]
-    [DataRow("приключится вдруг верный друг", """{"res":{"444":35.08771929824562},"error":null}""")]
-    [DataRow("пляшем на", """{"res":{"1":21.05263157894737},"error":null}""")]
-    [DataRow("ты шла по палубе в молчаний", """{"res":{"10":5.154639175257731},"error":null}""")]
-    [DataRow("оно шла по палубе в молчаний", """{"res":{"10":0.6818181818181818},"error":null}""")]
-    // Мусорные поисковые запросы.
-    [DataRow("123 456 иии", """{"res":null,"error":null}""")]
-    [DataRow("aa bb cc dd .,/#", """{"res":null,"error":null}""")]
-    [DataRow(" |", """{"res":null,"error":null}""")]
+    [DynamicData(nameof(ComplianceTestData))]
     public async Task ComplianceRequest_ShouldReturn_ExpectedDocumentWeights(string text, string expected)
     {
         // arrange:

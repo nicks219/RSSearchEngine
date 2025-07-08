@@ -12,6 +12,7 @@ using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Units.Infra;
+using RsseEngine.SearchType;
 
 namespace Rsse.Tests.Integration.FakeDb.Api;
 
@@ -26,7 +27,12 @@ internal class SqliteStartup(IConfiguration configuration)
         services.AddSqliteTestEnvironment();
 
         services.AddScoped<IDataRepository, MirrorRepository>();
-        services.Configure<CommonBaseOptions>(options => options.TokenizerIsEnable = true);
+        services.Configure<CommonBaseOptions>(options =>
+        {
+            options.TokenizerIsEnable = true;
+            options.ExtendedSearchType = ExtendedSearchType.Legacy;
+            options.ReducedSearchType = ReducedSearchType.Legacy;
+        });
         services.Configure<DatabaseOptions>(configuration.GetSection(nameof(DatabaseOptions)));
 
         services.AddSingleton<ILogger, NoopLogger<SqliteStartup>>();

@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Entities;
-using static RsseEngine.Benchmarks.Constants;
 
-namespace RsseEngine.Benchmarks.Common;
+namespace Rsse.Tests.Common;
 
 /// <summary>
-/// Компонент поставщика данных из файла.
+/// Компонент поставщика многократной копии данных из файла.
 /// </summary>
-public sealed class FileDataProvider(int initialDataMultiplier = InitialDataMultiplier) : IDataProvider<NoteEntity>
+public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constants.InitialDataMultiplier) : IDataProvider<NoteEntity>
 {
     // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
@@ -58,7 +53,7 @@ public sealed class FileDataProvider(int initialDataMultiplier = InitialDataMult
             }
         }
 
-        Console.WriteLine($"[{nameof(FileDataProvider)}] sent total data: '{counter:N0}' entries | {initialDataMultiplier:N0}x.");
+        Console.WriteLine($"[{nameof(FileDataMultipleProvider)}] sent total data: '{counter:N0}' entries | {initialDataMultiplier:N0}x.");
         Console.WriteLine("---");
     }
 }

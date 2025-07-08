@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Rsse.Domain.Data.Entities;
-using RsseEngine.Benchmarks.Common;
+using Rsse.Tests.Common;
 using RsseEngine.Dto;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
@@ -32,7 +32,7 @@ public class SearchResultValidation
         Console.WriteLine();
         Console.WriteLine(nameof(TestSearchQuery));
 
-        var dataProvider = new FileDataProvider(1);
+        var dataProvider = new FileDataMultipleProvider(1);
 
         var legacyTokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 
@@ -59,7 +59,7 @@ public class SearchResultValidation
 
     public async Task TestDuplicates()
     {
-        var dataProvider = new FileDataProvider(1);
+        var dataProvider = new FileDataMultipleProvider(1);
 
         var legacyTokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 
@@ -143,7 +143,7 @@ public class SearchResultValidation
         }
     }
 
-    private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataProvider dataProvider,
+    private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataMultipleProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
         var tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
