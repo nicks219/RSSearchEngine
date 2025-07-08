@@ -3,7 +3,6 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
-using RsseEngine.Pools;
 using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
@@ -13,8 +12,6 @@ namespace RsseEngine.Algorithms;
 /// </summary>
 public sealed class ExtendedSearchLegacy : IExtendedSearchProcessor
 {
-    public required TempStoragePool TempStoragePool { private get; init; }
-
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>

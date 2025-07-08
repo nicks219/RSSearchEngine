@@ -25,8 +25,7 @@ public static class ScoreCalculator
 
         for (var index = (uint)searchStartIndex; index < searchVector.Count; index++)
         {
-            var hash = searchVector.ElementAt(index);
-            var token = new Token(hash);
+            var token = searchVector.ElementAt((int)index);
             var intersectionIndex = targetVector.IndexOf(token, startIndex);
             if (intersectionIndex == -1)
             {

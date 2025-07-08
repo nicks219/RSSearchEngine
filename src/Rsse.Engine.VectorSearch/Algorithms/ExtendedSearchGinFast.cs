@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -28,60 +27,51 @@ public sealed class ExtendedSearchGinFast : IExtendedSearchProcessor
     public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(searchVector);
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
 
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
-
-        // поиск в векторе extended
-        for (var searchStartIndex = 0; searchStartIndex < extendedDocIdVectorSearchSpace.Count; searchStartIndex++)
-        {
-            var docIdVector = extendedDocIdVectorSearchSpace[searchStartIndex];
-            foreach (var documentId in docIdVector)
-            {
-                var tokensLine = GeneralDirectIndex[documentId];
-                var extendedTokensLine = tokensLine.Extended;
-                var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-                metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
-    /// </summary>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <returns>Список векторов GIN.</returns>
-    private List<DocumentIdSet> CreateExtendedSearchSpace(TokenVector searchVector)
-    {
-        var emptyDocIdVector = new DocumentIdSet([]);
-        var docIdVectors = new List<DocumentIdSet>(searchVector.Count);
-
-        var exceptSet = TempStoragePool.SetsTempStorage.Get();
+        var idsExtendedSearchSpace = TempStoragePool.SetsTempStorage.Get();
+        var tokens = TempStoragePool.TokenSetsTempStorage.Get();
 
         try
         {
-            foreach (var token in searchVector)
+            // поиск в векторе extended
+            for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
             {
-                if (GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIdExtendedVector))
-                {
-                    var docIdExtendedVectorCopy = docIdExtendedVector.CopyExcept(exceptSet);
+                var token = searchVector.ElementAt(searchStartIndex);
 
-                    docIdVectors.Add(docIdExtendedVectorCopy);
-                }
-                else
+                if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIds))
                 {
-                    docIdVectors.Add(emptyDocIdVector);
+                    continue;
+                }
+
+                if (!tokens.Add(token))
+                {
+                    continue;
+                }
+
+                // если в gin есть токен, перебираем id заметок в которых он присутствует и формируем пространство поиска
+                foreach (var documentId in docIds)
+                {
+                    if (!idsExtendedSearchSpace.Add(documentId))
+                    {
+                        continue;
+                    }
+
+                    var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+
+                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
                 }
             }
-
-            return docIdVectors;
         }
         finally
         {
-            TempStoragePool.SetsTempStorage.Return(exceptSet);
+            TempStoragePool.TokenSetsTempStorage.Return(tokens);
+            TempStoragePool.SetsTempStorage.Return(idsExtendedSearchSpace);
         }
     }
 }

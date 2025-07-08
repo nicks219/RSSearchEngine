@@ -45,14 +45,12 @@ public sealed class ExtendedSearchAlgorithmSelector
         // Без GIN-индекса.
         _extendedSearchLegacy = new ExtendedSearchLegacy
         {
-            TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex
         };
 
         // С GIN-индексом.
         _extendedSearchGinSimple = new ExtendedSearchGinSimple
         {
-            TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };

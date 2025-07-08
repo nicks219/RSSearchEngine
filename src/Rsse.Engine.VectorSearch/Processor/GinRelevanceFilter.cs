@@ -60,6 +60,55 @@ public sealed class GinRelevanceFilter
     /// Найти идентификаторы документов, обеспечивающие релевантность.
     /// </summary>
     /// <param name="inverseIndex">Инвертированный индекс.</param>
+    /// <param name="searchVector">>Вектор с поисковым запросом.</param>
+    /// <param name="filteredDocuments">Идентификаторы документов, обеспечивающие релевантность.</param>
+    /// <param name="idsFromGin">Идентификаторы докуметов для вектора с поисковым запросом.</param>
+    /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
+    public bool ProcessToSet(InvertedIndex<DocumentIdSet> inverseIndex, TokenVector searchVector,
+        HashSet<DocumentId> filteredDocuments, List<DocumentIdSet> idsFromGin)
+    {
+        var minCount = CalculateMinCount(searchVector);
+
+        var emptyDocIdVector = new DocumentIdSet([]);
+
+        var emptyCounter = 0;
+
+        foreach (Token token in searchVector)
+        {
+            if (inverseIndex.TryGetNonEmptyDocumentIdVector(token, out var ids))
+            {
+                idsFromGin.Add(ids);
+            }
+            else
+            {
+                idsFromGin.Add(emptyDocIdVector);
+
+                emptyCounter++;
+
+                if (emptyCounter >= minCount)
+                {
+                    return false;
+                }
+            }
+        }
+
+        foreach (var documentIdSet in idsFromGin.Where(t => t.Count > 0)
+                     .Order(DocumentIdSetCountComparer.Instance)
+                     .Take(minCount - emptyCounter))
+        {
+            foreach (var documentId in documentIdSet)
+            {
+                filteredDocuments.Add(documentId);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Найти идентификаторы документов, обеспечивающие релевантность.
+    /// </summary>
+    /// <param name="inverseIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <returns>Идентификаторы документов.</returns>
     public HashSet<DocumentId> ProcessToSet(InvertedIndex<DocumentIdSet> inverseIndex, TokenVector searchVector)
@@ -168,5 +217,15 @@ public sealed class GinRelevanceFilter
         minCount = Math.Min(searchVectorSize, minCount);
 
         return minCount;
+    }
+
+    private sealed class DocumentIdSetCountComparer : IComparer<DocumentIdSet>
+    {
+        public static readonly DocumentIdSetCountComparer Instance = new();
+
+        public int Compare(DocumentIdSet left, DocumentIdSet right)
+        {
+            return Comparer.Default.Compare(left.Count, right.Count);
+        }
     }
 }

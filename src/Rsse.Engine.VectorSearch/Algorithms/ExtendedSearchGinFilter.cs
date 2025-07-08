@@ -29,24 +29,36 @@ public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        var filteredDocuments = RelevanceFilter.ProcessToSet(GinExtended, searchVector);
-        if (filteredDocuments.Count == 0)
+        var filteredDocuments = TempStoragePool.SetsTempStorage.Get();
+        var idsFromGin = TempStoragePool.DocumentIdSetListsTempStorage.Get();
+
+        try
         {
-            return;
+            if (!RelevanceFilter.ProcessToSet(GinExtended, searchVector, filteredDocuments, idsFromGin))
+            {
+                return;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFilter));
+
+            // поиск в векторе extended
+            foreach (var documentId in filteredDocuments)
+            {
+                var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
+                var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
+
+                // Для расчета метрик необходимо учитывать размер оригинальной заметки.
+                metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+            }
         }
-
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFilter));
-
-        // поиск в векторе extended
-        foreach (var documentId in filteredDocuments)
+        finally
         {
-            var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
-
-            // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-            metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+            TempStoragePool.DocumentIdSetListsTempStorage.Return(idsFromGin);
+            TempStoragePool.SetsTempStorage.Return(filteredDocuments);
         }
     }
 }

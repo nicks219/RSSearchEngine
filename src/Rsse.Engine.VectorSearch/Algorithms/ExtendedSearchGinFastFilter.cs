@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -30,69 +29,109 @@ public sealed class ExtendedSearchGinFastFilter : IExtendedSearchProcessor
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        var filteredDocuments = RelevanceFilter.ProcessToSet(GinExtended, searchVector);
-        if (filteredDocuments.Count == 0)
-        {
-            return;
-        }
-
-        var extendedDocIdVectorSearchSpace = CreateExtendedSearchSpace(searchVector);
-
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinFast));
-
-        // поиск в векторе extended
-        for (var searchStartIndex = 0; searchStartIndex < extendedDocIdVectorSearchSpace.Count; searchStartIndex++)
-        {
-            var docIdVector = extendedDocIdVectorSearchSpace[searchStartIndex];
-            foreach (var documentId in docIdVector)
-            {
-                if (filteredDocuments.Contains(documentId))
-                {
-                    var tokensLine = GeneralDirectIndex[documentId];
-                    var extendedTokensLine = tokensLine.Extended;
-                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
-    /// </summary>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <returns>Список векторов GIN.</returns>
-    private List<DocumentIdSet> CreateExtendedSearchSpace(TokenVector searchVector)
-    {
-        var emptyDocIdVector = new DocumentIdSet([]);
-        var docIdVectors = new List<DocumentIdSet>(searchVector.Count);
-
-        var exceptSet = TempStoragePool.SetsTempStorage.Get();
+        var filteredDocuments = TempStoragePool.SetsTempStorage.Get();
+        var idsFromGin = TempStoragePool.DocumentIdSetListsTempStorage.Get();
 
         try
         {
-            foreach (var token in searchVector)
+            if (!RelevanceFilter.ProcessToSet(GinExtended, searchVector, filteredDocuments, idsFromGin))
             {
-                if (GinExtended.TryGetNonEmptyDocumentIdVector(token, out var docIdExtendedVector))
-                {
-                    var docIdExtendedVectorCopy = docIdExtendedVector.CopyExcept(exceptSet);
-
-                    docIdVectors.Add(docIdExtendedVectorCopy);
-                }
-                else
-                {
-                    docIdVectors.Add(emptyDocIdVector);
-                }
+                return;
             }
 
-            return docIdVectors;
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFastFilter));
+
+            var idsExtendedSearchSpace = TempStoragePool.SetsTempStorage.Get();
+            var tokens = TempStoragePool.TokenSetsTempStorage.Get();
+
+            try
+            {
+                // поиск в векторе extended
+                for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
+                {
+                    var token = searchVector.ElementAt(searchStartIndex);
+                    var docIds = idsFromGin[searchStartIndex];
+
+                    if (docIds.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!tokens.Add(token))
+                    {
+                        continue;
+                    }
+
+                    if (docIds.Count > filteredDocuments.Count)
+                    {
+                        foreach (var documentId in filteredDocuments)
+                        {
+                            if (!docIds.Contains(documentId))
+                            {
+                                continue;
+                            }
+
+                            idsExtendedSearchSpace.Add(documentId);
+
+                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+
+                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+
+                            if (filteredDocuments.Count == idsExtendedSearchSpace.Count)
+                            {
+                                break;
+                            }
+                        }
+
+                        foreach (var documentId in idsExtendedSearchSpace)
+                        {
+                            filteredDocuments.Remove(documentId);
+                        }
+
+                        idsExtendedSearchSpace.Clear();
+                    }
+                    else
+                    {
+                        foreach (var documentId in docIds)
+                        {
+                            if (!filteredDocuments.Remove(documentId))
+                            {
+                                continue;
+                            }
+
+                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+
+                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+
+                            if (filteredDocuments.Count == 0)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (filteredDocuments.Count == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                TempStoragePool.TokenSetsTempStorage.Return(tokens);
+                TempStoragePool.SetsTempStorage.Return(idsExtendedSearchSpace);
+            }
         }
         finally
         {
-            TempStoragePool.SetsTempStorage.Return(exceptSet);
+            TempStoragePool.DocumentIdSetListsTempStorage.Return(idsFromGin);
+            TempStoragePool.SetsTempStorage.Return(filteredDocuments);
         }
     }
 }

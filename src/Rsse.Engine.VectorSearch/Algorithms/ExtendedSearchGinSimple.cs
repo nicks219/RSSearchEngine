@@ -3,7 +3,6 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
-using RsseEngine.Pools;
 using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
@@ -14,8 +13,6 @@ namespace RsseEngine.Algorithms;
 /// </summary>
 public sealed class ExtendedSearchGinSimple : IExtendedSearchProcessor
 {
-    public required TempStoragePool TempStoragePool { private get; init; }
-
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
@@ -27,9 +24,11 @@ public sealed class ExtendedSearchGinSimple : IExtendedSearchProcessor
     public required InvertedIndex<DocumentIdSet> GinExtended { private get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchGinSimple));
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ExtendedSearchGinSimple));
 
         // поиск в векторе extended
         foreach (var (documentId, tokenLine) in GeneralDirectIndex)

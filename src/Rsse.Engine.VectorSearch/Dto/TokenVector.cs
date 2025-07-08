@@ -59,8 +59,8 @@ public readonly struct TokenVector(List<int> vector) : IEquatable<TokenVector>
     /// Получить по индексу токен из вектора.
     /// </summary>
     /// <param name="index">Индекс.</param>
-    /// <returns>Токен в виде хэша.</returns>
-    public int ElementAt(uint index) => _vector[(int)index];
+    /// <returns>Токен.</returns>
+    public Token ElementAt(int index) => new(_vector[index]);
 
     /// <summary>
     /// Получить копию вектора как коллекцию хэшей.

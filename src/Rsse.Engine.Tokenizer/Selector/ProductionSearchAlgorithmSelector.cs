@@ -27,7 +27,6 @@ public abstract class ProductionSearchAlgorithmSelector
         // Legacy-алгоритм без GIN-индекса.
         private readonly ExtendedSearchLegacy _extendedSearchLegacy = new()
         {
-            TempStoragePool = new TempStoragePool(false),
             GeneralDirectIndex = generalDirectIndex
         };
 

@@ -20,6 +20,10 @@ public sealed class TempStoragePool(bool enable)
     /// </summary>
     internal readonly CollectionPool<HashSet<DocumentId>, DocumentId> SetsTempStorage = new(enable);
 
+    internal readonly CollectionPool<HashSet<Token>, Token> TokenSetsTempStorage = new(enable);
+
+    internal readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> DocumentIdSetListsTempStorage = new(enable);
+
     internal sealed class CollectionPool<T, TV> where T : ICollection<TV>, new()
     {
         private readonly ConcurrentBag<T>? _bag;
