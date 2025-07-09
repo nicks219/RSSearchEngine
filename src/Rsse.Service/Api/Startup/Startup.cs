@@ -73,6 +73,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
+            options.JsonSerializerOptions.TypeInfoResolver = ApiJsonContext.Default;
         });
 
         services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);
