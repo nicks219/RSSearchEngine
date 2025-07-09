@@ -15,6 +15,11 @@ public class SetActivityStatusMiddleware(RequestDelegate next)
     /// <param name="context">Контекст.</param>
     public async Task InvokeAsync(HttpContext context)
     {
+        // var labels = Pyroscope.LabelSet.Empty.BuildUpon()
+        //    .Add("key1", "value1")
+        //    .Build();
+
+        // Pyroscope.LabelsWrapper.Do(labels, () =>
         context.Response.OnStarting(() =>
         {
             var activity = Activity.Current;

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
-using Rsse.Api.Logger;
+using Rsse.Api.Observability;
 using Rsse.Api.Startup;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Tooling.DevelopmentAssistant;

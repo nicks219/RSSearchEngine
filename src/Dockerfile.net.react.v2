@@ -1,0 +1,47 @@
+######################################
+FROM node:22-slim AS node-build-env
+WORKDIR /home/node/app
+COPY ./Rsse.Client/ClientApp/*.json ./
+COPY ./Rsse.Client/ClientApp/index.html ./
+COPY ./Rsse.Client/ClientApp/vite.config.ts ./
+COPY ./Rsse.Client/ClientApp/src/ ./src
+COPY ./Rsse.Client/ClientApp/public/ ./public
+RUN npm install
+RUN npm run build
+
+##########################################################################################
+# в образе alpine установить vim либо nano можно с помощью apk: apk update && apk add nano
+FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
+WORKDIR /app
+
+# CPM: копируем файл версионирования
+COPY Directory.Packages.props .
+COPY ./Rsse.Service/ ./Rsse.Service/
+COPY ./Rsse.Data/ ./Rsse.Data/
+COPY ./Rsse.Domain/ ./Rsse.Domain/
+
+# JS: копируем папку с файлами фронта
+COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/
+
+WORKDIR /app/Rsse.Service
+# .NET: публикуем в папку /app/Rsse.Service/out/
+RUN dotnet publish -c Release -r linux-musl-x64 -p:IsPublishing=true -o out Rsse.Service.csproj
+
+################
+FROM alpine:3.19
+LABEL org.opencontainers.image.description="RSSearchEngine: .NET/React/K3S ready"
+# пакеты для запуска
+RUN apk add --no-cache libstdc++ libgcc
+# apk для глобализации (отключена в csproj): icu-libs
+
+# Версия с профайлером
+COPY --from=pyroscope/pyroscope-dotnet:0.9.4-musl /Pyroscope.Profiler.Native.so App/Pyroscope.Profiler.Native.so
+COPY --from=pyroscope/pyroscope-dotnet:0.9.4-musl /Pyroscope.Linux.ApiWrapper.x64.so App/Pyroscope.Linux.ApiWrapper.x64.so
+
+COPY --from=build-env /app/Rsse.Service/out/ App/
+COPY --from=build-env /app/Rsse.Service/ClientApp/build/ App/ClientApp/build/
+WORKDIR /App
+EXPOSE 5000
+ENTRYPOINT ["./Rsse.Service"]
+
+LABEL version="6.0.3"

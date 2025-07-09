@@ -59,7 +59,8 @@ services:
       - otel-collector
     restart: always
     environment:
-      OTEL_RESOURCE_ATTRIBUTES="service:name=rsse-app,service:namespace=rsse-group,deployment:environment=production":
+      # Выставлены в коде
+      OTEL_RESOURCE_ATTRIBUTES: "service:name=rsse-app,service:namespace=rsse-group,deployment:environment=production"
     ports:
       - 5100:5000
     networks:

@@ -1,4 +1,4 @@
-##########################################################################
+#######################################################################
 FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
 WORKDIR /app
 
@@ -7,9 +7,6 @@ COPY Directory.Packages.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
 COPY ./Rsse.Domain/ ./Rsse.Domain/
-# скопируем функционал токенизатора
-COPY ./Rsse.Engine.Tokenizer ./Rsse.Engine.Tokenizer
-COPY ./Rsse.Engine.VectorSearch ./Rsse.Engine.VectorSearch
 # скопируем предварительно собранный фронт
 COPY ./Rsse.Client/ClientApp/build/ ./Rsse.Service/ClientApp/build/
 
@@ -24,10 +21,14 @@ LABEL org.opencontainers.image.description="RSSearchEngine: .NET"
 RUN apk add --no-cache libstdc++ libgcc
 # apk для глобализации (отключена в csproj): icu-libs
 
+# Версия с профайлером:  может, App ?
+COPY --from=pyroscope/pyroscope-dotnet:0.9.4-musl /Pyroscope.Profiler.Native.so App/Pyroscope.Profiler.Native.so
+COPY --from=pyroscope/pyroscope-dotnet:0.9.4-musl /Pyroscope.Linux.ApiWrapper.x64.so App/Pyroscope.Linux.ApiWrapper.x64.so
+
 COPY --from=build-env /app/Rsse.Service/out/ App/
 COPY --from=build-env /app/Rsse.Service/ClientApp/build/ App/ClientApp/build/
 WORKDIR /App
 EXPOSE 5000
 ENTRYPOINT ["./Rsse.Service"]
 
-LABEL version="6.0.0"
+LABEL version="6.0.3"

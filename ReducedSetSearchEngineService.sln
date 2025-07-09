@@ -58,6 +58,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".workflow", ".workflow", "{
 		.github\workflows\ci.docker.publish.yml = .github\workflows\ci.docker.publish.yml
 		.github\workflows\ci.dotnet.build.yml = .github\workflows\ci.dotnet.build.yml
 		.github\workflows\ci.node.js.build.yml = .github\workflows\ci.node.js.build.yml
+		.github\workflows\ci.docker.publish.v2.yml = .github\workflows\ci.docker.publish.v2.yml
+		.github\workflows\ci.docker.build.v2.yml = .github\workflows\ci.docker.build.v2.yml
+		.github\workflows\cd.deploy.k3s.v2.yml = .github\workflows\cd.deploy.k3s.v2.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.css", "client.css", "{728C8EBA-C5A7-41CE-B3A9-69A87D5B5D2D}"
@@ -87,6 +90,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{57BE
 		src\Dockerfile-net = src\Dockerfile-net
 		src\Dockerfile-net-react = src\Dockerfile-net-react
 		src\otel-docker-config.yaml = src\otel-docker-config.yaml
+		src\Dockerfile.net.v2 = src\Dockerfile.net.v2
+		src\Dockerfile.net.react.v2 = src\Dockerfile.net.react.v2
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Client", "src\Rsse.Client\ClientApp\Rsse.Client.csproj", "{069738D5-AFF8-431B-ADDB-B1C8F79E3E39}"
@@ -106,6 +111,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
 		.k3s\resource.postgres.yml = .k3s\resource.postgres.yml
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
+		.k3s\deployment.rsse.pvc.v3.yml = .k3s\deployment.rsse.pvc.v3.yml
 		.k3s\ingress.traefik.ru.https.yml = .k3s\ingress.traefik.ru.https.yml
 		.k3s\ingress.traefik.ru.redirect.yml = .k3s\ingress.traefik.ru.redirect.yml
 		.k3s\sa-metrics.yml = .k3s\sa-metrics.yml

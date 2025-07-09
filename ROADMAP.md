@@ -1,6 +1,7 @@
 # План развития сервиса:
 **2025**
 * ✅ Поставка диагностиков по OTLP в Grafana Cloud с otel-collector локально и в кластере
+* Добавление профилирования через Pryroscope, настройка связей для observability в Grafana Cloud 
 * Интеграция с Aspire для локальной разработки
 * Отказ от MySql
 * Автоматизация версионирования, для кластера использовать `kustomization.yaml`  
@@ -50,3 +51,16 @@
         * ✅ зафиксировать в документации и [README.md](README.md)
         * зафиксировать в system/version
         * создать релиз
+
+---
+# Ссылки на документацию:
+  * Grafana Cloud
+    - [Trace correlaction](https://grafana.com/docs/grafana/latest/datasources/tempo/traces-in-grafana/trace-correlations/)
+    - [Trace to metrics](https://grafana.com/docs/grafana/next/datasources/tempo/configure-tempo-data-source/#trace-to-metrics)
+    - [Derived fields](https://grafana.com/docs/grafana/next/datasources/loki/configure-loki-data-source/#derived-fields)
+    - [.NET Pyroscope](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/dotnet/?utm_source=chatgpt.com)
+    - [Traces to profiles](https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/dotnet-span-profiles/?utm_source=chatgpt.com)
+  * Open Telemetry SDK
+    - [информация про включение самодиагностики в OpenTelemetry SDK NET](https://www.nuget.org/packages/OpenTelemetry#self-diagnostics)
+  * Внутренняя документация проекта
+    - [информация по созданию k3s ресурсов для проекта](.common/scripts.k3s.bash)
