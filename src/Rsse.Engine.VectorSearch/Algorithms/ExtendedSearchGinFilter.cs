@@ -13,7 +13,7 @@ namespace RsseEngine.Algorithms;
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
 public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSearchProcessor
-    where TDocumentIdCollection : struct, IDocumentIdCollection
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -35,10 +35,12 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
     {
         var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var sortedList = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocuments(GinExtended, searchVector, filteredDocuments, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, filteredDocuments,
+                    idsFromGin, sortedList))
             {
                 return;
             }
@@ -58,6 +60,7 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
         }
         finally
         {
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedList);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
             TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
         }

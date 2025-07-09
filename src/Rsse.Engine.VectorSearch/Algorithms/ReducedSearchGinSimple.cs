@@ -3,7 +3,6 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
-using RsseEngine.Pools;
 
 namespace RsseEngine.Algorithms;
 
@@ -11,10 +10,9 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается с помощью GIN индекса в процессе поиска.
 /// </summary>
-public sealed class ReducedSearchGinSimple : IReducedSearchProcessor
+public sealed class ReducedSearchGinSimple<TDocumentIdCollection> : IReducedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection
 {
-    public required TempStoragePool TempStoragePool { private get; init; }
-
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
@@ -23,7 +21,7 @@ public sealed class ReducedSearchGinSimple : IReducedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinReduced { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinReduced { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
@@ -32,7 +30,7 @@ public sealed class ReducedSearchGinSimple : IReducedSearchProcessor
         searchVector = searchVector.DistinctAndGet();
 
         if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ReducedSearchGinSimple));
+            throw new OperationCanceledException(nameof(ReducedSearchGinSimple<TDocumentIdCollection>));
 
         // поиск в векторе reduced
         foreach (var (documentId, tokenLine) in GeneralDirectIndex)

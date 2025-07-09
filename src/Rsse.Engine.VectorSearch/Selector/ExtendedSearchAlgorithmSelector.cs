@@ -38,7 +38,6 @@ public sealed class ExtendedSearchAlgorithmSelector
     {
         var relevanceFilter = new GinRelevanceFilter
         {
-            Enabled = true,
             Threshold = relevancyThreshold
         };
 

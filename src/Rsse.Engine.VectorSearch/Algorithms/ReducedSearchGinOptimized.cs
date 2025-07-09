@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
@@ -13,7 +12,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается на самом GIN индексе и создаётся промежуточный результат для поиска в нём.
 /// </summary>
-public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
+public sealed class ReducedSearchGinOptimized<TDocumentIdCollection> : IReducedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -25,41 +25,46 @@ public sealed class ReducedSearchGinOptimized : IReducedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinReduced { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinReduced { private get; init; }
 
     /// <inheritdoc/>
-    public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        var comparisonScoresReduced = new Dictionary<DocumentId, int>();
+        var comparisonScores = TempStoragePool.ScoresStorage.Get();
 
-        foreach (var token in searchVector)
+        try
         {
-            if (!GinReduced.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
+            foreach (var token in searchVector)
             {
-                continue;
+                if (!GinReduced.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+                {
+                    continue;
+                }
+
+                foreach (var documentId in documentIds)
+                {
+                    ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScores, documentId, out _);
+                    ++score;
+                }
             }
 
-            foreach (var documentId in documentIds)
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ReducedSearchGinOptimized<TDocumentIdCollection>));
+
+            // поиск в векторе reduced
+            foreach (var (documentId, comparisonScore) in comparisonScores)
             {
-                ref var score =
-                    ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScoresReduced, documentId, out _);
-                ++score;
+                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, GeneralDirectIndex);
             }
         }
-
-        if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ReducedSearchGinOptimized));
-
-        // поиск в векторе reduced
-        foreach (var (docId, comparisonScore) in comparisonScoresReduced)
+        finally
         {
-            var reducedTargetVector = GeneralDirectIndex[docId].Reduced;
-
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, docId, reducedTargetVector);
+            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 }

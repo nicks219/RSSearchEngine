@@ -21,12 +21,12 @@ public sealed class ReducedSearchAlgorithmSelector
     private readonly InvertedIndex<DocumentIdSet> _ginReduced = new();
 
     private readonly ReducedSearchLegacy _reducedSearchLegacy;
-    private readonly ReducedSearchGinSimple _reducedSearchGinSimple;
-    private readonly ReducedSearchGinOptimized _reducedSearchGinOptimized;
-    private readonly ReducedSearchGinOptimizedFilter _reducedSearchGinOptimizedFilter;
-    private readonly ReducedSearchGinFilter _reducedSearchGinFilter;
-    private readonly ReducedSearchGinFast _reducedSearchGinFast;
-    private readonly ReducedSearchGinFastFilter _reducedSearchGinFastFilter;
+    private readonly ReducedSearchGinSimple<DocumentIdSet> _reducedSearchGinSimple;
+    private readonly ReducedSearchGinOptimized<DocumentIdSet> _reducedSearchGinOptimized;
+    private readonly ReducedSearchGinOptimizedFilter<DocumentIdSet> _reducedSearchGinOptimizedFilter;
+    private readonly ReducedSearchGinFilter<DocumentIdSet> _reducedSearchGinFilter;
+    private readonly ReducedSearchGinFast<DocumentIdSet> _reducedSearchGinFast;
+    private readonly ReducedSearchGinFastFilter<DocumentIdSet> _reducedSearchGinFastFilter;
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
@@ -39,7 +39,6 @@ public sealed class ReducedSearchAlgorithmSelector
     {
         var relevanceFilter = new GinRelevanceFilter
         {
-            Enabled = true,
             Threshold = relevancyThreshold
         };
 
@@ -51,7 +50,14 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinSimple = new ReducedSearchGinSimple
+        _reducedSearchGinSimple = new ReducedSearchGinSimple<DocumentIdSet>
+        {
+            GeneralDirectIndex = generalDirectIndex,
+            GinReduced = _ginReduced
+        };
+
+        // С GIN-индексом.
+        _reducedSearchGinOptimized = new ReducedSearchGinOptimized<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -59,15 +65,7 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinOptimized = new ReducedSearchGinOptimized
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinOptimizedFilter = new ReducedSearchGinOptimizedFilter
+        _reducedSearchGinOptimizedFilter = new ReducedSearchGinOptimizedFilter<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -75,7 +73,7 @@ public sealed class ReducedSearchAlgorithmSelector
             RelevanceFilter = relevanceFilter
         };
 
-        _reducedSearchGinFilter = new ReducedSearchGinFilter
+        _reducedSearchGinFilter = new ReducedSearchGinFilter<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -84,7 +82,7 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinFast = new ReducedSearchGinFast
+        _reducedSearchGinFast = new ReducedSearchGinFast<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -92,7 +90,7 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinFastFilter = new ReducedSearchGinFastFilter
+        _reducedSearchGinFastFilter = new ReducedSearchGinFastFilter<DocumentIdSet>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,

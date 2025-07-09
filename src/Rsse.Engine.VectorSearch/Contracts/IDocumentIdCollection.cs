@@ -15,8 +15,8 @@ public interface IDocumentIdCollection
     /// <summary>
     /// Добавить идентификатор документа в вектор.
     /// </summary>
-    /// <param name="docId">Идентификатор документа.</param>
-    void Add(DocumentId docId);
+    /// <param name="documentId">Идентификатор документа.</param>
+    void Add(DocumentId documentId);
 
     /// <summary>
     /// Удалить идентификатор документа из вектора.
@@ -27,15 +27,13 @@ public interface IDocumentIdCollection
     /// <summary>
     /// Присутствует ли данный идентификатор документа в векторе.
     /// </summary>
-    /// <param name="docId">Идентификатор документа.</param>
+    /// <param name="documentId">Идентификатор документа.</param>
     /// <returns>Признак присутствия.</returns>
-    bool Contains(DocumentId docId);
+    bool Contains(DocumentId documentId);
+}
 
-    /// <summary>
-    /// Перебирает коллекцию в цикле.
-    /// </summary>
-    /// <typeparam name="TVisitor">Тип посетителя цикла.</typeparam>
-    /// <param name="visitor">Посетитель цикла - применяется для каждого элемента.</param>
-    void ForEach<TVisitor>(ref TVisitor visitor)
-        where TVisitor : IForEachVisitor<DocumentId>, allows ref struct;
+public interface IDocumentIdCollection<TDocumentIdCollection> : IDocumentIdCollection
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
+{
+    DocumentIdCollectionEnumerator<TDocumentIdCollection> GetEnumerator();
 }

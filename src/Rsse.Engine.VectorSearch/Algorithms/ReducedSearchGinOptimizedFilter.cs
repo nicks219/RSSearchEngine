@@ -15,7 +15,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается с помощью GIN индекса в процессе поиска.
 /// </summary>
-public sealed class ReducedSearchGinOptimizedFilter : IReducedSearchProcessor
+public sealed class ReducedSearchGinOptimizedFilter<TDocumentIdCollection> : IReducedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -27,7 +28,7 @@ public sealed class ReducedSearchGinOptimizedFilter : IReducedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinReduced { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinReduced { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -37,43 +38,51 @@ public sealed class ReducedSearchGinOptimizedFilter : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var filteredDocuments = RelevanceFilter.ProcessToDictionary(GinReduced, searchVector);
-        if (filteredDocuments.Dictionary.Count == 0)
+        var comparisonScores = TempStoragePool.ScoresStorage.Get();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+
+        try
         {
-            return;
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ReducedSearchGinOptimizedFilter));
-
-        var comparisonScoresReduced = filteredDocuments.Dictionary;
-
-        // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-        foreach (var documentIds in filteredDocuments.List)
-        {
-            if (comparisonScoresReduced.Count < documentIds.Count)
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, idsFromGin))
             {
-                foreach (var (documentId, _) in comparisonScoresReduced)
+                return;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ReducedSearchGinOptimizedFilter<TDocumentIdCollection>));
+
+            // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
+            foreach (var documentIds in idsFromGin)
+            {
+                if (comparisonScores.Count < documentIds.Count)
                 {
-                    if (documentIds.Contains(documentId))
+                    foreach (var (documentId, _) in comparisonScores)
                     {
-                        IncrementCounter(comparisonScoresReduced, documentId);
+                        if (documentIds.Contains(documentId))
+                        {
+                            IncrementCounter(comparisonScores, documentId);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var documentId in documentIds)
+                    {
+                        IncrementCounter(comparisonScores, documentId);
                     }
                 }
             }
-            else
+
+            // поиск в векторе reduced
+            foreach (var (documentId, comparisonScore) in comparisonScores)
             {
-                foreach (var documentId in documentIds)
-                {
-                    IncrementCounter(comparisonScoresReduced, documentId);
-                }
+                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, GeneralDirectIndex);
             }
         }
-
-        // поиск в векторе reduced
-        foreach (var (documentId, comparisonScore) in comparisonScoresReduced)
+        finally
         {
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, GeneralDirectIndex);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -14,7 +13,7 @@ namespace RsseEngine.Algorithms;
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
 public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSearchProcessor
-    where TDocumentIdCollection : struct, IDocumentIdCollection
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -55,37 +54,24 @@ public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSear
                     continue;
                 }
 
-                DocumentIdsForEachVisitor visitor = new(GeneralDirectIndex, searchVector, metricsCalculator,
-                    processedDocuments, searchStartIndex);
+                foreach (var documentId in documentIds)
+                {
+                    if (!processedDocuments.Add(documentId))
+                    {
+                        continue;
+                    }
 
-                documentIds.ForEach(ref visitor);
+                    var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
+
+                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                }
             }
         }
         finally
         {
             TempStoragePool.TokenSetsStorage.Return(processedTokens);
             TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
-        }
-    }
-
-    private readonly ref struct DocumentIdsForEachVisitor(DirectIndex generalDirectIndex, TokenVector searchVector,
-        IMetricsCalculator metricsCalculator, HashSet<DocumentId> processedDocuments, int searchStartIndex)
-        : IForEachVisitor<DocumentId>
-    {
-        /// <inheritdoc/>
-        public bool Visit(DocumentId documentId)
-        {
-            if (!processedDocuments.Add(documentId))
-            {
-                return true;
-            }
-
-            var extendedTokensLine = generalDirectIndex[documentId].Extended;
-            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-
-            return true;
         }
     }
 }

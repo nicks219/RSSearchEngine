@@ -12,7 +12,8 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ReducedSearchGinFilter : IReducedSearchProcessor
+public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSearchProcessor
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -24,7 +25,7 @@ public sealed class ReducedSearchGinFilter : IReducedSearchProcessor
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<DocumentIdSet> GinReduced { private get; init; }
+    public required InvertedIndex<TDocumentIdCollection> GinReduced { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -34,22 +35,33 @@ public sealed class ReducedSearchGinFilter : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var filteredDocuments = RelevanceFilter.ProcessToSet(GinReduced, searchVector);
-        if (filteredDocuments.Count == 0)
+        var comparisonScores = TempStoragePool.ScoresStorage.Get();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+
+        try
         {
-            return;
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, idsFromGin))
+            {
+                return;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ReducedSearchGinFilter<TDocumentIdCollection>));
+
+            // поиск в векторе reduced
+            foreach (var (documentId, _) in comparisonScores)
+            {
+                var reducedTargetVector = GeneralDirectIndex[documentId].Reduced;
+                var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
+
+                // Для расчета метрик необходимо учитывать размер оригинальной заметки.
+                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
+            }
         }
-
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchGinFilter));
-
-        // поиск в векторе reduced
-        foreach (var documentId in filteredDocuments)
+        finally
         {
-            var reducedTargetVector = GeneralDirectIndex[documentId].Reduced;
-            var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
-
-            // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 }

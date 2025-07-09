@@ -91,14 +91,15 @@ public static class DiagnosticsProgram
                     { LogKind.Hint, ConsoleColor.DarkCyan }
                 }));
 
-        BenchmarkRunner.Run([
+        BenchmarkRunner.Run(
+        [
             /*typeof(QueryBenchmark),
             typeof(LuceneBenchmark),
             typeof(DuplicatesBenchmark),*/
             typeof(DuplicatesBenchmarkExtended),
-            typeof(DuplicatesBenchmarkReduced),
             typeof(QueryBenchmarkExtended),
-            typeof(QueryBenchmarkReduced),
+            typeof(DuplicatesBenchmarkReduced),
+            typeof(QueryBenchmarkReduced)
         ], config);
     }
 

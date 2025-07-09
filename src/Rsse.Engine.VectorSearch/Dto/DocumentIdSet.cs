@@ -8,7 +8,7 @@ namespace RsseEngine.Dto;
 /// Вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
 /// <param name="set">Сет идентификаторов документов.</param>
-public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<DocumentIdSet>, IDocumentIdCollection
+public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<DocumentIdSet>, IDocumentIdCollection<DocumentIdSet>
 {
     // Коллекция уникальных идентификаторов заметок.
     private readonly HashSet<DocumentId> _set = set;
@@ -19,7 +19,10 @@ public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<Docum
     /// Получить перечислитель для вектора идентификаторов.
     /// </summary>
     /// <returns>Перечислитель.</returns>
-    public HashSet<DocumentId>.Enumerator GetEnumerator() => _set.GetEnumerator();
+    public DocumentIdCollectionEnumerator<DocumentIdSet> GetEnumerator()
+    {
+        return new DocumentIdCollectionEnumerator<DocumentIdSet>(_set);
+    }
 
     public bool Equals(DocumentIdSet other) => _set.Equals(other._set);
 
@@ -55,22 +58,5 @@ public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<Docum
         }
 
         return expectResult;
-    }
-
-    /// <summary>
-    /// Перебирает коллекцию в цикле.
-    /// </summary>
-    /// <typeparam name="TVisitor">Тип посетителя цикла.</typeparam>
-    /// <param name="visitor">Посетитель цикла - применяется для каждого элемента.</param>
-    public void ForEach<TVisitor>(ref TVisitor visitor)
-        where TVisitor : IForEachVisitor<DocumentId>, allows ref struct
-    {
-        foreach (var documentId in _set)
-        {
-            if (!visitor.Visit(documentId))
-            {
-                break;
-            }
-        }
     }
 }

@@ -29,12 +29,12 @@ public sealed class ReducedSearchLegacy : IReducedSearchProcessor
         if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchLegacy));
 
         // поиск в векторе reduced
-        foreach (var (docId, tokenLine) in GeneralDirectIndex)
+        foreach (var (documentId, tokenLine) in GeneralDirectIndex)
         {
             var reducedTargetVector = tokenLine.Reduced;
             var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
 
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, docId, reducedTargetVector);
+            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -14,7 +13,7 @@ namespace RsseEngine.Algorithms;
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
 public sealed class ExtendedSearchGinOptimized<TDocumentIdCollection> : IExtendedSearchProcessor
-    where TDocumentIdCollection : struct, IDocumentIdCollection
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -50,9 +49,10 @@ public sealed class ExtendedSearchGinOptimized<TDocumentIdCollection> : IExtende
                     continue;
                 }
 
-                DocumentIdsForEachVisitor visitor = new(processedDocuments);
-
-                documentIds.ForEach(ref visitor);
+                foreach (var documentId in documentIds)
+                {
+                    processedDocuments.Add(documentId);
+                }
             }
 
             if (cancellationToken.IsCancellationRequested)
@@ -71,18 +71,6 @@ public sealed class ExtendedSearchGinOptimized<TDocumentIdCollection> : IExtende
         {
             TempStoragePool.TokenSetsStorage.Return(processedTokens);
             TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
-        }
-    }
-
-    private readonly ref struct DocumentIdsForEachVisitor(HashSet<DocumentId> processedDocuments)
-        : IForEachVisitor<DocumentId>
-    {
-        /// <inheritdoc/>
-        public bool Visit(DocumentId documentId)
-        {
-            processedDocuments.Add(documentId);
-
-            return true;
         }
     }
 }

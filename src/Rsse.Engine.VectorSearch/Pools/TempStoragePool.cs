@@ -29,6 +29,7 @@ public sealed class TempStoragePool(bool enable)
 
     private readonly CollectionPool<List<DocumentIdList>, DocumentIdList> _documentIdListListsStorage = new(enable);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal List<TDocumentIdCollection> GetDocumentIdCollectionList<TDocumentIdCollection>()
         where TDocumentIdCollection : struct, IDocumentIdCollection
     {
@@ -44,9 +45,11 @@ public sealed class TempStoragePool(bool enable)
             return Unsafe.As<List<TDocumentIdCollection>>(documentIdCollection);
         }
 
-        throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
+        ThrowNotSupportedException<TDocumentIdCollection>();
+        return null!;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void ReturnDocumentIdCollectionList<TDocumentIdCollection>(List<TDocumentIdCollection> idsFromGin)
         where TDocumentIdCollection : struct, IDocumentIdCollection
     {
@@ -64,6 +67,11 @@ public sealed class TempStoragePool(bool enable)
             return;
         }
 
+        ThrowNotSupportedException<TDocumentIdCollection>();
+    }
+
+    private static void ThrowNotSupportedException<TDocumentIdCollection>()
+    {
         throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
     }
 

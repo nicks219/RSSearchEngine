@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -14,7 +13,7 @@ namespace RsseEngine.Algorithms;
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
 public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtendedSearchProcessor
-    where TDocumentIdCollection : struct, IDocumentIdCollection
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -36,10 +35,12 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
     {
         var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var sortedList = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocuments(GinExtended, searchVector, filteredDocuments, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, filteredDocuments,
+                    idsFromGin, sortedList))
             {
                 return;
             }
@@ -100,10 +101,24 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
                     }
                     else
                     {
-                        DocumentIdsForEachVisitor visitor = new DocumentIdsForEachVisitor(GeneralDirectIndex,
-                            searchVector, metricsCalculator, filteredDocuments, searchStartIndex);
+                        foreach (var documentId in documentIds)
+                        {
+                            if (!filteredDocuments.Remove(documentId))
+                            {
+                                continue;
+                            }
 
-                        documentIds.ForEach(ref visitor);
+                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector,
+                                searchStartIndex);
+
+                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+
+                            if (filteredDocuments.Count == 0)
+                            {
+                                break;
+                            }
+                        }
                     }
 
                     if (filteredDocuments.Count == 0)
@@ -120,30 +135,9 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
         }
         finally
         {
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedList);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
             TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
-        }
-    }
-
-    private readonly ref struct DocumentIdsForEachVisitor(DirectIndex generalDirectIndex, TokenVector searchVector,
-        IMetricsCalculator metricsCalculator, HashSet<DocumentId> filteredDocuments, int searchStartIndex)
-        : IForEachVisitor<DocumentId>
-    {
-        /// <inheritdoc/>
-        public bool Visit(DocumentId documentId)
-        {
-            if (!filteredDocuments.Remove(documentId))
-            {
-                return true;
-            }
-
-            var extendedTokensLine = generalDirectIndex[documentId].Extended;
-            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector,
-                searchStartIndex);
-
-            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
-
-            return filteredDocuments.Count != 0;
         }
     }
 }
