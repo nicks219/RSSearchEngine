@@ -6,7 +6,7 @@ namespace Rsse.Domain.Data.Dto;
 /// <param name="Tag">Именование тега.</param>
 /// <param name="TagId">Идентификатор тега.</param>
 /// <param name="RelationEntityReferenceCount">Количество заметок по тегу.</param>
-public record TagResultDto(string Tag, int TagId, int RelationEntityReferenceCount)
+public readonly record struct TagResultDto(string Tag, int TagId, int RelationEntityReferenceCount)
 {
     /// <summary>
     /// Вернуть строку с именем тега и количеством заметок по тегу.

@@ -131,14 +131,14 @@ public sealed class CatalogRepository<T>(T context) : IDataRepository where T : 
     }
 
     /// <inheritdoc/>
-    public async Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken)
+    public Task<List<TagResultDto>> ReadTags(CancellationToken cancellationToken)
     {
-        var tagList = await context.Tags
+        var tagList = context.Tags
             .OrderBy(tag => tag.TagId)
-            .Select(tag => new TagResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference.Count))
-            .ToListAsync(cancellationToken);
+            .Select(tag => new TagResultDto(tag.Tag, tag.TagId, tag.RelationEntityReference.Count));
 
-        return tagList;
+        return Task.FromResult(tagList.ToList());
+        // return tagList.ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
