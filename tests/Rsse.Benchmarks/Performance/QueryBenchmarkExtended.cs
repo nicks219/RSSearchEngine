@@ -36,7 +36,11 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinFast),
         new(ExtendedSearchType.GinFast, true),
         new(ExtendedSearchType.GinFastFilter),
-        new(ExtendedSearchType.GinFastFilter, true)
+        new(ExtendedSearchType.GinFastFilter, true),
+        new(ExtendedSearchType.GinMerge),
+        new(ExtendedSearchType.GinMerge, true),
+        new(ExtendedSearchType.GinMergeFilter),
+        new(ExtendedSearchType.GinMergeFilter, true)
     ];
 
     [ParamsSource(nameof(Parameters))]

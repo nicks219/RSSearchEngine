@@ -42,7 +42,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
-        _searchEngineManager = new SearchEngineManager(enableTempStoragePool);
+        _searchEngineManager = new SearchEngineManager(enableTempStoragePool, true);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
     }

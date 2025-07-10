@@ -29,24 +29,39 @@ public sealed class SearchEngineManager
     /// Инициализация требуемого типа алгоритма.
     /// </summary>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
+    /// <param name="useList">Используем DocumentIdList иначе DocumentIdSet</param>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public SearchEngineManager(bool enableTempStoragePool)
+    public SearchEngineManager(bool enableTempStoragePool, bool useList)
     {
         if (CheckIsProduction())
         {
             _extendedSearchAlgorithmSelector =
                 new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
+
             _reducedSearchAlgorithmSelector =
                 new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndex);
         }
         else
         {
             var tempStoragePool = new TempStoragePool(enableTempStoragePool);
-            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
-                tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
-            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(
-                tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
+
+            if (useList)
+            {
+                _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector<DocumentIdList>(
+                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+
+                _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdList>(
+                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
+            }
+            else
+            {
+                _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector<DocumentIdSet>(
+                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+
+                _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdSet>(
+                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
+            }
         }
     }
 

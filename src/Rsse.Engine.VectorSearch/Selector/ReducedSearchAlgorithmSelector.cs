@@ -12,21 +12,26 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
 /// </summary>
-public sealed class ReducedSearchAlgorithmSelector
+public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     /// <summary>
     /// Поддержка инвертированного индекса для сокращенного поиска и метрик.
     /// </summary>
-    private readonly InvertedIndex<DocumentIdSet> _ginReduced = new();
+    private readonly InvertedIndex<TDocumentIdCollection> _ginReduced = new();
 
     private readonly ReducedSearchLegacy _reducedSearchLegacy;
-    private readonly ReducedSearchGinSimple<DocumentIdSet> _reducedSearchGinSimple;
-    private readonly ReducedSearchGinOptimized<DocumentIdSet> _reducedSearchGinOptimized;
-    private readonly ReducedSearchGinOptimizedFilter<DocumentIdSet> _reducedSearchGinOptimizedFilter;
-    private readonly ReducedSearchGinFilter<DocumentIdSet> _reducedSearchGinFilter;
-    private readonly ReducedSearchGinFast<DocumentIdSet> _reducedSearchGinFast;
-    private readonly ReducedSearchGinFastFilter<DocumentIdSet> _reducedSearchGinFastFilter;
+    private readonly ReducedSearchGinSimple<TDocumentIdCollection> _reducedSearchGinSimple;
+    private readonly ReducedSearchGinOptimized<TDocumentIdCollection> _reducedSearchGinOptimized;
+    private readonly ReducedSearchGinOptimizedFilter<TDocumentIdCollection> _reducedSearchGinOptimizedFilter;
+    private readonly ReducedSearchGinFilter<TDocumentIdCollection> _reducedSearchGinFilter;
+    private readonly ReducedSearchGinFast<TDocumentIdCollection> _reducedSearchGinFast;
+    private readonly ReducedSearchGinFastFilter<TDocumentIdCollection> _reducedSearchGinFastFilter;
+    private readonly IReducedSearchProcessor _reducedSearchGinMerge1;
+    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter1;
+    private readonly IReducedSearchProcessor _reducedSearchGinMerge2;
+    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter2;
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
@@ -50,39 +55,14 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinSimple = new ReducedSearchGinSimple<DocumentIdSet>
+        _reducedSearchGinSimple = new ReducedSearchGinSimple<TDocumentIdCollection>
         {
             GeneralDirectIndex = generalDirectIndex,
             GinReduced = _ginReduced
         };
 
         // С GIN-индексом.
-        _reducedSearchGinOptimized = new ReducedSearchGinOptimized<DocumentIdSet>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinOptimizedFilter = new ReducedSearchGinOptimizedFilter<DocumentIdSet>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced,
-            RelevanceFilter = relevanceFilter
-        };
-
-        _reducedSearchGinFilter = new ReducedSearchGinFilter<DocumentIdSet>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced,
-            RelevanceFilter = relevanceFilter
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinFast = new ReducedSearchGinFast<DocumentIdSet>
+        _reducedSearchGinOptimized = new ReducedSearchGinOptimized<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -90,13 +70,89 @@ public sealed class ReducedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _reducedSearchGinFastFilter = new ReducedSearchGinFastFilter<DocumentIdSet>
+        _reducedSearchGinOptimizedFilter = new ReducedSearchGinOptimizedFilter<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinReduced = _ginReduced,
             RelevanceFilter = relevanceFilter
         };
+
+        _reducedSearchGinFilter = new ReducedSearchGinFilter<TDocumentIdCollection>
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinReduced = _ginReduced,
+            RelevanceFilter = relevanceFilter
+        };
+
+        // С GIN-индексом.
+        _reducedSearchGinFast = new ReducedSearchGinFast<TDocumentIdCollection>
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinReduced = _ginReduced
+        };
+
+        // С GIN-индексом.
+        _reducedSearchGinFastFilter = new ReducedSearchGinFastFilter<TDocumentIdCollection>
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinReduced = _ginReduced,
+            RelevanceFilter = relevanceFilter
+        };
+
+        if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
+        {
+            _reducedSearchGinMerge1 = new ReducedSearchGinMerge1
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = false
+            };
+
+            _reducedSearchGinMergeFilter1 = new ReducedSearchGinMerge1
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = true
+            };
+
+            _reducedSearchGinMerge2 = new ReducedSearchGinMerge2
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = false
+            };
+
+            _reducedSearchGinMergeFilter2 = new ReducedSearchGinMerge2
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = true
+            };
+        }
+        else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
+        {
+            // Fallback для DocumentIdSet
+            _reducedSearchGinMerge1 = _reducedSearchGinOptimizedFilter;
+            _reducedSearchGinMergeFilter1 = _reducedSearchGinOptimizedFilter;
+            _reducedSearchGinMerge2 = _reducedSearchGinOptimizedFilter;
+            _reducedSearchGinMergeFilter2 = _reducedSearchGinOptimizedFilter;
+        }
+        else
+        {
+            throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
+        }
     }
 
     /// <inheritdoc/>
@@ -111,6 +167,10 @@ public sealed class ReducedSearchAlgorithmSelector
             ReducedSearchType.GinFilter => _reducedSearchGinFilter,
             ReducedSearchType.GinFast => _reducedSearchGinFast,
             ReducedSearchType.GinFastFilter => _reducedSearchGinFastFilter,
+            ReducedSearchType.GinMerge1 => _reducedSearchGinMerge1,
+            ReducedSearchType.GinMergeFilter1 => _reducedSearchGinMergeFilter1,
+            ReducedSearchType.GinMerge2 => _reducedSearchGinMerge2,
+            ReducedSearchType.GinMergeFilter2 => _reducedSearchGinMergeFilter2,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };

@@ -159,8 +159,8 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// <returns><b>true</b> - Идентификатор заметки присутствует для токена.</returns>
     public bool ContainsDocumentIdForToken(Token token, DocumentId documentId)
     {
-        return TryGetNonEmptyDocumentIdVector(token, out var reducedTokens)
-               && reducedTokens.Contains(documentId);
+        return TryGetNonEmptyDocumentIdVector(token, out var documentIds)
+               && documentIds.Contains(documentId);
     }
 
     /// <summary>
@@ -190,5 +190,33 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     private static void ThrowNotSupportedException()
     {
         throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
+    }
+
+    public void GetDocumentIdVectorsToList(TokenVector tokens, List<TDocumentIdCollection> documentIdsList)
+    {
+        var emptyDocIdVector = CreateCollection();
+
+        foreach (var token in tokens)
+        {
+            if (TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            {
+                documentIdsList.Add(documentIds);
+            }
+            else
+            {
+                documentIdsList.Add(emptyDocIdVector);
+            }
+        }
+    }
+
+    public void GetNonEmptyDocumentIdVectorsToList(TokenVector tokens, List<TDocumentIdCollection> documentIdsList)
+    {
+        foreach (var token in tokens)
+        {
+            if (TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            {
+                documentIdsList.Add(documentIds);
+            }
+        }
     }
 }

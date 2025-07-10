@@ -12,20 +12,23 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам extended-поиска.
 /// </summary>
-public sealed class ExtendedSearchAlgorithmSelector
+public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
+    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     /// <summary>
     /// Поддержка инвертированного индекса для расширенного поиска и метрик.
     /// </summary>
-    private readonly InvertedIndex<DocumentIdSet> _ginExtended = new();
+    private readonly InvertedIndex<TDocumentIdCollection> _ginExtended = new();
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
-    private readonly ExtendedSearchGinSimple<DocumentIdSet> _extendedSearchGinSimple;
-    private readonly ExtendedSearchGinOptimized<DocumentIdSet> _extendedSearchGinOptimized;
-    private readonly ExtendedSearchGinFilter<DocumentIdSet> _extendedSearchGinFilter;
-    private readonly ExtendedSearchGinFast<DocumentIdSet> _extendedSearchGinFast;
-    private readonly ExtendedSearchGinFastFilter<DocumentIdSet> _extendedSearchGinFastFilter;
+    private readonly ExtendedSearchGinSimple<TDocumentIdCollection> _extendedSearchGinSimple;
+    private readonly ExtendedSearchGinOptimized<TDocumentIdCollection> _extendedSearchGinOptimized;
+    private readonly ExtendedSearchGinFilter<TDocumentIdCollection> _extendedSearchGinFilter;
+    private readonly ExtendedSearchGinFast<TDocumentIdCollection> _extendedSearchGinFast;
+    private readonly ExtendedSearchGinFastFilter<TDocumentIdCollection> _extendedSearchGinFastFilter;
+    private readonly IExtendedSearchProcessor _extendedSearchGinMerge;
+    private readonly IExtendedSearchProcessor _extendedSearchGinMergeFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -48,21 +51,21 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _extendedSearchGinSimple = new ExtendedSearchGinSimple<DocumentIdSet>
+        _extendedSearchGinSimple = new ExtendedSearchGinSimple<TDocumentIdCollection>
         {
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
         // С GIN-индексом.
-        _extendedSearchGinOptimized = new ExtendedSearchGinOptimized<DocumentIdSet>
+        _extendedSearchGinOptimized = new ExtendedSearchGinOptimized<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
-        _extendedSearchGinFilter = new ExtendedSearchGinFilter<DocumentIdSet>
+        _extendedSearchGinFilter = new ExtendedSearchGinFilter<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -71,20 +74,51 @@ public sealed class ExtendedSearchAlgorithmSelector
         };
 
         // С GIN-индексом.
-        _extendedSearchGinFast = new ExtendedSearchGinFast<DocumentIdSet>
+        _extendedSearchGinFast = new ExtendedSearchGinFast<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended
         };
 
-        _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter<DocumentIdSet>
+        _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _ginExtended,
             RelevanceFilter = relevanceFilter
         };
+
+        if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
+        {
+            _extendedSearchGinMerge = new ExtendedSearchGinMerge
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = false
+            };
+
+            _extendedSearchGinMergeFilter = new ExtendedSearchGinMerge
+            {
+                TempStoragePool = tempStoragePool,
+                GeneralDirectIndex = generalDirectIndex,
+                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
+                RelevanceFilter = relevanceFilter,
+                EnableRelevanceFilter = true
+            };
+        }
+        else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
+        {
+            // Fallback для DocumentIdSet
+            _extendedSearchGinMerge = _extendedSearchGinFastFilter;
+            _extendedSearchGinMergeFilter = _extendedSearchGinFastFilter;
+        }
+        else
+        {
+            throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
+        }
     }
 
     /// <inheritdoc/>
@@ -98,6 +132,8 @@ public sealed class ExtendedSearchAlgorithmSelector
             ExtendedSearchType.GinFilter => _extendedSearchGinFilter,
             ExtendedSearchType.GinFast => _extendedSearchGinFast,
             ExtendedSearchType.GinFastFilter => _extendedSearchGinFastFilter,
+            ExtendedSearchType.GinMerge => _extendedSearchGinMerge,
+            ExtendedSearchType.GinMergeFilter => _extendedSearchGinMergeFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };

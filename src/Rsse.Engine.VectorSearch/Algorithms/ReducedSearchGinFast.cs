@@ -38,13 +38,7 @@ public sealed class ReducedSearchGinFast<TDocumentIdCollection> : IReducedSearch
 
         try
         {
-            foreach (var token in searchVector)
-            {
-                if (GinReduced.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
-                {
-                    idsFromGin.Add(documentIds);
-                }
-            }
+            GinReduced.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {

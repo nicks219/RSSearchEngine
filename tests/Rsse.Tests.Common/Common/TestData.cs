@@ -11,20 +11,34 @@ public abstract class TestData
     /// Перечисление extended алгоритмов.
     /// </summary>
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
-    [ExtendedSearchType.Legacy,
+    [
+        ExtendedSearchType.Legacy,
         ExtendedSearchType.GinSimple,
-        ExtendedSearchType.GinOptimized, ExtendedSearchType.GinFilter,
-        ExtendedSearchType.GinFast, ExtendedSearchType.GinFastFilter];
+        ExtendedSearchType.GinOptimized,
+        ExtendedSearchType.GinFilter,
+        ExtendedSearchType.GinFast,
+        ExtendedSearchType.GinFastFilter,
+        ExtendedSearchType.GinMerge,
+        ExtendedSearchType.GinMergeFilter
+    ];
 
     /// <summary>
     /// Перечисление reduced алгоритмов.
     /// </summary>
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
-    [ReducedSearchType.Legacy,
+    [
+        ReducedSearchType.Legacy,
         ReducedSearchType.GinSimple,
-        ReducedSearchType.GinOptimized, ReducedSearchType.GinOptimizedFilter,
+        ReducedSearchType.GinOptimized,
+        ReducedSearchType.GinOptimizedFilter,
         ReducedSearchType.GinFilter,
-        ReducedSearchType.GinFast, ReducedSearchType.GinFastFilter];
+        ReducedSearchType.GinFast,
+        ReducedSearchType.GinFastFilter,
+        ReducedSearchType.GinMerge1,
+        ReducedSearchType.GinMergeFilter1,
+        ReducedSearchType.GinMerge2,
+        ReducedSearchType.GinMergeFilter2
+    ];
 
     /// <summary>
     /// Метрики на запросы к дампу pg_backup_.txtnotes

@@ -10,6 +10,7 @@ using BenchmarkDotNet.Running;
 using Perfolizer.Horology;
 using Perfolizer.Metrology;
 using RsseEngine.Benchmarks.Performance;
+using RsseEngine.Benchmarks.Validation;
 using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks;
@@ -161,5 +162,12 @@ public static class DiagnosticsProgram
         Console.WriteLine("---");
         Console.WriteLine("Execution completed, press any key to exit.");
         Console.ReadKey(intercept: true);
+    }
+
+    private static async Task RunValidation()
+    {
+        SearchResultValidation searchResultValidation = new SearchResultValidation();
+        await searchResultValidation.TestSearchQuery();
+        await searchResultValidation.TestDuplicates();
     }
 }

@@ -24,6 +24,11 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
         return new DocumentIdCollectionEnumerator<DocumentIdList>(_list);
     }
 
+    public List<DocumentId>.Enumerator GetRawEnumerator()
+    {
+        return _list.GetEnumerator();
+    }
+
     public bool Equals(DocumentIdList other) => _list.Equals(other._list);
 
     public override bool Equals(object? obj) => obj is DocumentIdList other && Equals(other);
