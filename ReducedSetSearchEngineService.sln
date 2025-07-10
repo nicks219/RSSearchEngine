@@ -127,7 +127,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.VectorSearch", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.Tokenizer", "src\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj", "{30D48870-9CBB-4466-A78F-9FFF64318EE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests.Common", "Rsse.Tests.Common\Rsse.Tests.Common.csproj", "{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests.Common", "tests\Rsse.Tests.Common\Rsse.Tests.Common.csproj", "{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.LoadTest", "tests\Rsse.LoadTest\Rsse.LoadTest.csproj", "{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}"
 EndProject

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Rsse.Tests.Common\Rsse.Tests.Common.csproj" />
+    <ProjectReference Include="..\Rsse.Tests.Common\Rsse.Tests.Common.csproj" />
     <ProjectReference Include="..\..\src\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj" />
   </ItemGroup>
 
