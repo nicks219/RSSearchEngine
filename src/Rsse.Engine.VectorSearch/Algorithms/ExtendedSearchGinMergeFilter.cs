@@ -15,7 +15,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -29,17 +29,25 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
     /// </summary>
     public required InvertedIndex<DocumentIdList> GinExtended { get; init; }
 
+    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        var filteredDocuments = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var sortedList = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
 
         try
         {
-            GinExtended.GetDocumentIdVectorsToList(searchVector, idsFromGin);
+            if (!RelevanceFilter.FindFilteredDocumentsExtendedMerge(GinExtended, searchVector, filteredDocuments,
+                    idsFromGin, sortedList))
+            {
+                return;
+            }
 
-            switch (idsFromGin.Count(vector => vector.Count > 0))
+            switch (filteredDocuments.Count(vector => vector.Count > 0))
             {
                 case 0:
                     {
@@ -47,7 +55,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
                     }
                 case 1:
                     {
-                        var idFromGin = idsFromGin.First(vector => vector.Count > 0);
+                        var idFromGin = filteredDocuments.First(vector => vector.Count > 0);
 
                         foreach (var documentId in idFromGin)
                         {
@@ -61,7 +69,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ExtendedSearchGinMerge));
 
-                        CreateExtendedSearchSpace(searchVector, metricsCalculator, idsFromGin);
+                        CreateExtendedSearchSpace(searchVector, metricsCalculator, filteredDocuments);
 
                         break;
                     }
@@ -69,7 +77,9 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
         }
         finally
         {
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedList);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.ReturnDocumentIdCollectionList(filteredDocuments);
         }
     }
 
@@ -165,11 +175,15 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
     private void AppendMetric(IMetricsCalculator metricsCalculator, int comparisonScore,
         TokenVector searchVector, DocumentId documentId)
     {
-        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, GeneralDirectIndex);
+        var tokensLine = GeneralDirectIndex[documentId];
+        var reducedTargetVector = tokensLine.Extended;
+        int metric = ScoreCalculator.ComputeOrdered(reducedTargetVector, searchVector, 0);
+
+        metricsCalculator.AppendExtended(metric, searchVector, documentId, reducedTargetVector);
     }
 
     private int ComputeMetricOrdered(TokenVector searchVector, TokenVector extendedTokensLine, int sIndex)
     {
-        return ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, sIndex);
+        return ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, 0);
     }
 }

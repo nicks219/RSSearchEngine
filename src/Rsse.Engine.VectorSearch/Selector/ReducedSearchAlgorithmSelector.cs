@@ -28,10 +28,8 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly ReducedSearchGinFilter<TDocumentIdCollection> _reducedSearchGinFilter;
     private readonly ReducedSearchGinFast<TDocumentIdCollection> _reducedSearchGinFast;
     private readonly ReducedSearchGinFastFilter<TDocumentIdCollection> _reducedSearchGinFastFilter;
-    private readonly IReducedSearchProcessor _reducedSearchGinMerge1;
-    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter1;
-    private readonly IReducedSearchProcessor _reducedSearchGinMerge2;
-    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter2;
+    private readonly IReducedSearchProcessor _reducedSearchGinMerge;
+    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter;
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
@@ -105,49 +103,26 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
 
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
         {
-            _reducedSearchGinMerge1 = new ReducedSearchGinMerge1
+            _reducedSearchGinMerge = new ReducedSearchGinMerge
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
-                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = false
+                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced
             };
 
-            _reducedSearchGinMergeFilter1 = new ReducedSearchGinMerge1
+            _reducedSearchGinMergeFilter = new ReducedSearchGinMergeFilter
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
                 GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = true
-            };
-
-            _reducedSearchGinMerge2 = new ReducedSearchGinMerge2
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = false
-            };
-
-            _reducedSearchGinMergeFilter2 = new ReducedSearchGinMerge2
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = true
+                RelevanceFilter = relevanceFilter
             };
         }
         else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
         {
             // Fallback для DocumentIdSet
-            _reducedSearchGinMerge1 = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinMergeFilter1 = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinMerge2 = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinMergeFilter2 = _reducedSearchGinOptimizedFilter;
+            _reducedSearchGinMerge = _reducedSearchGinOptimizedFilter;
+            _reducedSearchGinMergeFilter = _reducedSearchGinOptimizedFilter;
         }
         else
         {
@@ -167,10 +142,8 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
             ReducedSearchType.GinFilter => _reducedSearchGinFilter,
             ReducedSearchType.GinFast => _reducedSearchGinFast,
             ReducedSearchType.GinFastFilter => _reducedSearchGinFastFilter,
-            ReducedSearchType.GinMerge1 => _reducedSearchGinMerge1,
-            ReducedSearchType.GinMergeFilter1 => _reducedSearchGinMergeFilter1,
-            ReducedSearchType.GinMerge2 => _reducedSearchGinMerge2,
-            ReducedSearchType.GinMergeFilter2 => _reducedSearchGinMergeFilter2,
+            ReducedSearchType.GinMerge => _reducedSearchGinMerge,
+            ReducedSearchType.GinMergeFilter => _reducedSearchGinMergeFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };

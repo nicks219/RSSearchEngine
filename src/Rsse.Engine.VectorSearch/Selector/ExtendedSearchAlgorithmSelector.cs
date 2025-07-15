@@ -95,18 +95,15 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
-                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = false
+                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended
             };
 
-            _extendedSearchGinMergeFilter = new ExtendedSearchGinMerge
+            _extendedSearchGinMergeFilter = new ExtendedSearchGinMergeFilter
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
                 GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
-                RelevanceFilter = relevanceFilter,
-                EnableRelevanceFilter = true
+                RelevanceFilter = relevanceFilter
             };
         }
         else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))

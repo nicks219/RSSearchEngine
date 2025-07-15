@@ -39,14 +39,10 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
         new(ReducedSearchType.GinFast, true),
         new(ReducedSearchType.GinFastFilter),
         new(ReducedSearchType.GinFastFilter, true),
-        new(ReducedSearchType.GinMerge1),
-        new(ReducedSearchType.GinMerge1, true),
-        new(ReducedSearchType.GinMergeFilter1),
-        new(ReducedSearchType.GinMergeFilter1, true),
-        new(ReducedSearchType.GinMerge2),
-        new(ReducedSearchType.GinMerge2, true),
-        new(ReducedSearchType.GinMergeFilter2),
-        new(ReducedSearchType.GinMergeFilter2, true)
+        new(ReducedSearchType.GinMerge),
+        new(ReducedSearchType.GinMerge, true),
+        new(ReducedSearchType.GinMergeFilter),
+        new(ReducedSearchType.GinMergeFilter, true)
     ];
 
     [ParamsSource(nameof(Parameters))]

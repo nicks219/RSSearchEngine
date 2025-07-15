@@ -34,10 +34,8 @@ public abstract class TestData
         ReducedSearchType.GinFilter,
         ReducedSearchType.GinFast,
         ReducedSearchType.GinFastFilter,
-        ReducedSearchType.GinMerge1,
-        ReducedSearchType.GinMergeFilter1,
-        ReducedSearchType.GinMerge2,
-        ReducedSearchType.GinMergeFilter2
+        ReducedSearchType.GinMerge,
+        ReducedSearchType.GinMergeFilter
     ];
 
     /// <summary>

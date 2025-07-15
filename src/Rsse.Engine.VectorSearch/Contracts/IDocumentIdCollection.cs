@@ -1,3 +1,4 @@
+using System;
 using RsseEngine.Dto;
 
 namespace RsseEngine.Contracts;
@@ -32,7 +33,7 @@ public interface IDocumentIdCollection
     bool Contains(DocumentId documentId);
 }
 
-public interface IDocumentIdCollection<TDocumentIdCollection> : IDocumentIdCollection
+public interface IDocumentIdCollection<TDocumentIdCollection> : IDocumentIdCollection, IEquatable<TDocumentIdCollection>
     where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     DocumentIdCollectionEnumerator<TDocumentIdCollection> GetEnumerator();

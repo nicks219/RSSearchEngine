@@ -1,6 +1,5 @@
 using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -39,16 +38,18 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
         searchVector = searchVector.DistinctAndGet();
 
         var comparisonScores = TempStoragePool.ScoresStorage.Get();
-        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var removeList = TempStoragePool.DocumentIdListsStorage.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, sortedIds,
+                    out var filteredTokensCount))
             {
                 return;
             }
 
-            switch (idsFromGin.Count)
+            switch (sortedIds.Count)
             {
                 case 0:
                     {
@@ -56,7 +57,7 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
                     }
                 case 1:
                     {
-                        foreach (var documentId in idsFromGin[0])
+                        foreach (var documentId in sortedIds[0])
                         {
                             metricsCalculator.AppendReduced(1, searchVector, documentId, GeneralDirectIndex);
                         }
@@ -67,93 +68,42 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
                     {
                         // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
 
-                        var lastIndex = idsFromGin.Count - 1;
+                        var lastIndex = sortedIds.Count - 1;
 
-                        for (var index = 0; index < lastIndex; index++)
+                        var counter = 1;
+                        for (var index = filteredTokensCount; index < lastIndex; index++)
                         {
-                            TDocumentIdCollection documentIdSet = idsFromGin[index];
+                            TDocumentIdCollection documentIds = sortedIds[index];
+
+                            ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
+
+                            counter++;
+                        }
+
+                        // Отдаём метрику на самый тяжелый токен поискового запроса.
+                        {
+                            TDocumentIdCollection documentIdSet = sortedIds[lastIndex];
 
                             if (comparisonScores.Count <= documentIdSet.Count)
                             {
                                 foreach (var (documentId, _) in comparisonScores)
                                 {
-                                    if (!documentIdSet.Contains(documentId))
+                                    if (documentIdSet.Contains(documentId))
                                     {
-                                        continue;
+                                        removeList.Add(documentId);
                                     }
+                                }
 
-                                    ref var score = ref CollectionsMarshal.GetValueRefOrNullRef(comparisonScores,
-                                        documentId);
-
-                                    if (!Unsafe.IsNullRef(ref score))
-                                    {
-                                        ++score;
-                                    }
+                                foreach (var documentId in removeList)
+                                {
+                                    IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
                                 }
                             }
                             else
                             {
                                 foreach (var documentId in documentIdSet)
                                 {
-                                    ref var score = ref CollectionsMarshal.GetValueRefOrNullRef(comparisonScores,
-                                        documentId);
-
-                                    if (!Unsafe.IsNullRef(ref score))
-                                    {
-                                        ++score;
-                                    }
-                                }
-                            }
-                        }
-
-                        // Отдаём метрику на самый тяжелый токен поискового запроса.
-                        {
-                            TDocumentIdCollection documentIdSet = idsFromGin[lastIndex];
-
-                            if (comparisonScores.Count <= documentIdSet.Count)
-                            {
-                                var removeSet = TempStoragePool.DocumentIdSetsStorage.Get();
-
-                                try
-                                {
-                                    foreach (var (documentId, _) in comparisonScores)
-                                    {
-                                        if (!documentIdSet.Contains(documentId))
-                                        {
-                                            continue;
-                                        }
-
-                                        removeSet.Add(documentId);
-                                    }
-
-                                    foreach (var documentId in removeSet)
-                                    {
-                                        comparisonScores.Remove(documentId, out var comparisonScore);
-                                        ++comparisonScore;
-
-                                        metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId,
-                                            GeneralDirectIndex);
-                                    }
-                                }
-                                finally
-                                {
-                                    TempStoragePool.DocumentIdSetsStorage.Return(removeSet);
-                                }
-                            }
-                            else
-                            {
-                                foreach (var documentId in documentIdSet)
-                                {
-                                    if (!comparisonScores.ContainsKey(documentId))
-                                    {
-                                        continue;
-                                    }
-
-                                    comparisonScores.Remove(documentId, out var comparisonScore);
-                                    ++comparisonScore;
-
-                                    metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId,
-                                        GeneralDirectIndex);
+                                    IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
                                 }
                             }
                         }
@@ -174,8 +124,21 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.DocumentIdListsStorage.Return(removeList);
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ScoresStorage.Return(comparisonScores);
+        }
+    }
+
+    private void IncrementComparisonScore(Dictionary<DocumentId, int> comparisonScores, DocumentId documentId,
+        IMetricsCalculator metricsCalculator, TokenVector searchVector)
+    {
+        if (comparisonScores.Remove(documentId, out var comparisonScore))
+        {
+            ++comparisonScore;
+
+            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId,
+                GeneralDirectIndex);
         }
     }
 }

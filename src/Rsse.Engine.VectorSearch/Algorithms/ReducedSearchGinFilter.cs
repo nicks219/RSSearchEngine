@@ -36,11 +36,12 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
         searchVector = searchVector.DistinctAndGet();
 
         var comparisonScores = TempStoragePool.ScoresStorage.Get();
-        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, idsFromGin))
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, sortedIds,
+                    out _))
             {
                 return;
             }
@@ -60,7 +61,7 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }

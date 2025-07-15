@@ -23,6 +23,8 @@ public sealed class TempStoragePool(bool enable)
     /// </summary>
     internal readonly CollectionPool<HashSet<DocumentId>, DocumentId> DocumentIdSetsStorage = new(enable);
 
+    internal readonly CollectionPool<List<DocumentId>, DocumentId> DocumentIdListsStorage = new(enable);
+
     internal readonly CollectionPool<HashSet<Token>, Token> TokenSetsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);

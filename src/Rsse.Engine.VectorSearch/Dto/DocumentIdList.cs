@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 
@@ -8,7 +7,7 @@ namespace RsseEngine.Dto;
 /// Сортированный вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
 /// <param name="list">Список идентификаторов документов.</param>
-public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<DocumentIdList>, IDocumentIdCollection<DocumentIdList>
+public readonly struct DocumentIdList(List<DocumentId> list) : IDocumentIdCollection<DocumentIdList>
 {
     // Коллекция уникальных идентификаторов заметок.
     private readonly List<DocumentId> _list = list;
@@ -24,9 +23,9 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
         return new DocumentIdCollectionEnumerator<DocumentIdList>(_list);
     }
 
-    public List<DocumentId>.Enumerator GetRawEnumerator()
+    public DocumentListEnumerator CreateDocumentListEnumerator()
     {
-        return _list.GetEnumerator();
+        return new DocumentListEnumerator(_list);
     }
 
     public bool Equals(DocumentIdList other) => _list.Equals(other._list);
@@ -78,25 +77,5 @@ public readonly struct DocumentIdList(List<DocumentId> list) : IEquatable<Docume
         {
             _list.RemoveAt(itemIndex);
         }
-    }
-
-    /// <summary>
-    /// Получить копию подлежащего сета идентификаторов в виде вектора за исключением существующих данных.
-    /// </summary>
-    /// <param name="exceptSet">Коллекция с существующими данными.</param>
-    /// <returns>Копия вектора.</returns>
-    public DocumentIdList CopyExcept(HashSet<DocumentId> exceptSet)
-    {
-        DocumentIdList expectResult = new DocumentIdList(new List<DocumentId>());
-
-        foreach (DocumentId documentId in _list)
-        {
-            if (exceptSet.Add(documentId))
-            {
-                expectResult.Add(documentId);
-            }
-        }
-
-        return expectResult;
     }
 }

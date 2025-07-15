@@ -51,25 +51,13 @@ public enum ReducedSearchType
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMerge1"/>
+    /// Используется алгоритм <see cref="ReducedSearchGinMerge"/>
     /// </summary>
-    GinMerge1 = 7,
+    GinMerge = 7,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMerge1"/>
+    /// Используется алгоритм <see cref="ReducedSearchGinMerge"/>
     /// </summary>
-    GinMergeFilter1 = 8,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMerge2"/>
-    /// </summary>
-    GinMerge2 = 9,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMerge2"/>
-    /// </summary>
-    GinMergeFilter2 = 10
+    GinMergeFilter = 8
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 
@@ -8,7 +7,7 @@ namespace RsseEngine.Dto;
 /// Вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
 /// <param name="set">Сет идентификаторов документов.</param>
-public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<DocumentIdSet>, IDocumentIdCollection<DocumentIdSet>
+public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IDocumentIdCollection<DocumentIdSet>
 {
     // Коллекция уникальных идентификаторов заметок.
     private readonly HashSet<DocumentId> _set = set;
@@ -39,24 +38,4 @@ public readonly struct DocumentIdSet(HashSet<DocumentId> set) : IEquatable<Docum
     public void Add(DocumentId documentId) => _set.Add(documentId);
 
     public void Remove(DocumentId documentId) => _set.Remove(documentId);
-
-    /// <summary>
-    /// Получить копию подлежащего сета идентификаторов в виде вектора за исключением существующих данных.
-    /// </summary>
-    /// <param name="exceptSet">Коллекция с существующими данными.</param>
-    /// <returns>Копия вектора.</returns>
-    public DocumentIdSet CopyExcept(HashSet<DocumentId> exceptSet)
-    {
-        DocumentIdSet expectResult = new DocumentIdSet(new HashSet<DocumentId>());
-
-        foreach (DocumentId documentId in _set)
-        {
-            if (exceptSet.Add(documentId))
-            {
-                expectResult.Add(documentId);
-            }
-        }
-
-        return expectResult;
-    }
 }
