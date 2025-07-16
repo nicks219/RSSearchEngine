@@ -9,7 +9,8 @@ namespace Rsse.Tests.Common;
 /// </summary>
 public sealed class FileDataOnceProvider : IDataProvider<NoteEntity>
 {
-    // Данные дублируются Constants.InitialDataMultiplier раз.
+    private readonly List<NoteEntity> _additionalNotes = new();
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
     {
@@ -42,5 +43,15 @@ public sealed class FileDataOnceProvider : IDataProvider<NoteEntity>
         {
             yield return noteEntity;
         }
+
+        foreach (var noteEntity in _additionalNotes)
+        {
+            yield return noteEntity;
+        }
+    }
+
+    public void AddNotes(List<NoteEntity> notes)
+    {
+        _additionalNotes.AddRange(notes);
     }
 }

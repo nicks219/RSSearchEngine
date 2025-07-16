@@ -27,39 +27,79 @@ public class SearchResultValidation
         .Where(searchType => searchType != ReducedSearchType.Legacy)
         .ToList();
 
+    private readonly List<string> _searchQueries =
+    [
+        "пляшем на столе за детей",
+        "удача с ними за столом",
+        "чорт з ным зо сталом",
+        "чёрт с ними за столом",
+        "с ними за столом чёрт",
+        "преключиться вдруг верный друг",
+        "приключится вдруг верный друг",
+        "пляшем на",
+        "ты шла по палубе в молчаний",
+        "оно шла по палубе в молчаний",
+        "123 456 иии",
+        "aa bb cc dd .,/#",
+        " |",
+        "я ты он она",
+        "a b c d .,/#",
+        " ",
+        "",
+        "b b b b b b",
+        "b b b b b",
+        "b b b b",
+        "b"
+    ];
+
+    private readonly List<NoteEntity> _additionalNotes =
+    [
+        new() { NoteId = 10000, Title = "t", Text = "b b b b b" }
+    ];
+
     public async Task TestSearchQuery()
     {
         Console.WriteLine();
         Console.WriteLine(nameof(TestSearchQuery));
 
-        var dataProvider = new FileDataMultipleProvider(1);
+        var dataProvider = new FileDataOnceProvider();
+        dataProvider.AddNotes(_additionalNotes);
 
-        var legacyTokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
+        var legacyTokenizer = await InitializeTokenizer(dataProvider,
+            ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 
         foreach (ExtendedSearchType extendedSearchType in _extendedParameters)
         {
-            var tokenizer = await InitializeTokenizer(dataProvider, extendedSearchType, ReducedSearchType.Legacy);
+            foreach (string searchQuery in _searchQueries)
+            {
+                var tokenizer = await InitializeTokenizer(dataProvider, extendedSearchType, ReducedSearchType.Legacy);
 
-            var legacyExtended = FindExtended(legacyTokenizer, Constants.SearchQuery);
-            var extendedResult = FindExtended(tokenizer, Constants.SearchQuery);
+                var legacyExtended = FindExtended(legacyTokenizer, searchQuery);
+                var extendedResult = FindExtended(tokenizer, searchQuery);
 
-            CompareResult(extendedSearchType, ReducedSearchType.Legacy, legacyExtended, extendedResult);
+                CompareResult(extendedSearchType, ReducedSearchType.Legacy, legacyExtended, extendedResult,
+                    searchQuery);
+            }
         }
 
         foreach (ReducedSearchType reducedSearchType in _reducedParameters)
         {
-            var tokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, reducedSearchType);
+            foreach (string searchQuery in _searchQueries)
+            {
+                var tokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, reducedSearchType);
 
-            var legacyReduced = FindReduced(legacyTokenizer, Constants.SearchQuery);
-            var reducedResult = FindReduced(tokenizer, Constants.SearchQuery);
+                var legacyReduced = FindReduced(legacyTokenizer, searchQuery);
+                var reducedResult = FindReduced(tokenizer, searchQuery);
 
-            CompareResult(ExtendedSearchType.Legacy, reducedSearchType, legacyReduced, reducedResult);
+                CompareResult(ExtendedSearchType.Legacy, reducedSearchType, legacyReduced, reducedResult, searchQuery);
+            }
         }
     }
 
     public async Task TestDuplicates()
     {
-        var dataProvider = new FileDataMultipleProvider(1);
+        var dataProvider = new FileDataOnceProvider();
+        dataProvider.AddNotes([new() { NoteId = 10000, Title = "t", Text = "b b b b b" }]);
 
         var legacyTokenizer = await InitializeTokenizer(dataProvider, ExtendedSearchType.Legacy, ReducedSearchType.Legacy);
 
@@ -119,12 +159,14 @@ public class SearchResultValidation
         ExtendedSearchType extendedSearchType,
         ReducedSearchType reducedSearchType,
         List<KeyValuePair<DocumentId, double>> legacy,
-        List<KeyValuePair<DocumentId, double>> result)
+        List<KeyValuePair<DocumentId, double>> result,
+        string searchQuery = "")
     {
         if (legacy.Count != result.Count)
         {
             Console.WriteLine($"extended[{extendedSearchType}] reduced[{reducedSearchType}]"
-                              + $" Count legacy[{legacy.Count}] result[{result.Count}]");
+                              + $" Count legacy[{legacy.Count}] result[{result.Count}]"
+                              + $" {searchQuery}");
         }
 
         for (var index = 0; index < legacy.Count; index++)
@@ -138,12 +180,13 @@ public class SearchResultValidation
             {
                 Console.WriteLine($"extended[{extendedSearchType}] reduced[{reducedSearchType}]"
                                   + $" Key legacy[{legacyKeyValuePair.Key}] result[{resultKeyValuePair.Key}]"
-                                  + $" Value legacy[{legacyKeyValuePair.Value}] result[{resultKeyValuePair.Value}]");
+                                  + $" Value legacy[{legacyKeyValuePair.Value}] result[{resultKeyValuePair.Value}]"
+                                  + $" {searchQuery}");
             }
         }
     }
 
-    private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataMultipleProvider dataProvider,
+    private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataOnceProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
         var tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);

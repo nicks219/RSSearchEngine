@@ -73,16 +73,16 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
                         var counter = 1;
                         for (var index = filteredTokensCount; index < lastIndex; index++)
                         {
-                            TDocumentIdCollection documentIds = sortedIds[index];
-
+                            var documentIds = sortedIds[index];
                             ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
 
                             counter++;
                         }
 
                         // Отдаём метрику на самый тяжелый токен поискового запроса.
+                        if (filteredTokensCount < sortedIds.Count)
                         {
-                            TDocumentIdCollection documentIdSet = sortedIds[lastIndex];
+                            var documentIdSet = sortedIds[lastIndex];
 
                             if (comparisonScores.Count <= documentIdSet.Count)
                             {
