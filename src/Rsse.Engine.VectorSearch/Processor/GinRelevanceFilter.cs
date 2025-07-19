@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -33,11 +32,11 @@ public sealed class GinRelevanceFilter
         List<TDocumentIdCollection> sortedList)
         where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
-        var minCount = CalculateMinCount(searchVector);
+        var minRelevancyCount = CalculateMinRelevancyCount(searchVector);
 
         var emptyDocIdVector = InvertedIndex<TDocumentIdCollection>.CreateCollection();
 
-        var emptyCounter = 0;
+        var emptyCount = 0;
 
         foreach (Token token in searchVector)
         {
@@ -49,10 +48,9 @@ public sealed class GinRelevanceFilter
             else
             {
                 idsFromGin.Add(emptyDocIdVector);
+                emptyCount++;
 
-                emptyCounter++;
-
-                if (emptyCounter >= minCount)
+                if (emptyCount > searchVector.Count - minRelevancyCount)
                 {
                     return false;
                 }
@@ -60,14 +58,12 @@ public sealed class GinRelevanceFilter
         }
 
         sortedList.Sort((left, right) => left.Count.CompareTo(right.Count));
-        var count = sortedList.ElementAt(minCount - emptyCounter - 1).Count;
 
-        foreach (var documentIds in sortedList)
+        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out var filteredTokensCount);
+
+        for (var index = 0; index < filteredTokensCount; index++)
         {
-            if (documentIds.Count > count)
-            {
-                break;
-            }
+            var documentIds = sortedList[index];
 
             foreach (var documentId in documentIds)
             {
@@ -83,20 +79,20 @@ public sealed class GinRelevanceFilter
     /// </summary>
     /// <param name="invertedIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">>Вектор с поисковым запросом.</param>
-    /// <param name="filteredDocuments">Идентификаторы документов, обеспечивающие релевантность.</param>
     /// <param name="idsFromGin">Идентификаторы докуметов для вектора с поисковым запросом.</param>
-    /// <param name="sortedList">Список для сортировки идентификаторов.</param>
+    /// <param name="sortedList">Сортированый по размеру список векторов идентификаторов докуметов для вектора с поисковым запросом.</param>
+    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds обеспечивающих релевантность.</param>
     /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
     public bool FindFilteredDocumentsExtendedMerge<TDocumentIdCollection>(InvertedIndex<TDocumentIdCollection> invertedIndex,
-        TokenVector searchVector, List<TDocumentIdCollection> filteredDocuments, List<TDocumentIdCollection> idsFromGin,
-        List<TDocumentIdCollection> sortedList)
+        TokenVector searchVector, List<TDocumentIdCollection> idsFromGin,
+        List<TDocumentIdCollection> sortedList, out int filteredTokensCount)
         where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
-        var minCount = CalculateMinCount(searchVector);
+        var minRelevancyCount = CalculateMinRelevancyCount(searchVector);
 
         var emptyDocIdVector = InvertedIndex<TDocumentIdCollection>.CreateCollection();
 
-        var emptyCounter = 0;
+        var emptyCount = 0;
 
         foreach (Token token in searchVector)
         {
@@ -108,28 +104,19 @@ public sealed class GinRelevanceFilter
             else
             {
                 idsFromGin.Add(emptyDocIdVector);
+                emptyCount++;
 
-                emptyCounter++;
-
-                if (emptyCounter >= minCount)
+                if (emptyCount > searchVector.Count - minRelevancyCount)
                 {
+                    filteredTokensCount = 0;
                     return false;
                 }
             }
         }
 
         sortedList.Sort((left, right) => left.Count.CompareTo(right.Count));
-        var count = sortedList.ElementAt(minCount - emptyCounter - 1).Count;
 
-        foreach (var documentIds in sortedList)
-        {
-            if (documentIds.Count > count)
-            {
-                break;
-            }
-
-            filteredDocuments.Add(documentIds);
-        }
+        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
 
         return true;
     }
@@ -148,9 +135,9 @@ public sealed class GinRelevanceFilter
         Dictionary<DocumentId, int> comparisonScores, List<TDocumentIdCollection> sortedIds, out int filteredTokensCount)
         where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
-        var minCount = CalculateMinCount(searchVector);
+        var minRelevancyCount = CalculateMinRelevancyCount(searchVector);
 
-        var emptyCounter = 0;
+        var emptyCount = 0;
 
         foreach (Token token in searchVector)
         {
@@ -160,9 +147,9 @@ public sealed class GinRelevanceFilter
             }
             else
             {
-                emptyCounter++;
+                emptyCount++;
 
-                if (emptyCounter >= minCount)
+                if (emptyCount > searchVector.Count - minRelevancyCount)
                 {
                     filteredTokensCount = 0;
                     return false;
@@ -172,7 +159,7 @@ public sealed class GinRelevanceFilter
 
         sortedIds.Sort((left, right) => left.Count.CompareTo(right.Count));
 
-        filteredTokensCount = minCount - emptyCounter;
+        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
 
         for (var index = 0; index < filteredTokensCount; index++)
         {
@@ -203,9 +190,9 @@ public sealed class GinRelevanceFilter
         List<TDocumentIdCollection> sortedIds, out int filteredTokensCount)
         where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
-        var minCount = CalculateMinCount(searchVector);
+        var minRelevancyCount = CalculateMinRelevancyCount(searchVector);
 
-        var emptyCounter = 0;
+        var emptyCount = 0;
 
         foreach (Token token in searchVector)
         {
@@ -215,9 +202,9 @@ public sealed class GinRelevanceFilter
             }
             else
             {
-                emptyCounter++;
+                emptyCount++;
 
-                if (emptyCounter >= minCount)
+                if (emptyCount > searchVector.Count - minRelevancyCount)
                 {
                     filteredTokensCount = 0;
                     return false;
@@ -227,24 +214,41 @@ public sealed class GinRelevanceFilter
 
         sortedIds.Sort((left, right) => left.Count.CompareTo(right.Count));
 
-        filteredTokensCount = minCount - emptyCounter;
+        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
 
         return true;
+    }
+
+    /// <summary>
+    /// Рассчитать количество векторов обеспечивающих релевантность.
+    /// </summary>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <returns></returns>
+    private int CalculateMinRelevancyCount(TokenVector searchVector)
+    {
+        var searchVectorSize = searchVector.Count;
+
+        var minCount = (int)Math.Ceiling(searchVectorSize * Threshold);
+
+        minCount = Math.Min(searchVectorSize, minCount);
+
+        return minCount;
     }
 
     /// <summary>
     /// Рассчитать минимальное количество векторов для прохождения порога релевантности.
     /// </summary>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <returns>Минимальное количество векторов.</returns>
-    private int CalculateMinCount(TokenVector searchVector)
+    /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
+    /// <param name="emptyCount">Количество пустых векторов.</param>
+    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds обеспечивающих релевантность.</param>
+    private static void CalculateFilteredTokensCount(TokenVector searchVector, int minRelevancyCount, int emptyCount,
+        out int filteredTokensCount)
     {
-        int searchVectorSize = searchVector.Count;
+        var searchVectorSize = searchVector.Count;
 
-        int minCount = (int)Math.Ceiling(searchVectorSize * (1D - Threshold)) + 1;
+        var minCount = Math.Min(searchVectorSize, searchVectorSize - minRelevancyCount + 1);
 
-        minCount = Math.Min(searchVectorSize, minCount);
-
-        return minCount;
+        filteredTokensCount = minCount - emptyCount;
     }
 }

@@ -1,20 +1,26 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using RsseEngine.Pools;
 
 namespace RsseEngine.Dto;
 
-public readonly ref struct DocumentReducedScoreIterator
+public readonly ref struct DocumentReducedScoreIterator : IDisposable
 {
     public interface IConsumer
     {
         public void Accept(DocumentId documentId, int score);
     }
 
+    private readonly TempStoragePool _tempStoragePool;
+
     private readonly List<DocumentListEnumerator> _list;
 
-    public DocumentReducedScoreIterator(List<DocumentIdList> sortedIds, int filteredTokensCount)
+    public DocumentReducedScoreIterator(TempStoragePool tempStoragePool,
+        List<DocumentIdList> sortedIds, int filteredTokensCount)
     {
-        _list = new List<DocumentListEnumerator>();
+        _tempStoragePool = tempStoragePool;
+        _list = tempStoragePool.ListEnumeratorListsStorage.Get();
 
         for (var index = 0; index < filteredTokensCount; index++)
         {
@@ -28,9 +34,30 @@ public readonly ref struct DocumentReducedScoreIterator
         }
     }
 
-    public void Iterate<TConsumer>(ref TConsumer consumer)
+    public void Dispose()
+    {
+        _tempStoragePool.ListEnumeratorListsStorage.Return(_list);
+    }
+
+    public void Iterate<TConsumer>(in TConsumer consumer)
         where TConsumer : IConsumer, allows ref struct
     {
+        if (_list.Count == 0)
+        {
+            return;
+        }
+
+        if (_list.Count == 1)
+        {
+            var enumerator0 = _list[0];
+            do
+            {
+                consumer.Accept(enumerator0.Current, 1);
+            } while (enumerator0.MoveNext());
+
+            return;
+        }
+
         do
         {
             FindMin(_list, out var minI0, out var docId0, out var docId1);
@@ -73,7 +100,7 @@ public readonly ref struct DocumentReducedScoreIterator
             }
         } while (_list.Count > 1);
 
-        if (_list.Count > 0)
+        if (_list.Count == 1)
         {
             var enumerator0 = _list[0];
             do

@@ -67,10 +67,13 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ReducedSearchGinMergeFilter));
 
-                        DocumentReducedScoreIterator documentReducedScoreIterator = new(sortedIds, filteredTokensCount);
-                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GeneralDirectIndex,
+                        using DocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
                             sortedIds, filteredTokensCount);
-                        documentReducedScoreIterator.Iterate(ref metricsConsumer);
+
+                        using MetricsConsumer metricsConsumer = new(TempStoragePool,
+                            searchVector, metricsCalculator, GeneralDirectIndex, sortedIds, filteredTokensCount);
+
+                        documentReducedScoreIterator.Iterate(metricsConsumer);
 
                         break;
                     }
@@ -82,21 +85,24 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
         }
     }
 
-    private readonly ref struct MetricsConsumer : DocumentReducedScoreIterator.IConsumer
+    private readonly ref struct MetricsConsumer : DocumentReducedScoreIterator.IConsumer, IDisposable
     {
+        private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
         private readonly DirectIndex _generalDirectIndex;
         private readonly List<DocumentListEnumerator> _list;
 
-        public MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator, DirectIndex generalDirectIndex,
+        public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
+            IMetricsCalculator metricsCalculator, DirectIndex generalDirectIndex,
             List<DocumentIdList> sortedIds, int filteredTokensCount)
         {
+            _tempStoragePool = tempStoragePool;
             _searchVector = searchVector;
             _metricsCalculator = metricsCalculator;
             _generalDirectIndex = generalDirectIndex;
 
-            _list = new List<DocumentListEnumerator>();
+            _list = _tempStoragePool.ListEnumeratorListsStorage.Get();
 
             for (var index = sortedIds.Count - 1; index >= filteredTokensCount; index--)
             {
@@ -108,6 +114,11 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
             {
                 CollectionsMarshal.AsSpan(_list)[index].MoveNext();
             }
+        }
+
+        public void Dispose()
+        {
+            _tempStoragePool.ListEnumeratorListsStorage.Return(_list);
         }
 
         public void Accept(DocumentId documentId, int score)

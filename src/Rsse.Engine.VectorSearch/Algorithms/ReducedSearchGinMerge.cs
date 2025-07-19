@@ -58,9 +58,12 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ReducedSearchGinMerge));
 
-                        DocumentReducedScoreIterator documentReducedScoreIterator = new(sortedIds, sortedIds.Count);
+                        using DocumentReducedScoreIterator documentReducedScoreIterator =
+                            new(TempStoragePool, sortedIds, sortedIds.Count);
+
                         MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GeneralDirectIndex);
-                        documentReducedScoreIterator.Iterate(ref metricsConsumer);
+
+                        documentReducedScoreIterator.Iterate(in metricsConsumer);
 
                         break;
                     }
@@ -72,8 +75,8 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
         }
     }
 
-    private readonly ref struct MetricsConsumer(TokenVector searchVector,
-        IMetricsCalculator metricsCalculator, DirectIndex generalDirectIndex) : DocumentReducedScoreIterator.IConsumer
+    private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        DirectIndex generalDirectIndex) : DocumentReducedScoreIterator.IConsumer
     {
         public void Accept(DocumentId documentId, int score)
         {

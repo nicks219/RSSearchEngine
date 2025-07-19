@@ -27,6 +27,12 @@ public sealed class TempStoragePool(bool enable)
 
     internal readonly CollectionPool<HashSet<Token>, Token> TokenSetsStorage = new(enable);
 
+    internal readonly CollectionPool<List<DocumentListEnumerator>, DocumentListEnumerator> ListEnumeratorListsStorage = new(enable);
+
+    internal readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
+
+    internal readonly CollectionPool<Dictionary<DocumentIdList, int>, KeyValuePair<DocumentIdList, int>> DocumentIdListCountStorage = new(enable);
+
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdList>, DocumentIdList> _documentIdListListsStorage = new(enable);

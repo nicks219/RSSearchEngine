@@ -77,99 +77,159 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
     /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
     /// </summary>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="metricsCalculator"></param>
+    /// <param name="idsFromGin"></param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<DocumentIdList> idsFromGin)
     {
-        var list = new List<DocumentListEnumerator>();
+        var list = TempStoragePool.ListEnumeratorListsStorage.Get();
+        var multi = TempStoragePool.IntListsStorage.Get();
+        var listExists = TempStoragePool.IntListsStorage.Get();
+        var dictionary = TempStoragePool.DocumentIdListCountStorage.Get();
 
-        foreach (var docIdVector in idsFromGin)
+        try
         {
-            list.Add(docIdVector.CreateDocumentListEnumerator());
-        }
-
-        List<int> listExists = Enumerable.Range(0, list.Count).ToList();
-
-        for (var index = 0; index < list.Count; index++)
-        {
-            if (!CollectionsMarshal.AsSpan(list)[index].MoveNext())
+            for (var index = 0; index < idsFromGin.Count; index++)
             {
-                listExists.Remove(index);
-            }
-        }
+                var docIdVector = idsFromGin[index];
 
-        do
-        {
-            ExtendedMergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                list.Add(docIdVector.CreateDocumentListEnumerator());
+                multi.Add(0);
 
-        START:
-            if (docId0.Value < docId1.Value)
-            {
-                AppendMetric(metricsCalculator, 1, searchVector, docId0);
-
-                ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
-                if (!enumeratorI.MoveNext())
+                if (dictionary.TryAdd(docIdVector, index))
                 {
-                    listExists.Remove(minI0);
+                    if (CollectionsMarshal.AsSpan(list)[index].MoveNext())
+                    {
+                        listExists.Add(index);
+                    }
                 }
                 else
                 {
-                    docId0 = enumeratorI.Current;
-                    goto START;
+                    multi[dictionary[docIdVector]] = 1;
                 }
             }
-            else if (docId0 == docId1)
+
+            if (listExists.Count == 1)
             {
-                int sIndex = -1;
-
-                for (int i = listExists.Count - 1; i >= 0; i--)
-                {
-                    int index = listExists[i];
-
-                    ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[index];
-                    if (docId0 == enumeratorI.Current)
-                    {
-                        sIndex = index;
-                        if (!enumeratorI.MoveNext())
-                        {
-                            listExists.RemoveAt(i);
-                        }
-                    }
-                }
-
-                // поиск в векторе extended
-                if (sIndex > -1)
-                {
-                    var tokensLine = GeneralDirectIndex[docId0];
-                    var extendedTokensLine = tokensLine.Extended;
-
-                    var metric = ComputeMetricOrdered(searchVector, extendedTokensLine, sIndex);
-
-                    metricsCalculator.AppendExtended(metric, searchVector, docId0,
-                        extendedTokensLine);
-                }
+                AppendMetric2(list, listExists, multi, metricsCalculator, searchVector);
+                return;
             }
-        } while (listExists.Count > 1);
 
-        if (listExists.Count > 0)
-        {
-            int index = listExists[0];
-            var enumerator0 = list[index];
             do
             {
-                AppendMetric(metricsCalculator, 1, searchVector, enumerator0.Current);
-            } while (enumerator0.MoveNext());
+                ExtendedMergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+
+                var isMulti = multi[minI0] > 0;
+
+            START:
+                if (docId0.Value < docId1.Value)
+                {
+                    AppendMetric1(isMulti, searchVector, metricsCalculator, docId0, minI0);
+
+                    ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
+                    if (!enumeratorI.MoveNext())
+                    {
+                        var i = listExists.IndexOf(minI0);
+                        SwapAndRemoveAt(listExists, i);
+                    }
+                    else
+                    {
+                        docId0 = enumeratorI.Current;
+                        goto START;
+                    }
+                }
+                else if (docId0 == docId1)
+                {
+                    var sIndex = int.MaxValue;
+
+                    for (var i = listExists.Count - 1; i >= 0; i--)
+                    {
+                        var index = listExists[i];
+
+                        ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[index];
+                        if (docId0 == enumeratorI.Current)
+                        {
+                            sIndex = Math.Min(sIndex, index);
+                            if (!enumeratorI.MoveNext())
+                            {
+                                SwapAndRemoveAt(listExists, i);
+                            }
+                        }
+                    }
+
+                    if (sIndex < int.MaxValue)
+                    {
+                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, sIndex);
+                    }
+                }
+            } while (listExists.Count > 1);
+
+            if (listExists.Count == 1)
+            {
+                AppendMetric2(list, listExists, multi, metricsCalculator, searchVector);
+            }
+        }
+        finally
+        {
+            TempStoragePool.DocumentIdListCountStorage.Return(dictionary);
+            TempStoragePool.IntListsStorage.Return(listExists);
+            TempStoragePool.IntListsStorage.Return(multi);
+            TempStoragePool.ListEnumeratorListsStorage.Return(list);
         }
     }
 
-    private void AppendMetric(IMetricsCalculator metricsCalculator, int comparisonScore,
-        TokenVector searchVector, DocumentId documentId)
+    private void AppendMetric1(bool isMulti, TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        DocumentId documentId, int minI0)
     {
-        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, GeneralDirectIndex);
+        if (isMulti)
+        {
+            CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, minI0);
+        }
+        else
+        {
+            const int metric = 1;
+            metricsCalculator.AppendExtended(metric, searchVector, documentId, GeneralDirectIndex);
+        }
     }
 
-    private int ComputeMetricOrdered(TokenVector searchVector, TokenVector extendedTokensLine, int sIndex)
+    private void AppendMetric2(List<DocumentListEnumerator> list, List<int> listExists, List<int> multi,
+        IMetricsCalculator metricsCalculator, TokenVector searchVector)
     {
-        return ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, sIndex);
+        var index = listExists[0];
+        var enumerator = list[index];
+
+        if (multi[index] > 0)
+        {
+            do
+            {
+                var documentId = enumerator.Current;
+                CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, index);
+            } while (enumerator.MoveNext());
+        }
+        else
+        {
+            do
+            {
+                var documentId = enumerator.Current;
+                const int metric = 1;
+                metricsCalculator.AppendExtended(metric, searchVector, documentId, GeneralDirectIndex);
+            } while (enumerator.MoveNext());
+        }
+    }
+
+    private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
+        DocumentId documentId, int sIndex)
+    {
+        // поиск в векторе extended
+        var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
+        var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, sIndex);
+        metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+    }
+
+    private static void SwapAndRemoveAt(List<int> listExists, int i)
+    {
+        listExists[i] = listExists[listExists.Count - 1];
+        listExists.RemoveAt(listExists.Count - 1);
     }
 }
