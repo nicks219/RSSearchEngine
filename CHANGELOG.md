@@ -203,8 +203,16 @@
  * [x] "освободить" **SearchEngine** для именования класса
  * [ ] `research` подумать над компоновкой библиотек токенайзера и связанного функционала
    - в **CommonBaseOptions** используются типы из **Rsse.Engine**
- * [x] выделение `Tests.Common`
-
+ * [x] выделить `Tests.Common`
+ * [x] получить метрики от кубера
+   * [x] для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
+   * [x] добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
+   * [x] настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
+	 - под дебагом в otel виден ответ 403: добавил в ClusterRole `resources: nodes/metrics` вместе и `nonResourceURLs` и `hostNetwork`
+	 - использовал под `debug-curl` для проверки смонтированного токена и чека авторизации на запросе метрики
+     - манифесты: [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml) | [debug-shell.yaml](.k3s/debug-shell.yaml)
+     - потребление cpu нодой выросло на 0.1 ядро
+   * [x] `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)
 
 ---
 #### Эпик разработки поискового движка

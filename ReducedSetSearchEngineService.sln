@@ -108,6 +108,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
 		.k3s\ingress.traefik.ru.https.yml = .k3s\ingress.traefik.ru.https.yml
 		.k3s\ingress.traefik.ru.redirect.yml = .k3s\ingress.traefik.ru.redirect.yml
+		.k3s\sa-metrics.yml = .k3s\sa-metrics.yml
+		.k3s\otel.collector.otlp.v3.yml = .k3s\otel.collector.otlp.v3.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
