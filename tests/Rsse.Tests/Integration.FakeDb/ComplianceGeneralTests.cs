@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,6 +16,7 @@ using Rsse.Infrastructure.Context;
 using Rsse.Tests.Common;
 using Rsse.Tests.Integration.FakeDb.Api;
 using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Integration.FakeDb.Infra;
 using RsseEngine.Service;
 using static Rsse.Domain.Service.Configuration.RouteConstants;
 
@@ -86,8 +89,8 @@ public class ComplianceGeneralTests
         }
 
         // Необходимо заново инициализировать токенайзер тк содержание бд изменилось.
-        var tokenizerApiClient = (ITokenizerApiClient)_factory?.Services.GetService(typeof(ITokenizerApiClient))!;
-        var dataProvider = (DbDataProvider)_factory?.Services.GetService(typeof(DbDataProvider))!;
+        var tokenizerApiClient = (ITokenizerApiClient)_factory.Services.GetService(typeof(ITokenizerApiClient))!;
+        var dataProvider = (DbDataProvider)_factory.Services.GetService(typeof(DbDataProvider))!;
         await tokenizerApiClient.Initialize(dataProvider, NoneToken);
     }
 
@@ -95,7 +98,10 @@ public class ComplianceGeneralTests
     public static void ClassCleanup() => _factory?.Dispose();
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceTestData;
+    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceGeneralTestData;
+
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> TokenizerTestData => TestData.ComplianceSeparateTestData;
 
     [TestMethod]
     [DynamicData(nameof(ComplianceTestData))]
@@ -121,6 +127,57 @@ public class ComplianceGeneralTests
 
                 // assert:
                 complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
+            }
+        }
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(TokenizerTestData))]
+    public void ComplianceSeparateRequests_ShouldReturn_ExpectedMetrics(string request, string expected)
+    {
+        var options = new JsonSerializerOptions
+        {
+            Converters =
+            {
+                new DocumentIdJsonConverter()
+            }
+        };
+
+        foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
+        {
+            foreach (var reducedSearchTypes in TestData.ReducedSearchTypes)
+            {
+                // arrange:
+                using var client = _factory?.CreateClient(Options);
+
+                var tokenizerApiClient = (ITokenizerApiClient)_factory?.Services.GetService(typeof(ITokenizerApiClient))!;
+                var tokenizerServiceCore = (TokenizerServiceCore)tokenizerApiClient.GetTokenizerServiceCore();
+                tokenizerServiceCore.ConfigureSearchEngine(
+                    extendedSearchType: extendedSearchType,
+                    reducedSearchType: reducedSearchTypes);
+
+                // act:
+                var reduced = tokenizerServiceCore
+                    .ComputeComplianceIndexReduced(request, NoneToken)
+                    .OrderByDescending(x => x.Value)
+                    .ThenByDescending(x => x.Key)
+                    .ToDictionary();
+
+                var extended = tokenizerServiceCore
+                    .ComputeComplianceIndexExtended(request, NoneToken)
+                    .OrderByDescending(x => x.Value)
+                    .ThenByDescending(x => x.Key)
+                    .ToDictionary();
+
+                var reducedSerialized = JsonSerializer.Serialize(reduced, options);
+                var extendedSerialized = JsonSerializer.Serialize(extended, options);
+
+                // assert:
+                var actual = $"{extendedSerialized} {reducedSerialized}";
+                Console.WriteLine(actual);
+                actual
+                    .Should()
+                    .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
             }
         }
     }

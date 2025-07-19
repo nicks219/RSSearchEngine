@@ -102,7 +102,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
         {
             ExtendedMergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
-            START:
+        START:
             if (docId0.Value < docId1.Value)
             {
                 AppendMetric(metricsCalculator, 1, searchVector, docId0);

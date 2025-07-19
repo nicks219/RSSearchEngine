@@ -35,7 +35,7 @@ public readonly ref struct DocumentReducedScoreIterator
         {
             FindMin(_list, out var minI0, out var docId0, out var docId1);
 
-            START:
+        START:
 
             if (docId0.Value < docId1.Value)
             {

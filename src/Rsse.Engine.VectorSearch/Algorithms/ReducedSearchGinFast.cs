@@ -108,7 +108,7 @@ public sealed class ReducedSearchGinFast<TDocumentIdCollection> : IReducedSearch
         }
         finally
         {
-             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
         }
     }
 }
