@@ -30,9 +30,9 @@ public abstract class Constants
     /// <summary>
     /// Константа с поисковым запросом.
     /// </summary>
-    internal const string SearchQuery = "преключиться вдруг верный друг";
+    public const string SearchQuery = "приключится вдруг вот верный друг выручить";
 
-
+    // public const string SearchQuery = "преключиться вдруг верный друг";
     // public const string SearchQuery = "пляшем на столе за детей";
     // public const string SearchQuery = "приключится вдруг верный друг";
 }
