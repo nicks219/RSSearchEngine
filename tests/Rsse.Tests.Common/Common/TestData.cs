@@ -19,7 +19,9 @@ public abstract class TestData
         ExtendedSearchType.GinFast,
         ExtendedSearchType.GinFastFilter,
         ExtendedSearchType.GinMerge,
-        ExtendedSearchType.GinMergeFilter
+        ExtendedSearchType.GinMergeFilter,
+        ExtendedSearchType.GinOffset,
+        ExtendedSearchType.GinOffsetFilter
     ];
 
     /// <summary>

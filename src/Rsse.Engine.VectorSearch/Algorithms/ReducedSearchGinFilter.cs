@@ -40,8 +40,8 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, sortedIds,
-                    out _))
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
+                    out _, comparisonScores))
             {
                 return;
             }

@@ -1,29 +1,34 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RsseEngine.Dto.Offsets;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Iterators;
 
-public struct DocumentListEnumerator : IEnumerator<DocumentId>
+public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
 {
-    private readonly List<DocumentId> _list;
+    private readonly List<InternalDocumentId> _list;
     private int _index;
-    private DocumentId _current;
+    private InternalDocumentId _current;
 
-    public DocumentListEnumerator(List<DocumentId> list)
+    public InternalDocumentListEnumerator(List<InternalDocumentId> list)
     {
         _list = list;
         _index = 0;
         _current = default;
     }
 
+    public List<InternalDocumentId> List => _list;
+
+    public int NextIndex => _index;
+
     public void Dispose()
     {
     }
 
-    public bool MoveNextBinarySearch(DocumentId item)
+    public bool MoveNextBinarySearch(InternalDocumentId item)
     {
-        List<DocumentId> list = _list;
+        List<InternalDocumentId> list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();
@@ -48,7 +53,7 @@ public struct DocumentListEnumerator : IEnumerator<DocumentId>
 
     public bool MoveNext()
     {
-        List<DocumentId> list = _list;
+        List<InternalDocumentId> list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();
@@ -65,7 +70,7 @@ public struct DocumentListEnumerator : IEnumerator<DocumentId>
         return false;
     }
 
-    public DocumentId Current => _current;
+    public InternalDocumentId Current => _current;
 
     object IEnumerator.Current
     {

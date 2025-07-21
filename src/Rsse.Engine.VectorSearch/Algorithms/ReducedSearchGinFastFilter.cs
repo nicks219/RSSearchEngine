@@ -43,8 +43,8 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, sortedIds,
-                    out var filteredTokensCount))
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
+                    out var filteredTokensCount, comparisonScores))
             {
                 return;
             }

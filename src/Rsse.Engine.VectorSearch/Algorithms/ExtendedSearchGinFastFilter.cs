@@ -35,12 +35,12 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
     {
         var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
-        var sortedList = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, filteredDocuments,
-                    idsFromGin, sortedList))
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
+                    idsFromGin, sortedIds, filteredDocuments))
             {
                 return;
             }
@@ -135,7 +135,7 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(sortedList);
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
             TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
         }

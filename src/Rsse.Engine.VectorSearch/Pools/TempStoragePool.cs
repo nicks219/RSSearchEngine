@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
+using RsseEngine.Iterators;
 
 namespace RsseEngine.Pools;
 
@@ -32,6 +33,8 @@ public sealed class TempStoragePool(bool enable)
     internal readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
 
     internal readonly CollectionPool<Dictionary<DocumentIdList, int>, KeyValuePair<DocumentIdList, int>> DocumentIdListCountStorage = new(enable);
+
+    internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> TokenOffsetEnumeratorListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);
 

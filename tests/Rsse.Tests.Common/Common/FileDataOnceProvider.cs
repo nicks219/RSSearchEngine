@@ -19,6 +19,9 @@ public sealed class FileDataOnceProvider : IDataProvider<NoteEntity>
 
         await using var fileStream = File.OpenRead("pg_backup_.txtnotes");
         using var reader = new StreamReader(fileStream);
+
+        StringBuilder stringBuilder = new StringBuilder();
+
         while (await reader.ReadLineAsync() is { } text)
         {
             var items = text.Split('\t');
@@ -32,8 +35,12 @@ public sealed class FileDataOnceProvider : IDataProvider<NoteEntity>
             var noteEntity = new NoteEntity
             {
                 NoteId = int.Parse(items[0]),
-                Title = items[1].Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t"),
-                Text = items[2].Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t"),
+
+                Title = stringBuilder.Clear().Append(items[1])
+                    .Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t").ToString(),
+
+                Text = stringBuilder.Clear().Append(items[2])
+                    .Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t").ToString()
             };
 
             notes.Add(noteEntity);

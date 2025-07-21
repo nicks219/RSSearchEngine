@@ -6,6 +6,7 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Iterators;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
 
@@ -37,12 +38,12 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
     {
         var filteredDocuments = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
-        var sortedList = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtendedMerge(GinExtended, searchVector, idsFromGin,
-                    sortedList, out var filteredTokensCount))
+                    sortedIds, out var filteredTokensCount))
             {
                 return;
             }
@@ -69,7 +70,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ExtendedSearchGinMerge));
 
-                        CreateExtendedSearchSpace(searchVector, metricsCalculator, sortedList, filteredTokensCount);
+                        CreateExtendedSearchSpace(searchVector, metricsCalculator, sortedIds, filteredTokensCount);
 
                         break;
                     }
@@ -77,7 +78,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(sortedList);
+            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
             TempStoragePool.ReturnDocumentIdCollectionList(filteredDocuments);
         }
@@ -88,11 +89,11 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
     /// </summary>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="metricsCalculator"></param>
-    /// <param name="idsFromGin"></param>
+    /// <param name="sortedIds"></param>
     /// <param name="filteredTokensCount"></param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<DocumentIdList> idsFromGin, int filteredTokensCount)
+        List<DocumentIdList> sortedIds, int filteredTokensCount)
     {
         var list = TempStoragePool.ListEnumeratorListsStorage.Get();
         var listExists = TempStoragePool.IntListsStorage.Get();
@@ -102,7 +103,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
         {
             for (var index = 0; index < filteredTokensCount; index++)
             {
-                var docIdVector = idsFromGin[index];
+                var docIdVector = sortedIds[index];
 
                 list.Add(docIdVector.CreateDocumentListEnumerator());
 
@@ -123,7 +124,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
 
             do
             {
-                ExtendedMergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
             START:
                 if (docId0.Value < docId1.Value)

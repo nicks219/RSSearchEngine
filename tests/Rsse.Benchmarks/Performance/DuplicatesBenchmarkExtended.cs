@@ -42,7 +42,11 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinMerge),
         new(ExtendedSearchType.GinMerge, true),
         new(ExtendedSearchType.GinMergeFilter),
-        new(ExtendedSearchType.GinMergeFilter, true)
+        new(ExtendedSearchType.GinMergeFilter, true),
+        new(ExtendedSearchType.GinOffset),
+        new(ExtendedSearchType.GinOffset, true),
+        new(ExtendedSearchType.GinOffsetFilter),
+        new(ExtendedSearchType.GinOffsetFilter, true)
     ];
 
     [ParamsSource(nameof(Parameters))]

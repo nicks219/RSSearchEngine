@@ -3,6 +3,7 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Iterators;
 using RsseEngine.Pools;
 
 namespace RsseEngine.Algorithms;

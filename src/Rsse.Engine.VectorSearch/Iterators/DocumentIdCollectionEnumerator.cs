@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using RsseEngine.Contracts;
+using RsseEngine.Dto;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Iterators;
 
 public ref struct DocumentIdCollectionEnumerator<TDocumentIdCollection> : IEnumerator<DocumentId>
     where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>

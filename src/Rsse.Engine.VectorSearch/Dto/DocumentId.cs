@@ -1,4 +1,4 @@
-using System;
+using RsseEngine.Contracts;
 
 namespace RsseEngine.Dto;
 
@@ -7,7 +7,7 @@ namespace RsseEngine.Dto;
 /// В данной версии соответствует идентификатору из базы данных.
 /// </summary>
 /// <param name="documentId"></param>
-public readonly struct DocumentId(int documentId) : IEquatable<DocumentId>, IComparable<DocumentId>
+public readonly struct DocumentId(int documentId) : IDocumentId<DocumentId>
 {
     // Идентификатор заметки.
     private readonly int _documentId = documentId;

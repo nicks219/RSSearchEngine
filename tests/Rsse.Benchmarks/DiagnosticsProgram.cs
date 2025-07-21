@@ -23,7 +23,7 @@ public static class DiagnosticsProgram
     /// <summary>
     /// Выбор между режимами измерения и профилирования производительности.
     /// </summary>
-    /// <param name="args">Выбор режима: "bech"/"profile".</param>
+    /// <param name="args">Выбор режима: "bench"/"profile".</param>
     public static async Task Main(string[] args)
     {
         var isGitHubCi = Environment.GetEnvironmentVariable("DOTNET_CI");
@@ -78,7 +78,7 @@ public static class DiagnosticsProgram
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
                     .WithIterationCount(10))
-                .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: false)))
                 .AddLogger(new ConsoleLogger(false, new Dictionary<LogKind, ConsoleColor>
                 {
                     { LogKind.Default, ConsoleColor.Gray },
@@ -138,6 +138,8 @@ public static class DiagnosticsProgram
         }
 
         var warmupMemory = GC.GetTotalAllocatedBytes();
+
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive);
 
         // Шаг для профилирования.
         Console.WriteLine("---");

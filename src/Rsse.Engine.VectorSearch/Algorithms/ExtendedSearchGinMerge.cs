@@ -6,6 +6,7 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
+using RsseEngine.Iterators;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
 
@@ -118,7 +119,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
 
             do
             {
-                ExtendedMergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
                 var isMulti = multi[minI0] > 0;
 

@@ -41,8 +41,8 @@ public sealed class ReducedSearchGinOptimizedFilter<TDocumentIdCollection> : IRe
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, comparisonScores, sortedIds,
-                    out var filteredTokensCount))
+            if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
+                    out var filteredTokensCount, comparisonScores))
             {
                 return;
             }

@@ -21,6 +21,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     /// </summary>
     private readonly InvertedIndex<TDocumentIdCollection> _ginExtended = new();
 
+    private readonly InvertedOffsetIndex _ginOffsetExtended = new();
+
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGinSimple<TDocumentIdCollection> _extendedSearchGinSimple;
     private readonly ExtendedSearchGinOptimized<TDocumentIdCollection> _extendedSearchGinOptimized;
@@ -29,6 +31,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly ExtendedSearchGinFastFilter<TDocumentIdCollection> _extendedSearchGinFastFilter;
     private readonly IExtendedSearchProcessor _extendedSearchGinMerge;
     private readonly IExtendedSearchProcessor _extendedSearchGinMergeFilter;
+    private readonly ExtendedSearchGinOffset _extendedSearchGinOffset;
+    private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -116,6 +120,21 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
         }
+
+        _extendedSearchGinOffset = new ExtendedSearchGinOffset
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginOffsetExtended
+        };
+
+        _extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _ginOffsetExtended,
+            RelevanceFilter = relevanceFilter
+        };
     }
 
     /// <inheritdoc/>
@@ -131,6 +150,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             ExtendedSearchType.GinFastFilter => _extendedSearchGinFastFilter,
             ExtendedSearchType.GinMerge => _extendedSearchGinMerge,
             ExtendedSearchType.GinMergeFilter => _extendedSearchGinMergeFilter,
+            ExtendedSearchType.GinOffset => _extendedSearchGinOffset,
+            ExtendedSearchType.GinOffsetFilter => _extendedSearchGinOffsetFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };
@@ -140,23 +161,27 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginExtended.AddVector(documentId, tokenVector);
+        _ginOffsetExtended.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
         _ginExtended.UpdateVector(documentId, tokenVector, oldTokenVector);
+        _ginOffsetExtended.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         _ginExtended.RemoveVector(documentId, tokenVector);
+        _ginOffsetExtended.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
         _ginExtended.Clear();
+        _ginOffsetExtended.Clear();
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RsseEngine.Contracts;
+using RsseEngine.Iterators;
 
 namespace RsseEngine.Dto;
 

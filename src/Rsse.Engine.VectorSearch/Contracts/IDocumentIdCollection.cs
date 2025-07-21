@@ -1,5 +1,6 @@
 using System;
 using RsseEngine.Dto;
+using RsseEngine.Iterators;
 
 namespace RsseEngine.Contracts;
 
