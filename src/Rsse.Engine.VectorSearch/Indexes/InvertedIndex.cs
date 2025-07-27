@@ -19,36 +19,16 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     private readonly Dictionary<Token, TDocumentIdCollection> _invertedIndex = new();
 
     /// <summary>
-    /// Получить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
-    /// </summary>
-    /// <param name="tokenVector">Вектор с целевыми токенами.</param>
-    /// <returns>Коллекция векторов с идентификаторами.</returns>
-    public List<TDocumentIdCollection> Get(TokenVector tokenVector)
-    {
-        List<TDocumentIdCollection> result = new();
-
-        foreach (var token in tokenVector)
-        {
-            if (_invertedIndex.TryGetValue(token, out TDocumentIdCollection documentIdVector))
-            {
-                result.Add(documentIdVector);
-            }
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Добавить в индекс вектор токенов и идентификатор соответствующей ему заметки.
     /// </summary>
     /// <param name="documentId">Идентификатор заметки.</param>
     /// <param name="tokenVector">Вектор токенов.</param>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        foreach (Token token in tokenVector)
+        foreach (var token in tokenVector)
         {
-            ref TDocumentIdCollection collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
-                _invertedIndex, token, out bool exists);
+            ref var collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
+                _invertedIndex, token, out var exists);
 
             if (!exists)
             {
@@ -72,7 +52,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
 
         var intersection = tokenVector.Intersect(oldTokenVector);
 
-        foreach (Token token in oldTokenVector)
+        foreach (var token in oldTokenVector)
         {
             if (!intersection.Contains(token))
             {
@@ -80,12 +60,12 @@ public sealed class InvertedIndex<TDocumentIdCollection>
             }
         }
 
-        foreach (Token token in tokenVector)
+        foreach (var token in tokenVector)
         {
             if (!intersection.Contains(token))
             {
-                ref TDocumentIdCollection collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
-                    _invertedIndex, token, out bool exists);
+                ref var collection = ref CollectionsMarshal.GetValueRefOrAddDefault(
+                    _invertedIndex, token, out var exists);
 
                 if (!exists)
                 {
@@ -192,6 +172,11 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
     }
 
+    /// <summary>
+    /// Заполнить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// </summary>
+    /// <param name="tokens">Вектор с целевыми токенами.</param>
+    /// <param name="documentIdsList">Коллекция векторов с идентификаторами.</param>
     public void GetDocumentIdVectorsToList(TokenVector tokens, List<TDocumentIdCollection> documentIdsList)
     {
         var emptyDocIdVector = CreateCollection();
@@ -209,6 +194,11 @@ public sealed class InvertedIndex<TDocumentIdCollection>
         }
     }
 
+    /// <summary>
+    /// Заполнить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// </summary>
+    /// <param name="tokens">Вектор с целевыми токенами.</param>
+    /// <param name="documentIdsList">Коллекция векторов с идентификаторами.</param>
     public void GetNonEmptyDocumentIdVectorsToList(TokenVector tokens, List<TDocumentIdCollection> documentIdsList)
     {
         foreach (var token in tokens)

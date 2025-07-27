@@ -30,15 +30,21 @@ public sealed class TempStoragePool(bool enable)
 
     internal readonly CollectionPool<List<DocumentListEnumerator>, DocumentListEnumerator> ListEnumeratorListsStorage = new(enable);
 
+    internal readonly CollectionPool<List<InternalDocumentListEnumerator>, InternalDocumentListEnumerator> ListInternalEnumeratorListsStorage = new(enable);
+
     internal readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
 
     internal readonly CollectionPool<Dictionary<DocumentIdList, int>, KeyValuePair<DocumentIdList, int>> DocumentIdListCountStorage = new(enable);
+
+    internal readonly CollectionPool<Dictionary<InternalDocumentIdList, int>, KeyValuePair<InternalDocumentIdList, int>> InternalDocumentIdListCountStorage = new(enable);
 
     internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> TokenOffsetEnumeratorListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdList>, DocumentIdList> _documentIdListListsStorage = new(enable);
+
+    internal readonly CollectionPool<List<InternalDocumentIdList>, InternalDocumentIdList> InternalDocumentIdListsStorage = new(enable);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal List<TDocumentIdCollection> GetDocumentIdCollectionList<TDocumentIdCollection>()

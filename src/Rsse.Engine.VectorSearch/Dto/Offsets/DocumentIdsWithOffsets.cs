@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace RsseEngine.Dto.Offsets;
 
-public struct DocumentIdsWithOffsets(DocumentIdOffsetList documentIds, List<OffsetInfo> offsetInfos, List<int> offsets)
+public struct DocumentIdsWithOffsets(InternalDocumentIdList internalDocumentIds, List<OffsetInfo> offsetInfos, List<int> offsets)
 {
-    public readonly DocumentIdOffsetList DocumentIds = documentIds;
+    public readonly InternalDocumentIdList DocumentIds = internalDocumentIds;
 
     public readonly List<OffsetInfo> OffsetInfos = offsetInfos;
 

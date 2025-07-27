@@ -123,7 +123,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
 
                 var isMulti = multi[minI0] > 0;
 
-            START:
+                START:
                 if (docId0.Value < docId1.Value)
                 {
                     AppendMetric1(isMulti, searchVector, metricsCalculator, docId0, minI0);
@@ -161,7 +161,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
 
                     if (sIndex < int.MaxValue)
                     {
-                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, sIndex);
+                        metricsCalculator.AppendExtendedMetric(searchVector, docId0, GeneralDirectIndex, sIndex);
                     }
                 }
             } while (listExists.Count > 1);
@@ -185,7 +185,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
     {
         if (isMulti)
         {
-            CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, minI0);
+            metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex, minI0);
         }
         else
         {
@@ -205,7 +205,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
             do
             {
                 var documentId = enumerator.Current;
-                CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, index);
+                metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex, index);
             } while (enumerator.MoveNext());
         }
         else
@@ -217,15 +217,6 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
                 metricsCalculator.AppendExtended(metric, searchVector, documentId, GeneralDirectIndex);
             } while (enumerator.MoveNext());
         }
-    }
-
-    private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
-        DocumentId documentId, int sIndex)
-    {
-        // поиск в векторе extended
-        var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-        var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, sIndex);
-        metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

@@ -24,7 +24,7 @@ public struct DocumentListEnumerator : IEnumerator<DocumentId>
 
     public bool MoveNextBinarySearch(DocumentId item)
     {
-        List<DocumentId> list = _list;
+        var list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();
@@ -49,7 +49,7 @@ public struct DocumentListEnumerator : IEnumerator<DocumentId>
 
     public bool MoveNext()
     {
-        List<DocumentId> list = _list;
+        var list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();

@@ -80,11 +80,8 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
 
                             processedDocuments.Add(documentId);
 
-                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine,
-                                searchVector, searchStartIndex);
-
-                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                            metricsCalculator.AppendExtendedMetric(searchVector, documentId,
+                                GeneralDirectIndex, searchStartIndex);
 
                             if (filteredDocuments.Count == processedDocuments.Count)
                             {
@@ -108,11 +105,8 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
                                 continue;
                             }
 
-                            var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                            var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector,
-                                searchStartIndex);
-
-                            metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                            metricsCalculator.AppendExtendedMetric(searchVector, documentId,
+                                GeneralDirectIndex, searchStartIndex);
 
                             if (filteredDocuments.Count == 0)
                             {

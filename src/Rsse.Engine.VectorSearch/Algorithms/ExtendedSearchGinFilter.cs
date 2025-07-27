@@ -51,11 +51,7 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
             // поиск в векторе extended
             foreach (var documentId in filteredDocuments)
             {
-                var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
-                var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
-
-                // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-                metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+                metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex);
             }
         }
         finally

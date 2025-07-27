@@ -39,10 +39,7 @@ public sealed class ExtendedSearchGinSimple<TDocumentIdCollection> : IExtendedSe
                 continue;
             }
 
-            var extendedTargetVector = tokenLine.Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
-
-            metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+            metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
         }
     }
 }

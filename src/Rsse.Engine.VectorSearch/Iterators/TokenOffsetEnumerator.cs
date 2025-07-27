@@ -1,9 +1,7 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using RsseEngine.Dto;
 using RsseEngine.Dto.Offsets;
-using RsseEngine.Indexes;
 
 namespace RsseEngine.Iterators;
 
@@ -44,74 +42,17 @@ public struct TokenOffsetEnumerator(DocumentIdsWithOffsets documentIdsWithOffset
     }
 
     /// <summary>
-    /// Оптимизация хранения позиций описана в <see cref="InvertedOffsetIndex.AppendTokenVector"/>
+    /// Находит следующую позицию токена в документе
     /// </summary>
     /// <param name="position"></param>
     /// <returns></returns>
-    public bool FindNextPosition(ref int position)
+    public bool TryFindNextPosition(ref int position)
     {
-        int currentIndex = _enumerator.NextIndex - 1;
+        var currentIndex = _enumerator.NextIndex - 1;
 
-        OffsetInfo offsetInfo = documentIdsWithOffsets.OffsetInfos[currentIndex];
+        var offsetInfo = documentIdsWithOffsets.OffsetInfos[currentIndex];
 
-        int size = offsetInfo.Size;
-
-        if (size > 0)
-        {
-            Span<int> offsets = CollectionsMarshal.AsSpan(documentIdsWithOffsets.Offsets)
-                .Slice(offsetInfo.OffsetIndex, size);
-
-            /*
-            foreach (var offset in offsets)
-            {
-                if (offset > position)
-                {
-                    position = offset;
-                    return true;
-                }
-            }
-            return false;
-            /*/
-            int offset = offsets.BinarySearch(position + 1);
-
-            if (offset < 0)
-            {
-                offset = ~offset;
-                if (offset == offsets.Length)
-                {
-                    return false;
-                }
-            }
-
-            position = offsets[offset];
-            return true;
-            //*/
-        }
-        else
-        {
-            int offset = -size;
-
-            if (offset > position)
-            {
-                position = offset;
-                return true;
-            }
-
-            offset = offsetInfo.OffsetIndex;
-
-            if (offset < 0)
-            {
-                offset = -offset;
-
-                if (offset > position)
-                {
-                    position = offset;
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        return offsetInfo.TryFindNextPosition(documentIdsWithOffsets.Offsets, ref position);
     }
 
     public override string ToString()

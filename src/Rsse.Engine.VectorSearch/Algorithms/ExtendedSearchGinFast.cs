@@ -61,10 +61,8 @@ public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSear
                         continue;
                     }
 
-                    var extendedTokensLine = GeneralDirectIndex[documentId].Extended;
-                    var metric = ScoreCalculator.ComputeOrdered(extendedTokensLine, searchVector, searchStartIndex);
-
-                    metricsCalculator.AppendExtended(metric, searchVector, documentId, extendedTokensLine);
+                    metricsCalculator.AppendExtendedMetric(searchVector, documentId,
+                        GeneralDirectIndex, searchStartIndex);
                 }
             }
         }

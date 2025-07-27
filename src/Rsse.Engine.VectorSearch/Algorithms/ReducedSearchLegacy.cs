@@ -26,15 +26,13 @@ public sealed class ReducedSearchLegacy : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ReducedSearchLegacy));
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ReducedSearchLegacy));
 
         // поиск в векторе reduced
         foreach (var (documentId, tokenLine) in GeneralDirectIndex)
         {
-            var reducedTargetVector = tokenLine.Reduced;
-            var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
-
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
+            metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine);
         }
     }
 }

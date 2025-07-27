@@ -33,9 +33,6 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ExtendedSearchGinOffset));
-
         var enumerators = TempStoragePool.TokenOffsetEnumeratorListsStorage.Get();
 
         try
@@ -55,6 +52,9 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
                     }
                 default:
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                            throw new OperationCanceledException(nameof(ExtendedSearchGinOffset));
+
                         ProcessMulti(searchVector, metricsCalculator, enumerators);
                         break;
                     }
@@ -157,7 +157,7 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
                     }
 
                     if (documentId1 == documentId &&
-                        enumerator.FindNextPosition(ref position))
+                        enumerator.TryFindNextPosition(ref position))
                     {
                         metric++;
 

@@ -207,7 +207,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                     if (documentId1 == documentId)
                     {
-                        if (enumerator.FindNextPosition(ref position))
+                        if (enumerator.TryFindNextPosition(ref position))
                         {
                             metric++;
                         }
@@ -352,7 +352,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                     if (documentId1 == documentId)
                     {
-                        if (enumerator.FindNextPosition(ref position))
+                        if (enumerator.TryFindNextPosition(ref position))
                         {
                             metric++;
                         }

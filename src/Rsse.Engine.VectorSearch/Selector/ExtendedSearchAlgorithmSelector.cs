@@ -19,9 +19,11 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     /// <summary>
     /// Поддержка инвертированного индекса для расширенного поиска и метрик.
     /// </summary>
-    private readonly InvertedIndex<TDocumentIdCollection> _ginExtended = new();
+    private readonly InvertedIndex<TDocumentIdCollection> _invertedIndex = new();
 
-    private readonly InvertedOffsetIndex _ginOffsetExtended = new();
+    private readonly InvertedOffsetIndex _invertedOffsetIndex = new();
+
+    private readonly DirectOffsetIndex _directOffsetIndex = new();
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGinSimple<TDocumentIdCollection> _extendedSearchGinSimple;
@@ -33,6 +35,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly IExtendedSearchProcessor _extendedSearchGinMergeFilter;
     private readonly ExtendedSearchGinOffset _extendedSearchGinOffset;
     private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
+    private readonly ExtendedSearchGinDirectOffset _extendedSearchGinDirectOffset;
+    private readonly ExtendedSearchGinDirectOffsetFilter _extendedSearchGinDirectOffsetFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -58,7 +62,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _extendedSearchGinSimple = new ExtendedSearchGinSimple<TDocumentIdCollection>
         {
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _invertedIndex
         };
 
         // С GIN-индексом.
@@ -66,14 +70,14 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _invertedIndex
         };
 
         _extendedSearchGinFilter = new ExtendedSearchGinFilter<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended,
+            GinExtended = _invertedIndex,
             RelevanceFilter = relevanceFilter
         };
 
@@ -82,14 +86,14 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended
+            GinExtended = _invertedIndex
         };
 
         _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginExtended,
+            GinExtended = _invertedIndex,
             RelevanceFilter = relevanceFilter
         };
 
@@ -99,14 +103,14 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
-                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended
+                GinExtended = (InvertedIndex<DocumentIdList>)(object)_invertedIndex
             };
 
             _extendedSearchGinMergeFilter = new ExtendedSearchGinMergeFilter
             {
                 TempStoragePool = tempStoragePool,
                 GeneralDirectIndex = generalDirectIndex,
-                GinExtended = (InvertedIndex<DocumentIdList>)(object)_ginExtended,
+                GinExtended = (InvertedIndex<DocumentIdList>)(object)_invertedIndex,
                 RelevanceFilter = relevanceFilter
             };
         }
@@ -125,14 +129,29 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginOffsetExtended
+            GinExtended = _invertedOffsetIndex
         };
 
         _extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _ginOffsetExtended,
+            GinExtended = _invertedOffsetIndex,
+            RelevanceFilter = relevanceFilter
+        };
+
+        _extendedSearchGinDirectOffset = new ExtendedSearchGinDirectOffset
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _directOffsetIndex
+        };
+
+        _extendedSearchGinDirectOffsetFilter = new ExtendedSearchGinDirectOffsetFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _directOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
     }
@@ -152,6 +171,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             ExtendedSearchType.GinMergeFilter => _extendedSearchGinMergeFilter,
             ExtendedSearchType.GinOffset => _extendedSearchGinOffset,
             ExtendedSearchType.GinOffsetFilter => _extendedSearchGinOffsetFilter,
+            ExtendedSearchType.GinDirectOffset => _extendedSearchGinDirectOffset,
+            ExtendedSearchType.GinDirectOffsetFilter => _extendedSearchGinDirectOffsetFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };
@@ -160,28 +181,32 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _ginExtended.AddVector(documentId, tokenVector);
-        _ginOffsetExtended.AddOrUpdateVector(documentId, tokenVector);
+        _invertedIndex.AddVector(documentId, tokenVector);
+        _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
     {
-        _ginExtended.UpdateVector(documentId, tokenVector, oldTokenVector);
-        _ginOffsetExtended.AddOrUpdateVector(documentId, tokenVector);
+        _invertedIndex.UpdateVector(documentId, tokenVector, oldTokenVector);
+        _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _ginExtended.RemoveVector(documentId, tokenVector);
-        _ginOffsetExtended.RemoveVector(documentId);
+        _invertedIndex.RemoveVector(documentId, tokenVector);
+        _invertedOffsetIndex.RemoveVector(documentId);
+        _directOffsetIndex.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        _ginExtended.Clear();
-        _ginOffsetExtended.Clear();
+        _invertedIndex.Clear();
+        _invertedOffsetIndex.Clear();
+        _directOffsetIndex.Clear();
     }
 }

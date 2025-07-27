@@ -52,11 +52,7 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
             // поиск в векторе reduced
             foreach (var (documentId, _) in comparisonScores)
             {
-                var reducedTargetVector = GeneralDirectIndex[documentId].Reduced;
-                var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
-
-                // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
+                metricsCalculator.AppendReducedMetric(searchVector, documentId, GeneralDirectIndex);
             }
         }
         finally

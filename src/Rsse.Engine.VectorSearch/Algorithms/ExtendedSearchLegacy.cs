@@ -18,17 +18,16 @@ public sealed class ExtendedSearchLegacy : IExtendedSearchProcessor
     public required DirectIndex GeneralDirectIndex { private get; init; }
 
     /// <inheritdoc/>
-    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
 
         // поиск в векторе extended
         foreach (var (documentId, tokenLine) in GeneralDirectIndex)
         {
-            var extendedTargetVector = tokenLine.Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
-
-            metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+            metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
         }
     }
 }

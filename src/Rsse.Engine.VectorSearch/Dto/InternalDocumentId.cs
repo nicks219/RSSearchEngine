@@ -1,6 +1,6 @@
 using RsseEngine.Contracts;
 
-namespace RsseEngine.Dto.Offsets;
+namespace RsseEngine.Dto;
 
 /// <summary>
 /// Внутренний идентификатор заметки.

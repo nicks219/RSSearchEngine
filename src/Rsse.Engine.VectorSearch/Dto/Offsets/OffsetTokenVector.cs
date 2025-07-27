@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Offsets;
 
 /// <summary>
 /// Вектор из хэшей, представляющий собой токенизированную заметку.
 /// </summary>
 /// <param name="tokens">Токенизированная заметка.</param>
-public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
+public readonly struct OffsetTokenVector(List<int> tokens, List<OffsetInfo> offsetInfos, List<int> offsets)
+    : IEquatable<OffsetTokenVector>
 {
     // Токенизированная заметка.
     private readonly List<int> _tokens = tokens;
@@ -34,6 +35,13 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     public int IndexOf(Token token, int startIndex) => _tokens.IndexOf(token.Value, startIndex);
 
     /// <summary>
+    /// Вернуть отсчитываемый от ноля индекс первого вхождения токена.
+    /// </summary>
+    /// <param name="token">Токен.</param>
+    /// <returns>Отсчитываемый от ноля индекс первого вхождения токена, либо -1 если токен не найден.</returns>
+    public int BinarySearch(Token token) => _tokens.BinarySearch(token.Value);
+
+    /// <summary>
     /// Получить перечислитель для вектора.
     /// </summary>
     /// <returns>Перечислитель для вектора.</returns>
@@ -43,17 +51,17 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// Конвертировать в вектор с уникальными элементами.
     /// </summary>
     /// <returns>Вектор с уникальными токенами.</returns>
-    public TokenVector DistinctAndGet() => new(_tokens.ToHashSet().ToList());
+    public TokenVector DistinctAndGet() => new(_tokens.ToList());
 
-    public bool Equals(TokenVector other) => _tokens.Equals(other._tokens);
+    public bool Equals(OffsetTokenVector other) => _tokens.Equals(other._tokens);
 
-    public override bool Equals(object? obj) => obj is TokenVector other && Equals(other);
+    public override bool Equals(object? obj) => obj is OffsetTokenVector other && Equals(other);
 
     public override int GetHashCode() => _tokens.GetHashCode();
 
-    public static bool operator ==(TokenVector left, TokenVector right) => left.Equals(right);
+    public static bool operator ==(OffsetTokenVector left, OffsetTokenVector right) => left.Equals(right);
 
-    public static bool operator !=(TokenVector left, TokenVector right) => !(left == right);
+    public static bool operator !=(OffsetTokenVector left, OffsetTokenVector right) => !(left == right);
 
     /// <summary>
     /// Получить по индексу токен из вектора.
@@ -69,31 +77,32 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// <returns>Коллекция хэшей.</returns>
     public List<int> ToIntList() => _tokens.ToList();
 
-    public HashSet<Token> Intersect(TokenVector tokenVector)
+    public HashSet<Token> Intersect(OffsetTokenVector tokenVector)
     {
         return _tokens.Intersect(tokenVector._tokens)
             .Select(token => new Token(token))
             .ToHashSet();
     }
 
-    public Dictionary<Token, List<int>> ToDictionary()
+    public bool TryFindNextTokenPosition(Token token, ref int position)
     {
-        var dictionary = new Dictionary<Token, List<int>>();
-
-        for (int index = 0; index < _tokens.Count; index++)
+        //*
+        var index = IndexOf(token, 0);
+        if (index != -1)
+        /*/
+        var index = BinarySearch(token);
+        if (index >= 0)
+        //*/
         {
-            var token = new Token(_tokens[index]);
+            var offsetInfo = offsetInfos[index];
 
-            if (!dictionary.TryGetValue(token, out var offsets))
+            if (offsetInfo.TryFindNextPosition(offsets, ref position))
             {
-                offsets = new List<int>();
-                dictionary.Add(token, offsets);
+                return true;
             }
-
-            offsets.Add(index);
         }
 
-        return dictionary;
+        return false;
     }
 
     /// <summary>

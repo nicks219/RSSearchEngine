@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
-using RsseEngine.Dto.Offsets;
 using RsseEngine.Iterators;
 
 namespace RsseEngine.Processor;
@@ -59,6 +58,12 @@ public static class MergeAlgorithm
         out int minI0, out DocumentId min0, out DocumentId min1)
     {
         FindMin<DocumentId, DocumentListEnumerator>(list, listExists, out minI0, out min0, out min1);
+    }
+
+    public static void FindMin(List<InternalDocumentListEnumerator> list, List<int> listExists,
+        out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
+    {
+        FindMin<InternalDocumentId, InternalDocumentListEnumerator>(list, listExists, out minI0, out min0, out min1);
     }
 
     public static void FindMin(List<TokenOffsetEnumerator> list, List<int> listExists,

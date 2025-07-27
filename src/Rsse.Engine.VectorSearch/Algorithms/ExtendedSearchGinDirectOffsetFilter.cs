@@ -16,7 +16,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -28,7 +28,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex<DocumentIdList> GinExtended { get; init; }
+    public required DirectOffsetIndex GinExtended { get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -36,8 +36,8 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
-        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var idsFromGin = TempStoragePool.InternalDocumentIdListsStorage.Get();
+        var sortedIds = TempStoragePool.InternalDocumentIdListsStorage.Get();
 
         try
         {
@@ -59,7 +59,10 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
 
                         foreach (var documentId in idFromGin)
                         {
-                            metricsCalculator.AppendExtended(1, searchVector, documentId, GeneralDirectIndex);
+                            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                            {
+                                metricsCalculator.AppendExtended(1, searchVector, externalDocumentId, GeneralDirectIndex);
+                            }
                         }
 
                         break;
@@ -77,8 +80,8 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
-            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.InternalDocumentIdListsStorage.Return(sortedIds);
+            TempStoragePool.InternalDocumentIdListsStorage.Return(idsFromGin);
         }
     }
 
@@ -91,11 +94,11 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
     /// <param name="filteredTokensCount"></param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<DocumentIdList> sortedIds, int filteredTokensCount)
+        List<InternalDocumentIdList> sortedIds, int filteredTokensCount)
     {
-        var list = TempStoragePool.ListEnumeratorListsStorage.Get();
+        var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
         var listExists = TempStoragePool.IntListsStorage.Get();
-        var dictionary = TempStoragePool.DocumentIdListCountStorage.Get();
+        var dictionary = TempStoragePool.InternalDocumentIdListCountStorage.Get();
 
         try
         {
@@ -116,7 +119,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
 
             if (listExists.Count == 1)
             {
-                AppendMetric(list, listExists, metricsCalculator, searchVector);
+                AppendMetric2(list, listExists, metricsCalculator, searchVector);
                 return;
             }
 
@@ -127,7 +130,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
             START:
                 if (docId0.Value < docId1.Value)
                 {
-                    metricsCalculator.AppendExtendedMetric(searchVector, docId0, GeneralDirectIndex);
+                    AppendMetric1(searchVector, metricsCalculator, docId0);
 
                     ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
                     if (!enumeratorI.MoveNext())
@@ -163,25 +166,31 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
                     // поиск в векторе extended
                     if (sIndex < int.MaxValue)
                     {
-                        metricsCalculator.AppendExtendedMetric(searchVector, docId0, GeneralDirectIndex);
+                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0);
                     }
                 }
             } while (listExists.Count > 1);
 
             if (listExists.Count == 1)
             {
-                AppendMetric(list, listExists, metricsCalculator, searchVector);
+                AppendMetric2(list, listExists, metricsCalculator, searchVector);
             }
         }
         finally
         {
-            TempStoragePool.DocumentIdListCountStorage.Return(dictionary);
+            TempStoragePool.InternalDocumentIdListCountStorage.Return(dictionary);
             TempStoragePool.IntListsStorage.Return(listExists);
-            TempStoragePool.ListEnumeratorListsStorage.Return(list);
+            TempStoragePool.ListInternalEnumeratorListsStorage.Return(list);
         }
     }
 
-    private void AppendMetric(List<DocumentListEnumerator> list, List<int> listExists,
+    private void AppendMetric1(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        InternalDocumentId documentId)
+    {
+        CalculateAndAppendMetric(metricsCalculator, searchVector, documentId);
+    }
+
+    private void AppendMetric2(List<InternalDocumentListEnumerator> list, List<int> listExists,
         IMetricsCalculator metricsCalculator, TokenVector searchVector)
     {
         var index = listExists[0];
@@ -190,8 +199,38 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
         do
         {
             var documentId = enumerator.Current;
-            metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex);
+            CalculateAndAppendMetric(metricsCalculator, searchVector, documentId);
         } while (enumerator.MoveNext());
+    }
+
+    private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
+        InternalDocumentId documentId)
+    {
+        const int sIndex = 0;
+
+        if (GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector))
+        {
+            var position = -1;
+            var metric = 0;
+
+            for (var i = sIndex; i < searchVector.Count; i++)
+            {
+                var token = searchVector.ElementAt(i);
+
+                if (offsetTokenVector.TryFindNextTokenPosition(token, ref position))
+                {
+                    metric++;
+                }
+            }
+
+            if (position >= 0)
+            {
+                if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                {
+                    metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                }
+            }
+        }
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

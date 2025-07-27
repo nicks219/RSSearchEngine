@@ -44,7 +44,11 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinOffset),
         new(ExtendedSearchType.GinOffset, true),
         new(ExtendedSearchType.GinOffsetFilter),
-        new(ExtendedSearchType.GinOffsetFilter, true)
+        new(ExtendedSearchType.GinOffsetFilter, true),
+        new(ExtendedSearchType.GinDirectOffset),
+        new(ExtendedSearchType.GinDirectOffset, true),
+        new(ExtendedSearchType.GinDirectOffsetFilter),
+        new(ExtendedSearchType.GinDirectOffsetFilter, true)
     ];
 
     [ParamsSource(nameof(Parameters))]

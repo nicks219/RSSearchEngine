@@ -60,11 +60,7 @@ public sealed class ExtendedSearchGinOptimized<TDocumentIdCollection> : IExtende
 
             foreach (var documentId in processedDocuments)
             {
-                var extendedTargetVector = GeneralDirectIndex[documentId].Extended;
-                var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector);
-
-                // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-                metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+                metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex);
             }
         }
         finally

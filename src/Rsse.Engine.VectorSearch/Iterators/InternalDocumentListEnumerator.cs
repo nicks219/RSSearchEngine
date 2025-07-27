@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using RsseEngine.Dto.Offsets;
+using RsseEngine.Dto;
 
 namespace RsseEngine.Iterators;
 
@@ -28,7 +28,7 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
 
     public bool MoveNextBinarySearch(InternalDocumentId item)
     {
-        List<InternalDocumentId> list = _list;
+        var list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();
@@ -53,7 +53,7 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
 
     public bool MoveNext()
     {
-        List<InternalDocumentId> list = _list;
+        var list = _list;
 
         if ((uint)_index >= (uint)list.Count)
             return MoveNextRare();

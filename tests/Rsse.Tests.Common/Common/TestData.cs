@@ -21,7 +21,9 @@ public abstract class TestData
         ExtendedSearchType.GinMerge,
         ExtendedSearchType.GinMergeFilter,
         ExtendedSearchType.GinOffset,
-        ExtendedSearchType.GinOffsetFilter
+        ExtendedSearchType.GinOffsetFilter,
+        ExtendedSearchType.GinDirectOffset,
+        ExtendedSearchType.GinDirectOffsetFilter
     ];
 
     /// <summary>

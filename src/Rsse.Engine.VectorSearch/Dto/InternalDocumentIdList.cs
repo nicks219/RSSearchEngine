@@ -2,18 +2,24 @@ using System;
 using System.Collections.Generic;
 using RsseEngine.Iterators;
 
-namespace RsseEngine.Dto.Offsets;
+namespace RsseEngine.Dto;
 
 /// <summary>
 /// Сортированный вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
 /// <param name="list">Список идентификаторов документов.</param>
-public readonly struct DocumentIdOffsetList(List<InternalDocumentId> list) : IEquatable<DocumentIdOffsetList>
+public readonly struct InternalDocumentIdList(List<InternalDocumentId> list) : IEquatable<InternalDocumentIdList>
 {
     // Коллекция уникальных идентификаторов заметок.
     private readonly List<InternalDocumentId> _list = list;
 
     public int Count => _list.Count;
+
+    /// <summary>
+    /// Получить перечислитель для вектора.
+    /// </summary>
+    /// <returns>Перечислитель для вектора.</returns>
+    public List<InternalDocumentId>.Enumerator GetEnumerator() => _list.GetEnumerator();
 
     /// <summary>
     /// Получить перечислитель для вектора идентификаторов.
@@ -24,15 +30,15 @@ public readonly struct DocumentIdOffsetList(List<InternalDocumentId> list) : IEq
         return new InternalDocumentListEnumerator(_list);
     }
 
-    public bool Equals(DocumentIdOffsetList other) => _list.Equals(other._list);
+    public bool Equals(InternalDocumentIdList other) => _list.Equals(other._list);
 
-    public override bool Equals(object? obj) => obj is DocumentIdOffsetList other && Equals(other);
+    public override bool Equals(object? obj) => obj is InternalDocumentIdList other && Equals(other);
 
     public override int GetHashCode() => _list.GetHashCode();
 
-    public static bool operator ==(DocumentIdOffsetList left, DocumentIdOffsetList right) => left.Equals(right);
+    public static bool operator ==(InternalDocumentIdList left, InternalDocumentIdList right) => left.Equals(right);
 
-    public static bool operator !=(DocumentIdOffsetList left, DocumentIdOffsetList right) => !(left == right);
+    public static bool operator !=(InternalDocumentIdList left, InternalDocumentIdList right) => !(left == right);
 
     /// <summary>
     /// Добавить идентификатор документа в вектор с сохранением сортировки.

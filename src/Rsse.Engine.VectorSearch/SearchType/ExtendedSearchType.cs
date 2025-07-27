@@ -51,7 +51,7 @@ public enum ExtendedSearchType
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ExtendedSearchGinMerge"/>
+    /// Используется алгоритм <see cref="ExtendedSearchGinMergeFilter"/>
     /// </summary>
     GinMergeFilter = 7,
 
@@ -65,5 +65,17 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffsetFilter"/>
     /// </summary>
-    GinOffsetFilter = 9
+    GinOffsetFilter = 9,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffset"/>
+    /// </summary>
+    GinDirectOffset = 10,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffsetFilter"/>
+    /// </summary>
+    GinDirectOffsetFilter = 11
 }
