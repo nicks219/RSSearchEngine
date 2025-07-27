@@ -8,12 +8,12 @@ public readonly struct OffsetInfo(int size, int offsetIndex)
 {
     public static void CreateOffsetInfo(List<int> tokenOffsets, List<OffsetInfo> offsetInfos, List<int> offsets)
     {
-        // Оптимизируем хранение позиций токенов - если позиций больще двух то храним в Offsets,
-        // иначе храним позиции в OffsetInfos - первую позицию в Size вторую позицию OffsetIndex.
-        // Позиции в OffsetInfos храним как отрицательные,
-        // если Size отрицательный или ноль - то это первая позиция,
-        // если OffsetIndex отрицательный - то это вторая позиция,
-        // если Size больще ноля - позиции хранятся в Offsets.
+        // РћРїС‚РёРјРёР·РёСЂСѓРµРј С…СЂР°РЅРµРЅРёРµ РїРѕР·РёС†РёР№ С‚РѕРєРµРЅРѕРІ - РµСЃР»Рё РїРѕР·РёС†РёР№ Р±РѕР»СЊС‰Рµ РґРІСѓС… С‚Рѕ С…СЂР°РЅРёРј РІ Offsets,
+        // РёРЅР°С‡Рµ С…СЂР°РЅРёРј РїРѕР·РёС†РёРё РІ OffsetInfos - РїРµСЂРІСѓСЋ РїРѕР·РёС†РёСЋ РІ Size РІС‚РѕСЂСѓСЋ РїРѕР·РёС†РёСЋ OffsetIndex.
+        // РџРѕР·РёС†РёРё РІ OffsetInfos С…СЂР°РЅРёРј РєР°Рє РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рµ,
+        // РµСЃР»Рё Size РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ РёР»Рё РЅРѕР»СЊ - С‚Рѕ СЌС‚Рѕ РїРµСЂРІР°СЏ РїРѕР·РёС†РёСЏ,
+        // РµСЃР»Рё OffsetIndex РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ - С‚Рѕ СЌС‚Рѕ РІС‚РѕСЂР°СЏ РїРѕР·РёС†РёСЏ,
+        // РµСЃР»Рё Size Р±РѕР»СЊС‰Рµ РЅРѕР»СЏ - РїРѕР·РёС†РёРё С…СЂР°РЅСЏС‚СЃСЏ РІ Offsets.
 
         OffsetInfo offsetInfo;
 
@@ -37,7 +37,7 @@ public readonly struct OffsetInfo(int size, int offsetIndex)
     }
 
     /// <summary>
-    /// Оптимизация хранения позиций описана в <see cref="OffsetInfo.CreateOffsetInfo"/>
+    /// РћРїС‚РёРјРёР·Р°С†РёСЏ С…СЂР°РЅРµРЅРёСЏ РїРѕР·РёС†РёР№ РѕРїРёСЃР°РЅР° РІ <see cref="OffsetInfo.CreateOffsetInfo"/>
     /// </summary>
     /// <param name="offsets"></param>
     /// <param name="position"></param>
