@@ -52,7 +52,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
@@ -115,13 +115,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
                 }
             }
 
-            if (listExists.Count == 1)
-            {
-                AppendMetric2(list, listExists, multi, metricsCalculator, searchVector);
-                return;
-            }
-
-            do
+            while (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
@@ -168,7 +162,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
                         CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, sIndex);
                     }
                 }
-            } while (listExists.Count > 1);
+            }
 
             if (listExists.Count == 1)
             {
@@ -193,7 +187,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
         }
         else
         {
-            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
             {
                 const int metric = 1;
                 metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
@@ -220,7 +214,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
             do
             {
                 var documentId = enumerator.Current;
-                if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
                 {
                     const int metric = 1;
                     metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
@@ -232,29 +226,25 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {
-        if (GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector))
+        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocumentId))
         {
-            var position = -1;
-            var metric = 0;
+            return;
+        }
 
-            for (var i = sIndex; i < searchVector.Count; i++)
+        var position = -1;
+        var metric = 0;
+
+        for (var i = sIndex; i < searchVector.Count; i++)
+        {
+            var token = searchVector.ElementAt(i);
+
+            if (offsetTokenVector.TryFindNextTokenPosition(token, ref position))
             {
-                var token = searchVector.ElementAt(i);
-
-                if (offsetTokenVector.TryFindNextTokenPosition(token, ref position))
-                {
-                    metric++;
-                }
-            }
-
-            if (position >= 0)
-            {
-                if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
-                {
-                    metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
-                }
+                metric++;
             }
         }
+
+        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

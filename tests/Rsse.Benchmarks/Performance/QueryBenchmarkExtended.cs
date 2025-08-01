@@ -10,7 +10,6 @@ using RsseEngine.Benchmarks.Common;
 using RsseEngine.Dto;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
-using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks.Performance;
 
@@ -48,7 +47,11 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinDirectOffset),
         new(ExtendedSearchType.GinDirectOffset, true),
         new(ExtendedSearchType.GinDirectOffsetFilter),
-        new(ExtendedSearchType.GinDirectOffsetFilter, true)
+        new(ExtendedSearchType.GinDirectOffsetFilter, true),
+        new(ExtendedSearchType.GinFrozenDirect),
+        new(ExtendedSearchType.GinFrozenDirect, true),
+        new(ExtendedSearchType.GinFrozenDirectFilter),
+        new(ExtendedSearchType.GinFrozenDirectFilter, true)
     ];
 
     [ParamsSource(nameof(Parameters))]
@@ -67,7 +70,7 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     [Benchmark]
     public Dictionary<DocumentId, double> QueryExtended()
     {
-        return _tokenizer.ComputeComplianceIndexExtended(SearchQuery, CancellationToken.None);
+        return _tokenizer.ComputeComplianceIndexExtended(Constants.SearchQuery, CancellationToken.None);
     }
 
     /// <inheritdoc/>
@@ -77,7 +80,7 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
-    public Task Initialize() => InitializeTokenizer(TokenizerExtendedSearchType, false);
+    public Task Initialize() => InitializeTokenizer(Constants.TokenizerExtendedSearchType, false);
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.

@@ -40,7 +40,7 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
-                    idsFromGin, sortedIds, filteredDocuments))
+                    idsFromGin, sortedIds, filteredDocuments, out var minRelevancyCount))
             {
                 return;
             }
@@ -51,7 +51,7 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
             // поиск в векторе extended
             foreach (var documentId in filteredDocuments)
             {
-                metricsCalculator.AppendExtendedMetric(searchVector, documentId, GeneralDirectIndex);
+                metricsCalculator.AppendExtendedRelevancyMetric(searchVector, documentId, GeneralDirectIndex, minRelevancyCount);
             }
         }
         finally

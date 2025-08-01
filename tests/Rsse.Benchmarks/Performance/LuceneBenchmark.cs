@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using RsseEngine.Benchmarks.Common;
-using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks.Performance;
 
@@ -24,7 +23,7 @@ public class LuceneBenchmark : IBenchmarkRunner
     [Benchmark]
     public void FindSentence()
     {
-        var result = LuceneWrapper.Find(SearchQuery);
+        var result = LuceneWrapper.Find(Constants.SearchQuery);
 
         if (result.Count == 0)
         {

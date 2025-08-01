@@ -40,7 +40,7 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
-                    idsFromGin, sortedIds, filteredDocuments))
+                    idsFromGin, sortedIds, filteredDocuments, out var minRelevancyCount))
             {
                 return;
             }
@@ -80,8 +80,8 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
 
                             processedDocuments.Add(documentId);
 
-                            metricsCalculator.AppendExtendedMetric(searchVector, documentId,
-                                GeneralDirectIndex, searchStartIndex);
+                            metricsCalculator.AppendExtendedRelevancyMetric(searchVector, documentId,
+                                GeneralDirectIndex, minRelevancyCount, searchStartIndex);
 
                             if (filteredDocuments.Count == processedDocuments.Count)
                             {
@@ -105,8 +105,8 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
                                 continue;
                             }
 
-                            metricsCalculator.AppendExtendedMetric(searchVector, documentId,
-                                GeneralDirectIndex, searchStartIndex);
+                            metricsCalculator.AppendExtendedRelevancyMetric(searchVector, documentId,
+                                GeneralDirectIndex, minRelevancyCount, searchStartIndex);
 
                             if (filteredDocuments.Count == 0)
                             {

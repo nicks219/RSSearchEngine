@@ -7,7 +7,6 @@ using BenchmarkDotNet.Order;
 using Rsse.Tests.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
-using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks.Performance;
 
@@ -48,7 +47,7 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
     [Benchmark]
     public void QueryExtendedAndReduced()
     {
-        var results = _tokenizer.ComputeComplianceIndices(SearchQuery, CancellationToken.None);
+        var results = _tokenizer.ComputeComplianceIndices(Constants.SearchQuery, CancellationToken.None);
         if (results.Count == 0)
         {
             Console.WriteLine("[Tokenizer] empty result");
@@ -64,7 +63,7 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
-    public Task Initialize() => InitializeTokenizer(TokenizerExtendedSearchType, TokenizerReducedSearchType);
+    public Task Initialize() => InitializeTokenizer(Constants.TokenizerExtendedSearchType, Constants.TokenizerReducedSearchType);
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.

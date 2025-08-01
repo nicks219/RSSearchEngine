@@ -6,7 +6,6 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
-using RsseEngine.Iterators;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
 
@@ -42,7 +41,7 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtendedMerge(GinExtended, searchVector, idsFromGin,
-                    sortedIds, out var filteredTokensCount))
+                    sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
             }
@@ -59,7 +58,7 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
                             {
                                 metricsCalculator.AppendExtended(1, searchVector, externalDocumentId, GeneralDirectIndex);
                             }
@@ -72,7 +71,7 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ExtendedSearchGinMerge));
 
-                        CreateExtendedSearchSpace(searchVector, metricsCalculator, sortedIds, filteredTokensCount);
+                        CreateExtendedSearchSpace(searchVector, metricsCalculator, sortedIds, filteredTokensCount, minRelevancyCount);
 
                         break;
                     }
@@ -92,9 +91,10 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
     /// <param name="metricsCalculator"></param>
     /// <param name="sortedIds"></param>
     /// <param name="filteredTokensCount"></param>
+    /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<InternalDocumentIdList> sortedIds, int filteredTokensCount)
+        List<InternalDocumentIdList> sortedIds, int filteredTokensCount, int minRelevancyCount)
     {
         var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
         var listExists = TempStoragePool.IntListsStorage.Get();
@@ -117,20 +117,14 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                 }
             }
 
-            if (listExists.Count == 1)
-            {
-                AppendMetric2(list, listExists, metricsCalculator, searchVector);
-                return;
-            }
-
-            do
+            while (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
             START:
                 if (docId0.Value < docId1.Value)
                 {
-                    AppendMetric1(searchVector, metricsCalculator, docId0);
+                    CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, minRelevancyCount);
 
                     ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
                     if (!enumeratorI.MoveNext())
@@ -146,8 +140,6 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                 }
                 else if (docId0 == docId1)
                 {
-                    var sIndex = int.MaxValue;
-
                     for (var i = listExists.Count - 1; i >= 0; i--)
                     {
                         var index = listExists[i];
@@ -155,7 +147,6 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                         ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[index];
                         if (docId0 == enumeratorI.Current)
                         {
-                            sIndex = Math.Min(sIndex, index);
                             if (!enumeratorI.MoveNext())
                             {
                                 SwapAndRemoveAt(listExists, i);
@@ -163,17 +154,20 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                         }
                     }
 
-                    // поиск в векторе extended
-                    if (sIndex < int.MaxValue)
-                    {
-                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0);
-                    }
+                    CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, minRelevancyCount);
                 }
-            } while (listExists.Count > 1);
+            }
 
             if (listExists.Count == 1)
             {
-                AppendMetric2(list, listExists, metricsCalculator, searchVector);
+                var index = listExists[0];
+                var enumerator = list[index];
+
+                do
+                {
+                    var documentId = enumerator.Current;
+                    CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, minRelevancyCount);
+                } while (enumerator.MoveNext());
             }
         }
         finally
@@ -184,53 +178,35 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
         }
     }
 
-    private void AppendMetric1(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        InternalDocumentId documentId)
-    {
-        CalculateAndAppendMetric(metricsCalculator, searchVector, documentId);
-    }
-
-    private void AppendMetric2(List<InternalDocumentListEnumerator> list, List<int> listExists,
-        IMetricsCalculator metricsCalculator, TokenVector searchVector)
-    {
-        var index = listExists[0];
-        var enumerator = list[index];
-
-        do
-        {
-            var documentId = enumerator.Current;
-            CalculateAndAppendMetric(metricsCalculator, searchVector, documentId);
-        } while (enumerator.MoveNext());
-    }
-
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
-        InternalDocumentId documentId)
+        InternalDocumentId documentId, int minRelevancyCount)
     {
-        const int sIndex = 0;
-
-        if (GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector))
+        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocumentId))
         {
-            var position = -1;
-            var metric = 0;
+            return;
+        }
 
-            for (var i = sIndex; i < searchVector.Count; i++)
+        var position = -1;
+        var empty = 0;
+
+        for (var i = 0; i < searchVector.Count; i++)
+        {
+            var token = searchVector.ElementAt(i);
+
+            if (!offsetTokenVector.TryFindNextTokenPosition(token, ref position))
             {
-                var token = searchVector.ElementAt(i);
+                empty++;
 
-                if (offsetTokenVector.TryFindNextTokenPosition(token, ref position))
+                if (empty > searchVector.Count - minRelevancyCount)
                 {
-                    metric++;
-                }
-            }
-
-            if (position >= 0)
-            {
-                if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
-                {
-                    metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                    return;
                 }
             }
         }
+
+        var metric = searchVector.Count - empty;
+
+        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

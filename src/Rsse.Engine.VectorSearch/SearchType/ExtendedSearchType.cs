@@ -77,5 +77,17 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffsetFilter"/>
     /// </summary>
-    GinDirectOffsetFilter = 11
+    GinDirectOffsetFilter = 11,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinFrozenDirect"/>
+    /// </summary>
+    GinFrozenDirect = 12,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinFrozenDirectFilter"/>
+    /// </summary>
+    GinFrozenDirectFilter = 13
 }

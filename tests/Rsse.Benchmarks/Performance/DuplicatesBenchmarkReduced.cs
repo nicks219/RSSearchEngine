@@ -10,7 +10,6 @@ using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
-using static RsseEngine.Benchmarks.Constants;
 
 namespace RsseEngine.Benchmarks.Performance;
 
@@ -80,7 +79,7 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
     }
 
     /// <inheritdoc/>
-    public Task Initialize() => InitializeTokenizer(TokenizerReducedSearchType, false);
+    public Task Initialize() => InitializeTokenizer(Constants.TokenizerReducedSearchType, false);
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.

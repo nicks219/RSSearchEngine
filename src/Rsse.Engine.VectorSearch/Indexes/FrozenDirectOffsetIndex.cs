@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using RsseEngine.Dto;
@@ -8,14 +9,14 @@ namespace RsseEngine.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class DirectOffsetIndex : IOffsetIndex
+public sealed class FrozenDirectOffsetIndex : IOffsetIndex
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
     /// </summary>
     private readonly Dictionary<Token, InternalDocumentIdList> _invertedIndex = new();
 
-    private readonly List<OffsetTokenVector> _directIndex = new();
+    private readonly List<FrozenOffsetTokenVector> _directIndex = new();
 
     private readonly List<DocumentId> _internalDocumentIdToDocumentId = new();
 
@@ -96,7 +97,7 @@ public sealed class DirectOffsetIndex : IOffsetIndex
     }
 
     public bool TryGetOffsetTokenVector(InternalDocumentId documentId,
-        out OffsetTokenVector offsetTokenVector, out DocumentId externalDocumentId)
+        out FrozenOffsetTokenVector offsetTokenVector, out DocumentId externalDocumentId)
     {
         if (_deletedDocuments.Contains(documentId))
         {
@@ -143,7 +144,16 @@ public sealed class DirectOffsetIndex : IOffsetIndex
             OffsetInfo.CreateOffsetInfo(tokenOffsets, offsetInfos, offsets);
         }
 
-        var offsetTokenVector = new OffsetTokenVector(tokens, offsetInfos, offsets);
+        Dictionary<int, OffsetInfo> tokens1 = new Dictionary<int, OffsetInfo>();
+
+        for (int i = 0; i < tokens.Count; i++)
+        {
+            tokens1.Add(tokens[i], offsetInfos[i]);
+        }
+
+        FrozenDictionary<int, OffsetInfo> tokens2 = tokens1.ToFrozenDictionary();
+
+        var offsetTokenVector = new FrozenOffsetTokenVector(tokens2, offsets);
 
         _directIndex.Add(offsetTokenVector);
     }

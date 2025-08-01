@@ -100,7 +100,11 @@ public static class DiagnosticsProgram
             typeof(DuplicatesBenchmarkExtended),
             typeof(QueryBenchmarkExtended),
             typeof(DuplicatesBenchmarkReduced),
-            typeof(QueryBenchmarkReduced)
+            typeof(QueryBenchmarkReduced),
+            /*typeof(MtQueryBenchmarkExtended),
+            typeof(MtQueryBenchmarkReduced),*/
+            /*typeof(StQueryBenchmarkExtended),
+            typeof(StQueryBenchmarkReduced)*/
         ], config);
     }
 
@@ -113,8 +117,17 @@ public static class DiagnosticsProgram
         // Шаг для инициализации.
         Console.WriteLine($"[{nameof(RunProfiling)}] starting..");
 
-        IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks
-            ? new QueryBenchmarkGeneral()
+        IBenchmarkRunner benchmarkRunner = runTokenizerBenchmarks ?
+            new QueryBenchmarkGeneral()
+            //new DuplicateBenchmarkGeneral()
+            //new QueryBenchmarkExtended { SearchType = new BenchmarkParameter<ExtendedSearchType>(SearchType: ExtendedSearchType.Legacy, Pool: true) }
+            //new DuplicatesBenchmarkExtended() { SearchType = new BenchmarkParameter<ExtendedSearchType>(SearchType: ExtendedSearchType.Legacy, Pool: true) }
+            //new QueryBenchmarkReduced { SearchType = new BenchmarkParameter<ReducedSearchType>(SearchType: ReducedSearchType.Legacy, Pool: true) }
+            //new DuplicatesBenchmarkReduced() { SearchType = new BenchmarkParameter<ReducedSearchType>(SearchType: ReducedSearchType.Legacy, Pool: true) }
+            //new MtQueryBenchmarkExtended { SearchType = new BenchmarkParameter<ExtendedSearchType>(SearchType: ExtendedSearchType.Legacy, Pool: true) }
+            //new MtQueryBenchmarkReduced { SearchType = new BenchmarkParameter<ReducedSearchType>(SearchType: ReducedSearchType.Legacy, Pool: true) }
+            //new StQueryBenchmarkExtended { SearchType = new BenchmarkParameter<ExtendedSearchType>(SearchType: ExtendedSearchType.Legacy, Pool: true) }
+            //new StQueryBenchmarkReduced { SearchType = new BenchmarkParameter<ReducedSearchType>(SearchType: ReducedSearchType.Legacy, Pool: true) }
             : new LuceneBenchmark();
 
         var stopwatch = Stopwatch.StartNew();
@@ -157,7 +170,7 @@ public static class DiagnosticsProgram
         var iterationsMemory = GC.GetTotalAllocatedBytes() - warmupMemory;
 
         Console.WriteLine($"[{nameof(RunProfiling)}] | elapsed total: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec.");
-        Console.WriteLine($"[{nameof(RunProfiling)}] | elapsed per request: '{(double)stopwatch.ElapsedMilliseconds / 1000 / ProfilerIterations:F4}' sec.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | elapsed per request: '{(double)stopwatch.ElapsedMilliseconds / 1 / ProfilerIterations:F4}' mSec.");
         Console.WriteLine($"[{nameof(RunProfiling)}] | total memory allocated: '{iterationsMemory / 1000000:N1}' Mb.");
         Console.WriteLine($"[{nameof(RunProfiling)}] | memory allocated per request: '{iterationsMemory / 1000 / ProfilerIterations:N1}' Kb.");
 

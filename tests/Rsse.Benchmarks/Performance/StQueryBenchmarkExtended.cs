@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
-using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
 using RsseEngine.SearchType;
@@ -15,16 +14,16 @@ namespace RsseEngine.Benchmarks.Performance;
 
 /// <summary>
 /// Инициализация и бенчмарк на TokenizerServiceCore.
-/// Производится поиск дубликатов во всех документах.
+/// Производится поиск тестового запроса во всех документах.
 /// </summary>
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
-public class DuplicatesBenchmarkExtended : IBenchmarkRunner
+public class StQueryBenchmarkExtended : IBenchmarkRunner
 {
-    private TokenizerServiceCore _tokenizer = null!;
+    private const int QueriesCount = 1000;
 
-    private List<NoteEntity> _noteEntities = null!;
+    private TokenizerServiceCore _tokenizer = null!;
 
     public static List<BenchmarkParameter<ExtendedSearchType>> Parameters =>
     [
@@ -56,9 +55,39 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinFrozenDirectFilter, true)
     ];
 
+    public static List<string> SearchQueries =>
+    [
+        //"пляшем на столе за детей",
+        "удача с ними за столом",
+        //"чорт з ным зо сталом",
+        "чёрт с ними за столом",
+        "с ними за столом чёрт",
+        //"преключиться вдруг верный друг",
+        "приключится вдруг верный друг",
+        "приключится вдруг вот верный друг выручить",
+        "пляшем на",
+        "ты шла по палубе в молчаний",
+        //"оно шла по палубе в молчаний",
+        //"123 456 иии",
+        //"aa bb cc dd .,/#",
+        //" |",
+        "я ты он она",
+        "a b c d .,/#",
+        //" ",
+        "на",
+        "b b b b b b",
+        "b b b b b",
+        "b b b b",
+        "b"
+    ];
+
     [ParamsSource(nameof(Parameters))]
     // ReSharper disable once UnassignedField.Global
     public required BenchmarkParameter<ExtendedSearchType> SearchType;
+
+    /*[ParamsSource(nameof(SearchQueries))]
+    // ReSharper disable once UnassignedField.Global
+    public required string SearchQuery;*/
 
     /// <summary>
     /// Инициализировать RSSE токенайзер.
@@ -70,14 +99,31 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     }
 
     [Benchmark]
-    public void DuplicatesExtended()
+    public void QueryExtended()
     {
-        foreach (NoteEntity noteEntity in _noteEntities)
+        var counter = 0;
+
+        for (;;)
         {
-            var results = _tokenizer.ComputeComplianceIndexExtended(noteEntity.Text, CancellationToken.None);
-            if (results.Count == 0)
+            for (var i = 0; i < SearchQueries.Count; i++)
             {
-                Console.WriteLine("[Tokenizer] empty result");
+                counter++;
+
+                if (counter > QueriesCount)
+                {
+                    return;
+                }
+
+                var index = i;
+
+                var searchQuery = SearchQueries[index];
+                //var searchQuery = SearchQuery;
+
+                var result = _tokenizer.ComputeComplianceIndexExtended(searchQuery, CancellationToken.None);
+                if (result.Count == 0)
+                {
+                    Console.WriteLine("Result is empty [" + searchQuery + "]");
+                }
             }
         }
     }
@@ -85,7 +131,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     /// <inheritdoc/>
     public void RunBenchmark()
     {
-        DuplicatesExtended();
+        QueryExtended();
     }
 
     /// <inheritdoc/>
@@ -97,25 +143,17 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     private async Task InitializeTokenizer(ExtendedSearchType extendedSearchType, bool pool)
     {
         Console.WriteLine(
-            $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
+            $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
         _tokenizer = new TokenizerServiceCore(pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(
-            $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
+            $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        var dataProvider = new FileDataMultipleProvider(1);
-
-        _noteEntities = new List<NoteEntity>();
-
-        await foreach (NoteEntity noteEntity in dataProvider.GetDataAsync())
-        {
-            _noteEntities.Add(noteEntity);
-        }
-
+        var dataProvider = new FileDataMultipleProvider();
         var result = await _tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
         Console.WriteLine(
-            $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initialized '{result:N0}' vectors.");
+            $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initialized '{result:N0}' vectors.");
     }
 }

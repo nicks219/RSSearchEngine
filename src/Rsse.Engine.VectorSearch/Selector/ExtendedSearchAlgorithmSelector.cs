@@ -25,6 +25,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
 
     private readonly DirectOffsetIndex _directOffsetIndex = new();
 
+    private readonly FrozenDirectOffsetIndex _frozenDirectOffsetIndex = new();
+
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
     private readonly ExtendedSearchGinSimple<TDocumentIdCollection> _extendedSearchGinSimple;
     private readonly ExtendedSearchGinOptimized<TDocumentIdCollection> _extendedSearchGinOptimized;
@@ -37,6 +39,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
     private readonly ExtendedSearchGinDirectOffset _extendedSearchGinDirectOffset;
     private readonly ExtendedSearchGinDirectOffsetFilter _extendedSearchGinDirectOffsetFilter;
+    private readonly ExtendedSearchGinFrozenDirect _extendedSearchGinFrozenDirect;
+    private readonly ExtendedSearchGinFrozenDirectFilter _extendedSearchGinFrozenDirectFilter;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -154,6 +158,21 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             GinExtended = _directOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
+
+        _extendedSearchGinFrozenDirect = new ExtendedSearchGinFrozenDirect
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _frozenDirectOffsetIndex
+        };
+
+        _extendedSearchGinFrozenDirectFilter = new ExtendedSearchGinFrozenDirectFilter()
+        {
+            TempStoragePool = tempStoragePool,
+            GeneralDirectIndex = generalDirectIndex,
+            GinExtended = _frozenDirectOffsetIndex,
+            RelevanceFilter = relevanceFilter
+        };
     }
 
     /// <inheritdoc/>
@@ -173,6 +192,8 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             ExtendedSearchType.GinOffsetFilter => _extendedSearchGinOffsetFilter,
             ExtendedSearchType.GinDirectOffset => _extendedSearchGinDirectOffset,
             ExtendedSearchType.GinDirectOffsetFilter => _extendedSearchGinDirectOffsetFilter,
+            ExtendedSearchType.GinFrozenDirect => _extendedSearchGinFrozenDirect,
+            ExtendedSearchType.GinFrozenDirectFilter => _extendedSearchGinFrozenDirectFilter,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };
@@ -184,6 +205,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedIndex.AddVector(documentId, tokenVector);
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _frozenDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -192,6 +214,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedIndex.UpdateVector(documentId, tokenVector, oldTokenVector);
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _frozenDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -200,6 +223,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedIndex.RemoveVector(documentId, tokenVector);
         _invertedOffsetIndex.RemoveVector(documentId);
         _directOffsetIndex.RemoveVector(documentId);
+        _frozenDirectOffsetIndex.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
@@ -208,5 +232,6 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedIndex.Clear();
         _invertedOffsetIndex.Clear();
         _directOffsetIndex.Clear();
+        _frozenDirectOffsetIndex.Clear();
     }
 }
