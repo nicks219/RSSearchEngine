@@ -21,11 +21,6 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { get; init; }
-
-    /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
     public required DirectOffsetIndex GinExtended { get; init; }
@@ -52,10 +47,10 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
+                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
-                                metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                             }
                         }
 
@@ -187,10 +182,10 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
         }
         else
         {
-            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
+            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
             {
                 const int metric = 1;
-                metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
             }
         }
     }
@@ -214,10 +209,10 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
             do
             {
                 var documentId = enumerator.Current;
-                if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
+                if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                 {
                     const int metric = 1;
-                    metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                 }
             } while (enumerator.MoveNext());
         }
@@ -226,7 +221,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {
-        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocumentId))
+        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }
@@ -244,7 +239,7 @@ public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
             }
         }
 
-        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

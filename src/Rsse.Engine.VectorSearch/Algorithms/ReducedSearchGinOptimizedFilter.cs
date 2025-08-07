@@ -35,14 +35,12 @@ public sealed class ReducedSearchGinOptimizedFilter<TDocumentIdCollection> : IRe
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var comparisonScores = TempStoragePool.ScoresStorage.Get();
         var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
-        var removeList = TempStoragePool.DocumentIdListsStorage.Get();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
-                    out var filteredTokensCount, comparisonScores))
+                    out var filteredTokensCount))
             {
                 return;
             }
@@ -50,27 +48,35 @@ public sealed class ReducedSearchGinOptimizedFilter<TDocumentIdCollection> : IRe
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ReducedSearchGinOptimizedFilter<TDocumentIdCollection>));
 
-            // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
-            var counter = 1;
-            for (var index = filteredTokensCount; index < sortedIds.Count; index++)
-            {
-                var documentIds = sortedIds[index];
-                ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
+            var comparisonScores = new ComparisonScores(TempStoragePool.ScoresStorage.Get());
+            var removeList = TempStoragePool.DocumentIdListsStorage.Get();
 
-                counter++;
+            try
+            {
+                ReducedAlgorithm.CreateComparisonScores(sortedIds, filteredTokensCount, comparisonScores);
+
+                // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
+                var counter = 1;
+                for (var index = filteredTokensCount; index < sortedIds.Count; index++)
+                {
+                    var documentIds = sortedIds[index];
+                    ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
+
+                    counter++;
+                }
+
+                // поиск в векторе reduced
+                metricsCalculator.AppendReducedMetrics(GeneralDirectIndex,searchVector, comparisonScores);
             }
-
-            // поиск в векторе reduced
-            foreach (var (documentId, comparisonScore) in comparisonScores)
+            finally
             {
-                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, GeneralDirectIndex);
+                TempStoragePool.DocumentIdListsStorage.Return(removeList);
+                TempStoragePool.ScoresStorage.Return(comparisonScores.Dictionary);
             }
         }
         finally
         {
-            TempStoragePool.DocumentIdListsStorage.Return(removeList);
             TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
-            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 }

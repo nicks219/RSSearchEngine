@@ -21,11 +21,6 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
-    /// Общий индекс: идентификатор-вектор.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
-
-    /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
     public required InvertedOffsetIndex GinExtended { private get; init; }
@@ -65,14 +60,12 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
                     {
                         /*new SearchProcessor
                         {
-                            GeneralDirectIndex = GeneralDirectIndex,
                             GinExtended = GinExtended
                         }.ProcessMulti(searchVector, metricsCalculator, enumerators, indexWithCounts,
                             filteredTokensCount, minRelevancyCount);*/
 
                         new SearchProcessorWithIndexesDeduplication
                         {
-                            GeneralDirectIndex = GeneralDirectIndex,
                             GinExtended = GinExtended
                         }.ProcessMulti(searchVector, metricsCalculator, enumerators, indexWithCounts,
                             filteredTokensCount, minRelevancyCount);
@@ -97,9 +90,9 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
             var documentId = enumerator.Current;
             const int metric = 1;
 
-            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocument))
             {
-                metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
             }
 
         } while (enumerator.MoveNext());
@@ -136,13 +129,11 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
     private readonly struct SearchProcessor
     {
-        public required DirectIndex GeneralDirectIndex { private get; init; }
-
         public required InvertedOffsetIndex GinExtended { private get; init; }
 
         public void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-            List<TokenOffsetEnumerator> enumerators,
-            List<IndexWithCount> indexWithCounts, int filteredTokensCount, int minRelevancyCount)
+            List<TokenOffsetEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+            int filteredTokensCount, int minRelevancyCount)
         {
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
                 enumerators, indexWithCounts, filteredTokensCount, out var exList);
@@ -233,9 +224,9 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                 if (position >= 0)
                 {
-                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocument))
                     {
-                        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                     }
                 }
 
@@ -288,13 +279,11 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
     private readonly struct SearchProcessorWithIndexesDeduplication
     {
-        public required DirectIndex GeneralDirectIndex { private get; init; }
-
         public required InvertedOffsetIndex GinExtended { private get; init; }
 
         public void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-            List<TokenOffsetEnumerator> enumerators,
-            List<IndexWithCount> indexWithCounts, int filteredTokensCount, int minRelevancyCount)
+            List<TokenOffsetEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+            int filteredTokensCount, int minRelevancyCount)
         {
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
                 enumerators, indexWithCounts, filteredTokensCount, out var exList);
@@ -379,9 +368,9 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                 if (position >= 0)
                 {
-                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocument))
                     {
-                        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                     }
                 }
 

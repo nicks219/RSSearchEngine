@@ -33,13 +33,13 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
 
         try
         {
-            GinReduced.GetNonEmptyDocumentIdVectorsToList(searchVector, sortedIds);
+            GinReduced.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
 
-            switch (sortedIds.Count)
+            switch (idsFromGin.Count)
             {
                 case 0:
                     {
@@ -47,7 +47,7 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
                     }
                 case 1:
                     {
-                        foreach (var documentId in sortedIds[0])
+                        foreach (var documentId in idsFromGin[0])
                         {
                             metricsCalculator.AppendReduced(1, searchVector, documentId, GeneralDirectIndex);
                         }
@@ -60,7 +60,7 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
                             throw new OperationCanceledException(nameof(ReducedSearchGinMerge));
 
                         using DocumentReducedScoreIterator documentReducedScoreIterator =
-                            new(TempStoragePool, sortedIds, sortedIds.Count);
+                            new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
                         MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GeneralDirectIndex);
 
@@ -72,7 +72,7 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
+            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
         }
     }
 

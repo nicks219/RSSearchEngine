@@ -15,49 +15,43 @@ public enum ReducedSearchType
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinSimple"/>
-    /// </summary>
-    GinSimple = 1,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinOptimized"/>
     /// </summary>
-    GinOptimized = 2,
+    GinOptimized = 1,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinOptimizedFilter"/>
     /// </summary>
-    GinOptimizedFilter = 3,
+    GinOptimizedFilter = 2,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinFilter"/>
     /// </summary>
-    GinFilter = 4,
+    GinFilter = 3,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinFast"/>
     /// </summary>
-    GinFast = 5,
+    GinFast = 4,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinFastFilter"/>
     /// </summary>
-    GinFastFilter = 6,
+    GinFastFilter = 5,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinMerge"/>
     /// </summary>
-    GinMerge = 7,
+    GinMerge = 6,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinMerge"/>
     /// </summary>
-    GinMergeFilter = 8
+    GinMergeFilter = 7
 }

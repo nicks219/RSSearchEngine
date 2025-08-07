@@ -28,13 +28,13 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        TokenVector extendedTargetVector)
+        int extendedTargetVectorSize)
     {
         // I. 100% совпадение по extended последовательности, по reduced можно не искать
         if (comparisonScore == searchVector.Count)
         {
             ContinueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVector.Count));
+            ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVectorSize));
             return;
         }
 
@@ -43,7 +43,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
         {
             // todo: можно так оценить
             // continueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (100D / extendedTargetVector.Count));
+            ComplianceMetrics.Add(documentId, comparisonScore * (100D / extendedTargetVectorSize));
         }
     }
 
@@ -76,19 +76,19 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        TokenVector reducedTargetVector)
+        int reducedTargetVectorSize)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)
         {
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVector.Count));
+            ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVectorSize));
             return;
         }
 
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
         if (comparisonScore >= searchVector.Count * ReducedCoefficient)
         {
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVector.Count));
+            ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVectorSize));
         }
     }
 

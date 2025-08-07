@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -49,7 +48,7 @@ public readonly struct OffsetInfo(int size, int offsetIndex)
             var offsetsSpan = CollectionsMarshal.AsSpan(offsets)
                 .Slice(offsetIndex, size);
 
-            /*
+            //*
             foreach (var offset in offsetsSpan)
             {
                 if (offset > position)

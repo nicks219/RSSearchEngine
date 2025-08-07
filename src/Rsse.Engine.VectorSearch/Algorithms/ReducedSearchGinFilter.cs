@@ -35,13 +35,12 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var comparisonScores = TempStoragePool.ScoresStorage.Get();
         var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
-                    out _, comparisonScores))
+                    out var filteredTokensCount))
             {
                 return;
             }
@@ -49,16 +48,26 @@ public sealed class ReducedSearchGinFilter<TDocumentIdCollection> : IReducedSear
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ReducedSearchGinFilter<TDocumentIdCollection>));
 
-            // поиск в векторе reduced
-            foreach (var (documentId, _) in comparisonScores)
+            var comparisonScores = new ComparisonScores(TempStoragePool.ScoresStorage.Get());
+
+            try
             {
-                metricsCalculator.AppendReducedMetric(searchVector, documentId, GeneralDirectIndex);
+                ReducedAlgorithm.CreateComparisonScores(sortedIds, filteredTokensCount, comparisonScores);
+
+                // поиск в векторе reduced
+                foreach (var (documentId, _) in comparisonScores)
+                {
+                    metricsCalculator.AppendReducedMetric(searchVector, documentId, GeneralDirectIndex);
+                }
+            }
+            finally
+            {
+                TempStoragePool.ScoresStorage.Return(comparisonScores.Dictionary);
             }
         }
         finally
         {
             TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
-            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 }

@@ -15,7 +15,7 @@ public sealed class InvertedOffsetIndex
     /// </summary>
     private readonly Dictionary<Token, DocumentIdsWithOffsets> _invertedIndex = new();
 
-    private readonly Dictionary<InternalDocumentId, DocumentId> _internalDocumentIdToDocumentId = new();
+    private readonly Dictionary<InternalDocumentId, ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
 
     private readonly Dictionary<DocumentId, InternalDocumentId> _documentIdToInternalDocumentId = new();
 
@@ -34,7 +34,7 @@ public sealed class InvertedOffsetIndex
         RemoveVector(documentId);
 
         _documentIdToInternalDocumentId[documentId] = internalDocumentId;
-        _internalDocumentIdToDocumentId[internalDocumentId] = documentId;
+        _internalDocumentIdToDocumentId[internalDocumentId] = new ExternalDocumentIdWithSize(documentId, tokenVector.Count);
 
         AppendTokenVector(internalDocumentId, tokenVector);
     }
@@ -80,9 +80,9 @@ public sealed class InvertedOffsetIndex
         return true;
     }
 
-    public bool TryGetExternalDocumentId(InternalDocumentId internalDocumentId, out DocumentId externalDocumentId)
+    public bool TryGetExternalDocumentId(InternalDocumentId internalDocumentId, out ExternalDocumentIdWithSize externalDocument)
     {
-        return _internalDocumentIdToDocumentId.TryGetValue(internalDocumentId, out externalDocumentId);
+        return _internalDocumentIdToDocumentId.TryGetValue(internalDocumentId, out externalDocument);
     }
 
     private void AppendTokenVector(InternalDocumentId internalDocumentId, TokenVector tokenVector)

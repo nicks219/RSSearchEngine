@@ -33,14 +33,13 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
         var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
-                    idsFromGin, sortedIds, filteredDocuments, out var minRelevancyCount))
+                    idsFromGin, sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
             }
@@ -48,11 +47,22 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ExtendedSearchGinFastFilter<TDocumentIdCollection>));
 
+            var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
             var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
             var processedTokens = TempStoragePool.TokenSetsStorage.Get();
 
             try
             {
+                for (var index = 0; index < filteredTokensCount; index++)
+                {
+                    var documentIds = sortedIds[index];
+
+                    foreach (var documentId in documentIds)
+                    {
+                        filteredDocuments.Add(documentId);
+                    }
+                }
+
                 // поиск в векторе extended
                 for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
                 {
@@ -125,13 +135,13 @@ public sealed class ExtendedSearchGinFastFilter<TDocumentIdCollection> : IExtend
             {
                 TempStoragePool.TokenSetsStorage.Return(processedTokens);
                 TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
+                TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
             }
         }
         finally
         {
             TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
-            TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
         }
     }
 }

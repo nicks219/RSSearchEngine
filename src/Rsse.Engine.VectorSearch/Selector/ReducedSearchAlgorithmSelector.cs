@@ -22,7 +22,6 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly InvertedIndex<TDocumentIdCollection> _ginReduced = new();
 
     private readonly ReducedSearchLegacy _reducedSearchLegacy;
-    private readonly ReducedSearchGinSimple<TDocumentIdCollection> _reducedSearchGinSimple;
     private readonly ReducedSearchGinOptimized<TDocumentIdCollection> _reducedSearchGinOptimized;
     private readonly ReducedSearchGinOptimizedFilter<TDocumentIdCollection> _reducedSearchGinOptimizedFilter;
     private readonly ReducedSearchGinFilter<TDocumentIdCollection> _reducedSearchGinFilter;
@@ -50,13 +49,6 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinSimple = new ReducedSearchGinSimple<TDocumentIdCollection>
-        {
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced
         };
 
         // С GIN-индексом.
@@ -136,7 +128,6 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
         return searchType switch
         {
             ReducedSearchType.Legacy => _reducedSearchLegacy,
-            ReducedSearchType.GinSimple => _reducedSearchGinSimple,
             ReducedSearchType.GinOptimized => _reducedSearchGinOptimized,
             ReducedSearchType.GinOptimizedFilter => _reducedSearchGinOptimizedFilter,
             ReducedSearchType.GinFilter => _reducedSearchGinFilter,

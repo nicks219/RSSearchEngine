@@ -20,11 +20,6 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
-    /// Общий индекс: идентификатор-вектор.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
-
-    /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
     public required InvertedOffsetIndex GinExtended { private get; init; }
@@ -68,10 +63,8 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
 
     private void CreateEnumerators(TokenVector searchVector, List<TokenOffsetEnumerator> enumerators)
     {
-        for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
+        foreach (var token in searchVector)
         {
-            var token = searchVector.ElementAt(searchStartIndex);
-
             if (!GinExtended.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
             {
                 continue;
@@ -96,9 +89,9 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
             var documentId = enumerator.Current;
             const int metric = 1;
 
-            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+            if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocument))
             {
-                metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
             }
 
         } while (enumerator.MoveNext());
@@ -107,7 +100,7 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
     private void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<TokenOffsetEnumerator> enumerators)
     {
-        do
+        while (enumerators.Count > 1)
         {
             MergeAlgorithm.FindMin(enumerators, out var minI0, out var docId0, out var docId1);
 
@@ -116,9 +109,9 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
             {
                 const int metric = 1;
 
-                if (GinExtended.TryGetExternalDocumentId(docId0, out var externalDocumentId))
+                if (GinExtended.TryGetExternalDocumentId(docId0, out var externalDocument))
                 {
-                    metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                 }
 
                 ref var enumerator = ref CollectionsMarshal.AsSpan(enumerators)[minI0];
@@ -171,13 +164,13 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
 
                 if (position >= 0)
                 {
-                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocumentId))
+                    if (GinExtended.TryGetExternalDocumentId(documentId, out var externalDocument))
                     {
-                        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+                        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
                     }
                 }
             }
-        } while (enumerators.Count > 1);
+        }
 
         if (enumerators.Count == 1)
         {

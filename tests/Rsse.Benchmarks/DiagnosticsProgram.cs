@@ -94,9 +94,9 @@ public static class DiagnosticsProgram
 
         BenchmarkRunner.Run(
         [
-            /*typeof(QueryBenchmark),
+            /*typeof(QueryBenchmarkGeneral),
             typeof(LuceneBenchmark),
-            typeof(DuplicatesBenchmark),*/
+            typeof(DuplicateBenchmarkGeneral),*/
             typeof(DuplicatesBenchmarkExtended),
             typeof(QueryBenchmarkExtended),
             typeof(DuplicatesBenchmarkReduced),

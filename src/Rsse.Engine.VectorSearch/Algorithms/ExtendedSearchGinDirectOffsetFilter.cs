@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
@@ -18,11 +19,6 @@ namespace RsseEngine.Algorithms;
 public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
-
-    /// <summary>
-    /// Индекс для всех токенизированных заметок.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
@@ -58,9 +54,9 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocumentId))
+                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
-                                metricsCalculator.AppendExtended(1, searchVector, externalDocumentId, GeneralDirectIndex);
+                                metricsCalculator.AppendExtendedMetric(1, searchVector, externalDocument);
                             }
                         }
 
@@ -117,6 +113,28 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
                 }
             }
 
+            int additionalIndex = 0;
+            if (filteredTokensCount > 0 && filteredTokensCount < sortedIds.Count)
+            {
+                var index = filteredTokensCount;
+                var docIdVector = sortedIds[index];
+
+                if (docIdVector.Count * (1 / 2) < sortedIds[index - 1].Count)
+                {
+                    if (dictionary.TryAdd(docIdVector, index))
+                    {
+                        list.Add(docIdVector.CreateDocumentListEnumerator());
+
+                        if (CollectionsMarshal.AsSpan(list)[index].MoveNext())
+                        {
+                            listExists.Add(index);
+                        }
+
+                        additionalIndex = 1;
+                    }
+                }
+            }
+
             while (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
@@ -124,7 +142,10 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
             START:
                 if (docId0.Value < docId1.Value)
                 {
-                    CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, minRelevancyCount);
+                    if (additionalIndex == 0)
+                    {
+                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, minRelevancyCount);
+                    }
 
                     ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
                     if (!enumeratorI.MoveNext())
@@ -178,10 +199,11 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int minRelevancyCount)
     {
-        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocumentId))
+        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }
@@ -189,10 +211,8 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
         var position = -1;
         var empty = 0;
 
-        for (var i = 0; i < searchVector.Count; i++)
+        foreach (var token in searchVector)
         {
-            var token = searchVector.ElementAt(i);
-
             if (!offsetTokenVector.TryFindNextTokenPosition(token, ref position))
             {
                 empty++;
@@ -206,7 +226,7 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
 
         var metric = searchVector.Count - empty;
 
-        metricsCalculator.AppendExtended(metric, searchVector, externalDocumentId, GeneralDirectIndex);
+        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

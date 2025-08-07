@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -37,14 +36,12 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var comparisonScores = TempStoragePool.ScoresStorage.Get();
         var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
-        var removeList = TempStoragePool.DocumentIdListsStorage.Get();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsReduced(GinReduced, searchVector, sortedIds,
-                    out var filteredTokensCount, comparisonScores))
+                    out var filteredTokensCount))
             {
                 return;
             }
@@ -66,56 +63,65 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
                     }
                 default:
                     {
-                        // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
+                        var comparisonScores = new ComparisonScores(TempStoragePool.ScoresStorage.Get());
+                        var removeList = TempStoragePool.DocumentIdListsStorage.Get();
 
-                        var lastIndex = sortedIds.Count - 1;
-
-                        var counter = 1;
-                        for (var index = filteredTokensCount; index < lastIndex; index++)
+                        try
                         {
-                            var documentIds = sortedIds[index];
-                            ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
+                            ReducedAlgorithm.CreateComparisonScores(sortedIds, filteredTokensCount, comparisonScores);
 
-                            counter++;
-                        }
+                            // сразу посчитаем на GIN метрики intersect.count для актуальных идентификаторов
 
-                        // Отдаём метрику на самый тяжелый токен поискового запроса.
-                        if (filteredTokensCount < sortedIds.Count)
-                        {
-                            var documentIdSet = sortedIds[lastIndex];
+                            var lastIndex = sortedIds.Count - 1;
 
-                            if (comparisonScores.Count <= documentIdSet.Count)
+                            var counter = 1;
+                            for (var index = filteredTokensCount; index < lastIndex; index++)
                             {
-                                foreach (var (documentId, _) in comparisonScores)
+                                var documentIds = sortedIds[index];
+                                ReducedAlgorithm.ComputeComparisonScores(comparisonScores, documentIds, removeList, ref counter);
+
+                                counter++;
+                            }
+
+                            // Отдаём метрику на самый тяжелый токен поискового запроса.
+                            if (filteredTokensCount < sortedIds.Count)
+                            {
+                                var documentIdSet = sortedIds[lastIndex];
+
+                                if (comparisonScores.Count <= documentIdSet.Count)
                                 {
-                                    if (documentIdSet.Contains(documentId))
+                                    foreach (var (documentId, _) in comparisonScores)
                                     {
-                                        removeList.Add(documentId);
+                                        if (documentIdSet.Contains(documentId))
+                                        {
+                                            removeList.Add(documentId);
+                                        }
+                                    }
+
+                                    foreach (var documentId in removeList)
+                                    {
+                                        IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
                                     }
                                 }
+                                else
+                                {
+                                    foreach (var documentId in documentIdSet)
+                                    {
+                                        IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
+                                    }
+                                }
+                            }
 
-                                foreach (var documentId in removeList)
-                                {
-                                    IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
-                                }
-                            }
-                            else
-                            {
-                                foreach (var documentId in documentIdSet)
-                                {
-                                    IncrementComparisonScore(comparisonScores, documentId, metricsCalculator, searchVector);
-                                }
-                            }
+                            if (cancellationToken.IsCancellationRequested)
+                                throw new OperationCanceledException(nameof(ReducedSearchGinFast<TDocumentIdCollection>));
+
+                            // Поиск в векторе reduced без учета самого тяжелого токена.
+                            metricsCalculator.AppendReducedMetrics(GeneralDirectIndex, searchVector, comparisonScores);
                         }
-
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ReducedSearchGinFast<TDocumentIdCollection>));
-
-                        // Поиск в векторе reduced без учета самого тяжелого токена.
-                        foreach (var (documentId, comparisonScore) in comparisonScores)
+                        finally
                         {
-                            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId,
-                                GeneralDirectIndex);
+                            TempStoragePool.DocumentIdListsStorage.Return(removeList);
+                            TempStoragePool.ScoresStorage.Return(comparisonScores.Dictionary);
                         }
 
                         break;
@@ -124,20 +130,18 @@ public sealed class ReducedSearchGinFastFilter<TDocumentIdCollection> : IReduced
         }
         finally
         {
-            TempStoragePool.DocumentIdListsStorage.Return(removeList);
             TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
-            TempStoragePool.ScoresStorage.Return(comparisonScores);
         }
     }
 
-    private void IncrementComparisonScore(Dictionary<DocumentId, int> comparisonScores, DocumentId documentId,
+    private void IncrementComparisonScore(ComparisonScores comparisonScores, DocumentId documentId,
         IMetricsCalculator metricsCalculator, TokenVector searchVector)
     {
-        if (comparisonScores.Remove(documentId, out var comparisonScore))
+        if (comparisonScores.Remove(documentId, out var score))
         {
-            ++comparisonScore;
+            ++score;
 
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId,
+            metricsCalculator.AppendReduced(score, searchVector, documentId,
                 GeneralDirectIndex);
         }
     }

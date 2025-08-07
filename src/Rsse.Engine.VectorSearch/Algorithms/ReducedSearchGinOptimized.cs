@@ -1,10 +1,10 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
+using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
 
@@ -34,7 +34,7 @@ public sealed class ReducedSearchGinOptimized<TDocumentIdCollection> : IReducedS
         // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
         searchVector = searchVector.DistinctAndGet();
 
-        var comparisonScores = TempStoragePool.ScoresStorage.Get();
+        var comparisonScores = new ComparisonScores(TempStoragePool.ScoresStorage.Get());
 
         try
         {
@@ -46,25 +46,18 @@ public sealed class ReducedSearchGinOptimized<TDocumentIdCollection> : IReducedS
                     continue;
                 }
 
-                foreach (var documentId in documentIds)
-                {
-                    ref var score = ref CollectionsMarshal.GetValueRefOrAddDefault(comparisonScores, documentId, out _);
-                    ++score;
-                }
+                comparisonScores.AddAll(documentIds);
             }
 
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ReducedSearchGinOptimized<TDocumentIdCollection>));
 
             // поиск в векторе reduced
-            foreach (var (documentId, comparisonScore) in comparisonScores)
-            {
-                metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, GeneralDirectIndex);
-            }
+            metricsCalculator.AppendReducedMetrics(GeneralDirectIndex, searchVector, comparisonScores);
         }
         finally
         {
-            TempStoragePool.ScoresStorage.Return(comparisonScores);
+            TempStoragePool.ScoresStorage.Return(comparisonScores.Dictionary);
         }
     }
 }

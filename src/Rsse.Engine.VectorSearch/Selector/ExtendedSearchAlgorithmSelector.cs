@@ -28,8 +28,6 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
     private readonly FrozenDirectOffsetIndex _frozenDirectOffsetIndex = new();
 
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
-    private readonly ExtendedSearchGinSimple<TDocumentIdCollection> _extendedSearchGinSimple;
-    private readonly ExtendedSearchGinOptimized<TDocumentIdCollection> _extendedSearchGinOptimized;
     private readonly ExtendedSearchGinFilter<TDocumentIdCollection> _extendedSearchGinFilter;
     private readonly ExtendedSearchGinFast<TDocumentIdCollection> _extendedSearchGinFast;
     private readonly ExtendedSearchGinFastFilter<TDocumentIdCollection> _extendedSearchGinFastFilter;
@@ -60,21 +58,6 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _extendedSearchLegacy = new ExtendedSearchLegacy
         {
             GeneralDirectIndex = generalDirectIndex
-        };
-
-        // С GIN-индексом.
-        _extendedSearchGinSimple = new ExtendedSearchGinSimple<TDocumentIdCollection>
-        {
-            GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _invertedIndex
-        };
-
-        // С GIN-индексом.
-        _extendedSearchGinOptimized = new ExtendedSearchGinOptimized<TDocumentIdCollection>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinExtended = _invertedIndex
         };
 
         _extendedSearchGinFilter = new ExtendedSearchGinFilter<TDocumentIdCollection>
@@ -132,14 +115,12 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _extendedSearchGinOffset = new ExtendedSearchGinOffset
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _invertedOffsetIndex
         };
 
         _extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _invertedOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
@@ -147,14 +128,12 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _extendedSearchGinDirectOffset = new ExtendedSearchGinDirectOffset
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _directOffsetIndex
         };
 
         _extendedSearchGinDirectOffsetFilter = new ExtendedSearchGinDirectOffsetFilter
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _directOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
@@ -162,14 +141,12 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _extendedSearchGinFrozenDirect = new ExtendedSearchGinFrozenDirect
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _frozenDirectOffsetIndex
         };
 
-        _extendedSearchGinFrozenDirectFilter = new ExtendedSearchGinFrozenDirectFilter()
+        _extendedSearchGinFrozenDirectFilter = new ExtendedSearchGinFrozenDirectFilter
         {
             TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
             GinExtended = _frozenDirectOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
@@ -181,8 +158,6 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         return searchType switch
         {
             ExtendedSearchType.Legacy => _extendedSearchLegacy,
-            ExtendedSearchType.GinSimple => _extendedSearchGinSimple,
-            ExtendedSearchType.GinOptimized => _extendedSearchGinOptimized,
             ExtendedSearchType.GinFilter => _extendedSearchGinFilter,
             ExtendedSearchType.GinFast => _extendedSearchGinFast,
             ExtendedSearchType.GinFastFilter => _extendedSearchGinFastFilter,

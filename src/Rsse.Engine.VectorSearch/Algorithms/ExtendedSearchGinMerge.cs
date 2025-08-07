@@ -111,13 +111,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
                 }
             }
 
-            if (listExists.Count == 1)
-            {
-                AppendMetric2(list, listExists, multi, metricsCalculator, searchVector);
-                return;
-            }
-
-            do
+            while (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
 
@@ -164,7 +158,7 @@ public sealed class ExtendedSearchGinMerge : IExtendedSearchProcessor
                         metricsCalculator.AppendExtendedMetric(searchVector, docId0, GeneralDirectIndex, sIndex);
                     }
                 }
-            } while (listExists.Count > 1);
+            }
 
             if (listExists.Count == 1)
             {

@@ -33,14 +33,13 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var filteredDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
         var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
-                    idsFromGin, sortedIds, filteredDocuments, out var minRelevancyCount))
+                    idsFromGin, sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
             }
@@ -48,17 +47,34 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException(nameof(ExtendedSearchGinFilter<TDocumentIdCollection>));
 
-            // поиск в векторе extended
-            foreach (var documentId in filteredDocuments)
+            var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
+
+            try
             {
-                metricsCalculator.AppendExtendedRelevancyMetric(searchVector, documentId, GeneralDirectIndex, minRelevancyCount);
+                // поиск в векторе extended
+                for (var index = 0; index < filteredTokensCount; index++)
+                {
+                    var documentIds = sortedIds[index];
+
+                    foreach (var documentId in documentIds)
+                    {
+                        if (processedDocuments.Add(documentId))
+                        {
+                            metricsCalculator.AppendExtendedRelevancyMetric(searchVector, documentId,
+                                GeneralDirectIndex, minRelevancyCount);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                TempStoragePool.DocumentIdSetsStorage.Return(processedDocuments);
             }
         }
         finally
         {
             TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
             TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
-            TempStoragePool.DocumentIdSetsStorage.Return(filteredDocuments);
         }
     }
 }

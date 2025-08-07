@@ -17,7 +17,7 @@ public sealed class DirectOffsetIndex : IOffsetIndex
 
     private readonly List<OffsetTokenVector> _directIndex = new();
 
-    private readonly List<DocumentId> _internalDocumentIdToDocumentId = new();
+    private readonly List<ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
 
     private readonly Dictionary<DocumentId, InternalDocumentId> _documentIdToInternalDocumentId = new();
 
@@ -38,7 +38,7 @@ public sealed class DirectOffsetIndex : IOffsetIndex
         RemoveVector(documentId);
 
         _documentIdToInternalDocumentId[documentId] = internalDocumentId;
-        _internalDocumentIdToDocumentId.Add(documentId);
+        _internalDocumentIdToDocumentId.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));
 
         AppendTokenVector(internalDocumentId, tokenVector);
     }
@@ -96,17 +96,17 @@ public sealed class DirectOffsetIndex : IOffsetIndex
     }
 
     public bool TryGetOffsetTokenVector(InternalDocumentId documentId,
-        out OffsetTokenVector offsetTokenVector, out DocumentId externalDocumentId)
+        out OffsetTokenVector offsetTokenVector, out ExternalDocumentIdWithSize externalDocument)
     {
         if (_deletedDocuments.Contains(documentId))
         {
             offsetTokenVector = default;
-            externalDocumentId = default;
+            externalDocument = default;
             return false;
         }
 
         offsetTokenVector = _directIndex[documentId.Value];
-        externalDocumentId = _internalDocumentIdToDocumentId[documentId.Value];
+        externalDocument = _internalDocumentIdToDocumentId[documentId.Value];
         return true;
     }
 

@@ -113,37 +113,6 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     }
 
     /// <summary>
-    /// Определить, присутствует ли любой токен из вектора в заданной заметке.
-    /// </summary>
-    /// <param name="vector">Вектор токенов.</param>
-    /// <param name="documentId">Идентификатор заметки, для которой мы проверяем наличие любого токена из вектора.</param>
-    /// <returns><b>true</b> - Один из токенов присутствует в заданной заметке.</returns>
-    public bool ContainsAnyTokenForDoc(TokenVector vector, DocumentId documentId)
-    {
-        foreach (var token in vector)
-        {
-            if (ContainsDocumentIdForToken(token, documentId))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Определить, присутствует ли идентификатор заметки для токена.
-    /// </summary>
-    /// <param name="token">Токен.</param>
-    /// <param name="documentId">Идентификатор заметки.</param>
-    /// <returns><b>true</b> - Идентификатор заметки присутствует для токена.</returns>
-    public bool ContainsDocumentIdForToken(Token token, DocumentId documentId)
-    {
-        return TryGetNonEmptyDocumentIdVector(token, out var documentIds)
-               && documentIds.Contains(documentId);
-    }
-
-    /// <summary>
     /// Создать экземпляр коллекции требуемого типа.
     /// </summary>
     /// <returns>Экземпляр коллекции типа <b>TDocumentIdCollection</b>.</returns>

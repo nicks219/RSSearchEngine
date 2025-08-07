@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 
@@ -8,7 +6,7 @@ namespace RsseEngine.Processor;
 
 public static class ReducedAlgorithm
 {
-    public static void ComputeComparisonScores<TDocumentIdCollection>(Dictionary<DocumentId, int> comparisonScores,
+    public static void ComputeComparisonScores<TDocumentIdCollection>(ComparisonScores comparisonScores,
         TDocumentIdCollection documentIds, List<DocumentId> removeList, ref int counter)
         where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
@@ -24,18 +22,33 @@ public static class ReducedAlgorithm
                 {
                     if (documentIds.Contains(documentId))
                     {
-                        IncrementScoreIfExists(comparisonScores, documentId);
+                        comparisonScores.IncrementIfExists(documentId, out _);
                     }
                 }
             }
 
-            RemoveComparisonScores(comparisonScores, removeList);
+            if (removeList.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var documentId in removeList)
+            {
+                comparisonScores.Remove(documentId);
+            }
+
+            removeList.Clear();
         }
         else
         {
             foreach (var documentId in documentIds)
             {
-                if (IncrementScoreIfExists(comparisonScores, documentId) <= counter)
+                if (!comparisonScores.IncrementIfExists(documentId, out var score))
+                {
+                    continue;
+                }
+
+                if (score <= counter)
                 {
                     comparisonScores.Remove(documentId);
                 }
@@ -43,31 +56,21 @@ public static class ReducedAlgorithm
         }
     }
 
-    private static void RemoveComparisonScores(Dictionary<DocumentId, int> comparisonScores, List<DocumentId> removeList)
+    /// <summary>
+    /// Заполнить идентификаторы документов, обеспечивающие релевантность.
+    /// </summary>
+    /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
+    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
+    /// <param name="comparisonScores">Идентификаторы документов.</param>
+    public static void CreateComparisonScores<TDocumentIdCollection>(List<TDocumentIdCollection> sortedIds,
+        int filteredTokensCount, ComparisonScores comparisonScores)
+        where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
     {
-        if (removeList.Count <= 0)
+        for (var index = 0; index < filteredTokensCount; index++)
         {
-            return;
+            var documentIds = sortedIds[index];
+
+            comparisonScores.AddAll(documentIds);
         }
-
-        foreach (var documentId in removeList)
-        {
-            comparisonScores.Remove(documentId);
-        }
-
-        removeList.Clear();
-    }
-
-    private static int IncrementScoreIfExists(Dictionary<DocumentId, int> comparisonScoresReduced, DocumentId documentId)
-    {
-        ref var score = ref CollectionsMarshal.GetValueRefOrNullRef(comparisonScoresReduced, documentId);
-
-        if (Unsafe.IsNullRef(ref score))
-        {
-            return int.MaxValue;
-        }
-
-        ++score;
-        return score;
     }
 }

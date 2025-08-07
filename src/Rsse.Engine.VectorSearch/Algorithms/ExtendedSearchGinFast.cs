@@ -39,7 +39,7 @@ public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSear
 
         try
         {
-            // поиск в векторе extended
+            // выбрать только те заметки, которые пригодны для extended поиска
             for (var searchStartIndex = 0; searchStartIndex < searchVector.Count; searchStartIndex++)
             {
                 var token = searchVector.ElementAt(searchStartIndex);
@@ -61,6 +61,7 @@ public sealed class ExtendedSearchGinFast<TDocumentIdCollection> : IExtendedSear
                         continue;
                     }
 
+                    // поиск в векторе extended
                     metricsCalculator.AppendExtendedMetric(searchVector, documentId,
                         GeneralDirectIndex, searchStartIndex);
                 }

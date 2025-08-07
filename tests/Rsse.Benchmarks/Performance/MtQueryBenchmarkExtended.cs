@@ -30,9 +30,6 @@ public class MtQueryBenchmarkExtended : IBenchmarkRunner
     public static List<BenchmarkParameter<ExtendedSearchType>> Parameters =>
     [
         new(ExtendedSearchType.Legacy),
-        new(ExtendedSearchType.GinSimple),
-        new(ExtendedSearchType.GinOptimized),
-        new(ExtendedSearchType.GinOptimized, true),
         new(ExtendedSearchType.GinFilter),
         new(ExtendedSearchType.GinFilter, true),
         new(ExtendedSearchType.GinFast),

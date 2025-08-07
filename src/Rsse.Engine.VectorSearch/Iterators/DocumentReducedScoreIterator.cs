@@ -44,23 +44,7 @@ public readonly ref struct DocumentReducedScoreIterator : IDisposable
     public void Iterate<TConsumer>(in TConsumer consumer)
         where TConsumer : IConsumer, allows ref struct
     {
-        if (_list.Count == 0)
-        {
-            return;
-        }
-
-        if (_list.Count == 1)
-        {
-            var enumerator0 = _list[0];
-            do
-            {
-                consumer.Accept(enumerator0.Current, 1);
-            } while (enumerator0.MoveNext());
-
-            return;
-        }
-
-        do
+        while (_list.Count > 1)
         {
             MergeAlgorithm.FindMin(_list, out var minI0, out var docId0, out var docId1);
 
@@ -100,7 +84,7 @@ public readonly ref struct DocumentReducedScoreIterator : IDisposable
 
                 consumer.Accept(docId0, score);
             }
-        } while (_list.Count > 1);
+        }
 
         if (_list.Count == 1)
         {

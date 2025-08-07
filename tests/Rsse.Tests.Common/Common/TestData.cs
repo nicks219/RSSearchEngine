@@ -13,8 +13,6 @@ public abstract class TestData
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
     [
         ExtendedSearchType.Legacy,
-        ExtendedSearchType.GinSimple,
-        ExtendedSearchType.GinOptimized,
         ExtendedSearchType.GinFilter,
         ExtendedSearchType.GinFast,
         ExtendedSearchType.GinFastFilter,
@@ -34,7 +32,6 @@ public abstract class TestData
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
     [
         ReducedSearchType.Legacy,
-        ReducedSearchType.GinSimple,
         ReducedSearchType.GinOptimized,
         ReducedSearchType.GinOptimizedFilter,
         ReducedSearchType.GinFilter,

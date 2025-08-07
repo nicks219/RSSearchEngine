@@ -114,6 +114,28 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
                 }
             }
 
+            int additionalIndex = 0;
+            if (filteredTokensCount > 0 && filteredTokensCount < sortedIds.Count)
+            {
+                var index = filteredTokensCount;
+                var docIdVector = sortedIds[index];
+
+                if (docIdVector.Count * (1 / 2) < sortedIds[index - 1].Count)
+                {
+                    if (dictionary.TryAdd(docIdVector, index))
+                    {
+                        list.Add(docIdVector.CreateDocumentListEnumerator());
+
+                        if (CollectionsMarshal.AsSpan(list)[index].MoveNext())
+                        {
+                            listExists.Add(index);
+                        }
+
+                        additionalIndex = 1;
+                    }
+                }
+            }
+
             while (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
@@ -121,7 +143,10 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
             START:
                 if (docId0.Value < docId1.Value)
                 {
-                    metricsCalculator.AppendExtendedRelevancyMetric(searchVector, docId0, GeneralDirectIndex, minRelevancyCount);
+                    if (additionalIndex == 0)
+                    {
+                        metricsCalculator.AppendExtendedRelevancyMetric(searchVector, docId0, GeneralDirectIndex, minRelevancyCount);
+                    }
 
                     ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
                     if (!enumeratorI.MoveNext())

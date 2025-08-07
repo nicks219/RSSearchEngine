@@ -9,8 +9,16 @@ namespace RsseEngine.Processor;
 /// </summary>
 public static class MetricsExtension
 {
-    public static void AppendExtendedRelevancyMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
-        DocumentId documentId, DirectIndex directIndex, int minRelevancyCount, int searchStartIndex = 0)
+    public static void AppendExtendedMetric(this IMetricsCalculator metricsCalculator, int comparisonScore,
+        TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
+    {
+        metricsCalculator.AppendExtended(comparisonScore, searchVector, externalDocument.ExternalDocumentId,
+            externalDocument.Size);
+    }
+
+    public static void AppendExtendedRelevancyMetric(this IMetricsCalculator metricsCalculator,
+        TokenVector searchVector, DocumentId documentId, DirectIndex directIndex,
+        int minRelevancyCount, int searchStartIndex = 0)
     {
         var extendedTargetVector = directIndex[documentId].Extended;
 
@@ -23,7 +31,7 @@ public static class MetricsExtension
         }
 
         // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
     }
 
     public static void AppendExtendedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
@@ -41,7 +49,7 @@ public static class MetricsExtension
         var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector, searchStartIndex);
 
         // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector);
+        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
     }
 
     public static void AppendReducedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
@@ -59,6 +67,15 @@ public static class MetricsExtension
         var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
 
         // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-        metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector);
+        metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);
+    }
+
+    public static void AppendReducedMetrics(this IMetricsCalculator metricsCalculator, DirectIndex directIndex,
+        TokenVector searchVector, ComparisonScores comparisonScores)
+    {
+        foreach (var (documentId, score) in comparisonScores)
+        {
+            metricsCalculator.AppendReduced(score, searchVector, documentId, directIndex);
+        }
     }
 }
