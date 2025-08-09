@@ -12,14 +12,13 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам extended-поиска.
 /// </summary>
-public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
+public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
-    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
     /// <summary>
     /// Поддержка инвертированного индекса для расширенного поиска и метрик.
     /// </summary>
-    private readonly InvertedIndex<TDocumentIdCollection> _invertedIndex = new();
+    private readonly InvertedIndex<DocumentIdList> _invertedIndex = new();
 
     private readonly InvertedOffsetIndex _invertedOffsetIndex = new();
 
@@ -27,18 +26,24 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
 
     private readonly FrozenDirectOffsetIndex _frozenDirectOffsetIndex = new();
 
+    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndex = new();
+
     private readonly ExtendedSearchLegacy _extendedSearchLegacy;
-    private readonly ExtendedSearchGinFilter<TDocumentIdCollection> _extendedSearchGinFilter;
-    private readonly ExtendedSearchGinFast<TDocumentIdCollection> _extendedSearchGinFast;
-    private readonly ExtendedSearchGinFastFilter<TDocumentIdCollection> _extendedSearchGinFastFilter;
+    private readonly ExtendedSearchGinFilter _extendedSearchGinFilter;
     private readonly IExtendedSearchProcessor _extendedSearchGinMerge;
     private readonly IExtendedSearchProcessor _extendedSearchGinMergeFilter;
     private readonly ExtendedSearchGinOffset _extendedSearchGinOffset;
     private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
-    private readonly ExtendedSearchGinDirectOffset _extendedSearchGinDirectOffset;
-    private readonly ExtendedSearchGinDirectOffsetFilter _extendedSearchGinDirectOffsetFilter;
+    private readonly ExtendedSearchGinDirectOffset _extendedSearchGinDirectOffsetLs;
+    private readonly ExtendedSearchGinDirectOffsetFilter _extendedSearchGinDirectOffsetFilterLs;
+    private readonly ExtendedSearchGinDirectOffset _extendedSearchGinDirectOffsetBs;
+    private readonly ExtendedSearchGinDirectOffsetFilter _extendedSearchGinDirectOffsetFilterBs;
     private readonly ExtendedSearchGinFrozenDirect _extendedSearchGinFrozenDirect;
     private readonly ExtendedSearchGinFrozenDirectFilter _extendedSearchGinFrozenDirectFilter;
+    private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectLs;
+    private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterLs;
+    private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectBs;
+    private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterBs;
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -60,7 +65,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             GeneralDirectIndex = generalDirectIndex
         };
 
-        _extendedSearchGinFilter = new ExtendedSearchGinFilter<TDocumentIdCollection>
+        _extendedSearchGinFilter = new ExtendedSearchGinFilter
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
@@ -68,49 +73,20 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             RelevanceFilter = relevanceFilter
         };
 
-        // С GIN-индексом.
-        _extendedSearchGinFast = new ExtendedSearchGinFast<TDocumentIdCollection>
+        _extendedSearchGinMerge = new ExtendedSearchGinMerge
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _invertedIndex
         };
 
-        _extendedSearchGinFastFilter = new ExtendedSearchGinFastFilter<TDocumentIdCollection>
+        _extendedSearchGinMergeFilter = new ExtendedSearchGinMergeFilter
         {
             TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex,
             GinExtended = _invertedIndex,
             RelevanceFilter = relevanceFilter
         };
-
-        if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
-        {
-            _extendedSearchGinMerge = new ExtendedSearchGinMerge
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinExtended = (InvertedIndex<DocumentIdList>)(object)_invertedIndex
-            };
-
-            _extendedSearchGinMergeFilter = new ExtendedSearchGinMergeFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinExtended = (InvertedIndex<DocumentIdList>)(object)_invertedIndex,
-                RelevanceFilter = relevanceFilter
-            };
-        }
-        else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
-        {
-            // Fallback для DocumentIdSet
-            _extendedSearchGinMerge = _extendedSearchGinFastFilter;
-            _extendedSearchGinMergeFilter = _extendedSearchGinFastFilter;
-        }
-        else
-        {
-            throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
-        }
 
         _extendedSearchGinOffset = new ExtendedSearchGinOffset
         {
@@ -125,17 +101,34 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             RelevanceFilter = relevanceFilter
         };
 
-        _extendedSearchGinDirectOffset = new ExtendedSearchGinDirectOffset
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _directOffsetIndex
-        };
-
-        _extendedSearchGinDirectOffsetFilter = new ExtendedSearchGinDirectOffsetFilter
+        _extendedSearchGinDirectOffsetLs = new ExtendedSearchGinDirectOffset
         {
             TempStoragePool = tempStoragePool,
             GinExtended = _directOffsetIndex,
-            RelevanceFilter = relevanceFilter
+            PositionSearchType = PositionSearchType.LinearScan
+        };
+
+        _extendedSearchGinDirectOffsetFilterLs = new ExtendedSearchGinDirectOffsetFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _directOffsetIndex,
+            RelevanceFilter = relevanceFilter,
+            PositionSearchType = PositionSearchType.LinearScan
+        };
+
+        _extendedSearchGinDirectOffsetBs = new ExtendedSearchGinDirectOffset
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _directOffsetIndex,
+            PositionSearchType = PositionSearchType.BinarySearch
+        };
+
+        _extendedSearchGinDirectOffsetFilterBs = new ExtendedSearchGinDirectOffsetFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _directOffsetIndex,
+            RelevanceFilter = relevanceFilter,
+            PositionSearchType = PositionSearchType.BinarySearch
         };
 
         _extendedSearchGinFrozenDirect = new ExtendedSearchGinFrozenDirect
@@ -150,6 +143,36 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
             GinExtended = _frozenDirectOffsetIndex,
             RelevanceFilter = relevanceFilter
         };
+
+        _extendedSearchGinArrayDirectLs = new ExtendedSearchGinArrayDirect
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _arrayDirectOffsetIndex,
+            PositionSearchType = PositionSearchType.LinearScan
+        };
+
+        _extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _arrayDirectOffsetIndex,
+            RelevanceFilter = relevanceFilter,
+            PositionSearchType = PositionSearchType.LinearScan
+        };
+
+        _extendedSearchGinArrayDirectBs = new ExtendedSearchGinArrayDirect
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _arrayDirectOffsetIndex,
+            PositionSearchType = PositionSearchType.BinarySearch
+        };
+
+        _extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
+        {
+            TempStoragePool = tempStoragePool,
+            GinExtended = _arrayDirectOffsetIndex,
+            RelevanceFilter = relevanceFilter,
+            PositionSearchType = PositionSearchType.BinarySearch
+        };
     }
 
     /// <inheritdoc/>
@@ -159,16 +182,20 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         {
             ExtendedSearchType.Legacy => _extendedSearchLegacy,
             ExtendedSearchType.GinFilter => _extendedSearchGinFilter,
-            ExtendedSearchType.GinFast => _extendedSearchGinFast,
-            ExtendedSearchType.GinFastFilter => _extendedSearchGinFastFilter,
             ExtendedSearchType.GinMerge => _extendedSearchGinMerge,
             ExtendedSearchType.GinMergeFilter => _extendedSearchGinMergeFilter,
             ExtendedSearchType.GinOffset => _extendedSearchGinOffset,
             ExtendedSearchType.GinOffsetFilter => _extendedSearchGinOffsetFilter,
-            ExtendedSearchType.GinDirectOffset => _extendedSearchGinDirectOffset,
-            ExtendedSearchType.GinDirectOffsetFilter => _extendedSearchGinDirectOffsetFilter,
+            ExtendedSearchType.GinDirectOffsetLs => _extendedSearchGinDirectOffsetLs,
+            ExtendedSearchType.GinDirectOffsetFilterLs => _extendedSearchGinDirectOffsetFilterLs,
+            ExtendedSearchType.GinDirectOffsetBs => _extendedSearchGinDirectOffsetBs,
+            ExtendedSearchType.GinDirectOffsetFilterBs => _extendedSearchGinDirectOffsetFilterBs,
             ExtendedSearchType.GinFrozenDirect => _extendedSearchGinFrozenDirect,
             ExtendedSearchType.GinFrozenDirectFilter => _extendedSearchGinFrozenDirectFilter,
+            ExtendedSearchType.GinArrayDirectLs => _extendedSearchGinArrayDirectLs,
+            ExtendedSearchType.GinArrayDirectFilterLs => _extendedSearchGinArrayDirectFilterLs,
+            ExtendedSearchType.GinArrayDirectBs => _extendedSearchGinArrayDirectBs,
+            ExtendedSearchType.GinArrayDirectFilterBs => _extendedSearchGinArrayDirectFilterBs,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
                 "unknown search type")
         };
@@ -181,6 +208,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _frozenDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -190,6 +218,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _directOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
         _frozenDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
+        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -199,6 +228,7 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedOffsetIndex.RemoveVector(documentId);
         _directOffsetIndex.RemoveVector(documentId);
         _frozenDirectOffsetIndex.RemoveVector(documentId);
+        _arrayDirectOffsetIndex.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
@@ -208,5 +238,6 @@ public sealed class ExtendedSearchAlgorithmSelector<TDocumentIdCollection>
         _invertedOffsetIndex.Clear();
         _directOffsetIndex.Clear();
         _frozenDirectOffsetIndex.Clear();
+        _arrayDirectOffsetIndex.Clear();
     }
 }

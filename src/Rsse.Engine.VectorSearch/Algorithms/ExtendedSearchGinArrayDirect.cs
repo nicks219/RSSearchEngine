@@ -18,14 +18,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinDirectOffset : IExtendedSearchProcessor
+public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required DirectOffsetIndex GinExtended { get; init; }
+    public required ArrayDirectOffsetIndex GinExtended { get; init; }
 
     public required PositionSearchType PositionSearchType { get; init; }
 

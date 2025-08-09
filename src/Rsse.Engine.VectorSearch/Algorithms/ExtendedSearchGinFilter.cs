@@ -12,8 +12,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса.
 /// </summary>
-public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSearchProcessor
-    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
+public sealed class ExtendedSearchGinFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -25,7 +24,7 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
     /// <summary>
     /// Общий инвертированный индекс: токен-идентификаторы.
     /// </summary>
-    public required InvertedIndex<TDocumentIdCollection> GinExtended { private get; init; }
+    public required InvertedIndex<DocumentIdList> GinExtended { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -33,19 +32,19 @@ public sealed class ExtendedSearchGinFilter<TDocumentIdCollection> : IExtendedSe
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
-        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
+        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector,
-                    idsFromGin, sortedIds, out var filteredTokensCount, out var minRelevancyCount))
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, idsFromGin,
+                    sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
             }
 
             if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException(nameof(ExtendedSearchGinFilter<TDocumentIdCollection>));
+                throw new OperationCanceledException(nameof(ExtendedSearchGinFilter));
 
             var processedDocuments = TempStoragePool.DocumentIdSetsStorage.Get();
 

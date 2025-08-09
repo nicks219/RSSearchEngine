@@ -46,19 +46,16 @@ public sealed class SearchEngineManager
         {
             var tempStoragePool = new TempStoragePool(enableTempStoragePool);
 
+            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
+                tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+
             if (useList)
             {
-                _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector<DocumentIdList>(
-                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
-
                 _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdList>(
                     tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
             }
             else
             {
-                _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector<DocumentIdSet>(
-                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
-
                 _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdSet>(
                     tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
             }

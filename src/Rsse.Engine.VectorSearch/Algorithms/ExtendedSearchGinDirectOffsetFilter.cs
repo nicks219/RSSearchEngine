@@ -9,6 +9,7 @@ using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
+using RsseEngine.SearchType;
 
 namespace RsseEngine.Algorithms;
 
@@ -27,6 +28,8 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
+    public required PositionSearchType PositionSearchType { get; init; }
+
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
@@ -36,7 +39,7 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsExtendedMerge(GinExtended, searchVector, idsFromGin,
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, idsFromGin,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
@@ -208,25 +211,61 @@ public sealed class ExtendedSearchGinDirectOffsetFilter : IExtendedSearchProcess
             return;
         }
 
-        var position = -1;
-        var empty = 0;
-
-        foreach (var token in searchVector)
+        switch (PositionSearchType)
         {
-            if (!offsetTokenVector.TryFindNextTokenPosition(token, ref position))
+            case PositionSearchType.LinearScan:
             {
-                empty++;
+                var position = -1;
+                var empty = 0;
 
-                if (empty > searchVector.Count - minRelevancyCount)
+                foreach (var token in searchVector)
                 {
-                    return;
+                    if (!offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
+                    {
+                        empty++;
+
+                        if (empty > searchVector.Count - minRelevancyCount)
+                        {
+                            return;
+                        }
+                    }
                 }
+
+                var metric = searchVector.Count - empty;
+
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                break;
+            }
+            case PositionSearchType.BinarySearch:
+            {
+                var position = -1;
+                var empty = 0;
+
+                foreach (var token in searchVector)
+                {
+                    if (!offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
+                    {
+                        empty++;
+
+                        if (empty > searchVector.Count - minRelevancyCount)
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                var metric = searchVector.Count - empty;
+
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                break;
+            }
+            default:
+            {
+                throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
             }
         }
-
-        var metric = searchVector.Count - empty;
-
-        metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
     }
 
     private static void SwapAndRemoveAt(List<int> listExists, int i)

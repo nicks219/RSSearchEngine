@@ -21,51 +21,51 @@ public enum ExtendedSearchType
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ExtendedSearchGinFast"/>
-    /// </summary>
-    GinFast = 2,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ExtendedSearchGinFastFilter"/>
-    /// </summary>
-    GinFastFilter = 3,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinMerge"/>
     /// </summary>
-    GinMerge = 4,
+    GinMerge = 2,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinMergeFilter"/>
     /// </summary>
-    GinMergeFilter = 5,
+    GinMergeFilter = 3,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffset"/>
     /// </summary>
-    GinOffset = 6,
+    GinOffset = 4,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffsetFilter"/>
     /// </summary>
-    GinOffsetFilter = 7,
+    GinOffsetFilter = 5,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffset"/>
     /// </summary>
-    GinDirectOffset = 8,
+    GinDirectOffsetLs = 6,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffsetFilter"/>
     /// </summary>
-    GinDirectOffsetFilter = 9,
+    GinDirectOffsetFilterLs = 7,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffset"/>
+    /// </summary>
+    GinDirectOffsetBs = 8,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinDirectOffsetFilter"/>
+    /// </summary>
+    GinDirectOffsetFilterBs = 9,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
@@ -77,5 +77,29 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinFrozenDirectFilter"/>
     /// </summary>
-    GinFrozenDirectFilter = 11
+    GinFrozenDirectFilter = 11,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
+    /// </summary>
+    GinArrayDirectLs = 12,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
+    /// </summary>
+    GinArrayDirectFilterLs = 13,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
+    /// </summary>
+    GinArrayDirectBs = 14,
+
+    /// <summary>
+    /// Оптимизация на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
+    /// </summary>
+    GinArrayDirectFilterBs = 15
 }

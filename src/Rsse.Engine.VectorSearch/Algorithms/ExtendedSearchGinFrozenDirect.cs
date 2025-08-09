@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
@@ -218,6 +219,7 @@ public sealed class ExtendedSearchGinFrozenDirect : IExtendedSearchProcessor
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {

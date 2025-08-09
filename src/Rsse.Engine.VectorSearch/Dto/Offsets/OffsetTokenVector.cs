@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace RsseEngine.Dto.Offsets;
 
@@ -23,15 +24,28 @@ public readonly struct OffsetTokenVector(List<int> tokens, List<OffsetInfo> offs
 
     public static bool operator !=(OffsetTokenVector left, OffsetTokenVector right) => !(left == right);
 
-    public bool TryFindNextTokenPosition(Token token, ref int position)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindNextTokenPositionLinearScan(Token token, ref int position)
     {
-        //*
         var index = _tokens.IndexOf(token.Value);
         if (index != -1)
-        /*/
+        {
+            var offsetInfo = offsetInfos[index];
+
+            if (offsetInfo.TryFindNextPosition(offsets, ref position))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindNextTokenPositionBinarySearch(Token token, ref int position)
+    {
         var index = _tokens.BinarySearch(token.Value);
         if (index >= 0)
-        //*/
         {
             var offsetInfo = offsetInfos[index];
 

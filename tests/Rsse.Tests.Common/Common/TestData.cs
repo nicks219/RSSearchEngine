@@ -14,16 +14,20 @@ public abstract class TestData
     [
         ExtendedSearchType.Legacy,
         ExtendedSearchType.GinFilter,
-        ExtendedSearchType.GinFast,
-        ExtendedSearchType.GinFastFilter,
         ExtendedSearchType.GinMerge,
         ExtendedSearchType.GinMergeFilter,
         ExtendedSearchType.GinOffset,
         ExtendedSearchType.GinOffsetFilter,
-        ExtendedSearchType.GinDirectOffset,
-        ExtendedSearchType.GinDirectOffsetFilter,
+        ExtendedSearchType.GinDirectOffsetLs,
+        ExtendedSearchType.GinDirectOffsetFilterLs,
+        ExtendedSearchType.GinDirectOffsetBs,
+        ExtendedSearchType.GinDirectOffsetFilterBs,
         ExtendedSearchType.GinFrozenDirect,
-        ExtendedSearchType.GinFrozenDirectFilter
+        ExtendedSearchType.GinFrozenDirectFilter,
+        ExtendedSearchType.GinArrayDirectLs,
+        ExtendedSearchType.GinArrayDirectFilterLs,
+        ExtendedSearchType.GinArrayDirectBs,
+        ExtendedSearchType.GinArrayDirectFilterBs
     ];
 
     /// <summary>

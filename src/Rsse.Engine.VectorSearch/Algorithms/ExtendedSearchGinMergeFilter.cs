@@ -40,7 +40,7 @@ public sealed class ExtendedSearchGinMergeFilter : IExtendedSearchProcessor
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsExtendedMerge(GinExtended, searchVector, idsFromGin,
+            if (!RelevanceFilter.FindFilteredDocumentsExtended(GinExtended, searchVector, idsFromGin,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;

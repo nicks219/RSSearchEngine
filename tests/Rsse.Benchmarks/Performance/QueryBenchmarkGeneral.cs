@@ -23,9 +23,7 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
     public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
         (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
-        (Extended: ExtendedSearchType.GinFilter, Reduced:ReducedSearchType.GinFilter),
-        (Extended: ExtendedSearchType.GinFast, Reduced:ReducedSearchType.GinFast),
-        (Extended: ExtendedSearchType.GinFastFilter, Reduced:ReducedSearchType.GinFastFilter)
+        (Extended: ExtendedSearchType.GinFilter, Reduced:ReducedSearchType.GinFilter)
     ];
 
     [ParamsSource(nameof(Parameters))]

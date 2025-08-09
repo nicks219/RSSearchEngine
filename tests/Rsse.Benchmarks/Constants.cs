@@ -20,7 +20,7 @@ public abstract class Constants
     /// <summary>
     /// Измеряемый алгоритм токенизатора.
     /// </summary>
-    internal const ExtendedSearchType TokenizerExtendedSearchType = ExtendedSearchType.GinFast;
+    internal const ExtendedSearchType TokenizerExtendedSearchType = ExtendedSearchType.GinFilter;
 
     /// <summary>
     /// Измеряемый алгоритм токенизатора.
