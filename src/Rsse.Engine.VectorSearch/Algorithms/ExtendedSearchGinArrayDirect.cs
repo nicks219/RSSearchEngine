@@ -63,7 +63,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
                 default:
                     {
                         if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ExtendedSearchGinMerge));
+                            throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirect));
 
                         CreateExtendedSearchSpace(searchVector, metricsCalculator, idsFromGin);
 

@@ -16,32 +16,6 @@ public static class MetricsExtension
             externalDocument.Size);
     }
 
-    public static void AppendExtendedRelevancyMetric(this IMetricsCalculator metricsCalculator,
-        TokenVector searchVector, DocumentId documentId, DirectIndex directIndex,
-        int minRelevancyCount, int searchStartIndex = 0)
-    {
-        var extendedTargetVector = directIndex[documentId].Extended;
-
-        var comparisonScore = ScoreCalculator.ComputeOrderedRelevancy(
-            extendedTargetVector, searchVector, minRelevancyCount, searchStartIndex);
-
-        if (comparisonScore == -1)
-        {
-            return;
-        }
-
-        // Для расчета метрик необходимо учитывать размер оригинальной заметки.
-        metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
-    }
-
-    public static void AppendExtendedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
-        DocumentId documentId, DirectIndex directIndex, int searchStartIndex = 0)
-    {
-        var tokenLine = directIndex[documentId];
-
-        AppendExtendedMetric(metricsCalculator, searchVector, documentId, tokenLine, searchStartIndex);
-    }
-
     public static void AppendExtendedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
         DocumentId documentId, TokenLine tokenLine, int searchStartIndex = 0)
     {

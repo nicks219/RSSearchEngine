@@ -207,7 +207,7 @@ public readonly partial struct DocumentDataPoint
             }
         }
 
-        public static class BinaryTreeHeader
+        private static class BinaryTreeHeader
         {
             private const int HeaderSize = 3;
 

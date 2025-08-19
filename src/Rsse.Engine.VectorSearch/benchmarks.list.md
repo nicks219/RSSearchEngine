@@ -661,4 +661,77 @@
 | QueryBenchmarkReduced       | QueryReduced       |      Legacy                  |     17.8172 ms |   0.4855 ms |   0.2889 ms |     17.3135 ms |       5.11 KB |
 ```
 
+* коммит: доработка поискового движка (оптимизация GinArrayDirect)
+```
+| Type                        | Method             | SearchType                  | Mean           | Error       | StdDev      | Min            | Allocated     |
+|---------------------------- |------------------- |---------------------------- |---------------:|------------:|------------:|---------------:|--------------:|
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectFilterLs |     39.5122 ms |   1.3984 ms |   0.9250 ms |     37.7302 ms |   10920.97 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectFilterHs |     39.5963 ms |   2.0582 ms |   1.3614 ms |     38.0686 ms |   10920.97 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectFilterLs |     40.3813 ms |   3.3114 ms |   1.9706 ms |     37.4911 ms |    2031.67 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectFilterHs |     41.4386 ms |   1.3922 ms |   0.9209 ms |     40.0326 ms |    2031.66 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectFilterBs |     43.9314 ms |   1.4158 ms |   0.9365 ms |     42.6729 ms |    2031.68 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectFilterBs |     45.5060 ms |   2.1413 ms |   1.4163 ms |     43.7510 ms |   10921.01 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinOffsetFilter        |     63.4198 ms |   1.4478 ms |   0.9576 ms |     61.4910 ms |   16957.76 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinOffsetFilter        |     64.9172 ms |   1.7500 ms |   1.1575 ms |     63.2583 ms |   30489.43 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      Legacy                 |    749.7828 ms |   3.4593 ms |   2.2881 ms |    747.2111 ms |    2061.02 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectHs       |  1,511.1556 ms |  34.2309 ms |  22.6416 ms |  1,471.3435 ms |    2031.76 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectHs       |  1,521.6715 ms |  19.7558 ms |  13.0673 ms |  1,507.7249 ms |   18483.23 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectLs       |  1,549.4470 ms |  14.6841 ms |   8.7383 ms |  1,527.3418 ms |    2031.76 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectLs       |  1,558.2824 ms |   5.1676 ms |   3.0751 ms |  1,551.5083 ms |   18483.23 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinOffset              |  2,660.7825 ms |  25.8719 ms |  15.3959 ms |  2,622.1576 ms |    2003.34 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinOffset              |  2,708.6028 ms |   8.0773 ms |   5.3426 ms |  2,701.2923 ms |   15535.02 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended | Pool GinArrayDirectBs       |  3,554.1957 ms |  29.5260 ms |  19.5296 ms |  3,508.6160 ms |    2032.37 KB |
+| DuplicatesBenchmarkExtended | DuplicatesExtended |      GinArrayDirectBs       |  3,640.2893 ms |  12.2657 ms |   8.1130 ms |  3,628.4981 ms |   18483.23 KB |
+|                             |                    |                             |                |             |             |                |               |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectFilterLs |      0.0085 ms |   0.0001 ms |   0.0001 ms |      0.0084 ms |       5.46 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectFilterLs |      0.0086 ms |   0.0001 ms |   0.0001 ms |      0.0085 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectFilterHs |      0.0088 ms |   0.0001 ms |   0.0000 ms |      0.0087 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectFilterHs |      0.0091 ms |   0.0006 ms |   0.0004 ms |      0.0087 ms |       5.46 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectFilterBs |      0.0093 ms |   0.0002 ms |   0.0001 ms |      0.0091 ms |       5.46 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectFilterBs |      0.0093 ms |   0.0001 ms |   0.0001 ms |      0.0092 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinOffsetFilter        |      0.0188 ms |   0.0001 ms |   0.0001 ms |      0.0187 ms |       5.88 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinOffsetFilter        |      0.0196 ms |   0.0003 ms |   0.0002 ms |      0.0194 ms |       6.43 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinOffset              |      0.2357 ms |   0.0007 ms |   0.0005 ms |      0.2351 ms |       5.23 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinOffset              |      0.2371 ms |   0.0006 ms |   0.0003 ms |      0.2366 ms |       4.69 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectBs       |      0.4669 ms |   0.0088 ms |   0.0058 ms |      0.4512 ms |       5.86 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectBs       |      0.4735 ms |   0.0106 ms |   0.0063 ms |      0.4590 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectLs       |      0.4794 ms |   0.0080 ms |   0.0047 ms |      0.4675 ms |       5.86 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectLs       |      0.4886 ms |   0.0107 ms |   0.0071 ms |      0.4696 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      GinArrayDirectHs       |      0.5233 ms |   0.0167 ms |   0.0110 ms |      0.5020 ms |       5.86 KB |
+| QueryBenchmarkExtended      | QueryExtended      | Pool GinArrayDirectHs       |      0.5299 ms |   0.0134 ms |   0.0089 ms |      0.5121 ms |       4.72 KB |
+| QueryBenchmarkExtended      | QueryExtended      |      Legacy                 |     18.5911 ms |   0.8158 ms |   0.5396 ms |     17.7749 ms |       4.77 KB |
+|                             |                    |                             |                |             |             |                |               |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinFastFilter          |     41.7496 ms |   1.4008 ms |   0.9265 ms |     39.8222 ms |    4221.19 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinOptimizedFilter     |     42.4969 ms |   3.2601 ms |   2.1563 ms |     39.6895 ms |    4221.17 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinMergeFilter         |     47.5995 ms |   1.6436 ms |   1.0871 ms |     45.8258 ms |    4221.23 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinMergeFilter         |     47.9222 ms |   1.0104 ms |   0.6683 ms |     46.4919 ms |    8768.17 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinFastFilter          |     47.9991 ms |   1.2846 ms |   0.7645 ms |     46.8361 ms |   17137.62 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinOptimizedFilter     |     48.0075 ms |   1.7615 ms |   1.1651 ms |     46.6416 ms |   17137.83 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinOptimized           |     82.7162 ms |   1.3324 ms |   0.8813 ms |     81.6874 ms |    4221.26 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinFast                |     90.9189 ms |   1.9752 ms |   1.3065 ms |     87.9648 ms |    4221.28 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinOptimized           |     98.0576 ms |   1.3644 ms |   0.9025 ms |     96.9759 ms |   70059.80 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinFast                |    105.7362 ms |   0.9527 ms |   0.5669 ms |    104.8553 ms |   70864.42 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinFilter              |    213.1534 ms |   2.0565 ms |   1.3603 ms |    211.0731 ms |    4221.39 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinFilter              |    215.9433 ms |   2.9691 ms |   1.9639 ms |    211.2253 ms |   16132.68 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  | Pool GinMerge               |    222.6634 ms |   1.1507 ms |   0.6847 ms |    221.5675 ms |    4221.29 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      GinMerge               |    224.2677 ms |   2.0827 ms |   1.3776 ms |    222.4091 ms |    8746.61 KB |
+| DuplicatesBenchmarkReduced  | DuplicatesReduced  |      Legacy                 |    800.9225 ms |   2.3998 ms |   1.5873 ms |    798.9210 ms |    4279.95 KB |
+|                             |                    |                             |                |             |             |                |               |
+| QueryBenchmarkReduced       | QueryReduced       |      GinMergeFilter         |      0.1052 ms |   0.0003 ms |   0.0002 ms |      0.1050 ms |       5.44 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinMergeFilter         |      0.1067 ms |   0.0004 ms |   0.0002 ms |      0.1064 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinOptimized           |      0.2070 ms |   0.0005 ms |   0.0003 ms |      0.2066 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinOptimizedFilter     |      0.2168 ms |   0.0009 ms |   0.0005 ms |      0.2160 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinFast                |      0.2239 ms |   0.0006 ms |   0.0004 ms |      0.2234 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinFastFilter          |      0.2279 ms |   0.0024 ms |   0.0014 ms |      0.2241 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinMerge               |      0.2382 ms |   0.0013 ms |   0.0009 ms |      0.2373 ms |       5.47 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinOptimizedFilter     |      0.2474 ms |   0.0018 ms |   0.0009 ms |      0.2459 ms |     188.06 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinMerge               |      0.2521 ms |   0.0033 ms |   0.0022 ms |      0.2495 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinFastFilter          |      0.2621 ms |   0.0021 ms |   0.0014 ms |      0.2603 ms |     188.07 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinFast                |      0.5184 ms |   0.0153 ms |   0.0091 ms |      0.5079 ms |     662.50 KB |
+| QueryBenchmarkReduced       | QueryReduced       | Pool GinFilter              |      0.5392 ms |   0.0019 ms |   0.0012 ms |      0.5362 ms |       5.03 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinFilter              |      0.5617 ms |   0.0046 ms |   0.0030 ms |      0.5570 ms |     155.79 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      GinOptimized           |      0.8287 ms |   0.0182 ms |   0.0120 ms |      0.7988 ms |    1372.39 KB |
+| QueryBenchmarkReduced       | QueryReduced       |      Legacy                 |     17.0899 ms |   1.1004 ms |   0.7278 ms |     16.0817 ms |       5.10 KB |
+```
+
 * коммит: ...

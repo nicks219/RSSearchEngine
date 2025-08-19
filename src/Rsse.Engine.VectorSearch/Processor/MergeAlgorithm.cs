@@ -54,12 +54,6 @@ public static class MergeAlgorithm
         }
     }
 
-    public static void FindMin(List<DocumentListEnumerator> list, List<int> listExists,
-        out int minI0, out DocumentId min0, out DocumentId min1)
-    {
-        FindMin<DocumentId, DocumentListEnumerator>(list, listExists, out minI0, out min0, out min1);
-    }
-
     public static void FindMin(List<InternalDocumentListEnumerator> list, List<int> listExists,
         out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
     {

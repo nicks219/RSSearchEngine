@@ -48,33 +48,6 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndex directIndex)
-    {
-        // I. 100% совпадение по extended последовательности, по reduced можно не искать
-        if (comparisonScore == searchVector.Count)
-        {
-            var tokensLine = directIndex[documentId];
-            var extendedTargetVector = tokensLine.Extended;
-
-            ContinueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVector.Count));
-            return;
-        }
-
-        // II. extended% совпадение
-        if (comparisonScore >= searchVector.Count * ExtendedCoefficient)
-        {
-            var tokensLine = directIndex[documentId];
-            var extendedTargetVector = tokensLine.Extended;
-
-            // todo: можно так оценить
-            // continueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (100D / extendedTargetVector.Count));
-        }
-    }
-
-    /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
         int reducedTargetVectorSize)
     {

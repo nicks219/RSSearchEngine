@@ -9,7 +9,7 @@ namespace RsseEngine.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class ArrayDirectOffsetIndex : IOffsetIndex
+public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSearchType dataPointSearchType)
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
@@ -17,6 +17,8 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
     private readonly Dictionary<Token, InternalDocumentIdList> _invertedIndex = new();
 
     private readonly List<ArrayOffsetTokenVector> _directIndex = new();
+
+    private readonly List<ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
 
     private readonly Dictionary<DocumentId, InternalDocumentId> _documentIdToInternalDocumentId = new();
 
@@ -37,6 +39,7 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
         RemoveVector(documentId);
 
         _documentIdToInternalDocumentId[documentId] = internalDocumentId;
+        _internalDocumentIdToDocumentId.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));
 
         AppendTokenVector(documentId, internalDocumentId, tokenVector);
     }
@@ -60,6 +63,7 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
     {
         _invertedIndex.Clear();
         _directIndex.Clear();
+        _internalDocumentIdToDocumentId.Clear();
         _documentIdToInternalDocumentId.Clear();
         _documentIdCounter = 0;
     }
@@ -92,7 +96,6 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
         }
     }
 
-
     public bool TryGetOffsetTokenVector(InternalDocumentId documentId,
         out ArrayOffsetTokenVector offsetTokenVector, out ExternalDocumentIdWithSize externalDocument)
     {
@@ -104,7 +107,8 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
         }
 
         offsetTokenVector = _directIndex[documentId.Value];
-        externalDocument = new ExternalDocumentIdWithSize(new DocumentId(offsetTokenVector.Value.ExternalId), offsetTokenVector.Value.ExternalCount);
+        //externalDocument = new ExternalDocumentIdWithSize(new DocumentId(offsetTokenVector.Value.ExternalId), offsetTokenVector.Value.ExternalCount);
+        externalDocument = _internalDocumentIdToDocumentId[documentId.Value];
         return true;
     }
 
@@ -130,7 +134,7 @@ public sealed class ArrayDirectOffsetIndex : IOffsetIndex
             .ToDictionary();
 
         DocumentDataPoint immutableIntDictionary = new DocumentDataPoint(tokens, externalDocumentId.Value,
-            tokenVector.Count, DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+            tokenVector.Count, dataPointSearchType);
 
         var offsetTokenVector = new ArrayOffsetTokenVector(immutableIntDictionary);
 

@@ -118,7 +118,7 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     /// <returns>Экземпляр коллекции типа <b>TDocumentIdCollection</b>.</returns>
     /// <exception cref="NotSupportedException">Требуемый тип не поддерживается.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TDocumentIdCollection CreateCollection()
+    private static TDocumentIdCollection CreateCollection()
     {
         if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
         {
@@ -139,28 +139,6 @@ public sealed class InvertedIndex<TDocumentIdCollection>
     private static void ThrowNotSupportedException()
     {
         throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
-    }
-
-    /// <summary>
-    /// Заполнить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
-    /// </summary>
-    /// <param name="tokens">Вектор с целевыми токенами.</param>
-    /// <param name="documentIdsList">Коллекция векторов с идентификаторами.</param>
-    public void GetDocumentIdVectorsToList(TokenVector tokens, List<TDocumentIdCollection> documentIdsList)
-    {
-        var emptyDocIdVector = CreateCollection();
-
-        foreach (var token in tokens)
-        {
-            if (TryGetNonEmptyDocumentIdVector(token, out var documentIds))
-            {
-                documentIdsList.Add(documentIds);
-            }
-            else
-            {
-                documentIdsList.Add(emptyDocIdVector);
-            }
-        }
     }
 
     /// <summary>

@@ -13,21 +13,14 @@ public abstract class TestData
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
     [
         ExtendedSearchType.Legacy,
-        ExtendedSearchType.GinFilter,
-        ExtendedSearchType.GinMerge,
-        ExtendedSearchType.GinMergeFilter,
         ExtendedSearchType.GinOffset,
         ExtendedSearchType.GinOffsetFilter,
-        ExtendedSearchType.GinDirectOffsetLs,
-        ExtendedSearchType.GinDirectOffsetFilterLs,
-        ExtendedSearchType.GinDirectOffsetBs,
-        ExtendedSearchType.GinDirectOffsetFilterBs,
-        ExtendedSearchType.GinFrozenDirect,
-        ExtendedSearchType.GinFrozenDirectFilter,
         ExtendedSearchType.GinArrayDirectLs,
         ExtendedSearchType.GinArrayDirectFilterLs,
         ExtendedSearchType.GinArrayDirectBs,
-        ExtendedSearchType.GinArrayDirectFilterBs
+        ExtendedSearchType.GinArrayDirectFilterBs,
+        ExtendedSearchType.GinArrayDirectHs,
+        ExtendedSearchType.GinArrayDirectFilterHs
     ];
 
     /// <summary>

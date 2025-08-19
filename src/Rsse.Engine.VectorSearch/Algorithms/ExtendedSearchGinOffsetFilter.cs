@@ -31,9 +31,6 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(nameof(ExtendedSearchGinOffsetFilter));
-
         var enumerators = TempStoragePool.TokenOffsetEnumeratorListsStorage.Get();
 
         try
@@ -44,6 +41,9 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
             {
                 return;
             }
+
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinOffsetFilter));
 
             switch (enumerators.Count)
             {

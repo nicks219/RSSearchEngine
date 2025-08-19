@@ -27,28 +27,10 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     public static List<BenchmarkParameter<ExtendedSearchType>> Parameters =>
     [
         new(ExtendedSearchType.Legacy),
-        new(ExtendedSearchType.GinFilter),
-        new(ExtendedSearchType.GinFilter, true),
-        new(ExtendedSearchType.GinMerge),
-        new(ExtendedSearchType.GinMerge, true),
-        new(ExtendedSearchType.GinMergeFilter),
-        new(ExtendedSearchType.GinMergeFilter, true),
         new(ExtendedSearchType.GinOffset),
         new(ExtendedSearchType.GinOffset, true),
         new(ExtendedSearchType.GinOffsetFilter),
         new(ExtendedSearchType.GinOffsetFilter, true),
-        new(ExtendedSearchType.GinDirectOffsetLs),
-        new(ExtendedSearchType.GinDirectOffsetLs, true),
-        new(ExtendedSearchType.GinDirectOffsetFilterLs),
-        new(ExtendedSearchType.GinDirectOffsetFilterLs, true),
-        new(ExtendedSearchType.GinDirectOffsetBs),
-        new(ExtendedSearchType.GinDirectOffsetBs, true),
-        new(ExtendedSearchType.GinDirectOffsetFilterBs),
-        new(ExtendedSearchType.GinDirectOffsetFilterBs, true),
-        new(ExtendedSearchType.GinFrozenDirect),
-        new(ExtendedSearchType.GinFrozenDirect, true),
-        new(ExtendedSearchType.GinFrozenDirectFilter),
-        new(ExtendedSearchType.GinFrozenDirectFilter, true),
         new(ExtendedSearchType.GinArrayDirectLs),
         new(ExtendedSearchType.GinArrayDirectLs, true),
         new(ExtendedSearchType.GinArrayDirectFilterLs),
@@ -56,7 +38,11 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.GinArrayDirectBs),
         new(ExtendedSearchType.GinArrayDirectBs, true),
         new(ExtendedSearchType.GinArrayDirectFilterBs),
-        new(ExtendedSearchType.GinArrayDirectFilterBs, true)
+        new(ExtendedSearchType.GinArrayDirectFilterBs, true),
+        new(ExtendedSearchType.GinArrayDirectHs),
+        new(ExtendedSearchType.GinArrayDirectHs, true),
+        new(ExtendedSearchType.GinArrayDirectFilterHs),
+        new(ExtendedSearchType.GinArrayDirectFilterHs, true)
     ];
 
     [ParamsSource(nameof(Parameters))]

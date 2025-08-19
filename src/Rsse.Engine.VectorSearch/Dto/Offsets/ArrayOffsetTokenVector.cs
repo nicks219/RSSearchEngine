@@ -18,15 +18,6 @@ public readonly struct ArrayOffsetTokenVector(DocumentDataPoint tokens)
     /// </summary>
     public int Count => _tokens.Count;
 
-    public DocumentDataPoint Value => _tokens;
-
-    /// <summary>
-    /// Определить, содержит ли вектор токен.
-    /// </summary>
-    /// <param name="token">Токен.</param>
-    /// <returns><b>true</b> - Вектор содержит токен.</returns>
-    public bool Contains(Token token) => _tokens.ContainsKey(token.Value);
-
     public bool Equals(ArrayOffsetTokenVector other) => _tokens.Equals(other._tokens);
 
     public override bool Equals(object? obj) => obj is ArrayOffsetTokenVector other && Equals(other);
