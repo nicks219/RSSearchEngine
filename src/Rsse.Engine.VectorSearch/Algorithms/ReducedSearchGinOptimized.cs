@@ -31,9 +31,6 @@ public sealed class ReducedSearchGinOptimized<TDocumentIdCollection> : IReducedS
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        searchVector = searchVector.DistinctAndGet();
-
         var comparisonScores = new ComparisonScores(TempStoragePool.ScoresStorage.Get());
 
         try

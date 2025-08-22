@@ -11,14 +11,15 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rsse.Api.Services;
+using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Context;
 using Rsse.Tests.Common;
 using Rsse.Tests.Integration.FakeDb.Api;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Integration.FakeDb.Infra;
+using RsseEngine.Dto;
 using RsseEngine.Service;
-using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 namespace Rsse.Tests.Integration.FakeDb;
 
@@ -114,7 +115,7 @@ public class ComplianceGeneralTests
                 // arrange:
                 using var client = _factory?.CreateClient(Options);
                 client.EnsureNotNull();
-                var uri = new Uri($"{ComplianceIndicesGetUrl}?text={request}", UriKind.Relative);
+                var uri = new Uri($"{RouteConstants.ComplianceIndicesGetUrl}?text={request}", UriKind.Relative);
                 var tokenizerApiClient = (ITokenizerApiClient)_factory?.Services.GetService(typeof(ITokenizerApiClient))!;
                 var tokenizerServiceCore = (TokenizerServiceCore)tokenizerApiClient.GetTokenizerServiceCore();
                 tokenizerServiceCore.ConfigureSearchEngine(
@@ -157,20 +158,48 @@ public class ComplianceGeneralTests
                     reducedSearchType: reducedSearchTypes);
 
                 // act:
-                var reduced = tokenizerServiceCore
-                    .ComputeComplianceIndexReduced(request, NoneToken)
-                    .OrderByDescending(x => x.Value)
-                    .ThenByDescending(x => x.Key)
-                    .ToDictionary();
+                Dictionary<DocumentId, double> extended;
+                var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                try
+                {
+                    tokenizerServiceCore.ComputeComplianceIndexExtended(request, extendedMetricsCalculator, NoneToken);
 
-                var extended = tokenizerServiceCore
-                    .ComputeComplianceIndexExtended(request, NoneToken)
-                    .OrderByDescending(x => x.Value)
-                    .ThenByDescending(x => x.Key)
-                    .ToDictionary();
+                    var result = extendedMetricsCalculator.ComplianceMetrics
+                        .OrderBy(t => t.Key)
+                        .ToList();
 
-                var reducedSerialized = JsonSerializer.Serialize(reduced, options);
+                    extended = result
+                        .OrderByDescending(x => x.Value)
+                        .ThenByDescending(x => x.Key)
+                        .ToDictionary();
+                }
+                finally
+                {
+                    tokenizerServiceCore.ReleaseMetricsCalculator(extendedMetricsCalculator);
+                }
+
+                Dictionary<DocumentId, double> reduced;
+                var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                try
+                {
+                    tokenizerServiceCore.ComputeComplianceIndexReduced(request, reducedMetricsCalculator, NoneToken);
+
+                    var result = reducedMetricsCalculator.ComplianceMetrics
+                        .OrderBy(t => t.Key)
+                        .ToList();
+
+                    reduced = result
+                        .OrderByDescending(x => x.Value)
+                        .ThenByDescending(x => x.Key)
+                        .ToDictionary();
+                }
+                finally
+                {
+                    tokenizerServiceCore.ReleaseMetricsCalculator(reducedMetricsCalculator);
+                }
+
                 var extendedSerialized = JsonSerializer.Serialize(extended, options);
+                var reducedSerialized = JsonSerializer.Serialize(reduced, options);
 
                 // assert:
                 var actual = $"{extendedSerialized} {reducedSerialized}";

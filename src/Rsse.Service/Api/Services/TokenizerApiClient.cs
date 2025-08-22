@@ -37,7 +37,7 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
-        _tokenizerServiceCore = new TokenizerServiceCore(
+        _tokenizerServiceCore = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolAllocate,
             false, extendedSearchType, reducedSearchType);
     }
 
@@ -122,13 +122,22 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
     // Сценарий: основная нагрузка приходится на операции чтения, в большинстве случаев со своими данными клиент работает единолично.
     // Допустимо, если метод вернёт неактуальные данные.
     /// <inheritdoc/>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public List<KeyValuePair<int, double>> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        var complianceIndices = _tokenizerServiceCore.ComputeComplianceIndices(text, cancellationToken);
+        var metricsCalculator = _tokenizerServiceCore.CreateMetricsCalculator();
 
-        return complianceIndices
-            .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
-            .ToDictionary();
+        try
+        {
+            _tokenizerServiceCore.ComputeComplianceIndices(text, metricsCalculator, cancellationToken);
+
+            return metricsCalculator.ComplianceMetrics
+                .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
+                .ToList();
+        }
+        finally
+        {
+            _tokenizerServiceCore.ReleaseMetricsCalculator(metricsCalculator);
+        }
     }
 
     public void Dispose()

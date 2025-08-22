@@ -30,9 +30,6 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        searchVector = searchVector.DistinctAndGet();
-
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
 
         try

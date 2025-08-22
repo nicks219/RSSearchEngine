@@ -7,7 +7,6 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
-using RsseEngine.Dto;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
 
@@ -59,9 +58,24 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
     }
 
     [Benchmark]
-    public Dictionary<DocumentId, double> QueryExtended()
+    public void QueryExtended()
     {
-        return _tokenizer.ComputeComplianceIndexExtended(Constants.SearchQuery, CancellationToken.None);
+        var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+        try
+        {
+            _tokenizer.ComputeComplianceIndexExtended(Constants.SearchQuery,
+                metricsCalculator, CancellationToken.None);
+
+            if (metricsCalculator.ComplianceMetrics.Count == 0)
+            {
+                Console.WriteLine("Result is empty [" + Constants.SearchQuery + "]");
+            }
+        }
+        finally
+        {
+            _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
+        }
     }
 
     /// <inheritdoc/>
@@ -81,7 +95,8 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(pool, extendedSearchType, ReducedSearchType.Legacy);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");

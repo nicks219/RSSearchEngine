@@ -47,7 +47,6 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
         // Без GIN-индекса.
         _reducedSearchLegacy = new ReducedSearchLegacy
         {
-            TempStoragePool = tempStoragePool,
             GeneralDirectIndex = generalDirectIndex
         };
 

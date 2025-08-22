@@ -110,10 +110,21 @@ public class StQueryBenchmarkExtended : IBenchmarkRunner
                 var searchQuery = SearchQueries[index];
                 //var searchQuery = SearchQuery;
 
-                var result = _tokenizer.ComputeComplianceIndexExtended(searchQuery, CancellationToken.None);
-                if (result.Count == 0)
+                var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+                try
                 {
-                    Console.WriteLine("Result is empty [" + searchQuery + "]");
+                    _tokenizer.ComputeComplianceIndexExtended(searchQuery,
+                        metricsCalculator, CancellationToken.None);
+
+                    if (metricsCalculator.ComplianceMetrics.Count == 0)
+                    {
+                        Console.WriteLine("Result is empty [" + searchQuery + "]");
+                    }
+                }
+                finally
+                {
+                    _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
                 }
             }
         }
@@ -136,7 +147,8 @@ public class StQueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(pool, extendedSearchType, ReducedSearchType.Legacy);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(
             $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");

@@ -47,10 +47,21 @@ public class DuplicateBenchmarkGeneral : IBenchmarkRunner
     {
         foreach (NoteEntity noteEntity in _noteEntities)
         {
-            var results = _tokenizer.ComputeComplianceIndices(noteEntity.Text, CancellationToken.None);
-            if (results.Count == 0)
+            var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+            try
             {
-                Console.WriteLine("[Tokenizer] empty result");
+                _tokenizer.ComputeComplianceIndices(noteEntity.Text,
+                    metricsCalculator, CancellationToken.None);
+
+                if (metricsCalculator.ComplianceMetrics.Count == 0)
+                {
+                    Console.WriteLine("[Tokenizer] empty result");
+                }
+            }
+            finally
+            {
+                _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
             }
         }
 
@@ -74,7 +85,8 @@ public class DuplicateBenchmarkGeneral : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicateBenchmarkGeneral)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            false, extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");

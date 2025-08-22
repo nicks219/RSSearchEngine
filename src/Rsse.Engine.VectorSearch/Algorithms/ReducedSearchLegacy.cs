@@ -3,7 +3,6 @@ using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
-using RsseEngine.Pools;
 using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
@@ -13,8 +12,6 @@ namespace RsseEngine.Algorithms;
 /// </summary>
 public sealed class ReducedSearchLegacy : IReducedSearchProcessor
 {
-    public required TempStoragePool TempStoragePool { private get; init; }
-
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
@@ -23,9 +20,6 @@ public sealed class ReducedSearchLegacy : IReducedSearchProcessor
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        searchVector = searchVector.DistinctAndGet();
-
         if (cancellationToken.IsCancellationRequested)
             throw new OperationCanceledException(nameof(ReducedSearchLegacy));
 

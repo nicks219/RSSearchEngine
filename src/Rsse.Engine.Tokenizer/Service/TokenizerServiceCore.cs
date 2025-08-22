@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Rsse.Domain.Data.Contracts;
@@ -8,6 +7,7 @@ using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Exceptions;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
+using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
@@ -21,6 +21,7 @@ namespace RsseEngine.Service;
 /// </summary>
 public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConfigurable
 {
+    private readonly MetricsCalculator.Factory _metricsCalculatorFactory;
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly SearchEngineManager _searchEngineManager;
     private ExtendedSearchType _extendedSearchType;
@@ -34,14 +35,17 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
+    /// <param name="metricsCalculatorFactoryType">Тип фабрики для калькулятора метрик</param>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <param name="extendedSearchType">Тип оптимизации расширенного алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации сокращенного алгоритма поиска.</param>
     public TokenizerServiceCore(
+        MetricsCalculator.MetricsCalculatorFactoryType metricsCalculatorFactoryType,
         bool enableTempStoragePool,
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
+        _metricsCalculatorFactory = new MetricsCalculator.Factory(metricsCalculatorFactoryType);
         _searchEngineManager = new SearchEngineManager(enableTempStoragePool, true);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
@@ -142,16 +146,27 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     public bool IsInitialized() => _isActivated;
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public IMetricsCalculator CreateMetricsCalculator()
     {
-        var metricsCalculator = new MetricsCalculator();
+        return _metricsCalculatorFactory.CreateMetricsCalculator();
+    }
 
+    /// <inheritdoc/>
+    public void ReleaseMetricsCalculator(IMetricsCalculator metricsCalculator)
+    {
+        _metricsCalculatorFactory.ReleaseMetricsCalculator(metricsCalculator);
+    }
+
+    /// <inheritdoc/>
+    public void ComputeComplianceIndices(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
         var extendedSearchVector = _searchEngineManager.ExtendedTokenizer.TokenizeText(text);
 
         if (extendedSearchVector.Count == 0)
         {
             // заметки вида "123 456" не ищем, так как получим весь каталог
-            return metricsCalculator.ComplianceMetrics;
+            return;
         }
 
         _searchEngineManager.FindExtended(_extendedSearchType,
@@ -159,7 +174,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
 
         if (!metricsCalculator.ContinueSearching)
         {
-            return metricsCalculator.ComplianceMetrics;
+            return;
         }
 
         var reducedSearchVector = _searchEngineManager.ReducedTokenizer.TokenizeText(text);
@@ -167,51 +182,43 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         if (reducedSearchVector.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
-            return metricsCalculator.ComplianceMetrics;
+            return;
         }
 
         _searchEngineManager.FindReduced(_reducedSearchType,
             reducedSearchVector, metricsCalculator, cancellationToken);
-
-        return metricsCalculator.ComplianceMetrics;
     }
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComputeComplianceIndexExtended(string text, CancellationToken cancellationToken)
+    public void ComputeComplianceIndexExtended(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        var metricsCalculator = new MetricsCalculator();
-
         var extendedSearchVector = _searchEngineManager.ExtendedTokenizer.TokenizeText(text);
 
         if (extendedSearchVector.Count == 0)
         {
             // заметки вида "123 456" не ищем, так как получим весь каталог
-            return metricsCalculator.ComplianceMetrics;
+            return;
         }
 
         _searchEngineManager.FindExtended(_extendedSearchType,
             extendedSearchVector, metricsCalculator, cancellationToken);
-
-        return metricsCalculator.ComplianceMetrics;
     }
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComputeComplianceIndexReduced(string text, CancellationToken cancellationToken)
+    public void ComputeComplianceIndexReduced(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
     {
-        var metricsCalculator = new MetricsCalculator();
-
         var reducedSearchVector = _searchEngineManager.ReducedTokenizer.TokenizeText(text);
 
         if (reducedSearchVector.Count == 0)
         {
             // песни вида "123 456" не ищем, так как получим весь каталог
-            return metricsCalculator.ComplianceMetrics;
+            return;
         }
 
         _searchEngineManager.FindReduced(_reducedSearchType,
             reducedSearchVector, metricsCalculator, cancellationToken);
-
-        return metricsCalculator.ComplianceMetrics;
     }
 
     /// <summary>

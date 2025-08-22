@@ -114,10 +114,21 @@ public class MtQueryBenchmarkReduced : IBenchmarkRunner
                     var searchQuery = SearchQueries[index];
                     //var searchQuery = SearchQuery;
 
-                    var result = _tokenizer.ComputeComplianceIndexReduced(searchQuery, CancellationToken.None);
-                    if (result.Count == 0)
+                    var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+                    try
                     {
-                        Console.WriteLine("Result is empty [" + searchQuery + "]");
+                        _tokenizer.ComputeComplianceIndexReduced(searchQuery,
+                            metricsCalculator, CancellationToken.None);
+
+                        if (metricsCalculator.ComplianceMetrics.Count == 0)
+                        {
+                            Console.WriteLine("Result is empty [" + searchQuery + "]");
+                        }
+                    }
+                    finally
+                    {
+                        _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
                     }
                 }));
             }
@@ -141,7 +152,8 @@ public class MtQueryBenchmarkReduced : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(MtQueryBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(pool, ExtendedSearchType.Legacy, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            pool, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(MtQueryBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");

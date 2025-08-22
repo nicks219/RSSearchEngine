@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 
@@ -8,6 +9,16 @@ namespace RsseEngine.Contracts;
 /// </summary>
 public interface IMetricsCalculator
 {
+    /// <summary>
+    /// Продолжать ли поиск.
+    /// </summary>
+    bool ContinueSearching { get; }
+
+    /// <summary>
+    /// Метрики релевантности.
+    /// </summary>
+    Dictionary<DocumentId, double> ComplianceMetrics { get; }
+
     /// <summary>
     /// Добавить метрики для четкого поиска.
     /// </summary>
@@ -37,4 +48,9 @@ public interface IMetricsCalculator
     /// <param name="directIndex">Индекс по идентификаторам заметок.</param>
     void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
         DirectIndex directIndex);
+
+    /// <summary>
+    /// Очищает метрики.
+    /// </summary>
+    void Clear();
 }

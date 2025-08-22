@@ -156,7 +156,7 @@ public sealed class SearchEngineManager
     /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     public void FindExtended(ExtendedSearchType extendedSearchType, TokenVector extendedSearchVector,
-        MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+        IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
         _extendedSearchAlgorithmSelector
             .GetSearchProcessor(extendedSearchType)
@@ -171,8 +171,11 @@ public sealed class SearchEngineManager
     /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     public void FindReduced(ReducedSearchType reducedSearchType, TokenVector reducedSearchVector,
-        MetricsCalculator metricsCalculator, CancellationToken cancellationToken)
+        IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
+        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
+        reducedSearchVector = reducedSearchVector.DistinctAndGet();
+
         _reducedSearchAlgorithmSelector
             .GetSearchProcessor(reducedSearchType)
             .FindReduced(reducedSearchVector, metricsCalculator, cancellationToken);

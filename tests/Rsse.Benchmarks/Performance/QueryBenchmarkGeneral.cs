@@ -42,13 +42,22 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
     [Benchmark]
     public void QueryExtendedAndReduced()
     {
-        var results = _tokenizer.ComputeComplianceIndices(Constants.SearchQuery, CancellationToken.None);
-        if (results.Count == 0)
-        {
-            Console.WriteLine("[Tokenizer] empty result");
-        }
+        var metricsCalculator = _tokenizer.CreateMetricsCalculator();
 
-        // Console.WriteLine($"[{nameof(BenchmarkEngineTokenizer)}] found: {results.Count}");
+        try
+        {
+            _tokenizer.ComputeComplianceIndices(Constants.SearchQuery,
+                metricsCalculator, CancellationToken.None);
+
+            if (metricsCalculator.ComplianceMetrics.Count == 0)
+            {
+                Console.WriteLine("Result is empty [" + Constants.SearchQuery + "]");
+            }
+        }
+        finally
+        {
+            _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
+        }
     }
 
     /// <inheritdoc/>
@@ -68,7 +77,8 @@ public class QueryBenchmarkGeneral : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkGeneral)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            false, extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");

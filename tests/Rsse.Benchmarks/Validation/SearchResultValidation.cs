@@ -190,7 +190,8 @@ public class SearchResultValidation
     private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataOnceProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
-        var tokenizer = new TokenizerServiceCore(false, extendedSearchType, reducedSearchType);
+        var tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolAllocate,
+            false, extendedSearchType, reducedSearchType);
 
         var result = await tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 
@@ -199,19 +200,41 @@ public class SearchResultValidation
 
     private static List<KeyValuePair<DocumentId, double>> FindExtended(TokenizerServiceCore tokenizer, string query)
     {
-        var result = tokenizer.ComputeComplianceIndexExtended(query, CancellationToken.None)
-            .OrderBy(t => t.Key)
-            .ToList();
+        var metricsCalculator = tokenizer.CreateMetricsCalculator();
 
-        return result;
+        try
+        {
+            tokenizer.ComputeComplianceIndexExtended(query, metricsCalculator, CancellationToken.None);
+
+            var result = metricsCalculator.ComplianceMetrics
+                .OrderBy(t => t.Key)
+                .ToList();
+
+            return result;
+        }
+        finally
+        {
+            tokenizer.ReleaseMetricsCalculator(metricsCalculator);
+        }
     }
 
     private static List<KeyValuePair<DocumentId, double>> FindReduced(TokenizerServiceCore tokenizer, string query)
     {
-        var result = tokenizer.ComputeComplianceIndexReduced(query, CancellationToken.None)
-            .OrderBy(t => t.Key)
-            .ToList();
+        var metricsCalculator = tokenizer.CreateMetricsCalculator();
 
-        return result;
+        try
+        {
+            tokenizer.ComputeComplianceIndexReduced(query, metricsCalculator, CancellationToken.None);
+
+            var result = metricsCalculator.ComplianceMetrics
+                .OrderBy(t => t.Key)
+                .ToList();
+
+            return result;
+        }
+        finally
+        {
+            tokenizer.ReleaseMetricsCalculator(metricsCalculator);
+        }
     }
 }

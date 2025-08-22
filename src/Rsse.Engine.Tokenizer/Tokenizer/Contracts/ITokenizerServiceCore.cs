@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
-using RsseEngine.Dto;
+using RsseEngine.Contracts;
 
 namespace RsseEngine.Tokenizer.Contracts;
 
@@ -24,30 +23,46 @@ public interface ITokenizerServiceCore : IDisposable
     public Task<bool> CreateAsync(int id, TextRequestDto note, CancellationToken stoppingToken);
 
     /// <summary>
+    /// Создаёт метрики релевантности.
+    /// </summary>
+    /// <returns>Метрики релевантности.</returns>
+    public IMetricsCalculator CreateMetricsCalculator();
+
+    /// <summary>
+    /// Удаляет метрики релевантности.
+    /// </summary>
+    /// <param name="metricsCalculator">Метрики релевантности.</param>
+    public void ReleaseMetricsCalculator(IMetricsCalculator metricsCalculator);
+
+    /// <summary>
     /// Выполнить поиск и вычислить индексы соответствия хранимых заметок поисковому запросу.
     /// </summary>
     /// <param name="text">Поисковый запрос.</param>
+    /// <param name="metricsCalculator">Метрики релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
-    public Dictionary<DocumentId, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
+    public void ComputeComplianceIndices(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Выполнить extended-поиск и вычислить индекс соответствия хранимых заметок поисковому запросу.
     /// Используется для бенчмарков.
     /// </summary>
     /// <param name="text">Поисковый запрос.</param>
+    /// <param name="metricsCalculator">Метрики релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
-    public Dictionary<DocumentId, double> ComputeComplianceIndexExtended(string text, CancellationToken cancellationToken);
+    public void ComputeComplianceIndexExtended(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Выполнить reduced-поиск и вычислить индекс соответствия хранимых заметок поисковому запросу.
     /// Используется для бенчмарков.
     /// </summary>
     /// <param name="text">Поисковый запрос.</param>
+    /// <param name="metricsCalculator">Метрики релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
-    public Dictionary<DocumentId, double> ComputeComplianceIndexReduced(string text, CancellationToken cancellationToken);
+    public void ComputeComplianceIndexReduced(string text, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Обновить вектор для заметки.

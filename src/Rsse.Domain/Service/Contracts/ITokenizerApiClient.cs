@@ -27,7 +27,7 @@ public interface ITokenizerApiClient
     /// <param name="text">Поисковый запрос.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Результат поискового запроса в виде идентификаторов заметок и их индексов соответствия.</returns>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
+    public List<KeyValuePair<int, double>> ComputeComplianceIndices(string text, CancellationToken cancellationToken);
 
     /// <summary>
     /// Обновить вектор для заметки.

@@ -30,9 +30,6 @@ public sealed class ReducedSearchGinFast<TDocumentIdCollection> : IReducedSearch
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        searchVector = searchVector.DistinctAndGet();
-
         var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<TDocumentIdCollection>();
 
         try

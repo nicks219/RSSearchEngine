@@ -23,30 +23,34 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
+        // todo: поведение не гарантировано, лучше использовать список
+
         if (string.IsNullOrEmpty(text))
         {
             return new Dictionary<int, double>();
         }
 
-        // ReSharper disable once SuggestVarOrType_Elsewhere
-        Dictionary<int, double> searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
+        var searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
+
         switch (searchIndexes.Count)
         {
             case 0:
-                return searchIndexes;
-
+            {
+                return new Dictionary<int, double>();
+            }
             case > 10:
-                searchIndexes = searchIndexes
+            {
+                return searchIndexes
                     .Where(kv => kv.Value > Threshold)
+                    .OrderByDescending(x => x.Value)
                     .ToDictionary(x => x.Key, x => x.Value);
-                break;
+            }
+            default:
+            {
+                return searchIndexes
+                    .OrderByDescending(x => x.Value)
+                    .ToDictionary(x => x.Key, x => x.Value);
+            }
         }
-
-        // todo: поведение не гарантировано, лучше использовать список
-        searchIndexes = searchIndexes
-            .OrderByDescending(x => x.Value)
-            .ToDictionary(x => x.Key, x => x.Value);
-
-        return searchIndexes;
     }
 }

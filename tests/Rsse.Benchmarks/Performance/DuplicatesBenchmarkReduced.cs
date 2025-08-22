@@ -63,10 +63,21 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
     {
         foreach (NoteEntity noteEntity in _noteEntities)
         {
-            var results = _tokenizer.ComputeComplianceIndexReduced(noteEntity.Text, CancellationToken.None);
-            if (results.Count == 0)
+            var metricsCalculator = _tokenizer.CreateMetricsCalculator();
+
+            try
             {
-                Console.WriteLine("[Tokenizer] empty result");
+                _tokenizer.ComputeComplianceIndexReduced(noteEntity.Text,
+                    metricsCalculator, CancellationToken.None);
+
+                if (metricsCalculator.ComplianceMetrics.Count == 0)
+                {
+                    Console.WriteLine("[Tokenizer] empty result");
+                }
+            }
+            finally
+            {
+                _tokenizer.ReleaseMetricsCalculator(metricsCalculator);
             }
         }
     }
@@ -88,7 +99,8 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(pool, ExtendedSearchType.Legacy, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+            pool, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] reduced[{reducedSearchType}] initializing..");
