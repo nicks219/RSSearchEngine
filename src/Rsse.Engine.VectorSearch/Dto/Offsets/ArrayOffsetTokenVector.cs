@@ -29,6 +29,18 @@ public readonly struct ArrayOffsetTokenVector(DocumentDataPoint tokens)
     public static bool operator !=(ArrayOffsetTokenVector left, ArrayOffsetTokenVector right) => !(left == right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsKeyLinearScan(Token token)
+    {
+        return _tokens.ContainsKeyLinearScan(token.Value);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsKeyBinarySearch(Token token)
+    {
+        return _tokens.ContainsKeyBinarySearch(token.Value);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryFindNextTokenPositionLinearScan(Token token, ref int position)
     {
         return _tokens.TryFindNextPositionLinearScan(token.Value, ref position);

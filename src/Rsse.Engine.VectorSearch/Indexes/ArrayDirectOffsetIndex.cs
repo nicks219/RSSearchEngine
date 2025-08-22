@@ -79,6 +79,23 @@ public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSe
         return _invertedIndex.TryGetValue(token, out internalDocumentIds) && internalDocumentIds.Count > 0;
     }
 
+    /// <summary>
+    /// Заполнить коллекцию векторов с идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// </summary>
+    /// <param name="tokens">Вектор с целевыми токенами.</param>
+    /// <param name="internalDocumentIds">Коллекция векторов с идентификаторами.</param>
+    public void GetNonEmptyDocumentIdVectorsToList(TokenVector tokens,
+        List<InternalDocumentIdsWithToken> internalDocumentIds)
+    {
+        foreach (var token in tokens)
+        {
+            if (TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            {
+                internalDocumentIds.Add(new InternalDocumentIdsWithToken(documentIds, token));
+            }
+        }
+    }
+
     public void GetDocumentIdVectorsToList(TokenVector tokens, List<InternalDocumentIdList> internalDocumentIds)
     {
         var emptyDocIdVector = new InternalDocumentIdList(new List<InternalDocumentId>());

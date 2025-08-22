@@ -35,6 +35,8 @@ public sealed class TempStoragePool(bool enable)
 
     internal readonly CollectionPool<List<InternalDocumentIdList>, InternalDocumentIdList> InternalDocumentIdListsStorage = new(enable);
 
+    internal readonly CollectionPool<List<InternalDocumentIdsWithToken>, InternalDocumentIdsWithToken> InternalDocumentIdListsWithTokenStorage = new(enable);
+
     private readonly CollectionPool<List<DocumentIdSet>, DocumentIdSet> _documentIdSetListsStorage = new(enable);
 
     private readonly CollectionPool<List<DocumentIdList>, DocumentIdList> _documentIdListListsStorage = new(enable);

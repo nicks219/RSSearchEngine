@@ -34,8 +34,6 @@ public class MtQueryBenchmarkReduced : IBenchmarkRunner
         new(ReducedSearchType.GinOptimized, true),
         new(ReducedSearchType.GinOptimizedFilter),
         new(ReducedSearchType.GinOptimizedFilter, true),
-        new(ReducedSearchType.GinFilter),
-        new(ReducedSearchType.GinFilter, true),
         new(ReducedSearchType.GinFast),
         new(ReducedSearchType.GinFast, true),
         new(ReducedSearchType.GinFastFilter),
@@ -43,7 +41,17 @@ public class MtQueryBenchmarkReduced : IBenchmarkRunner
         new(ReducedSearchType.GinMerge),
         new(ReducedSearchType.GinMerge, true),
         new(ReducedSearchType.GinMergeFilter),
-        new(ReducedSearchType.GinMergeFilter, true)
+        new(ReducedSearchType.GinMergeFilter, true),
+        new(ReducedSearchType.GinArrayDirect),
+        new(ReducedSearchType.GinArrayDirect, true),
+        new(ReducedSearchType.GinArrayMergeFilter),
+        new(ReducedSearchType.GinArrayMergeFilter, true),
+        new(ReducedSearchType.GinArrayDirectFilterLs),
+        new(ReducedSearchType.GinArrayDirectFilterLs, true),
+        new(ReducedSearchType.GinArrayDirectFilterBs),
+        new(ReducedSearchType.GinArrayDirectFilterBs, true),
+        new(ReducedSearchType.GinArrayDirectFilterHs),
+        new(ReducedSearchType.GinArrayDirectFilterHs, true)
     ];
 
     public static List<string> SearchQueries =>

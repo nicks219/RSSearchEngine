@@ -38,6 +38,10 @@ public class TokenizationBenchmark
 
     private readonly InvertedIndex<DocumentIdList> _invertedIndexReduced = new();
 
+    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndexReduced = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+
+    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndexHsReduced = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+
     public static List<IndexType> Parameters =>
     [
         IndexType.GeneralDirect,
@@ -45,6 +49,8 @@ public class TokenizationBenchmark
         IndexType.ArrayDirectOffsetIndexExtended,
         IndexType.ArrayDirectOffsetIndexHsExtended,
         IndexType.InvertedIndexReduced,
+        IndexType.ArrayDirectOffsetIndexReduced,
+        IndexType.ArrayDirectOffsetIndexHsReduced
     ];
 
     [ParamsSource(nameof(Parameters))]
@@ -57,11 +63,11 @@ public class TokenizationBenchmark
     [GlobalSetup]
     public async Task SetupAsync()
     {
-        Console.WriteLine("FileDataMultipleProvider initializing..");
+        Console.WriteLine($"FileDataMultipleProvider {IndexType} initializing..");
 
         await _fileDataMultipleProvider.Initialize();
 
-        Console.WriteLine("FileDataMultipleProvider initialized..");
+        Console.WriteLine($"FileDataMultipleProvider {IndexType} initialized..");
     }
 
     [Benchmark]
@@ -92,6 +98,16 @@ public class TokenizationBenchmark
             case IndexType.InvertedIndexReduced:
             {
                 _invertedIndexReduced.Clear();
+                break;
+            }
+            case IndexType.ArrayDirectOffsetIndexReduced:
+            {
+                _arrayDirectOffsetIndexReduced.Clear();
+                break;
+            }
+            case IndexType.ArrayDirectOffsetIndexHsReduced:
+            {
+                _arrayDirectOffsetIndexHsReduced.Clear();
                 break;
             }
             default:
@@ -133,6 +149,16 @@ public class TokenizationBenchmark
                 case IndexType.InvertedIndexReduced:
                 {
                     _invertedIndexReduced.AddVector(documentId, tokenLine.Reduced);
+                    break;
+                }
+                case IndexType.ArrayDirectOffsetIndexReduced:
+                {
+                    _arrayDirectOffsetIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                    break;
+                }
+                case IndexType.ArrayDirectOffsetIndexHsReduced:
+                {
+                    _arrayDirectOffsetIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
                     break;
                 }
                 default:

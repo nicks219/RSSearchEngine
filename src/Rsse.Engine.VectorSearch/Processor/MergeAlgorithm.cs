@@ -7,6 +7,12 @@ namespace RsseEngine.Processor;
 
 public static class MergeAlgorithm
 {
+    public static void FindMin(List<InternalDocumentListEnumerator> list,
+        out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
+    {
+        FindMin<InternalDocumentId, InternalDocumentListEnumerator>(list, out minI0, out min0, out min1);
+    }
+
     public static void FindMin(List<DocumentListEnumerator> list,
         out int minI0, out DocumentId min0, out DocumentId min1)
     {

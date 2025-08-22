@@ -97,6 +97,18 @@ public readonly partial struct DocumentDataPoint
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ContainsKeyLinearScan(int[] data, int key)
+        {
+            int count = DataPointHeader.ReadCount(data);
+
+            int keysOffset = BinaryTreeHeader.GetKeysOffset();
+
+            int index = data.AsSpan(keysOffset, count).IndexOf(key);
+
+            return index != -1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetValueLinearScan(int[] data, int key, out int valueLength, out int valueOffset)
         {
             int count = DataPointHeader.ReadCount(data);
@@ -116,6 +128,41 @@ public readonly partial struct DocumentDataPoint
 
             valueLength = 0;
             valueOffset = 0;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ContainsKeyBinarySearch(int[] data, int key)
+        {
+            int count = DataPointHeader.ReadCount(data);
+
+            int keysOffset = BinaryTreeHeader.GetKeysOffset();
+            int metaOffset = BinaryTreeHeader.GetMetaOffset(keysOffset, count);
+
+            // Binary search in sorted keys
+            int left = keysOffset;
+            int right = metaOffset - 1;
+
+            while (left <= right)
+            {
+                int mid = left + ((right - left) / 2);
+                int midKey = data[mid];
+
+                if (midKey == key)
+                {
+                    return true;
+                }
+
+                if (midKey < key)
+                {
+                    left = mid + 1;
+                }
+                else
+                {
+                    right = mid - 1;
+                }
+            }
+
             return false;
         }
 

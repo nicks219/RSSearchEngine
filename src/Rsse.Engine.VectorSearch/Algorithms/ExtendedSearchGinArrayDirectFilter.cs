@@ -24,11 +24,11 @@ public sealed class ExtendedSearchGinArrayDirectFilter : IExtendedSearchProcesso
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required ArrayDirectOffsetIndex GinExtended { get; init; }
+    public required ArrayDirectOffsetIndex GinExtended { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
-    public required PositionSearchType PositionSearchType { get; init; }
+    public required PositionSearchType PositionSearchType { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,

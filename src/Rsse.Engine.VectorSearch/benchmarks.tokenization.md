@@ -27,4 +27,14 @@
 | InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,009.4 ms | 32.82 ms | 17.17 ms | 5,989.3 ms | 6171443.64 KB |
 ```
 
+| Method              | IndexType                        | Mean       | Error     | StdDev   | Min        | Allocated     |
+|-------------------- |--------------------------------- |-----------:|----------:|---------:|-----------:|--------------:|
+| InitializeTokenizer | GeneralDirect                    | 2,976.8 ms |  75.26 ms | 49.78 ms | 2,882.7 ms |  134652.32 KB |
+| InitializeTokenizer | InvertedIndexReduced             | 3,640.7 ms | 101.38 ms | 67.06 ms | 3,526.2 ms |  197514.77 KB |
+| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,260.9 ms |  65.99 ms | 34.51 ms | 4,180.8 ms | 1569448.87 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexReduced    | 4,645.4 ms |  49.22 ms | 32.56 ms | 4,606.0 ms | 2425572.09 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexExtended   | 4,932.9 ms |  61.55 ms | 36.63 ms | 4,863.2 ms | 2753308.78 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsReduced  | 5,702.7 ms |  92.13 ms | 60.94 ms | 5,638.3 ms | 5258291.16 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,180.5 ms |  17.97 ms | 10.69 ms | 6,169.3 ms | 6171445.23 KB |
+
 * коммит: ...

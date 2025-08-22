@@ -147,6 +147,36 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsKeyLinearScan(int key)
+    {
+        int[] data = _data;
+
+        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+
+        return searchType switch
+        {
+            DocumentDataPointSearchType.HashMap => HashMap.ContainsKey(data, key),
+            DocumentDataPointSearchType.BinaryTree => BinaryTree.ContainsKeyLinearScan(data, key),
+            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+        };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsKeyBinarySearch(int key)
+    {
+        int[] data = _data;
+
+        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+
+        return searchType switch
+        {
+            DocumentDataPointSearchType.HashMap => HashMap.ContainsKey(data, key),
+            DocumentDataPointSearchType.BinaryTree => BinaryTree.ContainsKeyBinarySearch(data, key),
+            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+        };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryFindNextPositionLinearScan(int key, ref int position)
     {
         int[] data = _data;
