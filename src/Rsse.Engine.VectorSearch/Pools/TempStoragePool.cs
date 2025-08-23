@@ -25,7 +25,9 @@ public sealed class TempStoragePool(bool enable)
 
     internal readonly CollectionPool<List<InternalDocumentListEnumerator>, InternalDocumentListEnumerator> ListInternalEnumeratorListsStorage = new(enable);
 
-    internal readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
+    public readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
+
+    public readonly CollectionPool<HashSet<int>, int> IntSetsStorage = new(enable);
 
     internal readonly CollectionPool<Dictionary<InternalDocumentIdList, int>, KeyValuePair<InternalDocumentIdList, int>> InternalDocumentIdListCountStorage = new(enable);
 
@@ -83,7 +85,7 @@ public sealed class TempStoragePool(bool enable)
         throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
     }
 
-    internal sealed class CollectionPool<T, TV> where T : ICollection<TV>, new()
+    public sealed class CollectionPool<T, TV> where T : ICollection<TV>, new()
     {
         private readonly ConcurrentBag<T>? _bag;
 

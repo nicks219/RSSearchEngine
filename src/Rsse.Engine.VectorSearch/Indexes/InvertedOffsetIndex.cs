@@ -70,7 +70,7 @@ public sealed class InvertedOffsetIndex
     /// <returns>Признак наличия токена в индексе.</returns>
     public bool TryGetNonEmptyDocumentIdVector(Token token, out DocumentIdsWithOffsets documentDocumentIdsVector)
     {
-        if (!_invertedIndex.TryGetValue(token, out DocumentIdsWithOffsets documentIds) || documentIds.DocumentIds.Count == 0)
+        if (!_invertedIndex.TryGetValue(token, out var documentIds) || documentIds.DocumentIds.Count == 0)
         {
             documentDocumentIdsVector = default;
             return false;

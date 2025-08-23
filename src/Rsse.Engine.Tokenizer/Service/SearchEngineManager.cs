@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -16,9 +18,21 @@ namespace RsseEngine.Service;
 /// </summary>
 public sealed class SearchEngineManager
 {
+    private readonly TempStoragePool _tokenizerTempStoragePool;
+
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
 
     private readonly ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor> _reducedSearchAlgorithmSelector;
+
+    /// <summary>
+    /// Токенизатор с расширенным набором символов.
+    /// </summary>
+    private readonly ITokenizerProcessor _extendedTokenizer = new TokenizerProcessor.Extended();
+
+    /// <summary>
+    /// Токенизатор с урезанным набором символов.
+    /// </summary>
+    private readonly ITokenizerProcessor _reducedTokenizer = new TokenizerProcessor.Reduced();
 
     /// <summary>
     /// Общий индекс для всех токенизированных заметок.
@@ -34,6 +48,9 @@ public sealed class SearchEngineManager
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
     public SearchEngineManager(bool enableTempStoragePool, bool useList)
     {
+        _tokenizerTempStoragePool = new TempStoragePool(true);
+        var tempStoragePool = new TempStoragePool(enableTempStoragePool);
+
         if (CheckIsProduction())
         {
             _extendedSearchAlgorithmSelector =
@@ -44,8 +61,6 @@ public sealed class SearchEngineManager
         }
         else
         {
-            var tempStoragePool = new TempStoragePool(enableTempStoragePool);
-
             _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
                 tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
 
@@ -61,16 +76,6 @@ public sealed class SearchEngineManager
             }
         }
     }
-
-    /// <summary>
-    /// Токенизатор с расширенным набором символов.
-    /// </summary>
-    public ITokenizerProcessor ExtendedTokenizer { get; } = new TokenizerProcessor.Extended();
-
-    /// <summary>
-    /// Токенизатор с урезанным набором символов.
-    /// </summary>
-    public ITokenizerProcessor ReducedTokenizer { get; } = new TokenizerProcessor.Reduced();
 
     /// <summary>
     /// Получить размер общего индекса.
@@ -152,33 +157,132 @@ public sealed class SearchEngineManager
     /// Найти текст в extended-векторах и добавить результат поиска в расширенную метрику.
     /// </summary>
     /// <param name="extendedSearchType">Тип оптимизации алгоритма поиска.</param>
-    /// <param name="extendedSearchVector">Токенизированый текст с поисковым запросом.</param>
+    /// <param name="text">Текст с поисковым запросом.</param>
     /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    public void FindExtended(ExtendedSearchType extendedSearchType, TokenVector extendedSearchVector,
+    public void FindExtended(ExtendedSearchType extendedSearchType, string text,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        _extendedSearchAlgorithmSelector
-            .GetSearchProcessor(extendedSearchType)
-            .FindExtended(extendedSearchVector, metricsCalculator, cancellationToken);
+        var tokens = _tokenizerTempStoragePool.IntListsStorage.Get();
+
+        try
+        {
+            _extendedTokenizer.TokenizeText(tokens, text);
+
+            if (tokens.Count == 0)
+            {
+                // заметки вида "123 456" не ищем, так как получим весь каталог
+                return;
+            }
+
+            var extendedSearchVector = new TokenVector(tokens);
+
+            var searchProcessor = _extendedSearchAlgorithmSelector.GetSearchProcessor(extendedSearchType);
+
+            searchProcessor.FindExtended(extendedSearchVector, metricsCalculator, cancellationToken);
+        }
+        finally
+        {
+            // большие коллекции в пул не возвращаем
+            if (tokens.Count < 1_000_000)
+            {
+                _tokenizerTempStoragePool.IntListsStorage.Return(tokens);
+            }
+        }
     }
 
     /// <summary>
     /// Найти текст в reduced-векторах и добавить результат поиска в сокращенную метрику.
     /// </summary>
     /// <param name="reducedSearchType">Тип оптимизации алгоритма поиска.</param>
-    /// <param name="reducedSearchVector">Токенизированый текст с поисковым запросом.</param>
+    /// <param name="text">Текст с поисковым запросом.</param>
     /// <param name="metricsCalculator">Компонент с метриками релевантности.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
-    public void FindReduced(ReducedSearchType reducedSearchType, TokenVector reducedSearchVector,
+    public void FindReduced(ReducedSearchType reducedSearchType, string text,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-        reducedSearchVector = reducedSearchVector.DistinctAndGet();
+        var tokens = _tokenizerTempStoragePool.IntListsStorage.Get();
+        var set = _tokenizerTempStoragePool.IntSetsStorage.Get();
+        var tokensList = _tokenizerTempStoragePool.IntListsStorage.Get();
 
-        _reducedSearchAlgorithmSelector
-            .GetSearchProcessor(reducedSearchType)
-            .FindReduced(reducedSearchVector, metricsCalculator, cancellationToken);
+        try
+        {
+            _reducedTokenizer.TokenizeText(tokens, text);
+
+            if (tokens.Count == 0)
+            {
+                // песни вида "123 456" не ищем, так как получим весь каталог
+                return;
+            }
+
+            // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
+            foreach (var token in tokens)
+            {
+                if (set.Add(token))
+                {
+                    tokensList.Add(token);
+                }
+            }
+
+            var reducedSearchVector = new TokenVector(tokensList);
+
+            var searchProcessor = _reducedSearchAlgorithmSelector.GetSearchProcessor(reducedSearchType);
+
+            searchProcessor.FindReduced(reducedSearchVector, metricsCalculator, cancellationToken);
+        }
+        finally
+        {
+            // большие коллекции в пул не возвращаем
+            if (tokens.Count < 1_000_000)
+            {
+                _tokenizerTempStoragePool.IntListsStorage.Return(tokensList);
+                _tokenizerTempStoragePool.IntSetsStorage.Return(set);
+                _tokenizerTempStoragePool.IntListsStorage.Return(tokens);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Создать extended-вектор токенов для заметки.
+    /// </summary>
+    /// <param name="text">Текст с поисковым запросом.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public TokenVector TokenizeTextExtended(params string[] text)
+    {
+        return TokenizeText(_extendedTokenizer, text);
+    }
+
+    /// <summary>
+    /// Создать reduced-вектор токенов для заметки.
+    /// </summary>
+    /// <param name="text">Текст с поисковым запросом.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public TokenVector TokenizeTextReduced(params string[] text)
+    {
+        return TokenizeText(_reducedTokenizer, text);
+    }
+
+    private TokenVector TokenizeText(ITokenizerProcessor tokenizerProcessor, params string[] text)
+    {
+        var tokensList = _tokenizerTempStoragePool.IntListsStorage.Get();
+
+        try
+        {
+            tokenizerProcessor.TokenizeText(tokensList, text);
+
+            var tokens = new List<int>(tokensList.Count);
+            CollectionsMarshal.SetCount(tokens, tokensList.Count);
+
+            tokensList.CopyTo(CollectionsMarshal.AsSpan(tokens));
+
+            var tokenVector = new TokenVector(tokens);
+
+            return tokenVector;
+        }
+        finally
+        {
+            _tokenizerTempStoragePool.IntListsStorage.Return(tokensList);
+        }
     }
 
     /// <summary>

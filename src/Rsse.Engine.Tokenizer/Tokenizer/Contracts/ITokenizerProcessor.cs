@@ -1,4 +1,4 @@
-using RsseEngine.Dto;
+using System.Collections.Generic;
 
 namespace RsseEngine.Tokenizer.Contracts;
 
@@ -10,14 +10,7 @@ public interface ITokenizerProcessor
     /// <summary>
     /// Обработать и токенизировать текст.
     /// </summary>
+    /// <param name="tokens">Вектор токенов, представляющий обработанный текст.</param>
     /// <param name="text">Необработанный текст в формате массива строк.</param>
-    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public TokenVector TokenizeText(params string[] text);
-
-    /// <summary>
-    /// Обработать и токенизировать текст.
-    /// </summary>
-    /// <param name="words">Необработанный текст в формате строки.</param>
-    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public TokenVector TokenizeText(string words);
+    public void TokenizeText(List<int> tokens, params string[] text);
 }
