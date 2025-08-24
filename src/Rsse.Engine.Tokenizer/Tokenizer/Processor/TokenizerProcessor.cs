@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using RsseEngine.Tokenizer.Contracts;
 
 namespace RsseEngine.Tokenizer.Processor;
@@ -28,31 +29,47 @@ public abstract class TokenizerProcessor
     /// </summary>
     /// <param name="tokens">Токенизированый текст.</param>
     /// <param name="text">Текст в виде массива строк.</param>
-    public void TokenizeText(List<int> tokens, params string[] text)
+
+    public void TokenizeText(List<int> tokens, params Span<string> text)
     {
+        const int bufferSize = 128;
+
+        Span<char> buffer = stackalloc char[bufferSize];
+
+        var separators = Separators.AsSpan();
+        var consonantChain = ConsonantChain.AsSpan();
+
         var sequenceHashProcessor = new SequenceHashProcessor();
 
         foreach (var word in text)
         {
-            for (var index = 0; index < word.Length; index++)
-            {
-                var symbol = char.ToLower(word[index]);
-                if (symbol == 'ё') symbol = 'е';
+            var wordAsSpan = word.AsSpan();
 
-                if (Separators.Contains(symbol))
+            for (var i = 0; i < word.Length; i += bufferSize)
+            {
+                var count = wordAsSpan.Slice(i, Math.Min(bufferSize, word.Length - i))
+                    .ToLower(buffer, CultureInfo.CurrentCulture);
+
+                for (var index = 0; index < count; index++)
                 {
-                    if (sequenceHashProcessor.HasValue())
+                    var symbol = buffer[index];
+                    if (symbol == 'ё') symbol = 'е';
+
+                    if (separators.Contains(symbol))
                     {
-                        var hash = sequenceHashProcessor.GetHashAndReset();
-                        tokens.Add(hash);
+                        if (sequenceHashProcessor.HasValue())
+                        {
+                            var hash = sequenceHashProcessor.GetHashAndReset();
+                            tokens.Add(hash);
+                        }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                if (ConsonantChain.Contains(symbol))
-                {
-                    sequenceHashProcessor.AddChar(symbol);
+                    if (consonantChain.Contains(symbol))
+                    {
+                        sequenceHashProcessor.AddChar(symbol);
+                    }
                 }
             }
 
