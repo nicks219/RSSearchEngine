@@ -27,12 +27,12 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Токенизатор с расширенным набором символов.
     /// </summary>
-    private readonly ITokenizerProcessor _extendedTokenizer = new TokenizerProcessor.Extended();
+    private readonly TokenizerProcessor.Extended _extendedTokenizer = new();
 
     /// <summary>
     /// Токенизатор с урезанным набором символов.
     /// </summary>
-    private readonly ITokenizerProcessor _reducedTokenizer = new TokenizerProcessor.Reduced();
+    private readonly TokenizerProcessor.Reduced _reducedTokenizer = new();
 
     /// <summary>
     /// Общий индекс для всех токенизированных заметок.
