@@ -27,14 +27,17 @@
 | InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,009.4 ms | 32.82 ms | 17.17 ms | 5,989.3 ms | 6171443.64 KB |
 ```
 
-| Method              | IndexType                        | Mean       | Error     | StdDev   | Min        | Allocated     |
-|-------------------- |--------------------------------- |-----------:|----------:|---------:|-----------:|--------------:|
-| InitializeTokenizer | GeneralDirect                    | 2,976.8 ms |  75.26 ms | 49.78 ms | 2,882.7 ms |  134652.32 KB |
-| InitializeTokenizer | InvertedIndexReduced             | 3,640.7 ms | 101.38 ms | 67.06 ms | 3,526.2 ms |  197514.77 KB |
-| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,260.9 ms |  65.99 ms | 34.51 ms | 4,180.8 ms | 1569448.87 KB |
-| InitializeTokenizer | ArrayDirectOffsetIndexReduced    | 4,645.4 ms |  49.22 ms | 32.56 ms | 4,606.0 ms | 2425572.09 KB |
-| InitializeTokenizer | ArrayDirectOffsetIndexExtended   | 4,932.9 ms |  61.55 ms | 36.63 ms | 4,863.2 ms | 2753308.78 KB |
-| InitializeTokenizer | ArrayDirectOffsetIndexHsReduced  | 5,702.7 ms |  92.13 ms | 60.94 ms | 5,638.3 ms | 5258291.16 KB |
-| InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,180.5 ms |  17.97 ms | 10.69 ms | 6,169.3 ms | 6171445.23 KB |
+* коммит: доработка поискового движка (добавлено хранение данных документа в одном массиве GinArrayDirect ддя reduced)
+```
+| Method              | IndexType                        | Mean       | Error    | StdDev   | Min        | Allocated     |
+|-------------------- |--------------------------------- |-----------:|---------:|---------:|-----------:|--------------:|
+| InitializeTokenizer | GeneralDirect                    | 2,881.2 ms | 31.92 ms | 16.70 ms | 2,840.5 ms |  134652.32 KB |
+| InitializeTokenizer | InvertedIndexReduced             | 3,418.9 ms |  5.82 ms |  3.46 ms | 3,413.4 ms |  197514.77 KB |
+| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,023.9 ms | 17.33 ms | 10.31 ms | 4,004.4 ms | 1569442.99 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexReduced    | 4,537.1 ms | 34.54 ms | 22.85 ms | 4,515.9 ms | 2425572.09 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexExtended   | 4,768.9 ms | 43.08 ms | 28.49 ms | 4,712.8 ms | 2753314.00 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsReduced  | 5,435.5 ms | 25.41 ms | 16.81 ms | 5,419.4 ms | 5258286.80 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 5,927.3 ms | 13.25 ms |  6.93 ms | 5,921.2 ms | 6171444.79 KB |
+```
 
 * коммит: ...
