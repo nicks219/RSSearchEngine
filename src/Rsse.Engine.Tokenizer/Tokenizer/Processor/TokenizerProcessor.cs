@@ -29,7 +29,6 @@ public abstract class TokenizerProcessor
     /// </summary>
     /// <param name="tokens">Токенизированый текст.</param>
     /// <param name="text">Текст в виде массива строк.</param>
-
     public void TokenizeText(List<int> tokens, params Span<string> text)
     {
         const int bufferSize = 128;
