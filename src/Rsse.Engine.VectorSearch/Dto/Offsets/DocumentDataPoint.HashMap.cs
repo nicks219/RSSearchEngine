@@ -120,6 +120,61 @@ public readonly partial struct DocumentDataPoint
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ContainsKey(int[] data, int key)
+        {
+            ulong fastModMultiplier = HashMapHeader.ReadFastModMultiplier(data);
+            int bucketsCount = HashMapHeader.ReadBucketsCount(data);
+
+            int hash = key.GetHashCode();
+            int bucket = (int)HashHelpers.FastMod((uint)hash, (uint)bucketsCount, fastModMultiplier);
+            int bucketBase = HashMapHeader.GetBucketsOffset() + bucket * HashMapHeader.BucketEntrySize;
+            int start = data[bucketBase];
+            int end = data[bucketBase + 1];
+            int bucketSize = (end - start) / DataPointHeader.KeyEntrySize;
+
+            if (bucketSize > BucketBinarySearchThreshold)
+            {
+                // Binary search within bucket
+                int left = start, right = end - DataPointHeader.KeyEntrySize;
+
+                while (left <= right)
+                {
+                    int mid = left + (((right - left) / DataPointHeader.KeyEntrySize) / 2) * DataPointHeader.KeyEntrySize;
+                    int midKey = data[mid];
+
+                    if (midKey == key)
+                    {
+                        return true;
+                    }
+
+                    if (midKey < key)
+                    {
+                        left = mid + DataPointHeader.KeyEntrySize;
+                    }
+                    else
+                    {
+                        right = mid - DataPointHeader.KeyEntrySize;
+                    }
+                }
+
+                return false;
+            }
+            else
+            {
+                // Linear scan within bucket
+                for (int i = start; i < end; i += DataPointHeader.KeyEntrySize)
+                {
+                    if (data[i] == key)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetValue(int[] data, int key, out int valueLength, out int valueOffset)
         {
             ulong fastModMultiplier = HashMapHeader.ReadFastModMultiplier(data);
@@ -159,8 +214,8 @@ public readonly partial struct DocumentDataPoint
                     }
                 }
 
-                valueLength = default;
-                valueOffset = default;
+                valueLength = 0;
+                valueOffset = 0;
                 return false;
             }
             else
@@ -176,8 +231,8 @@ public readonly partial struct DocumentDataPoint
                     }
                 }
 
-                valueLength = default;
-                valueOffset = default;
+                valueLength = 0;
+                valueOffset = 0;
                 return false;
             }
         }

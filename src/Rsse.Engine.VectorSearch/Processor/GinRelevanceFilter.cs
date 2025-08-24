@@ -69,6 +69,25 @@ public sealed class GinRelevanceFilter
         return FindFilteredDocumentsReducedInternal(invertedIndex, searchVector, sortedIds, out filteredTokensCount);
     }
 
+    /// <summary>
+    /// Найти идентификаторы документов, обеспечивающие релевантность.
+    /// </summary>
+    /// <param name="invertedIndex">Инвертированный индекс.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
+    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
+    /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
+    /// <param name="emptyCount">Количество пустых векторов.</param>
+    /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
+    public bool FindFilteredDocumentsReducedMerge(
+        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        List<InternalDocumentIdsWithToken> sortedIds,
+        out int filteredTokensCount, out int minRelevancyCount, out int emptyCount)
+    {
+        return FindFilteredDocumentsReducedInternal(invertedIndex, searchVector, sortedIds,
+            out filteredTokensCount, out minRelevancyCount, out emptyCount);
+    }
+
     public bool CreateEnumerators(InvertedOffsetIndex invertedOffsetIndex, TokenVector searchVector,
         List<TokenOffsetEnumerator> enumerators,
         out List<IndexWithCount> counts, out int filteredTokensCount, out int minRelevancyCount)
@@ -181,6 +200,41 @@ public sealed class GinRelevanceFilter
         }
 
         sortedIds.Sort((left, right) => left.Count.CompareTo(right.Count));
+
+        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
+
+        return true;
+    }
+
+    private bool FindFilteredDocumentsReducedInternal(
+        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        List<InternalDocumentIdsWithToken> sortedIds,
+        out int filteredTokensCount, out int minRelevancyCount, out int emptyCount)
+    {
+        minRelevancyCount = CalculateMinRelevancyCount(searchVector);
+
+        emptyCount = 0;
+
+        foreach (var token in searchVector)
+        {
+            if (invertedIndex.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            {
+                sortedIds.Add(new InternalDocumentIdsWithToken(documentIds, token));
+            }
+            else
+            {
+                emptyCount++;
+
+                if (emptyCount > searchVector.Count - minRelevancyCount)
+                {
+                    filteredTokensCount = 0;
+                    return false;
+                }
+            }
+        }
+
+        sortedIds.Sort((left, right) =>
+            left.DocumentIds.Count.CompareTo(right.DocumentIds.Count));
 
         CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
 

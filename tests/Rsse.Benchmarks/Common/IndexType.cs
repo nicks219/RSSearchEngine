@@ -10,5 +10,9 @@ public enum IndexType
 
     ArrayDirectOffsetIndexHsExtended = 3,
 
-    InvertedIndexReduced = 4
+    InvertedIndexReduced = 4,
+
+    ArrayDirectOffsetIndexReduced = 5,
+
+    ArrayDirectOffsetIndexHsReduced = 6
 }

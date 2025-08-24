@@ -26,12 +26,11 @@ public static class MetricsExtension
         metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
     }
 
-    public static void AppendReducedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
-        DocumentId documentId, DirectIndex directIndex)
+    public static void AppendReducedMetric(this IMetricsCalculator metricsCalculator, int comparisonScore,
+        TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
     {
-        var tokenLine = directIndex[documentId];
-
-        AppendReducedMetric(metricsCalculator, searchVector, documentId, tokenLine);
+        metricsCalculator.AppendReduced(comparisonScore, searchVector, externalDocument.ExternalDocumentId,
+            externalDocument.Size);
     }
 
     public static void AppendReducedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,

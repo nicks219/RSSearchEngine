@@ -31,11 +31,15 @@ public abstract class TestData
         ReducedSearchType.Legacy,
         ReducedSearchType.GinOptimized,
         ReducedSearchType.GinOptimizedFilter,
-        ReducedSearchType.GinFilter,
         ReducedSearchType.GinFast,
         ReducedSearchType.GinFastFilter,
         ReducedSearchType.GinMerge,
-        ReducedSearchType.GinMergeFilter
+        ReducedSearchType.GinMergeFilter,
+        ReducedSearchType.GinArrayDirect,
+        ReducedSearchType.GinArrayMergeFilter,
+        ReducedSearchType.GinArrayDirectFilterLs,
+        ReducedSearchType.GinArrayDirectFilterBs,
+        ReducedSearchType.GinArrayDirectFilterHs
     ];
 
     /// <summary>

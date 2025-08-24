@@ -27,4 +27,17 @@
 | InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,009.4 ms | 32.82 ms | 17.17 ms | 5,989.3 ms | 6171443.64 KB |
 ```
 
+* коммит: доработка поискового движка (добавлено хранение данных документа в одном массиве GinArrayDirect ддя reduced)
+```
+| Method              | IndexType                        | Mean       | Error    | StdDev   | Min        | Allocated     |
+|-------------------- |--------------------------------- |-----------:|---------:|---------:|-----------:|--------------:|
+| InitializeTokenizer | GeneralDirect                    | 2,881.2 ms | 31.92 ms | 16.70 ms | 2,840.5 ms |  134652.32 KB |
+| InitializeTokenizer | InvertedIndexReduced             | 3,418.9 ms |  5.82 ms |  3.46 ms | 3,413.4 ms |  197514.77 KB |
+| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,023.9 ms | 17.33 ms | 10.31 ms | 4,004.4 ms | 1569442.99 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexReduced    | 4,537.1 ms | 34.54 ms | 22.85 ms | 4,515.9 ms | 2425572.09 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexExtended   | 4,768.9 ms | 43.08 ms | 28.49 ms | 4,712.8 ms | 2753314.00 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsReduced  | 5,435.5 ms | 25.41 ms | 16.81 ms | 5,419.4 ms | 5258286.80 KB |
+| InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 5,927.3 ms | 13.25 ms |  6.93 ms | 5,921.2 ms | 6171444.79 KB |
+```
+
 * коммит: ...

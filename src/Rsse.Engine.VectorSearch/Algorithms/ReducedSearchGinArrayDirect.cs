@@ -5,6 +5,7 @@ using RsseEngine.Dto;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
+using RsseEngine.Processor;
 
 namespace RsseEngine.Algorithms;
 
@@ -12,25 +13,20 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
+public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
-
-    /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex<DocumentIdList> GinReduced { private get; init; }
+    public required ArrayDirectOffsetIndex GinReduced { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var idsFromGin = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
 
         try
         {
@@ -44,9 +40,13 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
                     }
                 case 1:
                     {
-                        foreach (var documentId in idsFromGin[0])
+                        foreach (var documentId in idsFromGin[0].DocumentIds)
                         {
-                            metricsCalculator.AppendReduced(1, searchVector, documentId, GeneralDirectIndex);
+                            if (GinReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            {
+                                const int metric = 1;
+                                metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
+                            }
                         }
 
                         break;
@@ -54,12 +54,12 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
                 default:
                     {
                         if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ReducedSearchGinMerge));
+                            throw new OperationCanceledException(nameof(ReducedSearchGinArrayDirect));
 
-                        using DocumentReducedScoreIterator documentReducedScoreIterator =
+                        using InternalDocumentReducedScoreIterator documentReducedScoreIterator =
                             new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
-                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GeneralDirectIndex);
+                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GinReduced);
 
                         documentReducedScoreIterator.Iterate(in metricsConsumer);
 
@@ -69,16 +69,19 @@ public sealed class ReducedSearchGinMerge : IReducedSearchProcessor
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(idsFromGin);
+            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(idsFromGin);
         }
     }
 
     private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        DirectIndex generalDirectIndex) : DocumentReducedScoreIterator.IConsumer
+        ArrayDirectOffsetIndex generalDirectIndex) : InternalDocumentReducedScoreIterator.IConsumer
     {
-        public void Accept(DocumentId documentId, int score)
+        public void Accept(InternalDocumentId documentId, int score)
         {
-            metricsCalculator.AppendReduced(score, searchVector, documentId, generalDirectIndex);
+            if (generalDirectIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            {
+                metricsCalculator.AppendReducedMetric(score, searchVector, externalDocument);
+            }
         }
     }
 }

@@ -15,19 +15,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
+public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
-    /// Индекс для всех токенизированных заметок.
-    /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
-
-    /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex<DocumentIdList> GinReduced { private get; init; }
+    public required ArrayDirectOffsetIndex GinReduced { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -35,12 +30,12 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var sortedIds = TempStoragePool.GetDocumentIdCollectionList<DocumentIdList>();
+        var sortedIds = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
 
         try
         {
             if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(GinReduced, searchVector,
-                    sortedIds, out var filteredTokensCount))
+                    sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
             }
@@ -53,10 +48,13 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
                     }
                 case 1:
                     {
-                        foreach (var documentId in sortedIds[0])
+                        foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            const int metric = 1;
-                            metricsCalculator.AppendReduced(metric, searchVector, documentId, GeneralDirectIndex);
+                            if (GinReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            {
+                                const int metric = 1;
+                                metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
+                            }
                         }
 
                         break;
@@ -64,9 +62,10 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
                 default:
                     {
                         if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ReducedSearchGinMergeFilter));
+                            throw new OperationCanceledException(nameof(ReducedSearchGinArrayMergeFilter));
 
-                        Process(sortedIds, searchVector, metricsCalculator, filteredTokensCount);
+                        Process(sortedIds, searchVector, metricsCalculator,
+                            filteredTokensCount, minRelevancyCount, emptyCount);
 
                         break;
                     }
@@ -74,45 +73,46 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
         }
         finally
         {
-            TempStoragePool.ReturnDocumentIdCollectionList(sortedIds);
+            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(sortedIds);
         }
     }
 
-    private void Process(List<DocumentIdList> sortedIds, TokenVector searchVector,
-        IMetricsCalculator metricsCalculator, int filteredTokensCount)
+    private void Process(List<InternalDocumentIdsWithToken> sortedIds, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, int filteredTokensCount,
+        int minRelevancyCount, int emptyCount)
     {
-        using DocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
+        using InternalDocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
-            searchVector, metricsCalculator, GeneralDirectIndex, sortedIds, filteredTokensCount);
+            searchVector, metricsCalculator, GinReduced, sortedIds, filteredTokensCount);
 
         documentReducedScoreIterator.Iterate(metricsConsumer);
     }
 
-    private readonly ref struct MetricsConsumer : DocumentReducedScoreIterator.IConsumer, IDisposable
+    private readonly ref struct MetricsConsumer : InternalDocumentReducedScoreIterator.IConsumer, IDisposable
     {
         private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
-        private readonly DirectIndex _generalDirectIndex;
-        private readonly List<DocumentListEnumerator> _list;
+        private readonly ArrayDirectOffsetIndex _ginReduced;
+        private readonly List<InternalDocumentListEnumerator> _list;
 
         public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
-            IMetricsCalculator metricsCalculator, DirectIndex generalDirectIndex,
-            List<DocumentIdList> sortedIds, int filteredTokensCount)
+            IMetricsCalculator metricsCalculator, ArrayDirectOffsetIndex ginReduced,
+            List<InternalDocumentIdsWithToken> sortedIds, int filteredTokensCount)
         {
             _tempStoragePool = tempStoragePool;
             _searchVector = searchVector;
             _metricsCalculator = metricsCalculator;
-            _generalDirectIndex = generalDirectIndex;
+            _ginReduced = ginReduced;
 
-            _list = _tempStoragePool.ListEnumeratorListsStorage.Get();
+            _list = _tempStoragePool.ListInternalEnumeratorListsStorage.Get();
 
             for (var index = sortedIds.Count - 1; index >= filteredTokensCount; index--)
             {
                 var docIdVector = sortedIds[index];
-                _list.Add(docIdVector.CreateDocumentListEnumerator());
+                _list.Add(docIdVector.DocumentIds.CreateDocumentListEnumerator());
             }
 
             for (var index = 0; index < _list.Count; index++)
@@ -123,16 +123,16 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
 
         public void Dispose()
         {
-            _tempStoragePool.ListEnumeratorListsStorage.Return(_list);
+            _tempStoragePool.ListInternalEnumeratorListsStorage.Return(_list);
         }
 
-        public void Accept(DocumentId documentId, int score)
+        public void Accept(InternalDocumentId documentId, int score)
         {
             var counter = 1;
 
             for (var index = _list.Count - 1; index >= 0; index--)
             {
-                ref DocumentListEnumerator documentListEnumerator = ref CollectionsMarshal.AsSpan(_list)[index];
+                ref var documentListEnumerator = ref CollectionsMarshal.AsSpan(_list)[index];
 
                 if (documentListEnumerator.Current.Value < documentId.Value)
                 {
@@ -176,7 +176,10 @@ public sealed class ReducedSearchGinMergeFilter : IReducedSearchProcessor
                 counter++;
             }
 
-            _metricsCalculator.AppendReduced(score, _searchVector, documentId, _generalDirectIndex);
+            if (_ginReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            {
+                _metricsCalculator.AppendReducedMetric(score, _searchVector, externalDocument);
+            }
         }
     }
 }
