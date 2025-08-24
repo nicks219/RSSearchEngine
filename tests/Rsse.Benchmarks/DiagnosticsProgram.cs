@@ -94,7 +94,7 @@ public static class DiagnosticsProgram
 
         BenchmarkRunner.Run(
         [
-            /*typeof(TokenizerInitializationBenchmark),*/
+            /*typeof(TokenizationBenchmark),*/
             /*typeof(QueryBenchmarkGeneral),
             typeof(LuceneBenchmark),
             typeof(DuplicateBenchmarkGeneral),*/
@@ -185,5 +185,9 @@ public static class DiagnosticsProgram
         SearchResultValidation searchResultValidation = new SearchResultValidation();
         await searchResultValidation.TestSearchQuery();
         await searchResultValidation.TestDuplicates();
+    }
+
+    private static void RunTokenizationProfiling()
+    {
     }
 }

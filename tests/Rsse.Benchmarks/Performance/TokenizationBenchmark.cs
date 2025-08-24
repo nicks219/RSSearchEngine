@@ -22,7 +22,7 @@ namespace RsseEngine.Benchmarks.Performance;
 [MinColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
-public class TokenizerInitializationBenchmark
+public class TokenizationBenchmark
 {
     private readonly FileDataMultipleProvider _fileDataMultipleProvider = new(100);
 
