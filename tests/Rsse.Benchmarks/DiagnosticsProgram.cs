@@ -9,6 +9,7 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using Perfolizer.Horology;
 using Perfolizer.Metrology;
+using RsseEngine.Benchmarks.Common;
 using RsseEngine.Benchmarks.Performance;
 using RsseEngine.Benchmarks.Validation;
 using static RsseEngine.Benchmarks.Constants;
@@ -182,12 +183,41 @@ public static class DiagnosticsProgram
 
     private static async Task RunValidation()
     {
-        SearchResultValidation searchResultValidation = new SearchResultValidation();
+        SearchResultValidation searchResultValidation = new();
         await searchResultValidation.TestSearchQuery();
         await searchResultValidation.TestDuplicates();
     }
 
-    private static void RunTokenizationProfiling()
+    private static async Task RunTokenizationProfiling()
     {
+        TokenizationBenchmark tokenizationBenchmark = new()
+        {
+            IndexType = IndexType.GeneralDirect
+        };
+
+        Console.WriteLine($"[{nameof(RunProfiling)}] Starting..");
+
+        await tokenizationBenchmark.SetupAsync();
+
+        Console.WriteLine($"[{nameof(RunProfiling)}] Started..");
+        Console.WriteLine("---");
+
+        Console.WriteLine("Runner is ready for profiling. Press any key to continue.");
+        Console.ReadKey(intercept: true);
+
+        var initialMemory = GC.GetTotalAllocatedBytes();
+        var stopwatch = Stopwatch.StartNew();
+
+        await tokenizationBenchmark.InitializeTokenizer();
+
+        stopwatch.Stop();
+        var tokenizationMemory = GC.GetTotalAllocatedBytes() - initialMemory;
+
+        Console.WriteLine($"[{nameof(RunProfiling)}] | Elapsed time total: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec.");
+        Console.WriteLine($"[{nameof(RunProfiling)}] | Total memory allocated: '{tokenizationMemory / 1000000:N1}' Mb.");
+        Console.WriteLine("---");
+
+        Console.WriteLine("Execution completed, press any key to exit.");
+        Console.ReadKey(intercept: true);
     }
 }
