@@ -85,7 +85,7 @@ public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSe
 
         foreach (var token in tokens)
         {
-            if (TryGetNonEmptyDocumentIdVector(token, out InternalDocumentIdList documentIds))
+            if (TryGetNonEmptyDocumentIdVector(token, out var documentIds))
             {
                 internalDocumentIds.Add(documentIds);
             }
@@ -115,7 +115,7 @@ public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSe
     private void AppendTokenVector(DocumentId externalDocumentId, InternalDocumentId internalDocumentId,
         TokenVector tokenVector)
     {
-        Dictionary<Token, List<int>> dictionary = tokenVector.ToDictionary();
+        var dictionary = tokenVector.ToDictionary();
 
         foreach (var (token, tokenOffsets) in dictionary)
         {
@@ -133,10 +133,10 @@ public sealed class ArrayDirectOffsetIndex(DocumentDataPoint.DocumentDataPointSe
         var tokens = dictionary.Select(pair => new KeyValuePair<int, int[]?>(pair.Key.Value, pair.Value.ToArray()))
             .ToDictionary();
 
-        DocumentDataPoint immutableIntDictionary = new DocumentDataPoint(tokens, externalDocumentId.Value,
+        var documentDataPoint = new DocumentDataPoint(tokens, externalDocumentId.Value,
             tokenVector.Count, dataPointSearchType);
 
-        var offsetTokenVector = new ArrayOffsetTokenVector(immutableIntDictionary);
+        var offsetTokenVector = new ArrayOffsetTokenVector(documentDataPoint);
 
         _directIndex.Add(offsetTokenVector);
     }

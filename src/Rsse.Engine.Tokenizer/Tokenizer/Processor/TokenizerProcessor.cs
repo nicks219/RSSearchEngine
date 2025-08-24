@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using RsseEngine.Dto;
+using System.Globalization;
 using RsseEngine.Tokenizer.Contracts;
 
 namespace RsseEngine.Tokenizer.Processor;
@@ -27,56 +27,48 @@ public abstract class TokenizerProcessor
     /// <summary>
     /// Токенизировать текст в виде массива строк.
     /// </summary>
-    /// <param name="words">Текст в виде массива строк.</param>
-    /// <returns>Результат в виде вектора.</returns>
-    public TokenVector TokenizeText(params string[] words)
+    /// <param name="tokens">Токенизированый текст.</param>
+    /// <param name="text">Текст в виде массива строк.</param>
+    public void TokenizeText(List<int> tokens, params Span<string> text)
     {
-        // Вызывается при инициализации индекса.
-        var vector = TokenizeTextInternal(words);
-        return vector;
-    }
+        const int bufferSize = 128;
 
-    /// <summary>
-    /// Токенизировать текст в виде строки.
-    /// </summary>
-    /// <param name="words">Текст в виде строки.</param>
-    /// <returns>Результат в виде вектора.</returns>
-    public TokenVector TokenizeText(string words)
-    {
-        // Вызывается на поисковых запросах.
-        var vector = TokenizeTextInternal(words);
-        return vector;
-    }
+        Span<char> buffer = stackalloc char[bufferSize];
 
-    // Токенизировать текст.
-    private TokenVector TokenizeTextInternal(params string[] words)
-    {
-        var count = words[0].Count(e => e == ' ') + 1;
+        var separators = Separators.AsSpan();
+        var consonantChain = ConsonantChain.AsSpan();
 
-        var tokens = new List<int>(count);
         var sequenceHashProcessor = new SequenceHashProcessor();
 
-        foreach (var text in words)
+        foreach (var word in text)
         {
-            for (var index = 0; index < text.Length; index++)
-            {
-                var symbol = char.ToLower(text[index]);
-                if (symbol == 'ё') symbol = 'е';
+            var wordAsSpan = word.AsSpan();
 
-                if (Separators.Contains(symbol))
+            for (var i = 0; i < word.Length; i += bufferSize)
+            {
+                var count = wordAsSpan.Slice(i, Math.Min(bufferSize, word.Length - i))
+                    .ToLower(buffer, CultureInfo.CurrentCulture);
+
+                for (var index = 0; index < count; index++)
                 {
-                    if (sequenceHashProcessor.HasValue())
+                    var symbol = buffer[index];
+                    if (symbol == 'ё') symbol = 'е';
+
+                    if (separators.Contains(symbol))
                     {
-                        var hash = sequenceHashProcessor.GetHashAndReset();
-                        tokens.Add(hash);
+                        if (sequenceHashProcessor.HasValue())
+                        {
+                            var hash = sequenceHashProcessor.GetHashAndReset();
+                            tokens.Add(hash);
+                        }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                if (ConsonantChain.Contains(symbol))
-                {
-                    sequenceHashProcessor.AddChar(symbol);
+                    if (consonantChain.Contains(symbol))
+                    {
+                        sequenceHashProcessor.AddChar(symbol);
+                    }
                 }
             }
 
@@ -86,11 +78,6 @@ public abstract class TokenizerProcessor
                 tokens.Add(hash);
             }
         }
-
-        tokens.TrimExcess();
-
-        var resultVector = new TokenVector(tokens);
-        return resultVector;
     }
 
     /// <summary>

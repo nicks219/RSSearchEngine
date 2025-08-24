@@ -161,64 +161,28 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     public void ComputeComplianceIndices(string text, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var extendedSearchVector = _searchEngineManager.ExtendedTokenizer.TokenizeText(text);
-
-        if (extendedSearchVector.Count == 0)
-        {
-            // заметки вида "123 456" не ищем, так как получим весь каталог
-            return;
-        }
-
-        _searchEngineManager.FindExtended(_extendedSearchType,
-            extendedSearchVector, metricsCalculator, cancellationToken);
+        _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
 
         if (!metricsCalculator.ContinueSearching)
         {
             return;
         }
 
-        var reducedSearchVector = _searchEngineManager.ReducedTokenizer.TokenizeText(text);
-
-        if (reducedSearchVector.Count == 0)
-        {
-            // песни вида "123 456" не ищем, так как получим весь каталог
-            return;
-        }
-
-        _searchEngineManager.FindReduced(_reducedSearchType,
-            reducedSearchVector, metricsCalculator, cancellationToken);
+        _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
     }
 
     /// <inheritdoc/>
     public void ComputeComplianceIndexExtended(string text, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var extendedSearchVector = _searchEngineManager.ExtendedTokenizer.TokenizeText(text);
-
-        if (extendedSearchVector.Count == 0)
-        {
-            // заметки вида "123 456" не ищем, так как получим весь каталог
-            return;
-        }
-
-        _searchEngineManager.FindExtended(_extendedSearchType,
-            extendedSearchVector, metricsCalculator, cancellationToken);
+        _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
     }
 
     /// <inheritdoc/>
     public void ComputeComplianceIndexReduced(string text, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var reducedSearchVector = _searchEngineManager.ReducedTokenizer.TokenizeText(text);
-
-        if (reducedSearchVector.Count == 0)
-        {
-            // песни вида "123 456" не ищем, так как получим весь каталог
-            return;
-        }
-
-        _searchEngineManager.FindReduced(_reducedSearchType,
-            reducedSearchVector, metricsCalculator, cancellationToken);
+        _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
     }
 
     /// <summary>
@@ -232,12 +196,12 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
             throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
 
         // расширенная эталонная последовательность:
-        var extendedTokenLine = _searchEngineManager.ExtendedTokenizer.TokenizeText(note.Text, " ", note.Title);
+        var extendedTokenVector = _searchEngineManager.TokenizeTextExtended(note.Text, " ", note.Title);
 
         // урезанная эталонная последовательность:
-        var reducedTokenLine = _searchEngineManager.ReducedTokenizer.TokenizeText(note.Text, " ", note.Title);
+        var reducedTokenVector = _searchEngineManager.TokenizeTextReduced(note.Text, " ", note.Title);
 
-        return new TokenLine(Extended: extendedTokenLine, Reduced: reducedTokenLine);
+        return new TokenLine(Extended: extendedTokenVector, Reduced: reducedTokenVector);
     }
 
     /// <summary>
