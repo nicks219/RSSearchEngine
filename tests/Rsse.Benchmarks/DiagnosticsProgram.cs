@@ -195,11 +195,11 @@ public static class DiagnosticsProgram
             IndexType = IndexType.GeneralDirect
         };
 
-        Console.WriteLine($"[{nameof(RunProfiling)}] Starting..");
+        Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] Starting..");
 
         await tokenizationBenchmark.SetupAsync();
 
-        Console.WriteLine($"[{nameof(RunProfiling)}] Started..");
+        Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] Started..");
         Console.WriteLine("---");
 
         Console.WriteLine("Runner is ready for profiling. Press any key to continue.");
@@ -213,8 +213,8 @@ public static class DiagnosticsProgram
         stopwatch.Stop();
         var tokenizationMemory = GC.GetTotalAllocatedBytes() - initialMemory;
 
-        Console.WriteLine($"[{nameof(RunProfiling)}] | Elapsed time total: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec.");
-        Console.WriteLine($"[{nameof(RunProfiling)}] | Total memory allocated: '{tokenizationMemory / 1000000:N1}' Mb.");
+        Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] | Elapsed time total: '{(double)stopwatch.ElapsedMilliseconds / 1000:F4}' sec.");
+        Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] | Total memory allocated: '{tokenizationMemory / 1000000:N1}' Mb.");
         Console.WriteLine("---");
 
         Console.WriteLine("Execution completed, press any key to exit.");
