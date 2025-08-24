@@ -9,12 +9,43 @@ namespace Rsse.Tests.Common;
 /// </summary>
 public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constants.InitialDataMultiplier) : IDataProvider<NoteEntity>
 {
+    private List<NoteEntity>? _notes;
+
     // Данные дублируются Constants.InitialDataMultiplier раз.
     /// <inheritdoc/>
     public async IAsyncEnumerable<NoteEntity> GetDataAsync()
     {
+        if (_notes == null)
+        {
+            await Initialize();
+        }
+
+        var counter = 0;
+        for (var i = 0; i < initialDataMultiplier; i++)
+        {
+            foreach (var noteEntity in _notes!.Select(entity =>
+                         new NoteEntity
+                         {
+                             NoteId = counter,
+                             Title = entity.Title,
+                             Text = entity.Text,
+                         }))
+            {
+                counter++;
+                yield return noteEntity;
+            }
+        }
+    }
+
+    public async Task Initialize()
+    {
+        if (_notes != null)
+        {
+            return;
+        }
+
         Console.OutputEncoding = Encoding.UTF8;
-        var notes = new List<NoteEntity>(1000);
+        _notes = new List<NoteEntity>(1000);
 
         await using var fileStream = File.OpenRead("pg_backup_.txtnotes");
         using var reader = new StreamReader(fileStream);
@@ -40,26 +71,10 @@ public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constan
                     .Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t").ToString()
             };
 
-            notes.Add(noteEntity);
+            _notes.Add(noteEntity);
         }
 
-        var counter = 0;
-        for (var i = 0; i < initialDataMultiplier; i++)
-        {
-            foreach (var noteEntity in notes.Select(entity =>
-                         new NoteEntity
-                         {
-                             NoteId = counter,
-                             Title = entity.Title,
-                             Text = entity.Text,
-                         }))
-            {
-                counter++;
-                yield return noteEntity;
-            }
-        }
-
-        Console.WriteLine($"[{nameof(FileDataMultipleProvider)}] sent total data: '{counter:N0}' entries | {initialDataMultiplier:N0}x.");
+        Console.WriteLine($"[{nameof(FileDataMultipleProvider)}] sent total data: '{(_notes.Count * initialDataMultiplier):N0}' entries | {initialDataMultiplier:N0}x.");
         Console.WriteLine("---");
     }
 }
