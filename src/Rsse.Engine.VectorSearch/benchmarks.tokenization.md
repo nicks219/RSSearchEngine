@@ -21,8 +21,8 @@
 | Method              | IndexType                        | Mean       | Error    | StdDev   | Min        | Allocated     |
 |-------------------- |--------------------------------- |-----------:|---------:|---------:|-----------:|--------------:|
 | InitializeTokenizer | GeneralDirect                    | 2,936.1 ms | 22.67 ms | 14.99 ms | 2,905.6 ms |  134652.32 KB |
-| InitializeTokenizer | InvertedIndexReduced             | 3,466.4 ms | 94.98 ms | 62.82 ms | 3,400.0 ms |   197515.1 KB |
-| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,102.9 ms | 28.34 ms | 18.75 ms | 4,081.0 ms |  1569449.9 KB |
+| InitializeTokenizer | InvertedIndexReduced             | 3,466.4 ms | 94.98 ms | 62.82 ms | 3,400.0 ms |  197515.10 KB |
+| InitializeTokenizer | InvertedOffsetIndexExtended      | 4,102.9 ms | 28.34 ms | 18.75 ms | 4,081.0 ms | 1569449.90 KB |
 | InitializeTokenizer | ArrayDirectOffsetIndexExtended   | 4,944.1 ms | 55.18 ms | 36.50 ms | 4,897.0 ms | 2753310.45 KB |
 | InitializeTokenizer | ArrayDirectOffsetIndexHsExtended | 6,009.4 ms | 32.82 ms | 17.17 ms | 5,989.3 ms | 6171443.64 KB |
 ```
