@@ -28,7 +28,5 @@ public readonly ref struct ReducedSearchLegacy : IReducedSearchProcessor
         {
             metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine);
         }
-
-        metricsCalculator.Limit();
     }
 }

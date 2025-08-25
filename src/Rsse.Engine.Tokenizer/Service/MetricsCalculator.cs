@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rsse.Domain.Service.Api;
-using Rsse.Domain.Service.Configuration;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
@@ -99,22 +97,14 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public void Limit(int count)
+    public void Limit(int limit)
     {
-        var isTesting = Environment.GetEnvironmentVariable(Constants.AspNetCoreEnvironmentName) == Constants.TestingEnvironment;
-        if (isTesting)
-        {
-            // максимальное количество метрик в тестовом ответе
-            // todo: как лучше сконфигурировать лимит для различных тестов?
-            count = 147;
-        }
-
+        // const int maxTestMetricCount = 147;
         ComplianceMetrics = ComplianceMetrics
-        // сортировка, применяемая в тесте для стабилизации результата выдачи
-        // .OrderByDescending(x => x.Value)
-        // .ThenByDescending(x => x.Key)
-        .Take(count)
-        .ToList();
+            .OrderByDescending(kvp => kvp.Value)
+            .ThenByDescending(kvp => kvp.Key)
+            .Take(limit)
+            .ToList();
     }
 
     /// <summary>
@@ -123,7 +113,8 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <param name="metric">Добавляемая метрика.</param>
     private void AddMetric(KeyValuePair<DocumentId, double> metric)
     {
-        AddMetricWithWindow(metric);
+        ComplianceMetrics.Add(metric);
+        TryResize();
     }
 
     /// <summary>
@@ -134,34 +125,25 @@ public sealed class MetricsCalculator : IMetricsCalculator
     {
         if (ComplianceMetrics.All(kvp => kvp.Key != metric.Key))
         {
-            AddMetricWithWindow(metric);
+            ComplianceMetrics.Add(metric);
+            TryResize();
         }
     }
 
     /// <summary>
-    /// Добавить метрику, сохраняя константное значение элементов в списке.
+    /// Ограничить количество элементов в метрике при достижении определенного порога.
     /// </summary>
-    /// <param name="metric">Добавляемая метрика.</param>
-    private void AddMetricWithWindow(KeyValuePair<DocumentId, double> metric)
+    private void TryResize()
     {
-        ComplianceMetrics.Add(metric);
-        // ограничиваемся 11 значениями: если при получении ответа его размер не дойдёт до ресайза, то в нём будет больше 11 элементов
-        // todo: при получении метрики в качестве ответа необходимо еще раз вызывать её ограничение по размеру
-        // например в SearchEngineManager.FindExtended / FindReduced
-        const int maxCount = ComplianceSearchService.PageSizeThreshold + 1;
-        var count = ComplianceMetrics.Count;
+        const int windowsSize = ComplianceSearchService.PageSizeThreshold * 2;
+        var currentCount = ComplianceMetrics.Count;
 
-        if (count < maxCount)
+        if (currentCount < windowsSize)
         {
             return;
         }
 
-        // изменяем размер списка
-        const int maxTestMetricCount = 147;
-        ComplianceMetrics = ComplianceMetrics
-            .OrderByDescending(kvp => kvp.Value)
-            .ThenByDescending(kvp => kvp.Key)
-            .Take(maxTestMetricCount)
-            .ToList();
+        // +1 чтобы не ломать логику ответа через api
+        Limit(ComplianceSearchService.PageSizeThreshold + 1);
     }
 }

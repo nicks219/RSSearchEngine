@@ -5,6 +5,7 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Exceptions;
+using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
 using RsseEngine.Contracts;
@@ -162,6 +163,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
+        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
 
         if (!metricsCalculator.ContinueSearching)
         {
@@ -169,6 +171,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         }
 
         _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
+        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
     }
 
     /// <inheritdoc/>
@@ -176,6 +179,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
+        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
     }
 
     /// <inheritdoc/>
@@ -183,6 +187,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
+        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
     }
 
     /// <summary>

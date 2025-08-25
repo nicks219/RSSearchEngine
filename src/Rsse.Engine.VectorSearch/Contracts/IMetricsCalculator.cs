@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Rsse.Domain.Service.Api;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 
@@ -56,8 +55,8 @@ public interface IMetricsCalculator
     void Clear();
 
     /// <summary>
-    /// Лимитирование метрик.
+    /// Ограничить количество элементов в метрике.
     /// </summary>
-    /// <param name="count">Количество элементов, которое должно остаться в метрике.</param>
-    void Limit(int count = ComplianceSearchService.PageSizeThreshold + 1);
+    /// <param name="limit">Количество элементов, которое должно остаться в метрике.</param>
+    void Limit(int limit);
 }

@@ -131,7 +131,7 @@ public class ComplianceGeneralTests
     }
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
+    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestLimitedData;
 
     // поисковые запросы осуществляются напрямую к функционалу токенизатора, без ограничения размера ответа
     [TestMethod]
