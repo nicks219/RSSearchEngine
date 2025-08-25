@@ -18,7 +18,7 @@ public interface IMetricsCalculator
     /// <summary>
     /// Метрики релевантности.
     /// </summary>
-    Dictionary<DocumentId, double> ComplianceMetrics { get; }
+    List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; }
 
     /// <summary>
     /// Добавить метрики для четкого поиска.

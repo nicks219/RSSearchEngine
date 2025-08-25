@@ -101,9 +101,6 @@ public class ComplianceGeneralTests
     // прокидываем коллекцию тк она должна принадлежать тесту
     public static IEnumerable<object?[]> ComplianceApiTestData => TestData.ComplianceApiTestData;
 
-    // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
-
     // поисковые запросы осуществляются через контроллер
     [TestMethod]
     [DynamicData(nameof(ComplianceApiTestData))]
@@ -133,16 +130,19 @@ public class ComplianceGeneralTests
         }
     }
 
-    // поисковые запросы осуществляются напрямую к функционалу токенизатора
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
+
+    // поисковые запросы осуществляются напрямую к функционалу токенизатора, без ограничения размера ответа
     [TestMethod]
     [DynamicData(nameof(ComplianceUnitTestData))]
-    public void ComplianceSeparateRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected)
+    public void ComplianceRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected)
     {
         var options = new JsonSerializerOptions
         {
             Converters =
             {
-                new DocumentIdJsonConverter()
+                new KeyValueListToDictionaryConverter<DocumentId, double>()
             }
         };
 
@@ -160,40 +160,36 @@ public class ComplianceGeneralTests
                     reducedSearchType: reducedSearchTypes);
 
                 // act:
-                Dictionary<DocumentId, double> extended;
+                List<KeyValuePair<DocumentId, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexExtended(request, extendedMetricsCalculator, NoneToken);
 
-                    var result = extendedMetricsCalculator.ComplianceMetrics
-                        .OrderBy(t => t.Key)
-                        .ToList();
+                    var result = extendedMetricsCalculator.ComplianceMetrics;
 
                     extended = result
                         .OrderByDescending(x => x.Value)
                         .ThenByDescending(x => x.Key)
-                        .ToDictionary();
+                        .ToList();
                 }
                 finally
                 {
                     tokenizerServiceCore.ReleaseMetricsCalculator(extendedMetricsCalculator);
                 }
 
-                Dictionary<DocumentId, double> reduced;
+                List<KeyValuePair<DocumentId, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexReduced(request, reducedMetricsCalculator, NoneToken);
 
-                    var result = reducedMetricsCalculator.ComplianceMetrics
-                        .OrderBy(t => t.Key)
-                        .ToList();
+                    var result = reducedMetricsCalculator.ComplianceMetrics;
 
                     reduced = result
                         .OrderByDescending(x => x.Value)
                         .ThenByDescending(x => x.Key)
-                        .ToDictionary();
+                        .ToList();
                 }
                 finally
                 {

@@ -20,12 +20,7 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComplianceMetrics { get; } = new()
-    {
-        {
-            new DocumentId(1), 0
-        }
-    };
+    public List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; } = [new(new DocumentId(1), 0)];
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
