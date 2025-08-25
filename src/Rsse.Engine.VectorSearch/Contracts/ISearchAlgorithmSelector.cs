@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using RsseEngine.Dto;
 
 namespace RsseEngine.Contracts;
@@ -12,11 +13,15 @@ public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     where TSearchType : Enum
 {
     /// <summary>
-    /// Получить необходимый функционал поиска с требуемой оптимизацией.
+    /// Выполнить и посчитать метрики релевантности для поискового запроса.
+    /// Добавить в контейнер с результатом.
     /// </summary>
     /// <param name="searchType">Оптимизация для требуемого алгоритма поиска.</param>
-    /// <returns>Функционал поиска с запрошенным алгоритмом.</returns>
-    TSearchProcessor GetSearchProcessor(TSearchType searchType);
+    /// <param name="searchVector">Токенизированый текст с поисковым запросом.</param>
+    /// <param name="metricsCalculator">Компонент для подсчёта метрик релевантности.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    void Find(TSearchType searchType, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, CancellationToken cancellationToken);
 
     /// <summary>
     /// Добавить идентификатор документа и его вектор к общему индексу алгоритмов поиска.
@@ -30,8 +35,7 @@ public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenVector">Новый вектор с токенами, представляющими обновленное содержание документа.</param>
-    /// <param name="oldTokenVector">Обновляемый вектор с токенами.</param>
-    void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector);
+    void UpdateVector(DocumentId documentId, TokenVector tokenVector);
 
     /// <summary>
     /// Удалить идентификатор документа и ассоциированный с ним вектор из общего индекса алгоритмов поиска.

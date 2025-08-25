@@ -6,4 +6,16 @@ public interface IDocumentId<TDocumentId> : IEquatable<TDocumentId>, IComparable
     where TDocumentId : IDocumentId<TDocumentId>
 {
     int Value { get; }
+
+    public static abstract bool operator ==(TDocumentId left, TDocumentId right);
+
+    public static abstract bool operator !=(TDocumentId left, TDocumentId right);
+
+    public static abstract bool operator >(TDocumentId left, TDocumentId right);
+
+    public static abstract bool operator <(TDocumentId left, TDocumentId right);
+
+    public static abstract bool operator >=(TDocumentId left, TDocumentId right);
+
+    public static abstract bool operator <=(TDocumentId left, TDocumentId right);
 }

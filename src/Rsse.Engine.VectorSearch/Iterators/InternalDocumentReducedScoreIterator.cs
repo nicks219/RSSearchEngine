@@ -50,7 +50,7 @@ public readonly ref struct InternalDocumentReducedScoreIterator : IDisposable
 
         START:
 
-            if (docId0.Value < docId1.Value)
+            if (docId0 < docId1)
             {
                 consumer.Accept(docId0, 1);
 

@@ -16,14 +16,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
+public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required ArrayDirectOffsetIndex GinReduced { private get; init; }
+    public required InvertedIndex InvertedIndex { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -37,7 +37,7 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(GinReduced, searchVector,
+            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -53,7 +53,7 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (GinReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -88,7 +88,7 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(
-            searchVector, metricsCalculator, GinReduced, sortedIds, filteredTokensCount,
+            searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount,
             PositionSearchType, minRelevancyCount, emptyCount);
 
         documentReducedScoreIterator.Iterate(metricsConsumer);
@@ -98,7 +98,7 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
     {
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
-        private readonly ArrayDirectOffsetIndex _ginReduced;
+        private readonly InvertedIndex _invertedIndex;
 
         private readonly List<InternalDocumentIdsWithToken> _sortedIds;
         private readonly int _filteredTokensCount;
@@ -107,13 +107,13 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
         private readonly int _emptyCount;
 
         public MetricsConsumer(TokenVector searchVector,
-            IMetricsCalculator metricsCalculator, ArrayDirectOffsetIndex ginReduced,
+            IMetricsCalculator metricsCalculator, InvertedIndex invertedIndex,
             List<InternalDocumentIdsWithToken> sortedIds, int filteredTokensCount,
             PositionSearchType positionSearchType, int minRelevancyCount, int emptyCount)
         {
             _searchVector = searchVector;
             _metricsCalculator = metricsCalculator;
-            _ginReduced = ginReduced;
+            _invertedIndex = invertedIndex;
 
             _sortedIds = sortedIds;
             _filteredTokensCount = filteredTokensCount;
@@ -129,7 +129,7 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (!_ginReduced.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+            if (!_invertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
             {
                 return;
             }

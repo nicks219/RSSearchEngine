@@ -29,12 +29,6 @@ public abstract class TestData
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
     [
         ReducedSearchType.Legacy,
-        ReducedSearchType.GinOptimized,
-        ReducedSearchType.GinOptimizedFilter,
-        ReducedSearchType.GinFast,
-        ReducedSearchType.GinFastFilter,
-        ReducedSearchType.GinMerge,
-        ReducedSearchType.GinMergeFilter,
         ReducedSearchType.GinArrayDirect,
         ReducedSearchType.GinArrayMergeFilter,
         ReducedSearchType.GinArrayDirectFilterLs,

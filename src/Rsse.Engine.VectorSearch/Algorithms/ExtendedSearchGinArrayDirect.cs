@@ -18,14 +18,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
+public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required ArrayDirectOffsetIndex GinExtended { private get; init; }
+    public required InvertedIndex InvertedIndex { private get; init; }
 
     public required PositionSearchType PositionSearchType { private get; init; }
 
@@ -37,7 +37,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
 
         try
         {
-            GinExtended.GetDocumentIdVectorsToList(searchVector, idsFromGin);
+            InvertedIndex.GetDocumentIdVectorsToList(searchVector, idsFromGin);
 
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {
@@ -51,7 +51,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -121,7 +121,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
                 var isMulti = multi[minI0] > 0;
 
             START:
-                if (docId0.Value < docId1.Value)
+                if (docId0 < docId1)
                 {
                     AppendMetric1(isMulti, searchVector, metricsCalculator, docId0, minI0);
 
@@ -186,7 +186,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
         }
         else
         {
-            if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
             {
                 const int metric = 1;
                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -213,7 +213,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
             do
             {
                 var documentId = enumerator.Current;
-                if (GinExtended.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                 {
                     const int metric = 1;
                     metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -226,7 +226,7 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {
-        if (!GinExtended.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+        if (!InvertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }

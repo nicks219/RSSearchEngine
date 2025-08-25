@@ -46,7 +46,7 @@ public readonly struct InternalDocumentIdList(List<InternalDocumentId> list) : I
     /// <param name="documentId">Идентификатор документа.</param>
     public void Add(InternalDocumentId documentId)
     {
-        if (_list.Count > 0 && documentId.Value <= _list[_list.Count - 1].Value)
+        if (_list.Count > 0 && documentId <= _list[_list.Count - 1])
         {
             throw new InvalidOperationException();
         }

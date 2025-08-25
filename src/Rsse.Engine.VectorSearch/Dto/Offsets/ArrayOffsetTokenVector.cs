@@ -51,4 +51,16 @@ public readonly struct ArrayOffsetTokenVector(DocumentDataPoint tokens)
     {
         return _tokens.TryFindNextPositionBinarySearch(token.Value, ref position);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindTokenCountLinearScan(Token token, out int count)
+    {
+        return _tokens.TryFindTokenCountLinearScan(token.Value, out count);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindTokenCountBinarySearch(Token token, out int count)
+    {
+        return _tokens.TryFindTokenCountBinarySearch(token.Value, out count);
+    }
 }

@@ -19,6 +19,8 @@ namespace RsseEngine.Service;
 /// </summary>
 public sealed class SearchEngineManager
 {
+    private const int PoolSizeThreshold = 1_000_000;
+
     private readonly SimpleStoragePools _simpleStoragePools;
 
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
@@ -44,10 +46,9 @@ public sealed class SearchEngineManager
     /// Инициализация требуемого типа алгоритма.
     /// </summary>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
-    /// <param name="useList">Используем DocumentIdList иначе DocumentIdSet</param>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public SearchEngineManager(bool enableTempStoragePool, bool useList)
+    public SearchEngineManager(bool enableTempStoragePool)
     {
         _simpleStoragePools = new SimpleStoragePools();
 
@@ -66,16 +67,8 @@ public sealed class SearchEngineManager
             _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
                 tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
 
-            if (useList)
-            {
-                _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdList>(
-                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
-            }
-            else
-            {
-                _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector<DocumentIdSet>(
-                    tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
-            }
+            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(
+                tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
         }
     }
 
@@ -116,13 +109,13 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_generalDirectIndex.TryUpdate(documentId, tokenLine, out var oldTokenLine))
+        if (!_generalDirectIndex.TryUpdate(documentId, tokenLine))
         {
             return false;
         }
 
-        _extendedSearchAlgorithmSelector.UpdateVector(documentId, tokenLine.Extended, oldTokenLine.Extended);
-        _reducedSearchAlgorithmSelector.UpdateVector(documentId, tokenLine.Reduced, oldTokenLine.Reduced);
+        _extendedSearchAlgorithmSelector.UpdateVector(documentId, tokenLine.Extended);
+        _reducedSearchAlgorithmSelector.UpdateVector(documentId, tokenLine.Reduced);
 
         return true;
     }
@@ -179,14 +172,13 @@ public sealed class SearchEngineManager
 
             var extendedSearchVector = new TokenVector(tokens);
 
-            var searchProcessor = _extendedSearchAlgorithmSelector.GetSearchProcessor(extendedSearchType);
-
-            searchProcessor.FindExtended(extendedSearchVector, metricsCalculator, cancellationToken);
+            _extendedSearchAlgorithmSelector.Find(extendedSearchType,
+                extendedSearchVector, metricsCalculator, cancellationToken);
         }
         finally
         {
             // большие коллекции в пул не возвращаем
-            if (tokens.Count < 1_000_000)
+            if (tokens.Count < PoolSizeThreshold)
             {
                 _simpleStoragePools.ListPool.Return(tokens);
             }
@@ -203,7 +195,6 @@ public sealed class SearchEngineManager
     public void FindReduced(ReducedSearchType reducedSearchType, string text,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        const int poolSizeThreshold = 1_000_000;
         var textTokens = _simpleStoragePools.ListPool.Get();
         var uniqueTokens = _simpleStoragePools.SetPool.Get();
         var vectorTokens = _simpleStoragePools.ListPool.Get();
@@ -229,14 +220,13 @@ public sealed class SearchEngineManager
 
             var reducedSearchVector = new TokenVector(vectorTokens);
 
-            var searchProcessor = _reducedSearchAlgorithmSelector.GetSearchProcessor(reducedSearchType);
-
-            searchProcessor.FindReduced(reducedSearchVector, metricsCalculator, cancellationToken);
+            _reducedSearchAlgorithmSelector.Find(reducedSearchType,
+                reducedSearchVector, metricsCalculator, cancellationToken);
         }
         finally
         {
             // большие коллекции в пул не возвращаем
-            if (textTokens.Count < poolSizeThreshold)
+            if (textTokens.Count < PoolSizeThreshold)
             {
                 _simpleStoragePools.ListPool.Return(textTokens);
                 _simpleStoragePools.SetPool.Return(uniqueTokens);

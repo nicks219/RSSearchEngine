@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -16,24 +17,17 @@ namespace RsseEngine.Selector;
 public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
 {
-    /// <summary>
-    /// Поддержка инвертированного индекса для расширенного поиска и метрик.
-    /// </summary>
-    private readonly InvertedOffsetIndex _invertedOffsetIndex = new();
+    private readonly TempStoragePool _tempStoragePool;
 
-    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndex = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly GinRelevanceFilter _relevanceFilter;
 
-    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndexHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly DirectIndex _generalDirectIndex;
 
-    private readonly ExtendedSearchLegacy _extendedSearchLegacy;
-    private readonly ExtendedSearchGinOffset _extendedSearchGinOffset;
-    private readonly ExtendedSearchGinOffsetFilter _extendedSearchGinOffsetFilter;
-    private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectLs;
-    private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterLs;
-    private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectBs;
-    private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterBs;
-    private readonly ExtendedSearchGinArrayDirect _extendedSearchGinArrayDirectHs;
-    private readonly ExtendedSearchGinArrayDirectFilter _extendedSearchGinArrayDirectFilterHs;
+    private readonly InvertedOffsetIndexPartitions _offsetPartitions = new();
+
+    private readonly InvertedIndexPartitions _partitions = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+
+    private readonly InvertedIndexPartitions _partitionsHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
@@ -44,124 +38,243 @@ public sealed class ExtendedSearchAlgorithmSelector
     public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
-        var relevanceFilter = new GinRelevanceFilter
+        _tempStoragePool = tempStoragePool;
+        _generalDirectIndex = generalDirectIndex;
+
+        _relevanceFilter = new GinRelevanceFilter
         {
             Threshold = relevancyThreshold
-        };
-
-        // Без GIN-индекса.
-        _extendedSearchLegacy = new ExtendedSearchLegacy
-        {
-            GeneralDirectIndex = generalDirectIndex
-        };
-
-        _extendedSearchGinOffset = new ExtendedSearchGinOffset
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _invertedOffsetIndex
-        };
-
-        _extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _invertedOffsetIndex,
-            RelevanceFilter = relevanceFilter
-        };
-
-        _extendedSearchGinArrayDirectLs = new ExtendedSearchGinArrayDirect
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndex,
-            PositionSearchType = PositionSearchType.LinearScan
-        };
-
-        _extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndex,
-            RelevanceFilter = relevanceFilter,
-            PositionSearchType = PositionSearchType.LinearScan
-        };
-
-        _extendedSearchGinArrayDirectBs = new ExtendedSearchGinArrayDirect
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndex,
-            PositionSearchType = PositionSearchType.BinarySearch
-        };
-
-        _extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndex,
-            RelevanceFilter = relevanceFilter,
-            PositionSearchType = PositionSearchType.BinarySearch
-        };
-
-        _extendedSearchGinArrayDirectHs = new ExtendedSearchGinArrayDirect
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndexHs,
-            PositionSearchType = PositionSearchType.LinearScan
-        };
-
-        _extendedSearchGinArrayDirectFilterHs = new ExtendedSearchGinArrayDirectFilter
-        {
-            TempStoragePool = tempStoragePool,
-            GinExtended = _arrayDirectOffsetIndexHs,
-            RelevanceFilter = relevanceFilter,
-            PositionSearchType = PositionSearchType.LinearScan
         };
     }
 
     /// <inheritdoc/>
-    public IExtendedSearchProcessor GetSearchProcessor(ExtendedSearchType searchType)
+    public void Find(ExtendedSearchType searchType, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        return searchType switch
+        switch (searchType)
         {
-            ExtendedSearchType.Legacy => _extendedSearchLegacy,
-            ExtendedSearchType.GinOffset => _extendedSearchGinOffset,
-            ExtendedSearchType.GinOffsetFilter => _extendedSearchGinOffsetFilter,
-            ExtendedSearchType.GinArrayDirectLs => _extendedSearchGinArrayDirectLs,
-            ExtendedSearchType.GinArrayDirectFilterLs => _extendedSearchGinArrayDirectFilterLs,
-            ExtendedSearchType.GinArrayDirectBs => _extendedSearchGinArrayDirectBs,
-            ExtendedSearchType.GinArrayDirectFilterBs => _extendedSearchGinArrayDirectFilterBs,
-            ExtendedSearchType.GinArrayDirectHs => _extendedSearchGinArrayDirectHs,
-            ExtendedSearchType.GinArrayDirectFilterHs => _extendedSearchGinArrayDirectFilterHs,
-            _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
-                "unknown search type")
-        };
+            case ExtendedSearchType.Legacy:
+                {
+                    FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinOffset:
+                {
+                    FindExtendedGinOffset(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinOffsetFilter:
+                {
+                    FindExtendedGinOffsetFilter(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectLs:
+                {
+                    FindExtendedGinArrayDirectLs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectFilterLs:
+                {
+                    FindExtendedGinArrayDirectFilterLs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectBs:
+                {
+                    FindExtendedGinArrayDirectBs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectFilterBs:
+                {
+                    FindExtendedGinArrayDirectFilterBs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectHs:
+                {
+                    FindExtendedGinArrayDirectHs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ExtendedSearchType.GinArrayDirectFilterHs:
+                {
+                    FindExtendedGinArrayDirectFilterHs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            default:
+                {
+                    throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
+                }
+        }
     }
 
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
-    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
+    public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _invertedOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _invertedOffsetIndex.RemoveVector(documentId);
-        _arrayDirectOffsetIndex.RemoveVector(documentId);
-        _arrayDirectOffsetIndexHs.RemoveVector(documentId);
+        _offsetPartitions.RemoveVector(documentId);
+        _partitions.RemoveVector(documentId);
+        _partitionsHs.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        _invertedOffsetIndex.Clear();
-        _arrayDirectOffsetIndex.Clear();
-        _arrayDirectOffsetIndexHs.Clear();
+        _offsetPartitions.Clear();
+        _partitions.Clear();
+        _partitionsHs.Clear();
+    }
+
+    private void FindExtendedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        var extendedSearchLegacy = new ExtendedSearchLegacy
+        {
+            GeneralDirectIndex = _generalDirectIndex
+        };
+
+        extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
+    }
+
+    private void FindExtendedGinOffset(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
+        {
+            var extendedSearchGinOffset = new ExtendedSearchGinOffset
+            {
+                TempStoragePool = _tempStoragePool,
+                GinExtended = invertedOffsetIndex
+            };
+
+            extendedSearchGinOffset.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinOffsetFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
+        {
+            var extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                GinExtended = invertedOffsetIndex,
+                RelevanceFilter = _relevanceFilter
+            };
+
+            extendedSearchGinOffsetFilter.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var extendedSearchGinArrayDirectLs = new ExtendedSearchGinArrayDirect
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            extendedSearchGinArrayDirectLs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            extendedSearchGinArrayDirectFilterLs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var extendedSearchGinArrayDirectBs = new ExtendedSearchGinArrayDirect
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                PositionSearchType = PositionSearchType.BinarySearch
+            };
+
+            extendedSearchGinArrayDirectBs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.BinarySearch
+            };
+
+            extendedSearchGinArrayDirectFilterBs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndexHs in _partitionsHs.Indices)
+        {
+            var extendedSearchGinArrayDirectHs = new ExtendedSearchGinArrayDirect
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndexHs,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            extendedSearchGinArrayDirectHs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindExtendedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndexHs in _partitionsHs.Indices)
+        {
+            var extendedSearchGinArrayDirectFilterHs = new ExtendedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndexHs,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            extendedSearchGinArrayDirectFilterHs.FindExtended(searchVector, metricsCalculator, cancellationToken);
+        }
     }
 }

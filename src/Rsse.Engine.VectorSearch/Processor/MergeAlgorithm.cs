@@ -13,12 +13,6 @@ public static class MergeAlgorithm
         FindMin<InternalDocumentId, InternalDocumentListEnumerator>(list, out minI0, out min0, out min1);
     }
 
-    public static void FindMin(List<DocumentListEnumerator> list,
-        out int minI0, out DocumentId min0, out DocumentId min1)
-    {
-        FindMin<DocumentId, DocumentListEnumerator>(list, out minI0, out min0, out min1);
-    }
-
     public static void FindMin(List<TokenOffsetEnumerator> list,
         out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
     {
@@ -35,7 +29,7 @@ public static class MergeAlgorithm
         min0 = list[minI0].Current;
         min1 = list[minI1].Current;
 
-        if (min0.Value > min1.Value)
+        if (min0 > min1)
         {
             (minI0, minI1) = (minI1, minI0);
             (min0, min1) = (min1, min0);
@@ -45,14 +39,14 @@ public static class MergeAlgorithm
         {
             var documentId = list[index].Current;
 
-            if (documentId.Value < min0.Value)
+            if (documentId < min0)
             {
                 min1 = min0;
                 //minI1 = minI0;
                 min0 = documentId;
                 minI0 = index;
             }
-            else if (documentId.Value < min1.Value)
+            else if (documentId < min1)
             {
                 min1 = documentId;
                 //minI1 = index;
@@ -82,7 +76,7 @@ public static class MergeAlgorithm
         min0 = list[minI0].Current;
         min1 = list[minI1].Current;
 
-        if (min0.Value > min1.Value)
+        if (min0 > min1)
         {
             (minI0, minI1) = (minI1, minI0);
             (min0, min1) = (min1, min0);
@@ -93,14 +87,14 @@ public static class MergeAlgorithm
             var index = listExists[i];
             var documentId = list[index].Current;
 
-            if (documentId.Value < min0.Value)
+            if (documentId < min0)
             {
                 min1 = min0;
                 //minI1 = minI0;
                 min0 = documentId;
                 minI0 = index;
             }
-            else if (documentId.Value < min1.Value)
+            else if (documentId < min1)
             {
                 min1 = documentId;
                 //minI1 = index;

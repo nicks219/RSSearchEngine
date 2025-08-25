@@ -15,14 +15,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
+public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required ArrayDirectOffsetIndex GinReduced { private get; init; }
+    public required InvertedIndex InvertedIndex { private get; init; }
 
     public required GinRelevanceFilter RelevanceFilter { private get; init; }
 
@@ -34,7 +34,7 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(GinReduced, searchVector,
+            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -50,7 +50,7 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (GinReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -85,7 +85,7 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
-            searchVector, metricsCalculator, GinReduced, sortedIds, filteredTokensCount);
+            searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount);
 
         documentReducedScoreIterator.Iterate(metricsConsumer);
     }
@@ -95,17 +95,17 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
         private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
-        private readonly ArrayDirectOffsetIndex _ginReduced;
+        private readonly InvertedIndex _invertedIndex;
         private readonly List<InternalDocumentListEnumerator> _list;
 
         public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
-            IMetricsCalculator metricsCalculator, ArrayDirectOffsetIndex ginReduced,
+            IMetricsCalculator metricsCalculator, InvertedIndex invertedIndex,
             List<InternalDocumentIdsWithToken> sortedIds, int filteredTokensCount)
         {
             _tempStoragePool = tempStoragePool;
             _searchVector = searchVector;
             _metricsCalculator = metricsCalculator;
-            _ginReduced = ginReduced;
+            _invertedIndex = invertedIndex;
 
             _list = _tempStoragePool.ListInternalEnumeratorListsStorage.Get();
 
@@ -134,16 +134,16 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
             {
                 ref var documentListEnumerator = ref CollectionsMarshal.AsSpan(_list)[index];
 
-                if (documentListEnumerator.Current.Value < documentId.Value)
+                if (documentListEnumerator.Current < documentId)
                 {
                     if (documentListEnumerator.MoveNextBinarySearch(documentId))
                     {
-                        if (documentListEnumerator.Current.Value < documentId.Value)
+                        if (documentListEnumerator.Current < documentId)
                         {
                             throw new InvalidOperationException();
                         }
 
-                        if (documentListEnumerator.Current.Value == documentId.Value)
+                        if (documentListEnumerator.Current == documentId)
                         {
                             score++;
 
@@ -158,7 +158,7 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
                         _list.RemoveAt(index);
                     }
                 }
-                else if (documentListEnumerator.Current.Value == documentId.Value)
+                else if (documentListEnumerator.Current == documentId)
                 {
                     score++;
 
@@ -176,7 +176,7 @@ public sealed class ReducedSearchGinArrayMergeFilter : IReducedSearchProcessor
                 counter++;
             }
 
-            if (_ginReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (_invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
             {
                 _metricsCalculator.AppendReducedMetric(score, _searchVector, externalDocument);
             }

@@ -28,18 +28,6 @@ public class StQueryBenchmarkReduced : IBenchmarkRunner
     public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
     [
         new(ReducedSearchType.Legacy),
-        new(ReducedSearchType.GinOptimized),
-        new(ReducedSearchType.GinOptimized, true),
-        new(ReducedSearchType.GinOptimizedFilter),
-        new(ReducedSearchType.GinOptimizedFilter, true),
-        new(ReducedSearchType.GinFast),
-        new(ReducedSearchType.GinFast, true),
-        new(ReducedSearchType.GinFastFilter),
-        new(ReducedSearchType.GinFastFilter, true),
-        new(ReducedSearchType.GinMerge),
-        new(ReducedSearchType.GinMerge, true),
-        new(ReducedSearchType.GinMergeFilter),
-        new(ReducedSearchType.GinMergeFilter, true),
         new(ReducedSearchType.GinArrayDirect),
         new(ReducedSearchType.GinArrayDirect, true),
         new(ReducedSearchType.GinArrayMergeFilter),

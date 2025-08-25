@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -13,31 +14,18 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
 /// </summary>
-public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
+public sealed class ReducedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
-    where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
 {
-    /// <summary>
-    /// Поддержка инвертированного индекса для сокращенного поиска и метрик.
-    /// </summary>
-    private readonly InvertedIndex<TDocumentIdCollection> _ginReduced = new();
+    private readonly TempStoragePool _tempStoragePool;
 
-    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndex = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly GinRelevanceFilter _relevanceFilter;
 
-    private readonly ArrayDirectOffsetIndex _arrayDirectOffsetIndexHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly DirectIndex _generalDirectIndex;
 
-    private readonly ReducedSearchLegacy _reducedSearchLegacy;
-    private readonly ReducedSearchGinOptimized<TDocumentIdCollection> _reducedSearchGinOptimized;
-    private readonly ReducedSearchGinOptimizedFilter<TDocumentIdCollection> _reducedSearchGinOptimizedFilter;
-    private readonly ReducedSearchGinFast<TDocumentIdCollection> _reducedSearchGinFast;
-    private readonly ReducedSearchGinFastFilter<TDocumentIdCollection> _reducedSearchGinFastFilter;
-    private readonly IReducedSearchProcessor _reducedSearchGinMerge;
-    private readonly IReducedSearchProcessor _reducedSearchGinMergeFilter;
-    private readonly IReducedSearchProcessor _reducedSearchGinArrayDirect;
-    private readonly IReducedSearchProcessor _reducedSearchGinArrayMergeFilter;
-    private readonly IReducedSearchProcessor _reducedSearchGinArrayDirectFilterLs;
-    private readonly IReducedSearchProcessor _reducedSearchGinArrayDirectFilterBs;
-    private readonly IReducedSearchProcessor _reducedSearchGinArrayDirectFilterHs;
+    private readonly InvertedIndexPartitions _partitions = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+
+    private readonly InvertedIndexPartitions _partitionsHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
@@ -48,173 +36,176 @@ public sealed class ReducedSearchAlgorithmSelector<TDocumentIdCollection>
     public ReducedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
-        var relevanceFilter = new GinRelevanceFilter
+        _tempStoragePool = tempStoragePool;
+        _generalDirectIndex = generalDirectIndex;
+
+        _relevanceFilter = new GinRelevanceFilter
         {
             Threshold = relevancyThreshold
         };
-
-        // Без GIN-индекса.
-        _reducedSearchLegacy = new ReducedSearchLegacy
-        {
-            GeneralDirectIndex = generalDirectIndex
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinOptimized = new ReducedSearchGinOptimized<TDocumentIdCollection>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinOptimizedFilter = new ReducedSearchGinOptimizedFilter<TDocumentIdCollection>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced,
-            RelevanceFilter = relevanceFilter
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinFast = new ReducedSearchGinFast<TDocumentIdCollection>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced
-        };
-
-        // С GIN-индексом.
-        _reducedSearchGinFastFilter = new ReducedSearchGinFastFilter<TDocumentIdCollection>
-        {
-            TempStoragePool = tempStoragePool,
-            GeneralDirectIndex = generalDirectIndex,
-            GinReduced = _ginReduced,
-            RelevanceFilter = relevanceFilter
-        };
-
-        if (typeof(TDocumentIdCollection) == typeof(DocumentIdList))
-        {
-            _reducedSearchGinMerge = new ReducedSearchGinMerge
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced
-            };
-
-            _reducedSearchGinMergeFilter = new ReducedSearchGinMergeFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GeneralDirectIndex = generalDirectIndex,
-                GinReduced = (InvertedIndex<DocumentIdList>)(object)_ginReduced,
-                RelevanceFilter = relevanceFilter
-            };
-
-            _reducedSearchGinArrayDirect = new ReducedSearchGinArrayDirect
-            {
-                TempStoragePool = tempStoragePool,
-                GinReduced = _arrayDirectOffsetIndex,
-            };
-
-            _reducedSearchGinArrayMergeFilter = new ReducedSearchGinArrayMergeFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GinReduced = _arrayDirectOffsetIndex,
-                RelevanceFilter = relevanceFilter
-            };
-
-            _reducedSearchGinArrayDirectFilterLs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GinReduced = _arrayDirectOffsetIndex,
-                RelevanceFilter = relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-
-            _reducedSearchGinArrayDirectFilterBs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GinReduced = _arrayDirectOffsetIndex,
-                RelevanceFilter = relevanceFilter,
-                PositionSearchType = PositionSearchType.BinarySearch
-            };
-
-            _reducedSearchGinArrayDirectFilterHs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = tempStoragePool,
-                GinReduced = _arrayDirectOffsetIndexHs,
-                RelevanceFilter = relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-        }
-        else if (typeof(TDocumentIdCollection) == typeof(DocumentIdSet))
-        {
-            // Fallback для DocumentIdSet
-            _reducedSearchGinMerge = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinMergeFilter = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinArrayDirect = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinArrayMergeFilter = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinArrayDirectFilterLs = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinArrayDirectFilterBs = _reducedSearchGinOptimizedFilter;
-            _reducedSearchGinArrayDirectFilterHs = _reducedSearchGinOptimizedFilter;
-        }
-        else
-        {
-            throw new NotSupportedException($"[{nameof(TDocumentIdCollection)}] is not supported.");
-        }
     }
 
     /// <inheritdoc/>
-    public IReducedSearchProcessor GetSearchProcessor(ReducedSearchType searchType)
+    public void Find(ReducedSearchType searchType, TokenVector searchVector,
+        IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        return searchType switch
+        switch (searchType)
         {
-            ReducedSearchType.Legacy => _reducedSearchLegacy,
-            ReducedSearchType.GinOptimized => _reducedSearchGinOptimized,
-            ReducedSearchType.GinOptimizedFilter => _reducedSearchGinOptimizedFilter,
-            ReducedSearchType.GinFast => _reducedSearchGinFast,
-            ReducedSearchType.GinFastFilter => _reducedSearchGinFastFilter,
-            ReducedSearchType.GinMerge => _reducedSearchGinMerge,
-            ReducedSearchType.GinMergeFilter => _reducedSearchGinMergeFilter,
-            ReducedSearchType.GinArrayDirect => _reducedSearchGinArrayDirect,
-            ReducedSearchType.GinArrayMergeFilter => _reducedSearchGinArrayMergeFilter,
-            ReducedSearchType.GinArrayDirectFilterLs => _reducedSearchGinArrayDirectFilterLs,
-            ReducedSearchType.GinArrayDirectFilterBs => _reducedSearchGinArrayDirectFilterBs,
-            ReducedSearchType.GinArrayDirectFilterHs => _reducedSearchGinArrayDirectFilterHs,
-            _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType,
-                "unknown search type")
-        };
+            case ReducedSearchType.Legacy:
+                {
+                    FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ReducedSearchType.GinArrayDirect:
+                {
+                    FindReducedGinArrayDirect(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ReducedSearchType.GinArrayMergeFilter:
+                {
+                    FindReducedGinArrayMergeFilter(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ReducedSearchType.GinArrayDirectFilterLs:
+                {
+                    FindReducedGinArrayDirectFilterLs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ReducedSearchType.GinArrayDirectFilterBs:
+                {
+                    FindReducedGinArrayDirectFilterBs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            case ReducedSearchType.GinArrayDirectFilterHs:
+                {
+                    FindReducedGinArrayDirectFilterHs(searchVector, metricsCalculator, cancellationToken);
+                    break;
+                }
+            default:
+                {
+                    throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
+                }
+        }
     }
 
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _ginReduced.AddVector(documentId, tokenVector);
-        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _partitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
-    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector)
+    public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _ginReduced.UpdateVector(documentId, tokenVector, oldTokenVector);
-        _arrayDirectOffsetIndex.AddOrUpdateVector(documentId, tokenVector);
-        _arrayDirectOffsetIndexHs.AddOrUpdateVector(documentId, tokenVector);
+        _partitions.AddOrUpdateVector(documentId, tokenVector);
+        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _ginReduced.RemoveVector(documentId, tokenVector);
-        _arrayDirectOffsetIndex.RemoveVector(documentId);
-        _arrayDirectOffsetIndexHs.RemoveVector(documentId);
+        _partitions.RemoveVector(documentId);
+        _partitionsHs.RemoveVector(documentId);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        _ginReduced.Clear();
-        _arrayDirectOffsetIndex.Clear();
-        _arrayDirectOffsetIndexHs.Clear();
+        _partitions.Clear();
+        _partitionsHs.Clear();
+    }
+
+    private void FindReducedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        var reducedSearchLegacy = new ReducedSearchLegacy
+        {
+            GeneralDirectIndex = _generalDirectIndex
+        };
+
+        reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
+    }
+
+    private void FindReducedGinArrayDirect(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var reducedSearchGinArrayDirect = new ReducedSearchGinArrayDirect
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+            };
+
+            reducedSearchGinArrayDirect.FindReduced(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindReducedGinArrayMergeFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var reducedSearchGinArrayMergeFilter = new ReducedSearchGinArrayMergeFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                RelevanceFilter = _relevanceFilter
+            };
+
+            reducedSearchGinArrayMergeFilter.FindReduced(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindReducedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var reducedSearchGinArrayDirectFilterLs = new ReducedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            reducedSearchGinArrayDirectFilterLs.FindReduced(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindReducedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndex in _partitions.Indices)
+        {
+            var reducedSearchGinArrayDirectFilterBs = new ReducedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndex,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.BinarySearch
+            };
+
+            reducedSearchGinArrayDirectFilterBs.FindReduced(searchVector, metricsCalculator, cancellationToken);
+        }
+    }
+
+    private void FindReducedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        foreach (var invertedIndexHs in _partitionsHs.Indices)
+        {
+            var reducedSearchGinArrayDirectFilterHs = new ReducedSearchGinArrayDirectFilter
+            {
+                TempStoragePool = _tempStoragePool,
+                InvertedIndex = invertedIndexHs,
+                RelevanceFilter = _relevanceFilter,
+                PositionSearchType = PositionSearchType.LinearScan
+            };
+
+            reducedSearchGinArrayDirectFilterHs.FindReduced(searchVector, metricsCalculator, cancellationToken);
+        }
     }
 }

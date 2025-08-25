@@ -16,7 +16,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
+public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -138,11 +138,12 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
                 enumerators, indexWithCounts, filteredTokensCount, out var exList);
 
-            do
+            while (docIdIterators.Count > 0)
             {
-                FindMin(docIdIterators, out var documentIdIndex, out var documentId, out var documentIdNext);
+                FindMin(docIdIterators, out var documentIdIndex, out var documentId,
+                    out var documentIdNext, out var min1Exists);
 
-                if (documentId.Value < documentIdNext.Value)
+                if (min1Exists && documentId < documentIdNext || !min1Exists)
                 {
                     ref var enumerator = ref CollectionsMarshal.AsSpan(docIdIterators)[documentIdIndex];
 
@@ -157,7 +158,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
                     {
                         ref var enumerator = ref CollectionsMarshal.AsSpan(docIdIterators)[i];
 
-                        if (enumerator.Current.Value == documentId.Value)
+                        if (enumerator.Current == documentId)
                         {
                             if (!enumerator.MoveNext())
                             {
@@ -183,7 +184,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                     var documentId1 = enumerator.Current;
 
-                    if (documentId1.Value < documentId.Value)
+                    if (documentId1 < documentId)
                     {
                         if (!enumerator.MoveNextBinarySearch(documentId))
                         {
@@ -234,7 +235,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
                 {
                     return;
                 }
-            } while (docIdIterators.Count > 0);
+            }
         }
 
         private static List<TokenOffsetEnumerator> PrepareDocumentIdsWithOffsetsAndEnumerators(
@@ -262,17 +263,19 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
         }
 
         private static void FindMin(List<TokenOffsetEnumerator> list,
-            out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
+            out int minI0, out InternalDocumentId min0, out InternalDocumentId min1, out bool min1Exists)
         {
             if (list.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, out minI0, out min0, out min1);
+                min1Exists = true;
             }
             else
             {
                 minI0 = 0;
                 min0 = list[minI0].Current;
-                min1 = new InternalDocumentId(int.MaxValue);
+                min1 = default;
+                min1Exists = false;
             }
         }
     }
@@ -288,16 +291,17 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
                 enumerators, indexWithCounts, filteredTokensCount, out var exList);
 
-            do
+            while (docIdIterators.Count > 0)
             {
-                FindMin(enumerators, docIdIterators, out var documentIdIndex, out var documentId, out var documentIdNext);
+                FindMin(enumerators, docIdIterators, out var documentIdIndex, out var documentId,
+                    out var documentIdNext, out var min1Exists);
 
                 var position = -1;
                 var metric = 0;
 
                 for (var i = 0; i < exList.Count; i++)
                 {
-                    if (metric + exList.Count - i < minRelevancyCount && documentId != documentIdNext && documentIdNext.Value != int.MaxValue)
+                    if (metric + exList.Count - i < minRelevancyCount && documentId != documentIdNext && min1Exists)
                     {
                         ref var enumerator2 = ref CollectionsMarshal.AsSpan(enumerators)[documentIdIndex];
 
@@ -325,7 +329,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
 
                     var documentId1 = enumerator.Current;
 
-                    if (documentId1.Value < documentId.Value)
+                    if (documentId1 < documentId)
                     {
                         if (!enumerator.MoveNextBinarySearch(documentId))
                         {
@@ -378,7 +382,7 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
                 {
                     return;
                 }
-            } while (docIdIterators.Count > 0);
+            }
         }
 
         private static List<int> PrepareDocumentIdsWithOffsetsAndEnumerators(
@@ -412,17 +416,19 @@ public sealed class ExtendedSearchGinOffsetFilter : IExtendedSearchProcessor
         }
 
         private static void FindMin(List<TokenOffsetEnumerator> list, List<int> listExists,
-            out int minI0, out InternalDocumentId min0, out InternalDocumentId min1)
+            out int minI0, out InternalDocumentId min0, out InternalDocumentId min1, out bool min1Exists)
         {
             if (listExists.Count > 1)
             {
                 MergeAlgorithm.FindMin(list, listExists, out minI0, out min0, out min1);
+                min1Exists = true;
             }
             else
             {
                 minI0 = listExists[0];
                 min0 = list[minI0].Current;
-                min1 = new InternalDocumentId(int.MaxValue);
+                min1 = default;
+                min1Exists = false;
             }
         }
     }

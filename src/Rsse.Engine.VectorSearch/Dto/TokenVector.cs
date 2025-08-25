@@ -39,12 +39,6 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// <returns>Перечислитель для вектора.</returns>
     public Enumerator GetEnumerator() => new(_tokens.GetEnumerator());
 
-    /// <summary>
-    /// Конвертировать в вектор с уникальными элементами.
-    /// </summary>
-    /// <returns>Вектор с уникальными токенами.</returns>
-    public TokenVector DistinctAndGet() => new(_tokens.ToHashSet().ToList());
-
     public bool Equals(TokenVector other) => _tokens.Equals(other._tokens);
 
     public override bool Equals(object? obj) => obj is TokenVector other && Equals(other);
@@ -69,13 +63,6 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// <returns>Коллекция хэшей.</returns>
     public List<int> ToIntList() => _tokens.ToList();
 
-    public HashSet<Token> Intersect(TokenVector tokenVector)
-    {
-        return _tokens.Intersect(tokenVector._tokens)
-            .Select(token => new Token(token))
-            .ToHashSet();
-    }
-
     public Dictionary<Token, List<int>> ToDictionary()
     {
         var dictionary = new Dictionary<Token, List<int>>();
@@ -95,6 +82,12 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
 
         return dictionary;
     }
+
+    /// <summary>
+    /// Конвертировать в вектор с уникальными элементами.
+    /// </summary>
+    /// <returns>Вектор с уникальными токенами.</returns>
+    public TokenVector DistinctAndGet() => new(_tokens.ToHashSet().ToList());
 
     /// <summary>
     /// Перечислитель для вектора.

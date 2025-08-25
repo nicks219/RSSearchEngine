@@ -13,14 +13,14 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта сокращенной метрики.
 /// Метрика считается GIN индексе, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
+public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required ArrayDirectOffsetIndex GinReduced { private get; init; }
+    public required InvertedIndex InvertedIndex { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
@@ -30,7 +30,7 @@ public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
 
         try
         {
-            GinReduced.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
+            InvertedIndex.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {
@@ -42,7 +42,7 @@ public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
                     {
                         foreach (var documentId in idsFromGin[0].DocumentIds)
                         {
-                            if (GinReduced.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -59,7 +59,7 @@ public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
                         using InternalDocumentReducedScoreIterator documentReducedScoreIterator =
                             new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
-                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, GinReduced);
+                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, InvertedIndex);
 
                         documentReducedScoreIterator.Iterate(in metricsConsumer);
 
@@ -74,11 +74,11 @@ public sealed class ReducedSearchGinArrayDirect : IReducedSearchProcessor
     }
 
     private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        ArrayDirectOffsetIndex generalDirectIndex) : InternalDocumentReducedScoreIterator.IConsumer
+        InvertedIndex invertedIndex) : InternalDocumentReducedScoreIterator.IConsumer
     {
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (generalDirectIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
             {
                 metricsCalculator.AppendReducedMetric(score, searchVector, externalDocument);
             }

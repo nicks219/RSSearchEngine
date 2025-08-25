@@ -1,3 +1,4 @@
+using System;
 using RsseEngine.Contracts;
 
 namespace RsseEngine.Dto;
@@ -5,11 +6,25 @@ namespace RsseEngine.Dto;
 /// <summary>
 /// Внутренний идентификатор заметки.
 /// </summary>
-/// <param name="documentId"></param>
-public readonly struct InternalDocumentId(int documentId) : IDocumentId<InternalDocumentId>
+public readonly struct InternalDocumentId : IDocumentId<InternalDocumentId>
 {
     // Идентификатор заметки.
-    private readonly int _documentId = documentId;
+    private readonly ushort _documentId;
+
+    /// <summary>
+    /// Внутренний идентификатор заметки.
+    /// </summary>
+    /// <param name="documentId">Внутренний идентификатор заметки.</param>
+    public InternalDocumentId(int documentId)
+    {
+        if (documentId < 0 || documentId > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(documentId), documentId,
+                $"Внутренний идентификатор документа должен быть в диапазоне от 0 до {ushort.MaxValue} включительно.");
+        }
+
+        _documentId = (ushort)documentId;
+    }
 
     /// <summary>
     /// Получить значение идентификатора заметки.
@@ -26,6 +41,14 @@ public readonly struct InternalDocumentId(int documentId) : IDocumentId<Internal
     public static bool operator ==(InternalDocumentId left, InternalDocumentId right) => left.Equals(right);
 
     public static bool operator !=(InternalDocumentId left, InternalDocumentId right) => !(left == right);
+
+    public static bool operator >(InternalDocumentId left, InternalDocumentId right) => left._documentId > right._documentId;
+
+    public static bool operator <(InternalDocumentId left, InternalDocumentId right) => left._documentId < right._documentId;
+
+    public static bool operator >=(InternalDocumentId left, InternalDocumentId right) => left._documentId >= right._documentId;
+
+    public static bool operator <=(InternalDocumentId left, InternalDocumentId right) => left._documentId <= right._documentId;
 
     public int CompareTo(InternalDocumentId other)
     {

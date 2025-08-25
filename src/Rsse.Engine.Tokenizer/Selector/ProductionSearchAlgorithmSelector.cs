@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -23,21 +24,34 @@ public abstract class ProductionSearchAlgorithmSelector
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
     {
-        // Legacy-алгоритм без GIN-индекса.
-        private readonly ExtendedSearchLegacy _extendedSearchLegacy = new()
-        {
-            GeneralDirectIndex = generalDirectIndex
-        };
-
         /// <inheritdoc/>
-        public IExtendedSearchProcessor GetSearchProcessor(ExtendedSearchType searchType)
+        public void Find(ExtendedSearchType searchType, TokenVector searchVector,
+            IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
         {
-            return searchType switch
+            switch (searchType)
             {
-                ExtendedSearchType.Legacy => _extendedSearchLegacy,
-                _ => throw new NotSupportedException(
-                    $"Extended[{searchType.ToString()}] GIN optimization is not supported in production yet.")
+                case ExtendedSearchType.Legacy:
+                    {
+                        FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
+                        break;
+                    }
+                default:
+                    {
+                        throw new NotSupportedException(
+                            $"Extended[{searchType.ToString()}] GIN optimization is not supported in production yet.");
+                    }
+            }
+        }
+
+        private void FindExtendedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+            CancellationToken cancellationToken)
+        {
+            var extendedSearchLegacy = new ExtendedSearchLegacy
+            {
+                GeneralDirectIndex = generalDirectIndex
             };
+
+            extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
     }
 
@@ -49,21 +63,34 @@ public abstract class ProductionSearchAlgorithmSelector
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
     {
-        // Legacy-алгоритм без GIN-индекса.
-        private readonly ReducedSearchLegacy _reducedSearchLegacy = new()
-        {
-            GeneralDirectIndex = generalDirectIndex
-        };
-
         /// <inheritdoc/>
-        public IReducedSearchProcessor GetSearchProcessor(ReducedSearchType searchType)
+        public void Find(ReducedSearchType searchType, TokenVector searchVector,
+            IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
         {
-            return searchType switch
+            switch (searchType)
             {
-                ReducedSearchType.Legacy => _reducedSearchLegacy,
-                _ => throw new NotSupportedException(
-                    $"Reduced[{searchType.ToString()}] GIN optimization is not supported in production yet.")
+                case ReducedSearchType.Legacy:
+                    {
+                        FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
+                        break;
+                    }
+                default:
+                    {
+                        throw new NotSupportedException(
+                            $"Reduced[{searchType.ToString()}] GIN optimization is not supported in production yet.");
+                    }
+            }
+        }
+
+        private void FindReducedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+            CancellationToken cancellationToken)
+        {
+            var reducedSearchLegacy = new ReducedSearchLegacy
+            {
+                GeneralDirectIndex = generalDirectIndex
             };
+
+            reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
         }
     }
 
@@ -71,7 +98,7 @@ public abstract class ProductionSearchAlgorithmSelector
     public void AddVector(DocumentId documentId, TokenVector tokenVector) { }
 
     // Необходимость пустого метода диктуется контрактом.
-    public void UpdateVector(DocumentId documentId, TokenVector tokenVector, TokenVector oldTokenVector) { }
+    public void UpdateVector(DocumentId documentId, TokenVector tokenVector) { }
 
     // Необходимость пустого метода диктуется контрактом.
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector) { }

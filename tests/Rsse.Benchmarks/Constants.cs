@@ -25,7 +25,7 @@ public abstract class Constants
     /// <summary>
     /// Измеряемый алгоритм токенизатора.
     /// </summary>
-    internal const ReducedSearchType TokenizerReducedSearchType = ReducedSearchType.GinFast;
+    internal const ReducedSearchType TokenizerReducedSearchType = ReducedSearchType.GinArrayDirectFilterLs;
 
     /// <summary>
     /// Константа с поисковым запросом.

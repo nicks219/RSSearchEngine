@@ -15,67 +15,31 @@ public enum ReducedSearchType
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinOptimized"/>
-    /// </summary>
-    GinOptimized = 1,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinOptimizedFilter"/>
-    /// </summary>
-    GinOptimizedFilter = 2,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinFast"/>
-    /// </summary>
-    GinFast = 3,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinFastFilter"/>
-    /// </summary>
-    GinFastFilter = 4,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMerge"/>
-    /// </summary>
-    GinMerge = 5,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinMergeFilter"/>
-    /// </summary>
-    GinMergeFilter = 6,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirect"/>
     /// </summary>
-    GinArrayDirect = 7,
+    GinArrayDirect = 1,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayMergeFilter"/>
     /// </summary>
-    GinArrayMergeFilter = 8,
+    GinArrayMergeFilter = 2,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterLs = 9,
+    GinArrayDirectFilterLs = 3,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterBs = 10,
+    GinArrayDirectFilterBs = 4,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterHs = 11
+    GinArrayDirectFilterHs = 5
 }

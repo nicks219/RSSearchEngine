@@ -10,7 +10,7 @@ namespace RsseEngine.Algorithms;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта сокращенной метрики.
 /// </summary>
-public sealed class ReducedSearchLegacy : IReducedSearchProcessor
+public readonly ref struct ReducedSearchLegacy : IReducedSearchProcessor
 {
     /// <summary>
     /// Общий индекс: идентификатор-вектор.

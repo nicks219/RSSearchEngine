@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Dto.Offsets;
 using RsseEngine.Indexes;
@@ -30,7 +29,7 @@ public sealed class GinRelevanceFilter
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
     public bool FindFilteredDocumentsExtended(
-        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        InvertedIndex invertedIndex, TokenVector searchVector,
         List<InternalDocumentIdList> idsFromGin, List<InternalDocumentIdList> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount)
     {
@@ -45,42 +44,11 @@ public sealed class GinRelevanceFilter
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
     /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
-    /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
-    public bool FindFilteredDocumentsReduced<TDocumentIdCollection>(
-        InvertedIndex<TDocumentIdCollection> invertedIndex, TokenVector searchVector,
-        List<TDocumentIdCollection> sortedIds, out int filteredTokensCount)
-        where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
-    {
-        return FindFilteredDocumentsReducedInternal(invertedIndex, searchVector, sortedIds, out filteredTokensCount);
-    }
-
-    /// <summary>
-    /// Найти идентификаторы документов, обеспечивающие релевантность.
-    /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
-    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
-    /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
-    public bool FindFilteredDocumentsReducedMerge(
-        InvertedIndex<DocumentIdList> invertedIndex, TokenVector searchVector,
-        List<DocumentIdList> sortedIds, out int filteredTokensCount)
-    {
-        return FindFilteredDocumentsReducedInternal(invertedIndex, searchVector, sortedIds, out filteredTokensCount);
-    }
-
-    /// <summary>
-    /// Найти идентификаторы документов, обеспечивающие релевантность.
-    /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
-    /// <param name="searchVector">Вектор с поисковым запросом.</param>
-    /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
-    /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <param name="emptyCount">Количество пустых векторов.</param>
     /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
     public bool FindFilteredDocumentsReducedMerge(
-        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        InvertedIndex invertedIndex, TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount, out int emptyCount)
     {
@@ -135,7 +103,7 @@ public sealed class GinRelevanceFilter
     }
 
     private bool FindFilteredDocumentsExtendedInternal(
-        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        InvertedIndex invertedIndex, TokenVector searchVector,
         List<InternalDocumentIdList> idsFromGin, List<InternalDocumentIdList> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount)
     {
@@ -172,42 +140,8 @@ public sealed class GinRelevanceFilter
         return true;
     }
 
-    private bool FindFilteredDocumentsReducedInternal<TDocumentIdCollection>(
-        InvertedIndex<TDocumentIdCollection> invertedIndex, TokenVector searchVector,
-        List<TDocumentIdCollection> sortedIds, out int filteredTokensCount)
-        where TDocumentIdCollection : struct, IDocumentIdCollection<TDocumentIdCollection>
-    {
-        var minRelevancyCount = CalculateMinRelevancyCount(searchVector);
-
-        var emptyCount = 0;
-
-        foreach (var token in searchVector)
-        {
-            if (invertedIndex.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
-            {
-                sortedIds.Add(documentIds);
-            }
-            else
-            {
-                emptyCount++;
-
-                if (emptyCount > searchVector.Count - minRelevancyCount)
-                {
-                    filteredTokensCount = 0;
-                    return false;
-                }
-            }
-        }
-
-        sortedIds.Sort((left, right) => left.Count.CompareTo(right.Count));
-
-        CalculateFilteredTokensCount(searchVector, minRelevancyCount, emptyCount, out filteredTokensCount);
-
-        return true;
-    }
-
     private bool FindFilteredDocumentsReducedInternal(
-        ArrayDirectOffsetIndex invertedIndex, TokenVector searchVector,
+        InvertedIndex invertedIndex, TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount, out int emptyCount)
     {

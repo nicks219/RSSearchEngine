@@ -10,7 +10,7 @@ namespace RsseEngine.Algorithms;
 /// <summary>
 /// Класс с "оригинальным" алгоритмом подсчёта расширенной метрики.
 /// </summary>
-public sealed class ExtendedSearchLegacy : IExtendedSearchProcessor
+public readonly ref struct ExtendedSearchLegacy : IExtendedSearchProcessor
 {
     /// <summary>
     /// Общий индекс: идентификатор-вектор.

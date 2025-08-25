@@ -28,6 +28,14 @@ public readonly struct DocumentId(int documentId) : IDocumentId<DocumentId>
 
     public static bool operator !=(DocumentId left, DocumentId right) => !(left == right);
 
+    public static bool operator >(DocumentId left, DocumentId right) => left._documentId > right._documentId;
+
+    public static bool operator <(DocumentId left, DocumentId right) => left._documentId < right._documentId;
+
+    public static bool operator >=(DocumentId left, DocumentId right) => left._documentId >= right._documentId;
+
+    public static bool operator <=(DocumentId left, DocumentId right) => left._documentId <= right._documentId;
+
     public int CompareTo(DocumentId other)
     {
         return _documentId.CompareTo(other._documentId);

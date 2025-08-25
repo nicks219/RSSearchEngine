@@ -49,11 +49,10 @@ public sealed class DirectIndex
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenLine">Вектора, соответствующие новому документу.</param>
-    /// <param name="oldTokenLine">Вектора, соответствующие обновляемому документу.</param>
     /// <returns>Признак успеха операции.</returns>
-    public bool TryUpdate(DocumentId documentId, TokenLine tokenLine, [NotNullWhen(true)] out TokenLine? oldTokenLine)
+    public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_directIndex.TryGetValue(documentId, out oldTokenLine))
+        if (!_directIndex.TryGetValue(documentId, out var oldTokenLine))
         {
             return false;
         }

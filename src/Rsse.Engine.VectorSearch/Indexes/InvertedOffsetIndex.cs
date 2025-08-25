@@ -15,11 +15,11 @@ public sealed class InvertedOffsetIndex
     /// </summary>
     private readonly Dictionary<Token, DocumentIdsWithOffsets> _invertedIndex = new();
 
-    private readonly Dictionary<InternalDocumentId, ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
+    private readonly List<ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
 
     private readonly Dictionary<DocumentId, InternalDocumentId> _documentIdToInternalDocumentId = new();
 
-    private int _documentIdCounter;
+    private readonly List<InternalDocumentId> _deletedDocuments = new();
 
     /// <summary>
     /// Добавить в индекс вектор токенов и идентификатор соответствующей ему заметки
@@ -27,16 +27,26 @@ public sealed class InvertedOffsetIndex
     /// </summary>
     /// <param name="documentId">Идентификатор заметки.</param>
     /// <param name="tokenVector">Вектор токенов.</param>
-    public void AddOrUpdateVector(DocumentId documentId, TokenVector tokenVector)
+    /// <returns>Признак добавлен ли документ. Если false - то партиция полностью заполнена.</returns>
+    public bool AddOrUpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        var internalDocumentId = new InternalDocumentId(_documentIdCounter++);
+        var counter = _internalDocumentIdToDocumentId.Count;
+
+        if (counter > ushort.MaxValue)
+        {
+            return false;
+        }
+
+        var internalDocumentId = new InternalDocumentId(counter);
 
         RemoveVector(documentId);
 
         _documentIdToInternalDocumentId[documentId] = internalDocumentId;
-        _internalDocumentIdToDocumentId[internalDocumentId] = new ExternalDocumentIdWithSize(documentId, tokenVector.Count);
+        _internalDocumentIdToDocumentId.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));
 
         AppendTokenVector(internalDocumentId, tokenVector);
+
+        return true;
     }
 
     /// <summary>
@@ -47,7 +57,7 @@ public sealed class InvertedOffsetIndex
     {
         if (_documentIdToInternalDocumentId.Remove(documentId, out var oldInternalDocumentId))
         {
-            _internalDocumentIdToDocumentId.Remove(oldInternalDocumentId);
+            _deletedDocuments.Add(oldInternalDocumentId);
         }
     }
 
@@ -59,7 +69,7 @@ public sealed class InvertedOffsetIndex
         _invertedIndex.Clear();
         _internalDocumentIdToDocumentId.Clear();
         _documentIdToInternalDocumentId.Clear();
-        _documentIdCounter = 0;
+        _deletedDocuments.Clear();
     }
 
     /// <summary>
@@ -80,9 +90,16 @@ public sealed class InvertedOffsetIndex
         return true;
     }
 
-    public bool TryGetExternalDocumentId(InternalDocumentId internalDocumentId, out ExternalDocumentIdWithSize externalDocument)
+    public bool TryGetExternalDocumentId(InternalDocumentId documentId, out ExternalDocumentIdWithSize externalDocument)
     {
-        return _internalDocumentIdToDocumentId.TryGetValue(internalDocumentId, out externalDocument);
+        if (_deletedDocuments.Contains(documentId))
+        {
+            externalDocument = default;
+            return false;
+        }
+
+        externalDocument = _internalDocumentIdToDocumentId[documentId.Value];
+        return true;
     }
 
     private void AppendTokenVector(InternalDocumentId internalDocumentId, TokenVector tokenVector)

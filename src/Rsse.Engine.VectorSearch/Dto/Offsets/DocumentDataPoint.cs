@@ -100,6 +100,40 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindTokenCountLinearScan(int key, out int count)
+    {
+        int[] data = _data;
+
+        if (TryGetValueLinearScan(data, key, out int valueLength, out int valueOffset))
+        {
+            count = valueLength;
+            return true;
+        }
+        else
+        {
+            count = 0;
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryFindTokenCountBinarySearch(int key, out int count)
+    {
+        int[] data = _data;
+
+        if (TryGetValueBinarySearch(data, key, out int valueLength, out int valueOffset))
+        {
+            count = valueLength;
+            return true;
+        }
+        else
+        {
+            count = 0;
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryGetValueLinearScan(int[] data, int key, out int valueLength, out int valueOffset)
     {
         DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);

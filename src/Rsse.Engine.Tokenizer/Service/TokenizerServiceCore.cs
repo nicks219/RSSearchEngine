@@ -46,7 +46,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         _metricsCalculatorFactory = new MetricsCalculatorFactory(metricsCalculatorType);
-        _searchEngineManager = new SearchEngineManager(enableTempStoragePool, true);
+        _searchEngineManager = new SearchEngineManager(enableTempStoragePool);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
     }

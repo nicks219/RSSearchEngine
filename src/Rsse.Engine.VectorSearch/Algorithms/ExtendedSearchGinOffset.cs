@@ -15,7 +15,7 @@ namespace RsseEngine.Algorithms;
 /// Класс с алгоритмом подсчёта расширенной метрики.
 /// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
 /// </summary>
-public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
+public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
 {
     public required TempStoragePool TempStoragePool { private get; init; }
 
@@ -105,7 +105,7 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
             MergeAlgorithm.FindMin(enumerators, out var minI0, out var docId0, out var docId1);
 
         START:
-            if (docId0.Value < docId1.Value)
+            if (docId0 < docId1)
             {
                 const int metric = 1;
 
@@ -137,7 +137,7 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
 
                     var documentId1 = enumerator.Current;
 
-                    if (documentId1.Value < documentId.Value)
+                    if (documentId1 < documentId)
                     {
                         if (!enumerator.MoveNextBinarySearch(documentId))
                         {
