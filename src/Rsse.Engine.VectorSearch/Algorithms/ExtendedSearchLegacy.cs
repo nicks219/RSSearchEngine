@@ -29,5 +29,7 @@ public readonly ref struct ExtendedSearchLegacy : IExtendedSearchProcessor
         {
             metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
         }
+
+        metricsCalculator.Limit();
     }
 }

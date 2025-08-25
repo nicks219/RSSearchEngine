@@ -97,4 +97,9 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     {
         ContinueSearching = true;
     }
+
+    /// <inheritdoc/>
+    public void Limit(int _)
+    {
+    }
 }

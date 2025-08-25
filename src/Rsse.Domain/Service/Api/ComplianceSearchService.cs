@@ -11,9 +11,14 @@ namespace Rsse.Domain.Service.Api;
 public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
 {
     /// <summary>
-    /// Порог актуального значения индекса. Низкий вес не стоит учитывать, если результатов много.
+    /// Количество элементов, после которого произойдёт отсеивание по пороговому значению релевантности.
     /// </summary>
-    private const double Threshold = 0.1D;
+    public const int PageSizeThreshold = 10;
+
+    /// <summary>
+    /// Порог актуального значения релевантности, ниже которого результаты не будут учитываться, если их много.
+    /// </summary>
+    private const double RelevanceThreshold = 0.1D;
 
     /// <summary>
     /// Вычислить индексы соответствия заметок поисковому запросу.
@@ -38,10 +43,10 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
                 {
                     return new Dictionary<int, double>();
                 }
-            case > 10:
+            case > PageSizeThreshold:
                 {
                     return searchIndexes
-                        .Where(kv => kv.Value > Threshold)
+                        .Where(kv => kv.Value > RelevanceThreshold)
                         .OrderByDescending(x => x.Value)
                         .ToDictionary(x => x.Key, x => x.Value);
                 }

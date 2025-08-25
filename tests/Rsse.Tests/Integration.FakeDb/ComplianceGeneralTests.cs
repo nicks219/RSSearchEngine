@@ -99,14 +99,15 @@ public class ComplianceGeneralTests
     public static void ClassCleanup() => _factory?.Dispose();
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceGeneralTestData;
+    public static IEnumerable<object?[]> ComplianceApiTestData => TestData.ComplianceApiTestData;
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> TokenizerTestData => TestData.ComplianceSeparateTestData;
+    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
 
+    // поисковые запросы осуществляются через контроллер
     [TestMethod]
-    [DynamicData(nameof(ComplianceTestData))]
-    public async Task ComplianceRequest_ShouldReturn_ExpectedMetrics(string request, string expected)
+    [DynamicData(nameof(ComplianceApiTestData))]
+    public async Task ComplianceRequest_ShouldReturn_ExpectedMetrics_ApiTest(string request, string expected)
     {
         foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
@@ -132,9 +133,10 @@ public class ComplianceGeneralTests
         }
     }
 
+    // поисковые запросы осуществляются напрямую к функционалу токенизатора
     [TestMethod]
-    [DynamicData(nameof(TokenizerTestData))]
-    public void ComplianceSeparateRequests_ShouldReturn_ExpectedMetrics(string request, string expected)
+    [DynamicData(nameof(ComplianceUnitTestData))]
+    public void ComplianceSeparateRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected)
     {
         var options = new JsonSerializerOptions
         {

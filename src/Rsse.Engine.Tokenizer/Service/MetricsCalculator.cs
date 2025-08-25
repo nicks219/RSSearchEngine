@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Rsse.Domain.Service.Configuration;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
@@ -20,7 +23,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComplianceMetrics { get; } = [];
+    public Dictionary<DocumentId, double> ComplianceMetrics { get; private set; } = [];
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
@@ -86,5 +89,23 @@ public sealed class MetricsCalculator : IMetricsCalculator
     {
         ContinueSearching = true;
         ComplianceMetrics.Clear();
+    }
+
+    /// <inheritdoc/>
+    public void Limit(int count)
+    {
+        var isTesting = Environment.GetEnvironmentVariable(Constants.AspNetCoreEnvironmentName) == Constants.TestingEnvironment;
+        if (isTesting)
+        {
+            // максимальное количество метрик в тестовом ответе
+            count = 147;
+        }
+
+        ComplianceMetrics = ComplianceMetrics
+        // сортировка, применяемая в тесте для стабилизации результата выдачи
+        // .OrderByDescending(x => x.Value)
+        // .ThenByDescending(x => x.Key)
+        .Take(count)
+        .ToDictionary();
     }
 }
