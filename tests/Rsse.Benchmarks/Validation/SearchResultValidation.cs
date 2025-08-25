@@ -190,7 +190,7 @@ public class SearchResultValidation
     private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataOnceProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
-        var tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolAllocate,
+        var tokenizer = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
             false, extendedSearchType, reducedSearchType);
 
         var result = await tokenizer.InitializeAsync(dataProvider, CancellationToken.None);

@@ -6,21 +6,26 @@ using RsseEngine.Indexes;
 namespace RsseEngine.Service;
 
 /// <summary>
-/// Функционал подсчёта метрик релевантности для результатов поискового запроса.
+/// Фиктивный функционал подсчета метрик релевантности, не аллоцирует коллекцию с метриками.
 /// </summary>
-public sealed class MetricsCalculator : IMetricsCalculator
+internal sealed class NullMetricsCalculator : IMetricsCalculator
 {
-    // Коэффициент extended поиска: 0.8D
-    internal const double ExtendedCoefficient = 0.8D;
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public DocumentId DocumentId { get; private set; }
 
-    // Коэффициент reduced поиска: 0.4D
-    internal const double ReducedCoefficient = 0.6D; // 0.6 .. 0.75
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public double Metric { get; private set; }
 
     /// <inheritdoc/>
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComplianceMetrics { get; } = [];
+    public Dictionary<DocumentId, double> ComplianceMetrics { get; } = new()
+    {
+        {
+            new DocumentId(1), 0
+        }
+    };
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
@@ -30,16 +35,18 @@ public sealed class MetricsCalculator : IMetricsCalculator
         if (comparisonScore == searchVector.Count)
         {
             ContinueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (1000D / extendedTargetVectorSize));
+            DocumentId = documentId;
+            Metric = comparisonScore * (1000D / extendedTargetVectorSize);
             return;
         }
 
         // II. extended% совпадение
-        if (comparisonScore >= searchVector.Count * ExtendedCoefficient)
+        if (comparisonScore >= searchVector.Count * MetricsCalculator.ExtendedCoefficient)
         {
+            DocumentId = documentId;
             // todo: можно так оценить
             // continueSearching = false;
-            ComplianceMetrics.Add(documentId, comparisonScore * (100D / extendedTargetVectorSize));
+            Metric = comparisonScore * (100D / extendedTargetVectorSize);
         }
     }
 
@@ -50,14 +57,16 @@ public sealed class MetricsCalculator : IMetricsCalculator
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)
         {
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVectorSize));
+            DocumentId = documentId;
+            Metric = comparisonScore * (10D / reducedTargetVectorSize);
             return;
         }
 
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-        if (comparisonScore >= searchVector.Count * ReducedCoefficient)
+        if (comparisonScore >= searchVector.Count * MetricsCalculator.ReducedCoefficient)
         {
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVectorSize));
+            DocumentId = documentId;
+            Metric = comparisonScore * (1D / reducedTargetVectorSize);
         }
     }
 
@@ -69,15 +78,17 @@ public sealed class MetricsCalculator : IMetricsCalculator
         if (comparisonScore == searchVector.Count)
         {
             var reducedTargetVector = directIndex[documentId].Reduced;
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (10D / reducedTargetVector.Count));
+            DocumentId = documentId;
+            Metric = comparisonScore * (10D / reducedTargetVector.Count);
             return;
         }
 
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
-        if (comparisonScore >= searchVector.Count * ReducedCoefficient)
+        if (comparisonScore >= searchVector.Count * MetricsCalculator.ReducedCoefficient)
         {
             var reducedTargetVector = directIndex[documentId].Reduced;
-            ComplianceMetrics.TryAdd(documentId, comparisonScore * (1D / reducedTargetVector.Count));
+            DocumentId = documentId;
+            Metric = comparisonScore * (1D / reducedTargetVector.Count);
         }
     }
 
@@ -85,6 +96,5 @@ public sealed class MetricsCalculator : IMetricsCalculator
     public void Clear()
     {
         ContinueSearching = true;
-        ComplianceMetrics.Clear();
     }
 }

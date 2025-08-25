@@ -234,47 +234,47 @@ public sealed class ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
         switch (PositionSearchType)
         {
             case PositionSearchType.LinearScan:
-            {
-                var position = -1;
-                var metric = 0;
-
-                for (var i = sIndex; i < searchVector.Count; i++)
                 {
-                    var token = searchVector.ElementAt(i);
+                    var position = -1;
+                    var metric = 0;
 
-                    if (offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
+                    for (var i = sIndex; i < searchVector.Count; i++)
                     {
-                        metric++;
+                        var token = searchVector.ElementAt(i);
+
+                        if (offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
+                        {
+                            metric++;
+                        }
                     }
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
                 }
-
-                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
-
-                break;
-            }
             case PositionSearchType.BinarySearch:
-            {
-                var position = -1;
-                var metric = 0;
-
-                for (var i = sIndex; i < searchVector.Count; i++)
                 {
-                    var token = searchVector.ElementAt(i);
+                    var position = -1;
+                    var metric = 0;
 
-                    if (offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
+                    for (var i = sIndex; i < searchVector.Count; i++)
                     {
-                        metric++;
+                        var token = searchVector.ElementAt(i);
+
+                        if (offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
+                        {
+                            metric++;
+                        }
                     }
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
                 }
-
-                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
-
-                break;
-            }
             default:
-            {
-                throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
-            }
+                {
+                    throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
+                }
         }
     }
 

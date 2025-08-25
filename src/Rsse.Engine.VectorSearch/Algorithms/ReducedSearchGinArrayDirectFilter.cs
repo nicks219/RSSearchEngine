@@ -139,63 +139,63 @@ public sealed class ReducedSearchGinArrayDirectFilter : IReducedSearchProcessor
             switch (_positionSearchType)
             {
                 case PositionSearchType.LinearScan:
-                {
-                    var empty = _emptyCount;
-
-                    for (var i = _filteredTokensCount; i < _sortedIds.Count; i++)
                     {
-                        var token = _sortedIds[i].Token;
+                        var empty = _emptyCount;
 
-                        if (!offsetTokenVector.ContainsKeyLinearScan(token))
+                        for (var i = _filteredTokensCount; i < _sortedIds.Count; i++)
                         {
-                            empty++;
+                            var token = _sortedIds[i].Token;
 
-                            if (empty > _searchVector.Count - _minRelevancyCount)
+                            if (!offsetTokenVector.ContainsKeyLinearScan(token))
                             {
-                                return;
+                                empty++;
+
+                                if (empty > _searchVector.Count - _minRelevancyCount)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                metric++;
                             }
                         }
-                        else
-                        {
-                            metric++;
-                        }
+
+                        _metricsCalculator.AppendReducedMetric(metric, _searchVector, externalDocument);
+
+                        break;
                     }
-
-                    _metricsCalculator.AppendReducedMetric(metric, _searchVector, externalDocument);
-
-                    break;
-                }
                 case PositionSearchType.BinarySearch:
-                {
-                    var empty = _emptyCount;
-
-                    for (var i = _filteredTokensCount; i < _sortedIds.Count; i++)
                     {
-                        var token = _sortedIds[i].Token;
+                        var empty = _emptyCount;
 
-                        if (!offsetTokenVector.ContainsKeyBinarySearch(token))
+                        for (var i = _filteredTokensCount; i < _sortedIds.Count; i++)
                         {
-                            empty++;
+                            var token = _sortedIds[i].Token;
 
-                            if (empty > _searchVector.Count - _minRelevancyCount)
+                            if (!offsetTokenVector.ContainsKeyBinarySearch(token))
                             {
-                                return;
+                                empty++;
+
+                                if (empty > _searchVector.Count - _minRelevancyCount)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                metric++;
                             }
                         }
-                        else
-                        {
-                            metric++;
-                        }
+
+                        _metricsCalculator.AppendReducedMetric(metric, _searchVector, externalDocument);
+
+                        break;
                     }
-
-                    _metricsCalculator.AppendReducedMetric(metric, _searchVector, externalDocument);
-
-                    break;
-                }
                 default:
-                {
-                    throw new NotSupportedException($"PositionSearchType {_positionSearchType} not supported.");
-                }
+                    {
+                        throw new NotSupportedException($"PositionSearchType {_positionSearchType} not supported.");
+                    }
             }
         }
     }

@@ -100,7 +100,7 @@ public class StQueryBenchmarkReduced : IBenchmarkRunner
     {
         var counter = 0;
 
-        for (;;)
+        for (; ; )
         {
             for (var i = 0; i < SearchQueries.Count; i++)
             {
@@ -152,7 +152,7 @@ public class StQueryBenchmarkReduced : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(StQueryBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(

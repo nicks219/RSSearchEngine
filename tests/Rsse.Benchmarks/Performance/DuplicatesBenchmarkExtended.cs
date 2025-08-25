@@ -101,7 +101,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(

@@ -37,7 +37,7 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
-        _tokenizerServiceCore = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolAllocate,
+        _tokenizerServiceCore = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
             false, extendedSearchType, reducedSearchType);
     }
 

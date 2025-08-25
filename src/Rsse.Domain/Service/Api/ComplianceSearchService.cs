@@ -35,22 +35,22 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
         switch (searchIndexes.Count)
         {
             case 0:
-            {
-                return new Dictionary<int, double>();
-            }
+                {
+                    return new Dictionary<int, double>();
+                }
             case > 10:
-            {
-                return searchIndexes
-                    .Where(kv => kv.Value > Threshold)
-                    .OrderByDescending(x => x.Value)
-                    .ToDictionary(x => x.Key, x => x.Value);
-            }
+                {
+                    return searchIndexes
+                        .Where(kv => kv.Value > Threshold)
+                        .OrderByDescending(x => x.Value)
+                        .ToDictionary(x => x.Key, x => x.Value);
+                }
             default:
-            {
-                return searchIndexes
-                    .OrderByDescending(x => x.Value)
-                    .ToDictionary(x => x.Key, x => x.Value);
-            }
+                {
+                    return searchIndexes
+                        .OrderByDescending(x => x.Value)
+                        .ToDictionary(x => x.Key, x => x.Value);
+                }
         }
     }
 }

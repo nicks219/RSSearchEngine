@@ -214,57 +214,57 @@ public sealed class ExtendedSearchGinArrayDirectFilter : IExtendedSearchProcesso
         switch (PositionSearchType)
         {
             case PositionSearchType.LinearScan:
-            {
-                var position = -1;
-                var empty = 0;
-
-                foreach (var token in searchVector)
                 {
-                    if (!offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
-                    {
-                        empty++;
+                    var position = -1;
+                    var empty = 0;
 
-                        if (empty > searchVector.Count - minRelevancyCount)
+                    foreach (var token in searchVector)
+                    {
+                        if (!offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
                         {
-                            return;
+                            empty++;
+
+                            if (empty > searchVector.Count - minRelevancyCount)
+                            {
+                                return;
+                            }
                         }
                     }
+
+                    var metric = searchVector.Count - empty;
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
                 }
-
-                var metric = searchVector.Count - empty;
-
-                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
-
-                break;
-            }
             case PositionSearchType.BinarySearch:
-            {
-                var position = -1;
-                var empty = 0;
-
-                foreach (var token in searchVector)
                 {
-                    if (!offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
-                    {
-                        empty++;
+                    var position = -1;
+                    var empty = 0;
 
-                        if (empty > searchVector.Count - minRelevancyCount)
+                    foreach (var token in searchVector)
+                    {
+                        if (!offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
                         {
-                            return;
+                            empty++;
+
+                            if (empty > searchVector.Count - minRelevancyCount)
+                            {
+                                return;
+                            }
                         }
                     }
+
+                    var metric = searchVector.Count - empty;
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
                 }
-
-                var metric = searchVector.Count - empty;
-
-                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
-
-                break;
-            }
             default:
-            {
-                throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
-            }
+                {
+                    throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
+                }
         }
     }
 

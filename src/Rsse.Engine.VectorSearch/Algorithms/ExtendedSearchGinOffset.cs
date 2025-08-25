@@ -104,7 +104,7 @@ public sealed class ExtendedSearchGinOffset : IExtendedSearchProcessor
         {
             MergeAlgorithm.FindMin(enumerators, out var minI0, out var docId0, out var docId1);
 
-            START:
+        START:
             if (docId0.Value < docId1.Value)
             {
                 const int metric = 1;

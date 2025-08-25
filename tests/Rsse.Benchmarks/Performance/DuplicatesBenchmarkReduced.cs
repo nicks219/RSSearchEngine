@@ -107,7 +107,7 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(

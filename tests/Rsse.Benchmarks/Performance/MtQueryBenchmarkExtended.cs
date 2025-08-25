@@ -97,7 +97,7 @@ public class MtQueryBenchmarkExtended : IBenchmarkRunner
         _tasks.Clear();
         var counter = 0;
 
-        for (;;)
+        for (; ; )
         {
             for (var i = 0; i < SearchQueries.Count; i++)
             {
@@ -154,7 +154,7 @@ public class MtQueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(MtQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(

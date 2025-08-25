@@ -8,6 +8,7 @@ using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.SearchType;
 using RsseEngine.Selector;
+using RsseEngine.Tokenizer.Common;
 using RsseEngine.Tokenizer.Contracts;
 using RsseEngine.Tokenizer.Processor;
 
@@ -18,7 +19,7 @@ namespace RsseEngine.Service;
 /// </summary>
 public sealed class SearchEngineManager
 {
-    private readonly TempStoragePool _tokenizerTempStoragePool;
+    private readonly SimpleStoragePools _simpleStoragePools;
 
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
 
@@ -48,8 +49,7 @@ public sealed class SearchEngineManager
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
     public SearchEngineManager(bool enableTempStoragePool, bool useList)
     {
-        _tokenizerTempStoragePool = new TempStoragePool(true);
-        var tempStoragePool = new TempStoragePool(enableTempStoragePool);
+        _simpleStoragePools = new SimpleStoragePools();
 
         if (CheckIsProduction())
         {
@@ -61,6 +61,8 @@ public sealed class SearchEngineManager
         }
         else
         {
+            var tempStoragePool = new TempStoragePool(enableTempStoragePool);
+
             _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
                 tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
 
@@ -163,7 +165,7 @@ public sealed class SearchEngineManager
     public void FindExtended(ExtendedSearchType extendedSearchType, string text,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        var tokens = _tokenizerTempStoragePool.IntListsStorage.Get();
+        var tokens = _simpleStoragePools.ListPool.Get();
 
         try
         {
@@ -186,7 +188,7 @@ public sealed class SearchEngineManager
             // большие коллекции в пул не возвращаем
             if (tokens.Count < 1_000_000)
             {
-                _tokenizerTempStoragePool.IntListsStorage.Return(tokens);
+                _simpleStoragePools.ListPool.Return(tokens);
             }
         }
     }
@@ -201,30 +203,31 @@ public sealed class SearchEngineManager
     public void FindReduced(ReducedSearchType reducedSearchType, string text,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
-        var tokens = _tokenizerTempStoragePool.IntListsStorage.Get();
-        var set = _tokenizerTempStoragePool.IntSetsStorage.Get();
-        var tokensList = _tokenizerTempStoragePool.IntListsStorage.Get();
+        const int poolSizeThreshold = 1_000_000;
+        var textTokens = _simpleStoragePools.ListPool.Get();
+        var uniqueTokens = _simpleStoragePools.SetPool.Get();
+        var vectorTokens = _simpleStoragePools.ListPool.Get();
 
         try
         {
-            _reducedTokenizer.TokenizeText(tokens, text);
+            _reducedTokenizer.TokenizeText(textTokens, text);
 
-            if (tokens.Count == 0)
+            if (textTokens.Count == 0)
             {
                 // песни вида "123 456" не ищем, так как получим весь каталог
                 return;
             }
 
-            // убираем дубликаты слов для intersect - это меняет результаты поиска (тексты типа "казино казино казино")
-            foreach (var token in tokens)
+            // убираем дубликаты слов, это меняет результаты поиска (тексты типа "казино казино казино")
+            foreach (var token in textTokens)
             {
-                if (set.Add(token))
+                if (uniqueTokens.Add(token))
                 {
-                    tokensList.Add(token);
+                    vectorTokens.Add(token);
                 }
             }
 
-            var reducedSearchVector = new TokenVector(tokensList);
+            var reducedSearchVector = new TokenVector(vectorTokens);
 
             var searchProcessor = _reducedSearchAlgorithmSelector.GetSearchProcessor(reducedSearchType);
 
@@ -233,11 +236,11 @@ public sealed class SearchEngineManager
         finally
         {
             // большие коллекции в пул не возвращаем
-            if (tokens.Count < 1_000_000)
+            if (textTokens.Count < poolSizeThreshold)
             {
-                _tokenizerTempStoragePool.IntListsStorage.Return(tokensList);
-                _tokenizerTempStoragePool.IntSetsStorage.Return(set);
-                _tokenizerTempStoragePool.IntListsStorage.Return(tokens);
+                _simpleStoragePools.ListPool.Return(textTokens);
+                _simpleStoragePools.SetPool.Return(uniqueTokens);
+                _simpleStoragePools.ListPool.Return(vectorTokens);
             }
         }
     }
@@ -264,7 +267,7 @@ public sealed class SearchEngineManager
 
     private TokenVector TokenizeText(ITokenizerProcessor tokenizerProcessor, params string[] text)
     {
-        var tokensList = _tokenizerTempStoragePool.IntListsStorage.Get();
+        var tokensList = _simpleStoragePools.ListPool.Get();
 
         try
         {
@@ -273,7 +276,8 @@ public sealed class SearchEngineManager
             var tokens = new List<int>(tokensList.Count);
             CollectionsMarshal.SetCount(tokens, tokensList.Count);
 
-            tokensList.CopyTo(CollectionsMarshal.AsSpan(tokens));
+            var destination = CollectionsMarshal.AsSpan(tokens);
+            tokensList.CopyTo(destination);
 
             var tokenVector = new TokenVector(tokens);
 
@@ -281,7 +285,7 @@ public sealed class SearchEngineManager
         }
         finally
         {
-            _tokenizerTempStoragePool.IntListsStorage.Return(tokensList);
+            _simpleStoragePools.ListPool.Return(tokensList);
         }
     }
 

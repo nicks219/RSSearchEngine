@@ -25,49 +25,48 @@ public abstract class TokenizerProcessor
     protected abstract string ConsonantChain { get; }
 
     /// <summary>
-    /// Токенизировать текст в виде массива строк.
+    /// Токенизировать текст из массива строк.
     /// </summary>
-    /// <param name="tokens">Токенизированый текст.</param>
+    /// <param name="textTokens">Результат токенизации текста.</param>
     /// <param name="text">Текст в виде массива строк.</param>
-    public void TokenizeText(List<int> tokens, params Span<string> text)
+    public void TokenizeText(List<int> textTokens, params Span<string> text)
     {
         const int bufferSize = 128;
 
         Span<char> buffer = stackalloc char[bufferSize];
 
-        var separators = Separators.AsSpan();
+        ReadOnlySpan<char> separators = Separators.AsSpan();
         var consonantChain = ConsonantChain.AsSpan();
 
         var sequenceHashProcessor = new SequenceHashProcessor();
 
-        foreach (var word in text)
+        foreach (var textPart in text)
         {
-            var wordAsSpan = word.AsSpan();
+            var textPartAsSpan = textPart.AsSpan();
 
-            for (var i = 0; i < word.Length; i += bufferSize)
+            for (var sliceIndex = 0; sliceIndex < textPart.Length; sliceIndex += bufferSize)
             {
-                var count = wordAsSpan.Slice(i, Math.Min(bufferSize, word.Length - i))
+                // конвертируем в нижний регистр сразу кусок текста
+                var bufferLength = textPartAsSpan
+                    .Slice(sliceIndex, Math.Min(bufferSize, textPart.Length - sliceIndex))
                     .ToLower(buffer, CultureInfo.CurrentCulture);
 
-                for (var index = 0; index < count; index++)
+                // токенизируем слово
+                for (var bufferIndex = 0; bufferIndex < bufferLength; bufferIndex++)
                 {
-                    var symbol = buffer[index];
+                    var symbol = buffer[bufferIndex];
                     if (symbol == 'ё') symbol = 'е';
-
-                    if (separators.Contains(symbol))
-                    {
-                        if (sequenceHashProcessor.HasValue())
-                        {
-                            var hash = sequenceHashProcessor.GetHashAndReset();
-                            tokens.Add(hash);
-                        }
-
-                        continue;
-                    }
 
                     if (consonantChain.Contains(symbol))
                     {
                         sequenceHashProcessor.AddChar(symbol);
+                        continue;
+                    }
+
+                    if (separators.Contains(symbol) && sequenceHashProcessor.HasValue())
+                    {
+                        var hash = sequenceHashProcessor.GetHashAndReset();
+                        textTokens.Add(hash);
                     }
                 }
             }
@@ -75,7 +74,7 @@ public abstract class TokenizerProcessor
             if (sequenceHashProcessor.HasValue())
             {
                 var hash = sequenceHashProcessor.GetHashAndReset();
-                tokens.Add(hash);
+                textTokens.Add(hash);
             }
         }
     }

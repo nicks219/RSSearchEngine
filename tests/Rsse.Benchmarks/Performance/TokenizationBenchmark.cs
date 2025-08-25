@@ -76,44 +76,44 @@ public class TokenizationBenchmark
         switch (IndexType)
         {
             case IndexType.GeneralDirect:
-            {
-                _generalDirectIndex.Clear();
-                break;
-            }
+                {
+                    _generalDirectIndex.Clear();
+                    break;
+                }
             case IndexType.InvertedOffsetIndexExtended:
-            {
-                _invertedOffsetIndexExtended.Clear();
-                break;
-            }
+                {
+                    _invertedOffsetIndexExtended.Clear();
+                    break;
+                }
             case IndexType.ArrayDirectOffsetIndexExtended:
-            {
-                _arrayDirectOffsetIndexExtended.Clear();
-                break;
-            }
+                {
+                    _arrayDirectOffsetIndexExtended.Clear();
+                    break;
+                }
             case IndexType.ArrayDirectOffsetIndexHsExtended:
-            {
-                _arrayDirectOffsetIndexHsExtended.Clear();
-                break;
-            }
+                {
+                    _arrayDirectOffsetIndexHsExtended.Clear();
+                    break;
+                }
             case IndexType.InvertedIndexReduced:
-            {
-                _invertedIndexReduced.Clear();
-                break;
-            }
+                {
+                    _invertedIndexReduced.Clear();
+                    break;
+                }
             case IndexType.ArrayDirectOffsetIndexReduced:
-            {
-                _arrayDirectOffsetIndexReduced.Clear();
-                break;
-            }
+                {
+                    _arrayDirectOffsetIndexReduced.Clear();
+                    break;
+                }
             case IndexType.ArrayDirectOffsetIndexHsReduced:
-            {
-                _arrayDirectOffsetIndexHsReduced.Clear();
-                break;
-            }
+                {
+                    _arrayDirectOffsetIndexHsReduced.Clear();
+                    break;
+                }
             default:
-            {
-                throw new ArgumentOutOfRangeException(nameof(IndexType), IndexType, null);
-            }
+                {
+                    throw new ArgumentOutOfRangeException(nameof(IndexType), IndexType, null);
+                }
         }
 
         var notes = _fileDataMultipleProvider.GetDataAsync();
@@ -127,44 +127,44 @@ public class TokenizationBenchmark
             switch (IndexType)
             {
                 case IndexType.GeneralDirect:
-                {
-                    _generalDirectIndex.TryAdd(documentId, tokenLine);
-                    break;
-                }
+                    {
+                        _generalDirectIndex.TryAdd(documentId, tokenLine);
+                        break;
+                    }
                 case IndexType.InvertedOffsetIndexExtended:
-                {
-                    _invertedOffsetIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
-                    break;
-                }
+                    {
+                        _invertedOffsetIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        break;
+                    }
                 case IndexType.ArrayDirectOffsetIndexExtended:
-                {
-                    _arrayDirectOffsetIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
-                    break;
-                }
+                    {
+                        _arrayDirectOffsetIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        break;
+                    }
                 case IndexType.ArrayDirectOffsetIndexHsExtended:
-                {
-                    _arrayDirectOffsetIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
-                    break;
-                }
+                    {
+                        _arrayDirectOffsetIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        break;
+                    }
                 case IndexType.InvertedIndexReduced:
-                {
-                    _invertedIndexReduced.AddVector(documentId, tokenLine.Reduced);
-                    break;
-                }
+                    {
+                        _invertedIndexReduced.AddVector(documentId, tokenLine.Reduced);
+                        break;
+                    }
                 case IndexType.ArrayDirectOffsetIndexReduced:
-                {
-                    _arrayDirectOffsetIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
-                    break;
-                }
+                    {
+                        _arrayDirectOffsetIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        break;
+                    }
                 case IndexType.ArrayDirectOffsetIndexHsReduced:
-                {
-                    _arrayDirectOffsetIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
-                    break;
-                }
+                    {
+                        _arrayDirectOffsetIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        break;
+                    }
                 default:
-                {
-                    throw new ArgumentOutOfRangeException(nameof(IndexType), IndexType, null);
-                }
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(IndexType), IndexType, null);
+                    }
             }
         }
     }

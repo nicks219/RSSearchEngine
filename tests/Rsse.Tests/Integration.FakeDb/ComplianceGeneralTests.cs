@@ -203,7 +203,7 @@ public class ComplianceGeneralTests
 
                 // assert:
                 var actual = $"{extendedSerialized} {reducedSerialized}";
-                Console.WriteLine(actual);
+                // Console.WriteLine(actual);
                 actual
                     .Should()
                     .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");

@@ -94,7 +94,7 @@ public class StQueryBenchmarkExtended : IBenchmarkRunner
     {
         var counter = 0;
 
-        for (;;)
+        for (; ; )
         {
             for (var i = 0; i < SearchQueries.Count; i++)
             {
@@ -147,7 +147,7 @@ public class StQueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(StQueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(

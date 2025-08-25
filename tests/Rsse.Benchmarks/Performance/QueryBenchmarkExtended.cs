@@ -95,7 +95,7 @@ public class QueryBenchmarkExtended : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(QueryBenchmarkExtended)}] extended[{extendedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculator.MetricsCalculatorFactoryType.PoolNull,
+        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
             pool, extendedSearchType, ReducedSearchType.Legacy);
 
         Console.WriteLine(

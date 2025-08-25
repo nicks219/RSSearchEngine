@@ -21,7 +21,7 @@ namespace RsseEngine.Service;
 /// </summary>
 public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConfigurable
 {
-    private readonly MetricsCalculator.Factory _metricsCalculatorFactory;
+    private readonly MetricsCalculatorFactory _metricsCalculatorFactory;
     private TokenizerLock TokenizerLock { get; } = new();
     private readonly SearchEngineManager _searchEngineManager;
     private ExtendedSearchType _extendedSearchType;
@@ -35,17 +35,17 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
-    /// <param name="metricsCalculatorFactoryType">Тип фабрики для калькулятора метрик</param>
+    /// <param name="metricsCalculatorType">Тип фабрики для калькулятора метрик</param>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <param name="extendedSearchType">Тип оптимизации расширенного алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации сокращенного алгоритма поиска.</param>
     public TokenizerServiceCore(
-        MetricsCalculator.MetricsCalculatorFactoryType metricsCalculatorFactoryType,
+        MetricsCalculatorType metricsCalculatorType,
         bool enableTempStoragePool,
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
-        _metricsCalculatorFactory = new MetricsCalculator.Factory(metricsCalculatorFactoryType);
+        _metricsCalculatorFactory = new MetricsCalculatorFactory(metricsCalculatorType);
         _searchEngineManager = new SearchEngineManager(enableTempStoragePool, true);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
