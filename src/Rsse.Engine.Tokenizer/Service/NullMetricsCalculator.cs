@@ -100,9 +100,9 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public int SetLimit
+    public int Limit
     {
-        get { throw new NotSupportedException($"{nameof(SetLimit)} property getter is not supported"); }
-        set { throw new NotSupportedException($"{nameof(SetLimit)} property setter is not supported"); }
+        get { throw new NotSupportedException($"{nameof(Limit)} property getter is not supported"); }
+        set { throw new NotSupportedException($"{nameof(Limit)} property setter is not supported"); }
     }
 }

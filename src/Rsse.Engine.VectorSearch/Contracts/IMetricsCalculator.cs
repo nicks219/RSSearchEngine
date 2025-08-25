@@ -61,9 +61,9 @@ public interface IMetricsCalculator
     void LimitMetrics();
 
     /// <summary>
-    /// Установить количество элементов, которое должно оставаться в метрике.
-    /// По умолчанию оно равно <b>ComplianceSearchService.PageSizeThreshold + 1</b>.
+    /// Количество элементов, которое должно оставаться в метрике.
+    /// По умолчанию принимается значение <b>ComplianceSearchService.PageSizeThreshold + 1</b>.
     /// Размер на единичку больше позволит не ломать логику формирования ответа через api.
     /// </summary>
-    int SetLimit { set; }
+    int Limit { set; }
 }

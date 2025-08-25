@@ -125,7 +125,7 @@ public class ComplianceGeneralTests
                 var complianceResponse = await response.Content.ReadAsStringAsync(NoneToken);
 
                 // assert:
-                complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
+                complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes} '{complianceResponse}']");
             }
         }
     }
@@ -136,7 +136,7 @@ public class ComplianceGeneralTests
     // прокидываем коллекцию тк она должна принадлежать тесту
     public static IEnumerable<object?[]> ComplianceUnitTestLimitedData => TestData.ComplianceUnitTestLimitedData;
 
-    // поисковые запросы осуществляются напрямую к функционалу токенизатора
+    // поисковые запросы осуществляются напрямую к функционалу токенизатора, reduced и extended метрики оцениваются отдельно
     // без ограничения размера ответа для ComplianceUnitTestData (147 элементов это максимальный размер метрики) и с ограничением в 11 элементов для ComplianceUnitTestLimitedData
     [TestMethod]
     [DynamicData(nameof(ComplianceUnitTestData))]
@@ -167,7 +167,7 @@ public class ComplianceGeneralTests
                 // act:
                 List<KeyValuePair<DocumentId, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
-                extendedMetricsCalculator.SetLimit = limit;
+                extendedMetricsCalculator.Limit = limit;
 
                 try
                 {
@@ -187,7 +187,7 @@ public class ComplianceGeneralTests
 
                 List<KeyValuePair<DocumentId, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
-                reducedMetricsCalculator.SetLimit = limit;
+                reducedMetricsCalculator.Limit = limit;
 
                 try
                 {

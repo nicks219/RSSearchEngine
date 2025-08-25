@@ -163,10 +163,10 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
-        metricsCalculator.LimitMetrics();
 
         if (!metricsCalculator.ContinueSearching)
         {
+            metricsCalculator.LimitMetrics();
             return;
         }
 
