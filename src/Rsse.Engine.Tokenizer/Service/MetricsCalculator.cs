@@ -97,13 +97,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public void Limit(int limit)
+    public void LimitMetrics()
     {
-        // const int maxTestMetricCount = 147;
         ComplianceMetrics = ComplianceMetrics
             .OrderByDescending(kvp => kvp.Value)
             .ThenByDescending(kvp => kvp.Key)
-            .Take(limit)
+            .Take(Limit)
             .ToList();
     }
 
@@ -118,7 +117,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <summary>
-    /// Добавить метрику релевантности на документ только если метрика на данный документ не была добавлена ранее.
+    /// Добавить метрику релевантности на документ, только если метрика на данный документ не была добавлена ранее.
     /// </summary>
     /// <param name="metric">Добавляемая метрика.</param>
     private void TryAddMetric(KeyValuePair<DocumentId, double> metric)
@@ -144,6 +143,10 @@ public sealed class MetricsCalculator : IMetricsCalculator
         }
 
         // +1 чтобы не ломать логику ответа через api
-        Limit(ComplianceSearchService.PageSizeThreshold + 1);
+        LimitMetrics();
     }
+
+    /// <inheritdoc/>
+    // размер на единичку больше позволит не ломать логику формирования ответа через api
+    public int Limit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
 }

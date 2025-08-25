@@ -57,6 +57,10 @@ public interface IMetricsCalculator
     /// <summary>
     /// Ограничить количество элементов в метрике.
     /// </summary>
-    /// <param name="limit">Количество элементов, которое должно остаться в метрике.</param>
-    void Limit(int limit);
+    void LimitMetrics();
+
+    /// <summary>
+    /// Количество элементов, которое должно оставаться в метрике.
+    /// </summary>
+    int Limit { set; }
 }

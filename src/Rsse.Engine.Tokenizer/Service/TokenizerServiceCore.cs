@@ -163,7 +163,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
-        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
+        metricsCalculator.LimitMetrics();
 
         if (!metricsCalculator.ContinueSearching)
         {
@@ -171,7 +171,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         }
 
         _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
-        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
+        metricsCalculator.LimitMetrics();
     }
 
     /// <inheritdoc/>
@@ -179,7 +179,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindExtended(_extendedSearchType, text, metricsCalculator, cancellationToken);
-        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
+        metricsCalculator.LimitMetrics();
     }
 
     /// <inheritdoc/>
@@ -187,7 +187,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         CancellationToken cancellationToken)
     {
         _searchEngineManager.FindReduced(_reducedSearchType, text, metricsCalculator, cancellationToken);
-        metricsCalculator.Limit(ComplianceSearchService.PageSizeThreshold + 1);
+        metricsCalculator.LimitMetrics();
     }
 
     /// <summary>

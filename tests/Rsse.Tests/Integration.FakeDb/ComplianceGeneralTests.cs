@@ -131,12 +131,17 @@ public class ComplianceGeneralTests
     }
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestLimitedData;
+    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
 
-    // поисковые запросы осуществляются напрямую к функционалу токенизатора, без ограничения размера ответа
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> ComplianceUnitTestLimitedData => TestData.ComplianceUnitTestLimitedData;
+
+    // поисковые запросы осуществляются напрямую к функционалу токенизатора
+    // без ограничения размера ответа для ComplianceUnitTestData (147 элементов это максимальный размер метрики) и с ограничением в 11 элементов для ComplianceUnitTestLimitedData
     [TestMethod]
     [DynamicData(nameof(ComplianceUnitTestData))]
-    public void ComplianceRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected)
+    [DynamicData(nameof(ComplianceUnitTestLimitedData))]
+    public void ComplianceRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected, int limit)
     {
         var options = new JsonSerializerOptions
         {
@@ -162,6 +167,8 @@ public class ComplianceGeneralTests
                 // act:
                 List<KeyValuePair<DocumentId, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                extendedMetricsCalculator.Limit = limit;
+
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexExtended(request, extendedMetricsCalculator, NoneToken);
@@ -180,6 +187,8 @@ public class ComplianceGeneralTests
 
                 List<KeyValuePair<DocumentId, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                reducedMetricsCalculator.Limit = limit;
+
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexReduced(request, reducedMetricsCalculator, NoneToken);

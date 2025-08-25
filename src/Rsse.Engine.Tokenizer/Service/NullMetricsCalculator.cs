@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -94,7 +95,14 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public void Limit(int _)
+    public void LimitMetrics()
     {
+    }
+
+    /// <inheritdoc/>
+    public int Limit
+    {
+        get { throw new NotSupportedException($"{nameof(Limit)} property getter is not supported"); }
+        set { throw new NotSupportedException($"{nameof(Limit)} property setter is not supported"); }
     }
 }
