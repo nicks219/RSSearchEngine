@@ -167,7 +167,7 @@ public class ComplianceGeneralTests
                 // act:
                 List<KeyValuePair<DocumentId, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
-                extendedMetricsCalculator.Limit = limit;
+                extendedMetricsCalculator.SetLimit = limit;
 
                 try
                 {
@@ -187,7 +187,7 @@ public class ComplianceGeneralTests
 
                 List<KeyValuePair<DocumentId, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
-                reducedMetricsCalculator.Limit = limit;
+                reducedMetricsCalculator.SetLimit = limit;
 
                 try
                 {

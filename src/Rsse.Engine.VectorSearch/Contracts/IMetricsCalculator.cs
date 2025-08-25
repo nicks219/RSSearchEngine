@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rsse.Domain.Service.Api;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
 
@@ -60,7 +61,9 @@ public interface IMetricsCalculator
     void LimitMetrics();
 
     /// <summary>
-    /// Количество элементов, которое должно оставаться в метрике.
+    /// Установить количество элементов, которое должно оставаться в метрике.
+    /// По умолчанию оно равно <b>ComplianceSearchService.PageSizeThreshold + 1</b>.
+    /// Размер на единичку больше позволит не ломать логику формирования ответа через api.
     /// </summary>
-    int Limit { set; }
+    int SetLimit { set; }
 }

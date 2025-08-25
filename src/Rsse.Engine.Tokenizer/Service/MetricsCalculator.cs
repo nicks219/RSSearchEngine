@@ -102,7 +102,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
         ComplianceMetrics = ComplianceMetrics
             .OrderByDescending(kvp => kvp.Value)
             .ThenByDescending(kvp => kvp.Key)
-            .Take(Limit)
+            .Take(SetLimit)
             .ToList();
     }
 
@@ -147,6 +147,5 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    // размер на единичку больше позволит не ломать логику формирования ответа через api
-    public int Limit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
+    public int SetLimit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
 }
