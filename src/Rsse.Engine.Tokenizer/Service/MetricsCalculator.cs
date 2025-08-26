@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -30,18 +29,20 @@ public sealed class MetricsCalculator : IMetricsCalculator
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    // 1. финальный LimitMetrics вызывать в get, там же смержить два списка
-    public List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; private set; } = [];
+    public List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; } = [];
 
     /// <summary>
     /// Метрики релевантности для расширенного поиска.
     /// </summary>
-    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsExtended { get; set; } = [];
+    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsExtended { get; } = [];
 
     /// <summary>
     /// Метрики релевантности для нечеткого поиска.
     /// </summary>
-    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsReduced { get; set; } = [];
+    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsReduced { get; } = [];
+
+    /// <inheritdoc/>
+    public int Limit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
@@ -132,9 +133,6 @@ public sealed class MetricsCalculator : IMetricsCalculator
         MergeCollections(ComplianceMetricsExtended, ComplianceMetricsReduced);
     }
 
-    /// <inheritdoc/>
-    public int Limit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
-
     /// <summary>
     /// Отсортировать коллекцию по значению (метрике) и дополнительно по ключу (идентификатору документа).
     /// </summary>
@@ -154,7 +152,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <summary>
-    /// Ограничить размер коллекции до limit элементов.
+    /// Ограничить размер коллекции (до limit элементов).
     /// </summary>
     /// <param name="collection">Ограничиваемая коллекция.</param>
     private void LimitCollection(List<KeyValuePair<DocumentId, double>> collection)
@@ -194,13 +192,14 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
         while (hasNextExtended && hasNextReduced)
         {
-            if (enumeratorExtended.Current.Key == enumeratorReduced.Current.Key)
+            if (enumeratorExtended.Current.Key != enumeratorReduced.Current.Key)
             {
-                ComplianceMetrics.Add(enumeratorExtended.Current);
-                hasNextReduced = enumeratorReduced.MoveNext();
+                break;
             }
 
+            ComplianceMetrics.Add(enumeratorExtended.Current);
             hasNextExtended = enumeratorExtended.MoveNext();
+            hasNextReduced = enumeratorReduced.MoveNext();
         }
 
         while (hasNextExtended)
@@ -219,11 +218,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <summary>
-    /// Добавить метрику релевантности на документ.
+    /// Добавить расширенную метрику релевантности на документ.
     /// </summary>
     /// <param name="metric">Добавляемая метрика.</param>
     private void AddExtendedMetric(KeyValuePair<DocumentId, double> metric)
     {
+        // window должно быть больше Limit, иначе может получиться окно, которое не примет часть элементов
         var windowsSize = Limit * 2;
         if (metric.Value < _minThresholdExtended)
         {
@@ -242,7 +242,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <summary>
-    /// Добавить метрику релевантности на документ, только если метрика на данный документ не была добавлена ранее.
+    /// Добавить нечеткую метрику релевантности на документ.
     /// </summary>
     /// <param name="metric">Добавляемая метрика.</param>
     private void AddReducedMetric(KeyValuePair<DocumentId, double> metric)

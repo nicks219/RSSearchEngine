@@ -5,7 +5,6 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Exceptions;
-using Rsse.Domain.Service.Api;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
 using RsseEngine.Contracts;
