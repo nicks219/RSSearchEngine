@@ -130,7 +130,6 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         {
             _tokenizerServiceCore.ComputeComplianceIndices(text, metricsCalculator, cancellationToken);
 
-            // get ComplianceMetrics
             var indices = metricsCalculator.ComplianceMetrics
                 .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
                 .ToList();
