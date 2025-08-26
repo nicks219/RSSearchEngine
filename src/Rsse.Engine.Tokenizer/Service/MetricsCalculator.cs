@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -19,23 +20,28 @@ public sealed class MetricsCalculator : IMetricsCalculator
     // Коэффициент reduced поиска: 0.4D
     internal const double ReducedCoefficient = 0.6D; // 0.6 .. 0.75
 
+    // Минимальный порог для расширенной метрики.
+    private double _minThresholdExtended = double.MinValue;
+
+    // Минимальный порог для нечеткой метрики.
+    private double _minThresholdReduced = double.MinValue;
+
     /// <inheritdoc/>
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    // 0. заведи два листа - или три?
     // 1. финальный LimitMetrics вызывать в get, там же смержить два списка
     public List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; private set; } = [];
 
     /// <summary>
     /// Метрики релевантности для расширенного поиска.
     /// </summary>
-    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsExtended { get; set;} = [];
+    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsExtended { get; set; } = [];
 
     /// <summary>
     /// Метрики релевантности для нечеткого поиска.
     /// </summary>
-    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsReduced { get; set;} = [];
+    private List<KeyValuePair<DocumentId, double>> ComplianceMetricsReduced { get; set; } = [];
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
@@ -108,81 +114,77 @@ public sealed class MetricsCalculator : IMetricsCalculator
         ContinueSearching = true;
         ComplianceMetrics.Clear();
 
-
         ComplianceMetricsExtended.Clear();
         ComplianceMetricsReduced.Clear();
+        _minThresholdExtended = double.MinValue;
+        _minThresholdReduced = double.MinValue;
     }
 
     /// <inheritdoc/>
     public void LimitMetrics()
     {
-        // 2. использовать Sort на листе
-        /*ComplianceMetrics = ComplianceMetrics
-            .OrderByDescending(kvp => kvp.Value)
-            .ThenByDescending(kvp => kvp.Key)
-            .Take(Limit)
-            .ToList();*/
+        SortByValue(ComplianceMetricsExtended);
+        LimitCollection(ComplianceMetricsExtended);
 
-        /*ComplianceMetrics
-            .Sort((x, y) =>
-            {
-                var byValueDescending = y.Value.CompareTo(x.Value);
-                var thenByKeyDescending = byValueDescending != 0
-                    ? byValueDescending
-                    : y.Key.CompareTo(x.Key);
+        SortByValue(ComplianceMetricsReduced);
+        LimitCollection(ComplianceMetricsReduced);
 
-                return thenByKeyDescending;
-            });
-        ComplianceMetrics = ComplianceMetrics.Take(Limit).ToList();*/
-
-        // сливаем две метрики в одну
-        ComplianceMetricsExtended
-            .Sort((x, y) =>
-            {
-                var byValueDescending = y.Value.CompareTo(x.Value);
-                var thenByKeyDescending = byValueDescending != 0
-                    ? byValueDescending
-                    : y.Key.CompareTo(x.Key);
-
-                return thenByKeyDescending;
-            });
-        if (ComplianceMetricsExtended.Count > Limit)
-        {
-            CollectionsMarshal.SetCount(ComplianceMetricsExtended, Limit);
-            //ComplianceMetricsExtended = ComplianceMetricsExtended.Take(Limit).ToList();
-        }
-
-        ComplianceMetricsReduced
-            .Sort((x, y) =>
-            {
-                var byValueDescending = y.Value.CompareTo(x.Value);
-                var thenByKeyDescending = byValueDescending != 0
-                    ? byValueDescending
-                    : y.Key.CompareTo(x.Key);
-
-                return thenByKeyDescending;
-            });
-        if (ComplianceMetricsReduced.Count > Limit)
-        {
-            CollectionsMarshal.SetCount(ComplianceMetricsReduced, Limit);
-            //ComplianceMetricsReduced = ComplianceMetricsReduced.Take(Limit).ToList();
-        }
-
-        var asEnumerable = ComplianceMetricsExtended
-            .Concat(
-                ComplianceMetricsReduced.Where(x =>
-                    ComplianceMetricsExtended.All(f => f.Key != x.Key)));
-
-        // вариант ComplianceMetrics = .Take(Limit).ToList();
-        foreach (var kvp in asEnumerable)
-        {
-            ComplianceMetrics.Add(kvp);
-            //if (ComplianceMetrics.Count == Limit) break;
-        }
+        MergeCollections(ComplianceMetricsExtended, ComplianceMetricsReduced);
     }
 
     /// <inheritdoc/>
     public int Limit { private get; set; } = ComplianceSearchService.PageSizeThreshold + 1;
+
+    /// <summary>
+    /// Отсортировать коллекцию по значению (метрике) и дополнительно по ключу (идентификатору документа).
+    /// </summary>
+    /// <param name="collection">Коллекция для сортировки.</param>
+    private static void SortByValue(List<KeyValuePair<DocumentId, double>> collection)
+    {
+        collection
+            .Sort((x, y) =>
+            {
+                var byValueDescending = y.Value.CompareTo(x.Value);
+                var thenByKeyDescending = byValueDescending != 0
+                    ? byValueDescending
+                    : y.Key.CompareTo(x.Key);
+
+                return thenByKeyDescending;
+            });
+    }
+
+    /// <summary>
+    /// Ограничить размер коллекции до limit элементов.
+    /// </summary>
+    /// <param name="collection">Ограничиваемая коллекция.</param>
+    private void LimitCollection(List<KeyValuePair<DocumentId, double>> collection)
+    {
+        if (collection.Count > Limit)
+        {
+            CollectionsMarshal.SetCount(collection, Limit);
+        }
+    }
+
+    /// <summary>
+    /// Соединить две коллекции с метриками релевантности, приоритет отдается ключам в первой коллекции.
+    /// Результат помещается в ComplianceMetrics.
+    /// </summary>
+    /// <param name="collectionExtended">Первая коллекция, с расширенными метриками.</param>
+    /// <param name="collectionReduced">Вторая коллекция, с нечеткими метриками.</param>
+    private void MergeCollections(List<KeyValuePair<DocumentId, double>> collectionExtended,
+        List<KeyValuePair<DocumentId, double>> collectionReduced)
+    {
+        var asEnumerable = collectionExtended
+            .Concat(
+                collectionReduced.Where(x =>
+                    collectionExtended.All(f => f.Key != x.Key)));
+
+        foreach (var kvp in asEnumerable)
+        {
+            ComplianceMetrics.Add(kvp);
+            // if (ComplianceMetrics.Count == Limit) break;
+        }
+    }
 
     /// <summary>
     /// Добавить метрику релевантности на документ.
@@ -190,10 +192,21 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <param name="metric">Добавляемая метрика.</param>
     private void AddExtendedMetric(KeyValuePair<DocumentId, double> metric)
     {
-        ComplianceMetricsExtended.Add(metric);
+        var windowsSize = Limit * 2;
+        if (metric.Value < _minThresholdExtended)
+        {
+            return;
+        }
 
-        //ComplianceMetrics.Add(metric);
-        //TryResize();
+        ComplianceMetricsExtended.Add(metric);
+        if (ComplianceMetricsExtended.Count < windowsSize)
+        {
+            return;
+        }
+
+        SortByValue(ComplianceMetricsExtended);
+        LimitCollection(ComplianceMetricsExtended);
+        _minThresholdExtended = ComplianceMetricsExtended.Last().Value;
     }
 
     /// <summary>
@@ -202,52 +215,21 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <param name="metric">Добавляемая метрика.</param>
     private void AddReducedMetric(KeyValuePair<DocumentId, double> metric)
     {
-        ComplianceMetricsReduced.Add(metric);
-
-        //if (ComplianceMetrics.All(kvp => kvp.Key != metric.Key))
-        //{
-            //ComplianceMetrics.Add(metric);
-            //TryResize();
-        //}
-    }
-
-    /// <summary>
-    /// Ограничить количество элементов в метрике при достижении определенного порога.
-    /// </summary>
-    private void TryResize()
-    {
-        const int windowsSize = ComplianceSearchService.PageSizeThreshold * 2;
-        var currentCount = ComplianceMetrics.Count;
-
-        if (currentCount < windowsSize)
+        // window должно быть больше Limit, иначе может получиться окно, которое не примет часть элементов
+        var windowsSize = Limit * 2;
+        if (metric.Value < _minThresholdReduced)
         {
             return;
         }
 
-        LimitMetricsInternal();
-        // 3. после первой обрезки появится минимальный порог, ниже которого не надо вставлять
-    }
+        ComplianceMetricsReduced.Add(metric);
+        if (ComplianceMetricsReduced.Count < windowsSize)
+        {
+            return;
+        }
 
-    private void LimitMetricsInternal()
-    {
-        // 2. использовать Sort на листе
-        /*ComplianceMetrics = ComplianceMetrics
-            .OrderByDescending(kvp => kvp.Value)
-            .ThenByDescending(kvp => kvp.Key)
-            .Take(Limit)
-            .ToList();*/
-
-        /*ComplianceMetrics
-            .Sort((x, y) =>
-            {
-                var byValueDescending = y.Value.CompareTo(x.Value);
-                var thenByKeyDescending = byValueDescending != 0
-                    ? byValueDescending
-                    : y.Key.CompareTo(x.Key);
-
-                return thenByKeyDescending;
-            });
-
-        ComplianceMetrics = ComplianceMetrics.Take(Limit).ToList();*/
+        SortByValue(ComplianceMetricsReduced);
+        LimitCollection(ComplianceMetricsReduced);
+        _minThresholdReduced = ComplianceMetricsReduced.Last().Value;
     }
 }

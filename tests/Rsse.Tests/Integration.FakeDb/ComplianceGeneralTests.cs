@@ -213,7 +213,7 @@ public class ComplianceGeneralTests
                 // Console.WriteLine(actual);
                 actual
                     .Should()
-                    .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
+                    .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes} '{limit}']");
             }
         }
     }
