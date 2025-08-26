@@ -174,7 +174,8 @@ public sealed class MetricsCalculator : IMetricsCalculator
     private void MergeCollections(List<KeyValuePair<DocumentId, double>> collectionExtended,
         List<KeyValuePair<DocumentId, double>> collectionReduced)
     {
-        var asEnumerable = collectionExtended
+        /*
+         var asEnumerable = collectionExtended
             .Concat(
                 collectionReduced.Where(x =>
                     collectionExtended.All(f => f.Key != x.Key)));
@@ -184,6 +185,37 @@ public sealed class MetricsCalculator : IMetricsCalculator
             ComplianceMetrics.Add(kvp);
             // if (ComplianceMetrics.Count == Limit) break;
         }
+        */
+
+        var enumeratorExtended = collectionExtended.GetEnumerator();
+        var enumeratorReduced = collectionReduced.GetEnumerator();
+        var hasNextExtended = enumeratorExtended.MoveNext();
+        var hasNextReduced = enumeratorReduced.MoveNext();
+
+        while (hasNextExtended && hasNextReduced)
+        {
+            if (enumeratorExtended.Current.Key == enumeratorReduced.Current.Key)
+            {
+                ComplianceMetrics.Add(enumeratorExtended.Current);
+                hasNextReduced = enumeratorReduced.MoveNext();
+            }
+
+            hasNextExtended = enumeratorExtended.MoveNext();
+        }
+
+        while (hasNextExtended)
+        {
+            ComplianceMetrics.Add(enumeratorExtended.Current);
+            hasNextExtended = enumeratorExtended.MoveNext();
+        }
+
+        while (hasNextReduced)
+        {
+            ComplianceMetrics.Add(enumeratorReduced.Current);
+            hasNextReduced = enumeratorReduced.MoveNext();
+        }
+
+        LimitCollection(ComplianceMetrics);
     }
 
     /// <summary>
