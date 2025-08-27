@@ -23,12 +23,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <summary>
     /// Метрики релевантности для расширенного поиска.
     /// </summary>
-    private readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsExtended = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsExtended = [];
 
     /// <summary>
     /// Метрики релевантности для нечеткого поиска.
     /// </summary>
-    private readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsReduced = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsReduced = [];
 
     /// <summary>
     /// Общая метрика релевантности.
@@ -179,7 +179,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
         START:
         if (enumeratorExtended.Current.Key < enumeratorReduced.Current.Key)
         {
-            // TODO нужно написать тесты что бы проверялись все условия
+            // 1. TODO нужно написать тесты что бы проверялись все условия
             _complianceMetrics.Add(enumeratorExtended.Current);
 
             if (enumeratorExtended.MoveNext())
@@ -189,13 +189,13 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
             do
             {
-                // TODO нужно написать тесты что бы проверялись все условия
+                // 2. TODO нужно написать тесты что бы проверялись все условия
                 _complianceMetrics.Add(enumeratorReduced.Current);
             } while (enumeratorReduced.MoveNext());
         }
         else if (enumeratorExtended.Current.Key > enumeratorReduced.Current.Key)
         {
-            // TODO нужно написать тесты что бы проверялись все условия
+            // 3. TODO нужно написать тесты что бы проверялись все условия
             _complianceMetrics.Add(enumeratorReduced.Current);
 
             if (enumeratorReduced.MoveNext())
@@ -205,13 +205,13 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
             do
             {
-                // TODO нужно написать тесты что бы проверялись все условия
+                // 4. TODO нужно написать тесты что бы проверялись все условия
                 _complianceMetrics.Add(enumeratorExtended.Current);
             } while (enumeratorExtended.MoveNext());
         }
         else
         {
-            // TODO нужно написать тесты что бы проверялись все условия
+            // 5. TODO нужно написать тесты что бы проверялись все условия
             _complianceMetrics.Add(new KeyValuePair<DocumentId, double>(enumeratorExtended.Current.Key,
                 Math.Max(enumeratorExtended.Current.Value, enumeratorReduced.Current.Value)));
 
@@ -224,7 +224,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
                 do
                 {
-                    // TODO нужно написать тесты что бы проверялись все условия
+                    // 6. TODO нужно написать тесты что бы проверялись все условия
                     _complianceMetrics.Add(enumeratorExtended.Current);
                 } while (enumeratorExtended.MoveNext());
             }
@@ -232,7 +232,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
             {
                 while (enumeratorReduced.MoveNext())
                 {
-                    // TODO нужно написать тесты что бы проверялись все условия
+                    // 7. TODO нужно написать тесты что бы проверялись все условия
                     _complianceMetrics.Add(enumeratorReduced.Current);
                 }
             }
