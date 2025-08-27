@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -70,11 +71,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
-        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        services.Configure<JsonOptions>(options =>
         {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
-            options.JsonSerializerOptions.Converters.Add(new ComplianceMetricsListConverter());
+            options.SerializerOptions.TypeInfoResolver = AppJsonContext.Default;
         });
 
         services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);
