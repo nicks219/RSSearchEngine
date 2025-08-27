@@ -130,6 +130,8 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         {
             _tokenizerServiceCore.ComputeComplianceIndices(text, metricsCalculator, cancellationToken);
 
+            // TODO из MetricsCalculator нужно возвращать новый лист List<KeyValuePair<int, double>> что бы не выполнять лишнее перекладявание
+
             var indices = metricsCalculator.ComplianceMetrics
                 .Select(kvp => new KeyValuePair<int, double>(kvp.Key.Value, kvp.Value))
                 .ToList();

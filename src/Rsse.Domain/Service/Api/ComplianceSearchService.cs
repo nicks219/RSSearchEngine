@@ -28,7 +28,9 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
     public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        // todo: поведение не гарантировано, лучше использовать список
+        // TODO нужно переписать сериализацию что бы возвращать лист
+
+        // TODO: поведение не гарантировано, лучше использовать список
 
         if (string.IsNullOrEmpty(text))
         {
@@ -43,14 +45,14 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
                 {
                     return new Dictionary<int, double>();
                 }
-            case > PageSizeThreshold:
+            case > PageSizeThreshold: // TODO этот код больше не нужен - PageSizeThreshold делается в MetricsCalculator
                 {
                     return searchIndexes
                         .Where(kv => kv.Value > RelevanceThreshold)
                         .OrderByDescending(x => x.Value)
                         .ToDictionary(x => x.Key, x => x.Value);
                 }
-            default:
+            default: // TODO сортировка уже сделана в MetricsCalculator
                 {
                     return searchIndexes
                         .OrderByDescending(x => x.Value)
