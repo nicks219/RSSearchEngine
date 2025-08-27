@@ -22,12 +22,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <summary>
     /// Метрики релевантности для расширенного поиска.
     /// </summary>
-    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsExtended = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> ComplianceMetricsExtended = [];
 
     /// <summary>
     /// Метрики релевантности для нечеткого поиска.
     /// </summary>
-    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsReduced = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> ComplianceMetricsReduced = [];
 
     /// <summary>
     /// Общая метрика релевантности.
@@ -126,8 +126,8 @@ public sealed class MetricsCalculator : IMetricsCalculator
     {
         ContinueSearching = true;
 
-        _complianceMetricsExtended.Clear();
-        _complianceMetricsReduced.Clear();
+        ComplianceMetricsExtended.Clear();
+        ComplianceMetricsReduced.Clear();
         _complianceMetrics.Clear();
 
         _minThresholdExtended = double.MinValue;
@@ -137,13 +137,13 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <inheritdoc/>
     public void LimitMetrics()
     {
-        SortByMetricValue(_complianceMetricsExtended);
-        LimitCollection(_complianceMetricsExtended);
+        SortByMetricValue(ComplianceMetricsExtended);
+        LimitCollection(ComplianceMetricsExtended);
 
-        SortByMetricValue(_complianceMetricsReduced);
-        LimitCollection(_complianceMetricsReduced);
+        SortByMetricValue(ComplianceMetricsReduced);
+        LimitCollection(ComplianceMetricsReduced);
 
-        MergeMetricCollections(_complianceMetricsExtended, _complianceMetricsReduced);
+        MergeMetricCollections(ComplianceMetricsExtended, ComplianceMetricsReduced);
     }
 
     /// <summary>
@@ -155,6 +155,9 @@ public sealed class MetricsCalculator : IMetricsCalculator
     private void MergeMetricCollections(List<KeyValuePair<DocumentId, double>> collectionExtended,
         List<KeyValuePair<DocumentId, double>> collectionReduced)
     {
+        SortByMetricKey(collectionExtended);
+        SortByMetricKey(collectionReduced);
+
         var enumeratorExtended = collectionExtended.GetEnumerator();
         var enumeratorReduced = collectionReduced.GetEnumerator();
         var hasNextExtended = enumeratorExtended.MoveNext();
@@ -162,14 +165,22 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
         while (hasNextExtended && hasNextReduced /*&& _complianceMetrics.Count <= Limit*/)
         {
-            if (enumeratorExtended.Current.Key != enumeratorReduced.Current.Key)
+            if (enumeratorExtended.Current.Key == enumeratorReduced.Current.Key)
             {
-                break;
+                _complianceMetrics.Add(enumeratorExtended.Current);
+                hasNextExtended = enumeratorExtended.MoveNext();
+                hasNextReduced = enumeratorReduced.MoveNext();
             }
-
-            _complianceMetrics.Add(enumeratorExtended.Current);
-            hasNextExtended = enumeratorExtended.MoveNext();
-            hasNextReduced = enumeratorReduced.MoveNext();
+            else if (enumeratorExtended.Current.Key > enumeratorReduced.Current.Key)
+            {
+                _complianceMetrics.Add(enumeratorExtended.Current);
+                hasNextExtended = enumeratorExtended.MoveNext();
+            }
+            else if (enumeratorExtended.Current.Key < enumeratorReduced.Current.Key)
+            {
+                _complianceMetrics.Add(enumeratorReduced.Current);
+                hasNextReduced = enumeratorReduced.MoveNext();
+            }
         }
 
         while (hasNextExtended /*&& _complianceMetrics.Count <= Limit*/)
@@ -184,6 +195,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
             hasNextReduced = enumeratorReduced.MoveNext();
         }
 
+        SortByMetricValue(_complianceMetrics);
         LimitCollection(_complianceMetrics);
     }
 
@@ -200,15 +212,15 @@ public sealed class MetricsCalculator : IMetricsCalculator
             return;
         }
 
-        _complianceMetricsExtended.Add(metric);
-        if (_complianceMetricsExtended.Count < windowsSize)
+        ComplianceMetricsExtended.Add(metric);
+        if (ComplianceMetricsExtended.Count < windowsSize)
         {
             return;
         }
 
-        SortByMetricValue(_complianceMetricsExtended);
-        LimitCollection(_complianceMetricsExtended);
-        _minThresholdExtended = _complianceMetricsExtended.Last().Value;
+        SortByMetricValue(ComplianceMetricsExtended);
+        LimitCollection(ComplianceMetricsExtended);
+        _minThresholdExtended = ComplianceMetricsExtended.Last().Value;
     }
 
     /// <summary>
@@ -224,15 +236,15 @@ public sealed class MetricsCalculator : IMetricsCalculator
             return;
         }
 
-        _complianceMetricsReduced.Add(metric);
-        if (_complianceMetricsReduced.Count < windowsSize)
+        ComplianceMetricsReduced.Add(metric);
+        if (ComplianceMetricsReduced.Count < windowsSize)
         {
             return;
         }
 
-        SortByMetricValue(_complianceMetricsReduced);
-        LimitCollection(_complianceMetricsReduced);
-        _minThresholdReduced = _complianceMetricsReduced.Last().Value;
+        SortByMetricValue(ComplianceMetricsReduced);
+        LimitCollection(ComplianceMetricsReduced);
+        _minThresholdReduced = ComplianceMetricsReduced.Last().Value;
     }
 
     /// <summary>
@@ -248,6 +260,24 @@ public sealed class MetricsCalculator : IMetricsCalculator
                 var thenByKeyDescending = byValueDescending != 0
                     ? byValueDescending
                     : y.Key.CompareTo(x.Key);
+
+                return thenByKeyDescending;
+            });
+    }
+
+    /// <summary>
+    /// Отсортировать коллекцию по ключу (идентификатору документа) и дополнительно по значению (метрике).
+    /// </summary>
+    /// <param name="collection">Коллекция для сортировки.</param>
+    private static void SortByMetricKey(List<KeyValuePair<DocumentId, double>> collection)
+    {
+        collection
+            .Sort((x, y) =>
+            {
+                var byValueDescending = y.Key.CompareTo(x.Key);
+                var thenByKeyDescending = byValueDescending != 0
+                    ? byValueDescending
+                    : y.Value.CompareTo(x.Value);
 
                 return thenByKeyDescending;
             });

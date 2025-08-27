@@ -47,8 +47,8 @@ public class MetricsCalculatorTests
     {
         // arrange
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
@@ -60,9 +60,7 @@ public class MetricsCalculatorTests
     }
 
     [TestMethod]
-    // 5. частично совпадающее по ключам перекрытие метрик в extended и reduced: 1 - 2,1 (после сортировки)
-    // todo: 1 - 5 - 7 [ПАДАЕТ]
-    public void MetricsCalculator_Tests_()
+    public void MetricsCalculator_Tests_0()
     {
         // arrange
         var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D) };
@@ -70,8 +68,8 @@ public class MetricsCalculatorTests
         var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D) };
 
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
@@ -83,9 +81,7 @@ public class MetricsCalculatorTests
     }
 
     [TestMethod]
-    // 6. частично совпадающее по ключам перекрытие метрик в extended и reduced: 2,1 - 2,1
-    // todo: 1
-    public void MetricsCalculator_Tests_FirstTodo()
+    public void MetricsCalculator_Tests_1()
     {
         // arrange
         var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D),  new(new DocumentId(2), 2D) };
@@ -93,8 +89,8 @@ public class MetricsCalculatorTests
         var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 2D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
@@ -107,9 +103,7 @@ public class MetricsCalculatorTests
 
     // 6
     [TestMethod]
-    // 6. не совпадающие по ключам перекрытие метрик в extended и reduced:
-    // todo: 2
-    public void MetricsCalculator_Tests_SecondTodo()
+    public void MetricsCalculator_Tests_2()
     {
         // arrange
         var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D) };
@@ -117,8 +111,8 @@ public class MetricsCalculatorTests
         var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
@@ -130,9 +124,7 @@ public class MetricsCalculatorTests
     }
 
     [TestMethod]
-    // 7. не совпадающие по ключам перекрытие метрик в extended и reduced:
-    // todo: 3 - 4
-    public void MetricsCalculator_Tests_ThirdForthTodo()
+    public void MetricsCalculator_Tests_3_4()
     {
         // arrange
         var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(4), 1D) };
@@ -140,8 +132,8 @@ public class MetricsCalculatorTests
         var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(4), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
@@ -153,9 +145,7 @@ public class MetricsCalculatorTests
     }
 
     [TestMethod]
-    // 8. частично совпадающие по ключам перекрытие метрик в extended и reduced:
-    // todo: 6 [ПАДАЕТ]
-    public void MetricsCalculator_Tests_SixsTodo()
+    public void MetricsCalculator_Tests_6()
     {
         // arrange
         var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
@@ -163,8 +153,8 @@ public class MetricsCalculatorTests
         var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
 
         var calculator = new MetricsCalculator();
-        calculator._complianceMetricsExtended.AddRange(complianceMetricsExtended);
-        calculator._complianceMetricsReduced.AddRange(complianceMetricsReduced);
+        calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
+        calculator.ComplianceMetricsReduced.AddRange(complianceMetricsReduced);
 
         // act
         var result = calculator.ComplianceMetrics;
