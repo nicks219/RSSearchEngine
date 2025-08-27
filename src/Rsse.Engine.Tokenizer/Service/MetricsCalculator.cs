@@ -22,12 +22,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <summary>
     /// Метрики релевантности для расширенного поиска.
     /// </summary>
-    private readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsExtended = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsExtended = [];
 
     /// <summary>
     /// Метрики релевантности для нечеткого поиска.
     /// </summary>
-    private readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsReduced = [];
+    internal readonly List<KeyValuePair<DocumentId, double>> _complianceMetricsReduced = [];
 
     /// <summary>
     /// Общая метрика релевантности.
