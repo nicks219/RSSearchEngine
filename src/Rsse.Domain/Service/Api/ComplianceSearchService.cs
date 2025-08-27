@@ -28,8 +28,6 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
     public List<KeyValuePair<int, double>> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        // todo: поведение не гарантировано, лучше использовать список
-
         if (string.IsNullOrEmpty(text))
         {
             return [];
@@ -37,25 +35,13 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
 
         var searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
 
-        switch (searchIndexes.Count)
+        return searchIndexes.Count switch
         {
-            case 0:
-                {
-                    return [];
-                }
-            case > PageSizeThreshold:
-                {
-                    return searchIndexes
-                        .Where(kv => kv.Value > RelevanceThreshold)
-                        .OrderByDescending(x => x.Value)
-                        .ToList();
-                }
-            default:
-                {
-                    return searchIndexes
-                        .OrderByDescending(x => x.Value)
-                        .ToList();
-                }
-        }
+            > PageSizeThreshold => searchIndexes
+                .Where(kv => kv.Value > RelevanceThreshold)
+                .ToList(),
+
+            _ => searchIndexes
+        };
     }
 }

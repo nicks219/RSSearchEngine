@@ -95,11 +95,6 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     }
 
     /// <inheritdoc/>
-    public void LimitMetrics()
-    {
-    }
-
-    /// <inheritdoc/>
     public int Limit
     {
         get { throw new NotSupportedException($"{nameof(Limit)} property getter is not supported"); }
