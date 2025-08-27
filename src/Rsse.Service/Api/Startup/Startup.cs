@@ -23,6 +23,7 @@ using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
+using Rsse.Domain.Service.Converters;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
 using Serilog;
@@ -73,6 +74,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
+            options.JsonSerializerOptions.Converters.Add(new ComplianceMetricsListConverter());
         });
 
         services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);

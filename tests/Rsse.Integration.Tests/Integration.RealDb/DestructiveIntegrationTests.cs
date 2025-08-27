@@ -97,7 +97,7 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                var complianceId = response.EnsureNotNull().Res!.Keys.ElementAt(0);
+                var complianceId = response.EnsureNotNull().Res!.ElementAt(0).Key;
                 _processedId.Should().Be(complianceId);
             })],
 
@@ -232,8 +232,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(946);
-                response.EnsureNotNull().Res.EnsureNotNull().Values.First().Should().Be(0.5D);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(946);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Value.Should().Be(0.5D);
             })],
 
         [$"{ReadNotePostUrl}?id=946", HttpMethod.Post,
@@ -320,8 +320,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(1);
-                var value = Math.Round(response.Res.EnsureNotNull().Values.First(), 2);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(1);
+                var value = Math.Round(response.Res.EnsureNotNull().First().Value, 2);
                 value.Should().Be(1.2D);
             })],
 
@@ -363,8 +363,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(946);
-                var value = Math.Round(response.Res.EnsureNotNull().Values.First(), 2);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(946);
+                var value = Math.Round(response.Res.EnsureNotNull().First().Value, 2);
                 value.Should().Be(6.67D);
             })],
 

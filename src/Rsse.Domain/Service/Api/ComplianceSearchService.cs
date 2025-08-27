@@ -26,13 +26,13 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
     /// <param name="text">Текст для поиска совпадений.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public List<KeyValuePair<int, double>> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
         // todo: поведение не гарантировано, лучше использовать список
 
         if (string.IsNullOrEmpty(text))
         {
-            return new Dictionary<int, double>();
+            return [];
         }
 
         var searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
@@ -41,20 +41,20 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
         {
             case 0:
                 {
-                    return new Dictionary<int, double>();
+                    return [];
                 }
             case > PageSizeThreshold:
                 {
                     return searchIndexes
                         .Where(kv => kv.Value > RelevanceThreshold)
                         .OrderByDescending(x => x.Value)
-                        .ToDictionary(x => x.Key, x => x.Value);
+                        .ToList();
                 }
             default:
                 {
                     return searchIndexes
                         .OrderByDescending(x => x.Value)
-                        .ToDictionary(x => x.Key, x => x.Value);
+                        .ToList();
                 }
         }
     }

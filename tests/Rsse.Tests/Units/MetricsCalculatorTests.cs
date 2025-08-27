@@ -63,9 +63,9 @@ public class MetricsCalculatorTests
     public void MetricsCalculator_Tests_0()
     {
         // arrange
-        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D) };
-        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 0.5D), new(new DocumentId(2), 0.6D) };
-        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D) };
+        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D) };
+        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 0.5D), new(new DocumentId(2), 0.6D) };
+        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D) };
 
         var calculator = new MetricsCalculator();
         calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
@@ -84,9 +84,9 @@ public class MetricsCalculatorTests
     public void MetricsCalculator_Tests_1()
     {
         // arrange
-        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D),  new(new DocumentId(2), 2D) };
-        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
-        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 2D), new(new DocumentId(3), 0.5D) };
+        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D), new(new DocumentId(2), 2D) };
+        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
+        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D), new(new DocumentId(2), 2D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
         calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
@@ -106,9 +106,9 @@ public class MetricsCalculatorTests
     public void MetricsCalculator_Tests_2()
     {
         // arrange
-        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D) };
-        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
-        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
+        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D) };
+        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
+        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(1), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
         calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
@@ -127,9 +127,9 @@ public class MetricsCalculatorTests
     public void MetricsCalculator_Tests_3_4()
     {
         // arrange
-        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(4), 1D) };
-        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
-        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(4), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
+        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(4), 1D) };
+        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(3), 0.5D), new(new DocumentId(2), 0.6D) };
+        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(4), 1D), new(new DocumentId(2), 0.6D), new(new DocumentId(3), 0.5D) };
 
         var calculator = new MetricsCalculator();
         calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);
@@ -148,9 +148,9 @@ public class MetricsCalculatorTests
     public void MetricsCalculator_Tests_6()
     {
         // arrange
-        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
-        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(2), 0.5D) };
-        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>>{ new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
+        var complianceMetricsExtended = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
+        var complianceMetricsReduced = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(2), 0.5D) };
+        var complianceMetricsResult = new List<KeyValuePair<DocumentId, double>> { new(new DocumentId(3), 1D), new(new DocumentId(2), 1D), new(new DocumentId(1), 0.1D) };
 
         var calculator = new MetricsCalculator();
         calculator.ComplianceMetricsExtended.AddRange(complianceMetricsExtended);

@@ -30,7 +30,7 @@ public class ComplianceSearchController(ComplianceSearchService complianceServic
 
         var response = searchIndexes.Count == 0
             ? new ComplianceResponse()
-            : new ComplianceResponse { Res = searchIndexes };
+            : new ComplianceResponse { Res = new ComplianceMetricsListResponse(searchIndexes) };
 
         return Ok(response);
     }
