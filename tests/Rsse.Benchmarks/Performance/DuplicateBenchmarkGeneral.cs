@@ -7,6 +7,7 @@ using BenchmarkDotNet.Order;
 using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
 using RsseEngine.SearchType;
+using RsseEngine.Selector;
 using RsseEngine.Service;
 
 namespace RsseEngine.Benchmarks.Performance;
@@ -85,8 +86,8 @@ public class DuplicateBenchmarkGeneral : IBenchmarkRunner
         Console.WriteLine(
             $"[{nameof(DuplicateBenchmarkGeneral)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");
 
-        _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
-            false, extendedSearchType, reducedSearchType);
+        _tokenizer = new TokenizerServiceCore(SearchIndexTypeSelector.GetIndexType(extendedSearchType, reducedSearchType),
+            MetricsCalculatorType.NoOpMetricsCalculator, false, extendedSearchType, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] extended[{extendedSearchType}] reduced[{reducedSearchType}] initializing..");

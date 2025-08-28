@@ -6,8 +6,9 @@ namespace RsseEngine.Tokenizer.Common;
 /// <summary>
 /// Пул коллекций, использующий Concurrent Bag.
 /// </summary>
-/// <typeparam name="TCollection">Коллекция элементов типа int.</typeparam>
-public sealed class ConcurrentBagPool<TCollection> where TCollection : ICollection<int>, new()
+/// <typeparam name="TCollection">Коллекция элементов типа T.</typeparam>
+/// <typeparam name="TElement">Коллекция элементов типа T.</typeparam>
+public sealed class ConcurrentBagPool<TCollection, TElement> where TCollection : ICollection<TElement>, new()
 {
     private readonly ConcurrentBag<TCollection> _bag = [];
 

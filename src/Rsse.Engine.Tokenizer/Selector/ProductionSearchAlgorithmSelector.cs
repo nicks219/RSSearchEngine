@@ -101,7 +101,7 @@ public abstract class ProductionSearchAlgorithmSelector
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector) { }
 
     // Необходимость пустого метода диктуется контрактом.
-    public void RemoveVector(DocumentId documentId, TokenVector tokenVector) { }
+    public void RemoveVector(DocumentId documentId) { }
 
     // Необходимость пустого метода диктуется контрактом.
     public void Clear() { }

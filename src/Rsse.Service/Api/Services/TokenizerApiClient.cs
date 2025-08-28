@@ -11,6 +11,7 @@ using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Service.Contracts;
 using RsseEngine.Indexes;
+using RsseEngine.SearchType;
 using RsseEngine.Service;
 
 namespace Rsse.Api.Services;
@@ -37,7 +38,7 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
         _isEnabled = options.Value.TokenizerIsEnable;
         var extendedSearchType = options.Value.ExtendedSearchType;
         var reducedSearchType = options.Value.ReducedSearchType;
-        _tokenizerServiceCore = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
+        _tokenizerServiceCore = new TokenizerServiceCore(SearchIndexType.All, MetricsCalculatorType.PooledMetricsCalculator,
             false, extendedSearchType, reducedSearchType);
     }
 

@@ -11,6 +11,7 @@ using RsseEngine.Benchmarks.Common;
 using RsseEngine.Dto;
 using RsseEngine.Dto.Offsets;
 using RsseEngine.Indexes;
+using RsseEngine.SearchType;
 using RsseEngine.Service;
 
 namespace RsseEngine.Benchmarks.Performance;
@@ -26,7 +27,7 @@ public class TokenizationBenchmark
 {
     private readonly FileDataMultipleProvider _fileDataMultipleProvider = new(100);
 
-    private readonly SearchEngineManager _searchEngineManager = new(true);
+    private readonly SearchEngineManager _searchEngineManager = new(SearchIndexType.None, true);
 
     private readonly DirectIndex _generalDirectIndex = new();
 

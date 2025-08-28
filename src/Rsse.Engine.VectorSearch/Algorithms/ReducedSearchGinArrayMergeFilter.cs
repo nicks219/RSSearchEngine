@@ -40,6 +40,9 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                 return;
             }
 
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ReducedSearchGinArrayMergeFilter));
+
             switch (sortedIds.Count)
             {
                 case 0:
@@ -48,22 +51,13 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                     }
                 case 1:
                     {
-                        foreach (var documentId in sortedIds[0].DocumentIds)
-                        {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
-                            {
-                                const int metric = 1;
-                                metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
-                            }
-                        }
+                        metricsCalculator.AppendReducedMetricsFromSingleIndex(searchVector,
+                            InvertedIndex, sortedIds[0].DocumentIds);
 
                         break;
                     }
                 default:
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ReducedSearchGinArrayMergeFilter));
-
                         Process(sortedIds, searchVector, metricsCalculator,
                             filteredTokensCount, minRelevancyCount, emptyCount);
 

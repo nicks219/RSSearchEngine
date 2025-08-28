@@ -45,6 +45,9 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
                 return;
             }
 
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirectFilter));
+
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {
                 case 0:
@@ -55,23 +58,13 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
                     {
                         var idFromGin = idsFromGin.First(vector => vector.Count > 0);
 
-                        foreach (var documentId in idFromGin)
-                        {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
-                            {
-                                metricsCalculator.AppendExtendedMetric(1, searchVector, externalDocument);
-                            }
-                        }
+                        metricsCalculator.AppendExtendedMetricsFromSingleIndex(searchVector, InvertedIndex, idFromGin);
 
                         break;
                     }
                 default:
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirectFilter));
-
-                        CreateExtendedSearchSpace(searchVector, metricsCalculator, sortedIds, filteredTokensCount, minRelevancyCount);
-
+                        Process(searchVector, metricsCalculator, sortedIds, filteredTokensCount, minRelevancyCount);
                         break;
                     }
             }
@@ -92,7 +85,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     /// <param name="filteredTokensCount"></param>
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Список векторов GIN.</returns>
-    private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void Process(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<InternalDocumentIdList> sortedIds, int filteredTokensCount, int minRelevancyCount)
     {
         var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();

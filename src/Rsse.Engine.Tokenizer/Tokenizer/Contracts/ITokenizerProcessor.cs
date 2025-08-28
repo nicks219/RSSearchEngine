@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RsseEngine.Dto;
 
 namespace RsseEngine.Tokenizer.Contracts;
 
@@ -11,7 +12,9 @@ public interface ITokenizerProcessor
     /// <summary>
     /// Обработать и токенизировать текст.
     /// </summary>
-    /// <param name="tokens">Вектор токенов, представляющий обработанный текст.</param>
+    /// <param name="textTokens">Вектор токенов, представляющий обработанный текст.</param>
     /// <param name="text">Необработанный текст в формате массива строк.</param>
-    public void TokenizeText(List<int> tokens, params Span<string> text);
+    void TokenizeText(List<int> textTokens, params Span<string> text);
+
+    void TokenizeTextWithPositions(List<TokenWithPosition> textTokens, params Span<string> text);
 }

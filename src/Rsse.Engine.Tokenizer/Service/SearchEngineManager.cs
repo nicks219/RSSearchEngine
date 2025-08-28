@@ -21,6 +21,8 @@ public sealed class SearchEngineManager
 {
     private const int PoolSizeThreshold = 1_000_000;
 
+    private readonly SearchIndexType _searchIndexType;
+
     private readonly SimpleStoragePools _simpleStoragePools;
 
     private readonly ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor> _extendedSearchAlgorithmSelector;
@@ -45,15 +47,18 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Инициализация требуемого типа алгоритма.
     /// </summary>
+    /// <param name="searchIndexType">Тип поискового индекса.</param>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <exception cref="ArgumentNullException">Отсутствует контейнер с GIN при его требовании в оптимизации.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный тип оптимизации.</exception>
-    public SearchEngineManager(bool enableTempStoragePool)
+    public SearchEngineManager(SearchIndexType searchIndexType, bool enableTempStoragePool)
     {
         _simpleStoragePools = new SimpleStoragePools();
 
         if (CheckIsProduction())
         {
+            _searchIndexType = SearchIndexType.Direct;
+
             _extendedSearchAlgorithmSelector =
                 new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
 
@@ -62,12 +67,14 @@ public sealed class SearchEngineManager
         }
         else
         {
+            _searchIndexType = searchIndexType;
+
             var tempStoragePool = new TempStoragePool(enableTempStoragePool);
 
-            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
+            _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(searchIndexType,
                 tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
 
-            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(
+            _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(searchIndexType,
                 tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
         }
     }
@@ -90,7 +97,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryAdd(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_generalDirectIndex.TryAdd(documentId, tokenLine))
+        if ((_searchIndexType & SearchIndexType.Direct) != 0 && !_generalDirectIndex.TryAdd(documentId, tokenLine))
         {
             return false;
         }
@@ -109,7 +116,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_generalDirectIndex.TryUpdate(documentId, tokenLine))
+        if ((_searchIndexType & SearchIndexType.Direct) != 0 && !_generalDirectIndex.TryUpdate(documentId, tokenLine))
         {
             return false;
         }
@@ -127,13 +134,13 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryRemove(DocumentId documentId)
     {
-        if (!_generalDirectIndex.TryRemove(documentId, out var tokenLine))
+        if ((_searchIndexType & SearchIndexType.Direct) != 0 && !_generalDirectIndex.TryRemove(documentId, out var tokenLine))
         {
             return false;
         }
 
-        _extendedSearchAlgorithmSelector.RemoveVector(documentId, tokenLine.Extended);
-        _reducedSearchAlgorithmSelector.RemoveVector(documentId, tokenLine.Reduced);
+        _extendedSearchAlgorithmSelector.RemoveVector(documentId);
+        _reducedSearchAlgorithmSelector.RemoveVector(documentId);
 
         return true;
     }
@@ -240,7 +247,7 @@ public sealed class SearchEngineManager
     /// </summary>
     /// <param name="text">Текст с поисковым запросом.</param>
     /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public TokenVector TokenizeTextExtended(params string[] text)
+    public TokenVector TokenizeTextExtended(params Span<string> text)
     {
         return TokenizeText(_extendedTokenizer, text);
     }
@@ -250,12 +257,12 @@ public sealed class SearchEngineManager
     /// </summary>
     /// <param name="text">Текст с поисковым запросом.</param>
     /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
-    public TokenVector TokenizeTextReduced(params string[] text)
+    public TokenVector TokenizeTextReduced(params Span<string> text)
     {
         return TokenizeText(_reducedTokenizer, text);
     }
 
-    private TokenVector TokenizeText(ITokenizerProcessor tokenizerProcessor, params string[] text)
+    private TokenVector TokenizeText(ITokenizerProcessor tokenizerProcessor, params Span<string> text)
     {
         var tokensList = _simpleStoragePools.ListPool.Get();
 
@@ -276,6 +283,50 @@ public sealed class SearchEngineManager
         finally
         {
             _simpleStoragePools.ListPool.Return(tokensList);
+        }
+    }
+
+    /// <summary>
+    /// Создать extended-вектор токенов для заметки.
+    /// </summary>
+    /// <param name="text">Текст с поисковым запросом.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public TokenWithPositionVector TokenizeTextWithPositionsExtended(params Span<string> text)
+    {
+        return TokenizeTextWithPositions(_extendedTokenizer, text);
+    }
+
+    /// <summary>
+    /// Создать reduced-вектор токенов для заметки.
+    /// </summary>
+    /// <param name="text">Текст с поисковым запросом.</param>
+    /// <returns>Вектор токенов, представляющий обработанный текст.</returns>
+    public TokenWithPositionVector TokenizeTextWithPositionsReduced(params Span<string> text)
+    {
+        return TokenizeTextWithPositions(_reducedTokenizer, text);
+    }
+
+    private TokenWithPositionVector TokenizeTextWithPositions(ITokenizerProcessor tokenizerProcessor, Span<string> text)
+    {
+        var tokensList = _simpleStoragePools.TokenWithPositionListPool.Get();
+
+        try
+        {
+            tokenizerProcessor.TokenizeTextWithPositions(tokensList, text);
+
+            var tokens = new List<TokenWithPosition>(tokensList.Count);
+            CollectionsMarshal.SetCount(tokens, tokensList.Count);
+
+            var destination = CollectionsMarshal.AsSpan(tokens);
+            tokensList.CopyTo(destination);
+
+            var tokenVector = new TokenWithPositionVector(tokens);
+
+            return tokenVector;
+        }
+        finally
+        {
+            _simpleStoragePools.TokenWithPositionListPool.Return(tokensList);
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RsseEngine.Dto;
 
 namespace RsseEngine.Tokenizer.Common;
 
@@ -10,10 +11,12 @@ public sealed class SimpleStoragePools
     /// <summary>
     /// Пул для списков от int.
     /// </summary>
-    public readonly ConcurrentBagPool<List<int>> ListPool = new();
+    public readonly ConcurrentBagPool<List<int>, int> ListPool = new();
 
     /// <summary>
     /// Пул для множеств от int.
     /// </summary>
-    public readonly ConcurrentBagPool<HashSet<int>> SetPool = new();
+    public readonly ConcurrentBagPool<HashSet<int>, int> SetPool = new();
+
+    public readonly ConcurrentBagPool<List<TokenWithPosition>, TokenWithPosition> TokenWithPositionListPool = new();
 }

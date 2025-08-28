@@ -34,6 +34,9 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         {
             CreateEnumerators(searchVector, enumerators);
 
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinOffset));
+
             switch (enumerators.Count)
             {
                 case 0:
@@ -47,10 +50,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
                     }
                 default:
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ExtendedSearchGinOffset));
-
-                        ProcessMulti(searchVector, metricsCalculator, enumerators);
+                        Process(searchVector, metricsCalculator, enumerators);
                         break;
                     }
             }
@@ -97,7 +97,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         } while (enumerator.MoveNext());
     }
 
-    private void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void Process(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<TokenOffsetEnumerator> enumerators)
     {
         while (enumerators.Count > 1)

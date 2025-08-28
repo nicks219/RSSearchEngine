@@ -35,18 +35,20 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     /// <summary>
     /// Создать токенайзер.
     /// </summary>
+    /// <param name="searchIndexType">Тип поискового индекса.</param>
     /// <param name="metricsCalculatorType">Тип фабрики для калькулятора метрик</param>
     /// <param name="enableTempStoragePool">Пул активирован.</param>
     /// <param name="extendedSearchType">Тип оптимизации расширенного алгоритма поиска.</param>
     /// <param name="reducedSearchType">Тип оптимизации сокращенного алгоритма поиска.</param>
     public TokenizerServiceCore(
+        SearchIndexType searchIndexType,
         MetricsCalculatorType metricsCalculatorType,
         bool enableTempStoragePool,
         ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
         ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         _metricsCalculatorFactory = new MetricsCalculatorFactory(metricsCalculatorType);
-        _searchEngineManager = new SearchEngineManager(enableTempStoragePool);
+        _searchEngineManager = new SearchEngineManager(searchIndexType, enableTempStoragePool);
         _extendedSearchType = extendedSearchType;
         _reducedSearchType = reducedSearchType;
     }
@@ -202,6 +204,25 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
         var reducedTokenVector = _searchEngineManager.TokenizeTextReduced(note.Text, " ", note.Title);
 
         return new TokenLine(Extended: extendedTokenVector, Reduced: reducedTokenVector);
+    }
+
+    /// <summary>
+    /// Создать два вектора токенов для заметки.
+    /// </summary>
+    /// <param name="note">Текстовая нагрузка заметки.</param>
+    /// <returns>Векторы на базе двух разных эталонных наборов.</returns>
+    public TokenLineWithPositions CreateTokensLineWithPositions(TextRequestDto note)
+    {
+        if (note.Text == null || note.Title == null)
+            throw new ArgumentNullException(nameof(note), "Request text or title should not be null.");
+
+        // расширенная эталонная последовательность:
+        var extendedTokenVector = _searchEngineManager.TokenizeTextWithPositionsExtended(note.Title, "\n", note.Text);
+
+        // урезанная эталонная последовательность:
+        var reducedTokenVector = _searchEngineManager.TokenizeTextWithPositionsReduced(note.Title, "\n", note.Text);
+
+        return new TokenLineWithPositions(Extended: extendedTokenVector, Reduced: reducedTokenVector);
     }
 
     /// <summary>

@@ -39,6 +39,9 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         {
             InvertedIndex.GetDocumentIdVectorsToList(searchVector, idsFromGin);
 
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirect));
+
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {
                 case 0:
@@ -49,24 +52,13 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
                     {
                         var idFromGin = idsFromGin.First(vector => vector.Count > 0);
 
-                        foreach (var documentId in idFromGin)
-                        {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
-                            {
-                                const int metric = 1;
-                                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
-                            }
-                        }
+                        metricsCalculator.AppendExtendedMetricsFromSingleIndex(searchVector, InvertedIndex, idFromGin);
 
                         break;
                     }
                 default:
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirect));
-
-                        CreateExtendedSearchSpace(searchVector, metricsCalculator, idsFromGin);
-
+                        Process(searchVector, metricsCalculator, idsFromGin);
                         break;
                     }
             }
@@ -84,7 +76,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     /// <param name="metricsCalculator"></param>
     /// <param name="idsFromGin"></param>
     /// <returns>Список векторов GIN.</returns>
-    private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void Process(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<InternalDocumentIdList> idsFromGin)
     {
         var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();

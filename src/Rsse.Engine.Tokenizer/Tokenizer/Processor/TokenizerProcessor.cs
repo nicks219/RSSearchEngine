@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using RsseEngine.Dto;
 using RsseEngine.Tokenizer.Contracts;
 
 namespace RsseEngine.Tokenizer.Processor;
@@ -76,6 +77,76 @@ public abstract class TokenizerProcessor
                 var hash = sequenceHashProcessor.GetHashAndReset();
                 textTokens.Add(hash);
             }
+        }
+    }
+
+    public void TokenizeTextWithPositions(List<TokenWithPosition> textTokens, params Span<string> text)
+    {
+        var position = 0;
+        var tokenPosition = 0;
+        var tokenStarted = false;
+
+        const int bufferSize = 128;
+
+        Span<char> buffer = stackalloc char[bufferSize];
+
+        ReadOnlySpan<char> separators = Separators.AsSpan();
+        var consonantChain = ConsonantChain.AsSpan();
+
+        var sequenceHashProcessor = new SequenceHashProcessor();
+
+        foreach (var textPart in text)
+        {
+            var textPartAsSpan = textPart.AsSpan();
+
+            for (var sliceIndex = 0; sliceIndex < textPart.Length; sliceIndex += bufferSize)
+            {
+                // конвертируем в нижний регистр сразу кусок текста
+                var bufferLength = textPartAsSpan
+                    .Slice(sliceIndex, Math.Min(bufferSize, textPart.Length - sliceIndex))
+                    .ToLower(buffer, CultureInfo.CurrentCulture);
+
+                // токенизируем слово
+                for (var bufferIndex = 0; bufferIndex < bufferLength; bufferIndex++)
+                {
+                    var symbol = buffer[bufferIndex];
+                    if (symbol == 'ё') symbol = 'е';
+
+                    position++;
+
+                    if (separators.Contains(symbol))
+                    {
+                        tokenStarted = false;
+
+                        if (sequenceHashProcessor.HasValue())
+                        {
+                            var hash = sequenceHashProcessor.GetHashAndReset();
+                            textTokens.Add(new TokenWithPosition(new Token(hash), tokenPosition));
+                        }
+
+                        continue;
+                    }
+
+                    if (consonantChain.Contains(symbol))
+                    {
+                        sequenceHashProcessor.AddChar(symbol);
+                    }
+
+                    if (!tokenStarted)
+                    {
+                        tokenStarted = true;
+                        tokenPosition = position - 1;
+                    }
+                }
+            }
+
+            if (sequenceHashProcessor.HasValue())
+            {
+                var hash = sequenceHashProcessor.GetHashAndReset();
+                textTokens.Add(new TokenWithPosition(new Token(hash), tokenPosition));
+            }
+
+            tokenStarted = false;
         }
     }
 

@@ -17,6 +17,8 @@ namespace RsseEngine.Selector;
 public sealed class ReducedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
 {
+    private readonly SearchIndexType _searchIndexType;
+
     private readonly TempStoragePool _tempStoragePool;
 
     private readonly GinRelevanceFilter _relevanceFilter;
@@ -30,12 +32,14 @@ public sealed class ReducedSearchAlgorithmSelector
     /// <summary>
     /// Компонент с reduced-алгоритмами.
     /// </summary>
+    /// <param name="searchIndexType">Тип поискового индекса.</param>
     /// <param name="tempStoragePool">Пул коллекций.</param>
     /// <param name="generalDirectIndex">Общий индекс.</param>
     /// <param name="relevancyThreshold">Порог релевантности</param>
-    public ReducedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
+    public ReducedSearchAlgorithmSelector(SearchIndexType searchIndexType, TempStoragePool tempStoragePool,
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
+        _searchIndexType = searchIndexType;
         _tempStoragePool = tempStoragePool;
         _generalDirectIndex = generalDirectIndex;
 
@@ -91,19 +95,33 @@ public sealed class ReducedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) != 0)
+        {
+            _partitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsReduced) != 0)
+        {
+            _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        }
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) != 0)
+        {
+            _partitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsReduced) != 0)
+        {
+            _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        }
     }
 
     /// <inheritdoc/>
-    public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
+    public void RemoveVector(DocumentId documentId)
     {
         _partitions.RemoveVector(documentId);
         _partitionsHs.RemoveVector(documentId);
@@ -119,6 +137,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.Direct) == 0)
+        {
+            return;
+        }
+
         var reducedSearchLegacy = new ReducedSearchLegacy
         {
             GeneralDirectIndex = _generalDirectIndex
@@ -130,6 +153,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedGinArrayDirect(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var reducedSearchGinArrayDirect = new ReducedSearchGinArrayDirect
@@ -145,6 +173,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedGinArrayMergeFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var reducedSearchGinArrayMergeFilter = new ReducedSearchGinArrayMergeFilter
@@ -161,6 +194,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var reducedSearchGinArrayDirectFilterLs = new ReducedSearchGinArrayDirectFilter
@@ -178,6 +216,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexReduced) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var reducedSearchGinArrayDirectFilterBs = new ReducedSearchGinArrayDirectFilter
@@ -195,6 +238,11 @@ public sealed class ReducedSearchAlgorithmSelector
     private void FindReducedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsReduced) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndexHs in _partitionsHs.Indices)
         {
             var reducedSearchGinArrayDirectFilterHs = new ReducedSearchGinArrayDirectFilter

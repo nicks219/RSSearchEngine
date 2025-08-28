@@ -37,9 +37,14 @@ public sealed class InvertedOffsetIndex
             return false;
         }
 
-        var internalDocumentId = new InternalDocumentId(counter);
-
         RemoveVector(documentId);
+
+        if (tokenVector.Count == 0)
+        {
+            return true;
+        }
+
+        var internalDocumentId = new InternalDocumentId(counter);
 
         _documentIdToInternalDocumentId[documentId] = internalDocumentId;
         _internalDocumentIdToDocumentId.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));

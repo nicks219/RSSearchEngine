@@ -17,6 +17,8 @@ namespace RsseEngine.Selector;
 public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
 {
+    private readonly SearchIndexType _searchIndexType;
+
     private readonly TempStoragePool _tempStoragePool;
 
     private readonly GinRelevanceFilter _relevanceFilter;
@@ -32,12 +34,14 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <summary>
     /// Компонент с extended-алгоритмами.
     /// </summary>
+    /// <param name="searchIndexType">Тип поискового индекса.</param>
     /// <param name="tempStoragePool">Пул коллекций.</param>
     /// <param name="generalDirectIndex">Общий индекс.</param>
     /// <param name="relevancyThreshold">Порог релевантности.</param>
-    public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
+    public ExtendedSearchAlgorithmSelector(SearchIndexType searchIndexType, TempStoragePool tempStoragePool,
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
+        _searchIndexType = searchIndexType;
         _tempStoragePool = tempStoragePool;
         _generalDirectIndex = generalDirectIndex;
 
@@ -108,21 +112,43 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        if ((_searchIndexType & SearchIndexType.InvertedOffsetIndexExtended) != 0)
+        {
+            _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) != 0)
+        {
+            _partitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsExtended) != 0)
+        {
+            _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        }
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        if ((_searchIndexType & SearchIndexType.InvertedOffsetIndexExtended) != 0)
+        {
+            _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) != 0)
+        {
+            _partitions.AddOrUpdateVector(documentId, tokenVector);
+        }
+
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsExtended) != 0)
+        {
+            _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        }
     }
 
     /// <inheritdoc/>
-    public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
+    public void RemoveVector(DocumentId documentId)
     {
         _offsetPartitions.RemoveVector(documentId);
         _partitions.RemoveVector(documentId);
@@ -140,6 +166,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.Direct) == 0)
+        {
+            return;
+        }
+
         var extendedSearchLegacy = new ExtendedSearchLegacy
         {
             GeneralDirectIndex = _generalDirectIndex
@@ -151,6 +182,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinOffset(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedOffsetIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
         {
             var extendedSearchGinOffset = new ExtendedSearchGinOffset
@@ -166,6 +202,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinOffsetFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedOffsetIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
         {
             var extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
@@ -182,6 +223,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var extendedSearchGinArrayDirectLs = new ExtendedSearchGinArrayDirect
@@ -198,6 +244,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
@@ -215,6 +266,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var extendedSearchGinArrayDirectBs = new ExtendedSearchGinArrayDirect
@@ -231,6 +287,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndex in _partitions.Indices)
         {
             var extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
@@ -248,6 +309,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndexHs in _partitionsHs.Indices)
         {
             var extendedSearchGinArrayDirectHs = new ExtendedSearchGinArrayDirect
@@ -264,6 +330,11 @@ public sealed class ExtendedSearchAlgorithmSelector
     private void FindExtendedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
+        if ((_searchIndexType & SearchIndexType.InvertedIndexHsExtended) == 0)
+        {
+            return;
+        }
+
         foreach (var invertedIndexHs in _partitionsHs.Indices)
         {
             var extendedSearchGinArrayDirectFilterHs = new ExtendedSearchGinArrayDirectFilter

@@ -130,7 +130,7 @@ public class TfIdfCalculator(
     {
         var result = 0D;
 
-        foreach (var token in searchVector.DistinctAndGet())
+        foreach (var token in searchVector)
         {
             if (TryCalculateTfIdf(token, documentLength, document, out var tfidf))
             {

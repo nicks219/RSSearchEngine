@@ -1,5 +1,6 @@
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
+using RsseEngine.Indexes;
 
 namespace RsseEngine.Processor;
 
@@ -57,5 +58,31 @@ public static class MetricsExtension
 
         // Для расчета метрик необходимо учитывать размер оригинальной заметки.
         metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);
+    }
+
+    public static void AppendReducedMetricsFromSingleIndex(this IMetricsCalculator metricsCalculator,
+        TokenVector searchVector, InvertedIndex invertedIndex, InternalDocumentIdList documentIds)
+    {
+        foreach (var documentId in documentIds)
+        {
+            if (invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            {
+                const int metric = 1;
+                AppendReducedMetric(metricsCalculator, metric, searchVector, externalDocument);
+            }
+        }
+    }
+
+    public static void AppendExtendedMetricsFromSingleIndex(this IMetricsCalculator metricsCalculator,
+        TokenVector searchVector, InvertedIndex invertedIndex, InternalDocumentIdList documentIds)
+    {
+        foreach (var documentId in documentIds)
+        {
+            if (invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            {
+                const int metric = 1;
+                AppendExtendedMetric(metricsCalculator, metric, searchVector, externalDocument);
+            }
+        }
     }
 }

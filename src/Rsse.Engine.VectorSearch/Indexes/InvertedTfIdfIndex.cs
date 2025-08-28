@@ -3,13 +3,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using RsseEngine.Dto;
 using RsseEngine.Dto.Offsets;
+using RsseEngine.Processor;
 
 namespace RsseEngine.Indexes;
 
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class InvertedIndex(DocumentDataPoint.DocumentDataPointSearchType dataPointSearchType)
+public sealed class InvertedTfIdfIndex(DocumentDataPoint.DocumentDataPointSearchType dataPointSearchType)
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
@@ -40,7 +41,7 @@ public sealed class InvertedIndex(DocumentDataPoint.DocumentDataPointSearchType 
             return false;
         }
 
-        RemoveVector(documentId);
+        RemoveVector(documentId, out var documentSize);
 
         if (tokenVector.Count == 0)
         {
@@ -61,12 +62,21 @@ public sealed class InvertedIndex(DocumentDataPoint.DocumentDataPointSearchType 
     /// Удалить документ из индекса.
     /// </summary>
     /// <param name="documentId">Идентификатор заметки.</param>
-    public void RemoveVector(DocumentId documentId)
+    /// <param name="documentSize">Размер удаляемого документа</param>
+    public bool RemoveVector(DocumentId documentId, out int documentSize)
     {
         if (_documentIdToInternalDocumentId.Remove(documentId, out var oldInternalDocumentId))
         {
+            var externalDocumentIdWithSize = _internalDocumentIdToDocumentId[oldInternalDocumentId.Value];
+            documentSize = externalDocumentIdWithSize.Size;
+
             _deletedDocuments.Add(oldInternalDocumentId);
+
+            return true;
         }
+
+        documentSize = 0;
+        return false;
     }
 
     /// <summary>
@@ -169,5 +179,15 @@ public sealed class InvertedIndex(DocumentDataPoint.DocumentDataPointSearchType 
         var offsetTokenVector = new ArrayOffsetTokenVector(documentDataPoint);
 
         _directIndex.Add(offsetTokenVector);
+    }
+
+    public TfIdfCalculator CreateTfIdfCalculator()
+    {
+        return new TfIdfCalculator(_invertedIndex, _directIndex);
+    }
+
+    public Bm25Calculator CreateBm25Calculator(double avgDocumentLength)
+    {
+        return new Bm25Calculator(_invertedIndex, _directIndex, avgDocumentLength);
     }
 }

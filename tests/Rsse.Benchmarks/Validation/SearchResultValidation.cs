@@ -8,6 +8,7 @@ using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
 using RsseEngine.Dto;
 using RsseEngine.SearchType;
+using RsseEngine.Selector;
 using RsseEngine.Service;
 
 namespace RsseEngine.Benchmarks.Validation;
@@ -190,8 +191,8 @@ public class SearchResultValidation
     private static async Task<TokenizerServiceCore> InitializeTokenizer(FileDataOnceProvider dataProvider,
         ExtendedSearchType extendedSearchType, ReducedSearchType reducedSearchType)
     {
-        var tokenizer = new TokenizerServiceCore(MetricsCalculatorType.PooledMetricsCalculator,
-            false, extendedSearchType, reducedSearchType);
+        var tokenizer = new TokenizerServiceCore(SearchIndexTypeSelector.GetIndexType(extendedSearchType, reducedSearchType),
+            MetricsCalculatorType.PooledMetricsCalculator, false, extendedSearchType, reducedSearchType);
 
         var result = await tokenizer.InitializeAsync(dataProvider, CancellationToken.None);
 

@@ -41,8 +41,7 @@ public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
     /// Удалить идентификатор документа и ассоциированный с ним вектор из общего индекса алгоритмов поиска.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
-    /// <param name="tokenVector">Вектор с токенами, представляющими содержание документа.</param>
-    void RemoveVector(DocumentId documentId, TokenVector tokenVector);
+    void RemoveVector(DocumentId documentId);
 
     /// <summary>
     /// Очистить общий индекс алгоритмов поиска.

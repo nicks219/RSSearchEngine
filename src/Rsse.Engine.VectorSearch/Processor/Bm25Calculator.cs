@@ -160,7 +160,7 @@ public class Bm25Calculator(
     {
         var result = 0D;
 
-        foreach (var token in searchVector.DistinctAndGet())
+        foreach (var token in searchVector)
         {
             if (TryCalculateBm25(token, tokensCount, document, out var tfidf))
             {
