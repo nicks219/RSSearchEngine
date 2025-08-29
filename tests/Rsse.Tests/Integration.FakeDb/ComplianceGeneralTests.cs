@@ -147,7 +147,7 @@ public class ComplianceGeneralTests
         {
             Converters =
             {
-                new KeyValueListToDictionaryConverter<DocumentId, double>()
+                new KeyValueListToDictionaryConverter<int, double>()
             }
         };
 
@@ -165,7 +165,7 @@ public class ComplianceGeneralTests
                     reducedSearchType: reducedSearchTypes);
 
                 // act:
-                List<KeyValuePair<DocumentId, double>> extended;
+                List<KeyValuePair<int, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
                 extendedMetricsCalculator.Limit = limit;
 
@@ -185,7 +185,7 @@ public class ComplianceGeneralTests
                     tokenizerServiceCore.ReleaseMetricsCalculator(extendedMetricsCalculator);
                 }
 
-                List<KeyValuePair<DocumentId, double>> reduced;
+                List<KeyValuePair<int, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
                 reducedMetricsCalculator.Limit = limit;
 

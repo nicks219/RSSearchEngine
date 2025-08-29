@@ -15,9 +15,9 @@ public interface IMetricsCalculator
     bool ContinueSearching { get; }
 
     /// <summary>
-    /// Метрики релевантности.
+    /// Метрики релевантности: идентификатор документа - значение релевантности.
     /// </summary>
-    List<KeyValuePair<DocumentId, double>> ComplianceMetrics { get; }
+    List<KeyValuePair<int, double>> ComplianceMetrics { get; }
 
     /// <summary>
     /// Добавить метрики для четкого поиска.

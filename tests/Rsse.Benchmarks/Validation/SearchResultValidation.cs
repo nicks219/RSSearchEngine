@@ -207,6 +207,7 @@ public class SearchResultValidation
             tokenizer.ComputeComplianceIndexExtended(query, metricsCalculator, CancellationToken.None);
 
             var result = metricsCalculator.ComplianceMetrics
+                .Select(kvp => new KeyValuePair<DocumentId, double>(new DocumentId(kvp.Key), kvp.Value))
                 .OrderBy(t => t.Key)
                 .ToList();
 
@@ -227,6 +228,7 @@ public class SearchResultValidation
             tokenizer.ComputeComplianceIndexReduced(query, metricsCalculator, CancellationToken.None);
 
             var result = metricsCalculator.ComplianceMetrics
+                .Select(kvp => new KeyValuePair<DocumentId, double>(new DocumentId(kvp.Key), kvp.Value))
                 .OrderBy(t => t.Key)
                 .ToList();
 

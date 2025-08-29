@@ -36,11 +36,11 @@ public sealed class MetricsCalculator : IMetricsCalculator
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    public List<KeyValuePair<DocumentId, double>> ComplianceMetrics
+    public List<KeyValuePair<int, double>> ComplianceMetrics
     {
         get
         {
-            var resultComplianceMetrics = new List<KeyValuePair<DocumentId, double>>();
+            var resultComplianceMetrics = new List<KeyValuePair<int, double>>();
             FinalizeMetricsTo(resultComplianceMetrics);
             return resultComplianceMetrics;
         }
@@ -129,7 +129,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// Получить ответ из расширенной и нечеткой метрик.
     /// </summary>
     /// <param name="resultMetrics">Результирующая метрика.</param>
-    private void FinalizeMetricsTo(List<KeyValuePair<DocumentId, double>> resultMetrics)
+    private void FinalizeMetricsTo(List<KeyValuePair<int, double>> resultMetrics)
     {
         SortByMetricValue(ComplianceMetricsExtended);
         LimitCollection(ComplianceMetricsExtended);
@@ -148,7 +148,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// <param name="resultMetrics">Результирующая метрика.</param>
     private void MergeMetricCollections(List<KeyValuePair<DocumentId, double>> collectionExtended,
         List<KeyValuePair<DocumentId, double>> collectionReduced,
-        List<KeyValuePair<DocumentId, double>> resultMetrics)
+        List<KeyValuePair<int, double>> resultMetrics)
     {
         SortByMetricKey(collectionExtended);
         SortByMetricKey(collectionReduced);
@@ -162,36 +162,40 @@ public sealed class MetricsCalculator : IMetricsCalculator
         {
             if (enumeratorExtended.Current.Key == enumeratorReduced.Current.Key)
             {
-                resultMetrics.Add(enumeratorExtended.Current);
+                resultMetrics.Add(Convert(enumeratorExtended.Current));
                 hasNextExtended = enumeratorExtended.MoveNext();
                 hasNextReduced = enumeratorReduced.MoveNext();
             }
             else if (enumeratorExtended.Current.Key > enumeratorReduced.Current.Key)
             {
-                resultMetrics.Add(enumeratorExtended.Current);
+                resultMetrics.Add(Convert(enumeratorExtended.Current));
                 hasNextExtended = enumeratorExtended.MoveNext();
             }
             else if (enumeratorExtended.Current.Key < enumeratorReduced.Current.Key)
             {
-                resultMetrics.Add(enumeratorReduced.Current);
+                resultMetrics.Add(Convert(enumeratorReduced.Current));
                 hasNextReduced = enumeratorReduced.MoveNext();
             }
         }
 
         while (hasNextExtended /*&& _complianceMetrics.Count <= Limit*/)
         {
-            resultMetrics.Add(enumeratorExtended.Current);
+            resultMetrics.Add(Convert(enumeratorExtended.Current));
             hasNextExtended = enumeratorExtended.MoveNext();
         }
 
         while (hasNextReduced /*&& _complianceMetrics.Count <= Limit*/)
         {
-            resultMetrics.Add(enumeratorReduced.Current);
+            resultMetrics.Add(Convert(enumeratorReduced.Current));
             hasNextReduced = enumeratorReduced.MoveNext();
         }
 
         SortByMetricValue(resultMetrics);
         LimitCollection(resultMetrics);
+        return;
+
+        // преобразовать DocumentId в int для KVP
+        KeyValuePair<int,double> Convert(KeyValuePair<DocumentId, double> kvp) => new(kvp.Key.Value, kvp.Value);
     }
 
     /// <summary>
@@ -238,6 +242,24 @@ public sealed class MetricsCalculator : IMetricsCalculator
     }
 
     /// <summary>
+    /// Отсортировать коллекцию по значению (метрике) и дополнительно по ключу (идентификатору документа).
+    /// </summary>
+    /// <param name="collection">Коллекция для сортировки.</param>
+    private static void SortByMetricValue(List<KeyValuePair<int, double>> collection)
+    {
+        collection
+            .Sort((x, y) =>
+            {
+                var byValueDescending = y.Value.CompareTo(x.Value);
+                var thenByKeyDescending = byValueDescending != 0
+                    ? byValueDescending
+                    : y.Key.CompareTo(x.Key);
+
+                return thenByKeyDescending;
+            });
+    }
+
+    /// <summary>
     /// Отсортировать коллекцию по ключу (идентификатору документа) и дополнительно по значению (метрике).
     /// </summary>
     /// <param name="collection">Коллекция для сортировки.</param>
@@ -260,6 +282,18 @@ public sealed class MetricsCalculator : IMetricsCalculator
     /// </summary>
     /// <param name="collection">Ограничиваемая коллекция.</param>
     private void LimitCollection(List<KeyValuePair<DocumentId, double>> collection)
+    {
+        if (collection.Count > Limit)
+        {
+            CollectionsMarshal.SetCount(collection, Limit);
+        }
+    }
+
+    /// <summary>
+    /// Ограничить размер коллекции (до limit элементов).
+    /// </summary>
+    /// <param name="collection">Ограничиваемая коллекция.</param>
+    private void LimitCollection(List<KeyValuePair<int, double>> collection)
     {
         if (collection.Count > Limit)
         {

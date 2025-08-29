@@ -8,7 +8,7 @@ namespace Rsse.Domain.Service.Api;
 /// <summary>
 /// Функционал поиска заметок.
 /// </summary>
-public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
+public sealed class ComplianceSearchService(ITokenizerApiClient tokenizerClient)
 {
     /// <summary>
     /// Количество элементов, после которого произойдёт отсеивание по пороговому значению релевантности.
@@ -33,15 +33,22 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
             return [];
         }
 
-        var searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
+        var searchIndexes = tokenizerClient.ComputeComplianceIndices(text, cancellationToken);
 
-        return searchIndexes.Count switch
+        switch (searchIndexes.Count)
         {
-            > PageSizeThreshold => searchIndexes
-                .Where(kv => kv.Value > RelevanceThreshold)
-                .ToList(),
+            case > PageSizeThreshold:
+                for (var index = searchIndexes.Count - 1; index >= 0; index--)
+                {
+                    if (searchIndexes[index].Value <= RelevanceThreshold)
+                    {
+                        searchIndexes.RemoveAt(index);
+                    }
+                }
 
-            _ => searchIndexes
-        };
+                return searchIndexes;
+            default:
+                return searchIndexes;
+        }
     }
 }
