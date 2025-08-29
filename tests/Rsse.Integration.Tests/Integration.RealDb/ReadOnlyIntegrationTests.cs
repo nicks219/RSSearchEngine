@@ -146,7 +146,7 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
     }
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceGeneralTestData;
+    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceApiTestData;
 
     [TestMethod]
     [DynamicData(nameof(ComplianceTestData))]

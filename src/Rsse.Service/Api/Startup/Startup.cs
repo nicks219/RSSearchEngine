@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +24,7 @@ using Rsse.Domain.Data.Configuration;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Configuration;
 using Rsse.Domain.Service.Contracts;
+using Rsse.Domain.Service.Converters;
 using Rsse.Infrastructure.Context;
 using Rsse.Infrastructure.Repository;
 using Serilog;
@@ -69,10 +71,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             });
         });
 
-        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        services.Configure<JsonOptions>(options =>
         {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
+            options.SerializerOptions.TypeInfoResolver = AppJsonContext.Default;
         });
 
         services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);

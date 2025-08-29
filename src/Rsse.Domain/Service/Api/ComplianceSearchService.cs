@@ -8,12 +8,17 @@ namespace Rsse.Domain.Service.Api;
 /// <summary>
 /// Функционал поиска заметок.
 /// </summary>
-public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
+public sealed class ComplianceSearchService(ITokenizerApiClient tokenizerClient)
 {
     /// <summary>
-    /// Порог актуального значения индекса. Низкий вес не стоит учитывать, если результатов много.
+    /// Количество элементов, после которого произойдёт отсеивание по пороговому значению релевантности.
     /// </summary>
-    private const double Threshold = 0.1D;
+    public const int PageSizeThreshold = 10;
+
+    /// <summary>
+    /// Порог актуального значения релевантности, ниже которого результаты не будут учитываться, если их много.
+    /// </summary>
+    private const double RelevanceThreshold = 0.1D;
 
     /// <summary>
     /// Вычислить индексы соответствия заметок поисковому запросу.
@@ -21,36 +26,29 @@ public sealed class ComplianceSearchService(ITokenizerApiClient tokenizer)
     /// <param name="text">Текст для поиска совпадений.</param>
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Идентификаторы заметок с индексами соответствия.</returns>
-    public Dictionary<int, double> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
+    public List<KeyValuePair<int, double>> ComputeComplianceIndices(string text, CancellationToken cancellationToken)
     {
-        // todo: поведение не гарантировано, лучше использовать список
-
         if (string.IsNullOrEmpty(text))
         {
-            return new Dictionary<int, double>();
+            return [];
         }
 
-        var searchIndexes = tokenizer.ComputeComplianceIndices(text, cancellationToken);
+        var searchIndexes = tokenizerClient.ComputeComplianceIndices(text, cancellationToken);
 
         switch (searchIndexes.Count)
         {
-            case 0:
+            case > PageSizeThreshold:
+                for (var index = searchIndexes.Count - 1; index >= 0; index--)
                 {
-                    return new Dictionary<int, double>();
+                    if (searchIndexes[index].Value <= RelevanceThreshold)
+                    {
+                        searchIndexes.RemoveAt(index);
+                    }
                 }
-            case > 10:
-                {
-                    return searchIndexes
-                        .Where(kv => kv.Value > Threshold)
-                        .OrderByDescending(x => x.Value)
-                        .ToDictionary(x => x.Key, x => x.Value);
-                }
+
+                return searchIndexes;
             default:
-                {
-                    return searchIndexes
-                        .OrderByDescending(x => x.Value)
-                        .ToDictionary(x => x.Key, x => x.Value);
-                }
+                return searchIndexes;
         }
     }
 }

@@ -65,12 +65,12 @@ public class ComplianceTests
                 deserialized.Error.Should().BeNull();
                 deserialized.Res.Should().NotBeNull();
 
-                deserialized.Res.Keys.Should().NotBeEmpty();
-                deserialized.Res.Values.Should().NotBeEmpty();
+                deserialized.Res.Select(kvp => kvp.Key).ToList().Should().NotBeEmpty();
+                deserialized.Res.Select(kvp => kvp.Value).ToList().Should().NotBeEmpty();
 
                 deserialized.Res
-                    .Keys
                     .ElementAt(0)
+                    .Key
                     .Should()
                     .Be(1);
             }

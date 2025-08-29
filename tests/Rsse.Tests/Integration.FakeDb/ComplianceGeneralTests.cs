@@ -99,14 +99,12 @@ public class ComplianceGeneralTests
     public static void ClassCleanup() => _factory?.Dispose();
 
     // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> ComplianceTestData => TestData.ComplianceGeneralTestData;
+    public static IEnumerable<object?[]> ComplianceApiTestData => TestData.ComplianceApiTestData;
 
-    // прокидываем коллекцию тк она должна принадлежать тесту
-    public static IEnumerable<object?[]> TokenizerTestData => TestData.ComplianceSeparateTestData;
-
+    // поисковые запросы осуществляются через контроллер
     [TestMethod]
-    [DynamicData(nameof(ComplianceTestData))]
-    public async Task ComplianceRequest_ShouldReturn_ExpectedMetrics(string request, string expected)
+    [DynamicData(nameof(ComplianceApiTestData))]
+    public async Task ComplianceRequest_ShouldReturn_ExpectedMetrics_ApiTest(string request, string expected)
     {
         foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
@@ -127,20 +125,29 @@ public class ComplianceGeneralTests
                 var complianceResponse = await response.Content.ReadAsStringAsync(NoneToken);
 
                 // assert:
-                complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
+                complianceResponse.Should().Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes} '{complianceResponse}']");
             }
         }
     }
 
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> ComplianceUnitTestData => TestData.ComplianceUnitTestData;
+
+    // прокидываем коллекцию тк она должна принадлежать тесту
+    public static IEnumerable<object?[]> ComplianceUnitTestLimitedData => TestData.ComplianceUnitTestLimitedData;
+
+    // поисковые запросы осуществляются напрямую к функционалу токенизатора, reduced и extended метрики оцениваются отдельно
+    // без ограничения размера ответа для ComplianceUnitTestData (147 элементов это максимальный размер метрики) и с ограничением в 11 элементов для ComplianceUnitTestLimitedData
     [TestMethod]
-    [DynamicData(nameof(TokenizerTestData))]
-    public void ComplianceSeparateRequests_ShouldReturn_ExpectedMetrics(string request, string expected)
+    [DynamicData(nameof(ComplianceUnitTestData))]
+    [DynamicData(nameof(ComplianceUnitTestLimitedData))]
+    public void ComplianceRequests_ShouldReturn_ExpectedMetrics_UnitTest(string request, string expected, int limit)
     {
         var options = new JsonSerializerOptions
         {
             Converters =
             {
-                new DocumentIdJsonConverter()
+                new KeyValueListToDictionaryConverter<int, double>()
             }
         };
 
@@ -158,40 +165,40 @@ public class ComplianceGeneralTests
                     reducedSearchType: reducedSearchTypes);
 
                 // act:
-                Dictionary<DocumentId, double> extended;
+                List<KeyValuePair<int, double>> extended;
                 var extendedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                extendedMetricsCalculator.Limit = limit;
+
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexExtended(request, extendedMetricsCalculator, NoneToken);
 
-                    var result = extendedMetricsCalculator.ComplianceMetrics
-                        .OrderBy(t => t.Key)
-                        .ToList();
+                    var result = extendedMetricsCalculator.ComplianceMetrics;
 
                     extended = result
                         .OrderByDescending(x => x.Value)
                         .ThenByDescending(x => x.Key)
-                        .ToDictionary();
+                        .ToList();
                 }
                 finally
                 {
                     tokenizerServiceCore.ReleaseMetricsCalculator(extendedMetricsCalculator);
                 }
 
-                Dictionary<DocumentId, double> reduced;
+                List<KeyValuePair<int, double>> reduced;
                 var reducedMetricsCalculator = tokenizerServiceCore.CreateMetricsCalculator();
+                reducedMetricsCalculator.Limit = limit;
+
                 try
                 {
                     tokenizerServiceCore.ComputeComplianceIndexReduced(request, reducedMetricsCalculator, NoneToken);
 
-                    var result = reducedMetricsCalculator.ComplianceMetrics
-                        .OrderBy(t => t.Key)
-                        .ToList();
+                    var result = reducedMetricsCalculator.ComplianceMetrics;
 
                     reduced = result
                         .OrderByDescending(x => x.Value)
                         .ThenByDescending(x => x.Key)
-                        .ToDictionary();
+                        .ToList();
                 }
                 finally
                 {
@@ -206,7 +213,7 @@ public class ComplianceGeneralTests
                 // Console.WriteLine(actual);
                 actual
                     .Should()
-                    .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes}]");
+                    .Be(expected, $"[ExtendedSearchType.{extendedSearchType} ReducedSearchType.{reducedSearchTypes} '{limit}']");
             }
         }
     }

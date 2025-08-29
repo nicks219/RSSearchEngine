@@ -4,7 +4,7 @@ using RsseEngine.Dto;
 namespace RsseEngine.Processor;
 
 /// <summary>
-/// Вычисление метрики сравнения двух векторов.
+/// Вычисление метрики сравнения двух векторов для формирования результатов поиска.
 /// </summary>
 public static class MetricsExtension
 {
@@ -15,6 +15,15 @@ public static class MetricsExtension
             externalDocument.Size);
     }
 
+    /// <summary>
+    /// Добавить результат в виде метрики релевантности для расширенного поиска.
+    /// Используется алгоритмом legacy.
+    /// </summary>
+    /// <param name="metricsCalculator">Функционал подсчёта метрик релевантности.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="documentId">Идентификатор документа.</param>
+    /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
+    /// <param name="searchStartIndex"></param>
     public static void AppendExtendedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
         DocumentId documentId, TokenLine tokenLine, int searchStartIndex = 0)
     {
@@ -32,6 +41,14 @@ public static class MetricsExtension
             externalDocument.Size);
     }
 
+    /// <summary>
+    /// Добавить результат в виде метрики релевантности для нечеткого поиска.
+    /// Используется алгоритмом legacy.
+    /// </summary>
+    /// <param name="metricsCalculator">Функционал подсчёта метрик релевантности.</param>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="documentId">Идентификатор документа.</param>
+    /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
     public static void AppendReducedMetric(this IMetricsCalculator metricsCalculator, TokenVector searchVector,
         DocumentId documentId, TokenLine tokenLine)
     {

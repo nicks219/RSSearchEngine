@@ -15,9 +15,9 @@ public interface IMetricsCalculator
     bool ContinueSearching { get; }
 
     /// <summary>
-    /// Метрики релевантности.
+    /// Метрики релевантности: идентификатор документа - значение релевантности.
     /// </summary>
-    Dictionary<DocumentId, double> ComplianceMetrics { get; }
+    List<KeyValuePair<int, double>> ComplianceMetrics { get; }
 
     /// <summary>
     /// Добавить метрики для четкого поиска.
@@ -53,4 +53,11 @@ public interface IMetricsCalculator
     /// Очищает метрики.
     /// </summary>
     void Clear();
+
+    /// <summary>
+    /// Количество элементов, которое должно оставаться в метрике.
+    /// По умолчанию принимается значение <b>ComplianceSearchService.PageSizeThreshold + 1</b>.
+    /// Размер на единичку больше позволит не ломать логику формирования ответа через api.
+    /// </summary>
+    int Limit { set; }
 }

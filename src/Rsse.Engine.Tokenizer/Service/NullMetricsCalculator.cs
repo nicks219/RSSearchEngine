@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -20,12 +21,7 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     public bool ContinueSearching { get; private set; } = true;
 
     /// <inheritdoc/>
-    public Dictionary<DocumentId, double> ComplianceMetrics { get; } = new()
-    {
-        {
-            new DocumentId(1), 0
-        }
-    };
+    public List<KeyValuePair<int, double>> ComplianceMetrics { get; } = [new(1, 0)];
 
     /// <inheritdoc/>
     public void AppendExtended(int comparisonScore, TokenVector searchVector, DocumentId documentId,
@@ -96,5 +92,12 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
     public void Clear()
     {
         ContinueSearching = true;
+    }
+
+    /// <inheritdoc/>
+    public int Limit
+    {
+        get { throw new NotSupportedException($"{nameof(Limit)} property getter is not supported"); }
+        set { throw new NotSupportedException($"{nameof(Limit)} property setter is not supported"); }
     }
 }
