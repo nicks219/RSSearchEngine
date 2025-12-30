@@ -42,6 +42,7 @@ public class ApiAccessControlTests
         };
     }
 
+    // c MSTest.TestFramework 4.0.0 убрали ClassCleanupBehavior
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void CleanUp() => _factory.Dispose();
 

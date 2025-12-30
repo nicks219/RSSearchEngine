@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Authors>nick219</Authors>
-    <Company>nick219</Company>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>Rsse</RootNamespace>
-    <ServerGarbageCollection>true</ServerGarbageCollection>
+  <!-- <TargetFramework>net9.0</TargetFramework> -->
+  <Authors>nick219</Authors>
+  <Company>nick219</Company>
+  <Nullable>enable</Nullable>
+  <ImplicitUsings>disable</ImplicitUsings>
+  <RootNamespace>Rsse</RootNamespace>
+  <ServerGarbageCollection>true</ServerGarbageCollection>
 
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
+  <InvariantGlobalization>true</InvariantGlobalization>
+  <PublishSingleFile>true</PublishSingleFile>
+  <SelfContained>true</SelfContained>
+</PropertyGroup>
 
-  <!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
+<!-- dotnet publish  .. -p:IsPublishing=true: без pdb не считает тестовое покрытие -->
   <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
      <DebugType>none</DebugType>
   </PropertyGroup>
@@ -34,7 +34,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+    <!-- <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" /> -->
+    <PackageReference Include="MySql.EntityFrameworkCore" />
+    <PackageReference Include="MySqlConnector" />
+    <!-- <PackageReference Include="EntityFrameworkCore.BootKit.MySql" /> -->
   </ItemGroup>
 
   <ItemGroup Label="Observability">

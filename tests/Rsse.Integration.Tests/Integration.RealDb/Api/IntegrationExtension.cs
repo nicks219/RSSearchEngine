@@ -65,11 +65,12 @@ public static class IntegrationExtension
             options.UseLoggerFactory(NullLoggerFactory.Instance);
         });
 
-        var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
+        // var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
         services.AddDbContext<MysqlCatalogContext>((sp, options) =>
         {
             var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
-            options.UseMySql(mySqlDataSource, mySqlVersion);
+            var mySqlConnection = mySqlDataSource.CreateConnection();
+            options.UseMySQL(mySqlConnection);
             options.UseLoggerFactory(NullLoggerFactory.Instance);
             // переполнение кэша EF ServiceProviderCache на тестах в итоге вызовет InvalidOperationException:
             options.EnableServiceProviderCaching(false);

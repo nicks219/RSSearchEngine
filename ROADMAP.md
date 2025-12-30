@@ -50,3 +50,18 @@
         * ✅ зафиксировать в документации и [README.md](README.md)
         * зафиксировать в system/version
         * создать релиз
+---
+  * Обновление до актуальных версий на начало **2026** года:
+    * [x] обновить rider 2025.2.3 -> 2025.3.1 для поддержки NET10 (2025.2.3 проблемы на билде)
+    * [x] поднять версии до NET10 (перенес в [Directory.Build,props](Directory.Build.props))
+    * [x] обновить зависимости NET проекта:
+      * ждём релиза `Pomelo.EntityFrameworkCore.MySql` -> замена на `MySql.EntityFrameworkCore` | `MySqlConnector`
+      * `MSTest.TestFramework` выше 3.11.1 отвалятся атрибуты `[ClassCleanup(ClassCleanupBehavior.EndOfClass)]`
+    * [ ] поднять React до 19.2.3
+      * npm outdated | npm update | npm install <package>@latest | npm run build
+    * [ ] обновить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
+    * [ ] в пайплайнах обновить версии образов для билда NET/React (если требуется)
+    * [ ] поднять версии сервисов в кластере: Pg 18.1 | MySql 8.4 -> 9.5
+    * [ ] обновить зависимости кластера k3s
+    * [ ] обновить SSL-сертификат, подумать о переходе на `cert-manager`
+    * ...

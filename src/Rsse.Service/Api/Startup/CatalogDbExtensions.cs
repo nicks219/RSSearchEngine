@@ -16,7 +16,7 @@ namespace Rsse.Api.Startup;
 /// </summary>
 public static class CatalogDbExtensions
 {
-    private static readonly ServerVersion MySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
+    // private static readonly ServerVersion MySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
     /// <summary>
     /// Зарегистрировать все необходимые хранилища данных для всех окружений, кроме тестового.
@@ -73,7 +73,8 @@ public static class CatalogDbExtensions
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             // логирование data source не зависит от environment
             var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
-            options.UseMySql(mySqlDataSource, MySqlVersion);
+            var mySqlConnection = mySqlDataSource.CreateConnection();
+            options.UseMySQL(mySqlConnection);
             options.UseLoggerFactory(loggerFactory);
         });
     }
