@@ -57,10 +57,19 @@
     * [x] обновить зависимости NET проекта:
       * ждём релиза `Pomelo.EntityFrameworkCore.MySql` -> замена на `MySql.EntityFrameworkCore` | `MySqlConnector`
       * `MSTest.TestFramework` выше 3.11.1 отвалятся атрибуты `[ClassCleanup(ClassCleanupBehavior.EndOfClass)]`
-    * [ ] поднять React до 19.2.3
-      * npm outdated | npm update | npm install <package>@latest | npm run build
-    * [ ] обновить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
+    * [x] поднять React до 19.2.3
+      * напоминалка: npm outdated | npm update | npm install <package>@latest | npm run build | npx npm-check-updates | npx npm-check-updates -u | npm install
+      * обновить Node: nvm install 22.12.0 | nvm use 22.12.0 | 22.21.1 LTS с сайта
+      * если ругается на eslint: npm install @typescript-eslint/eslint-plugin@8.51.0 @typescript-eslint/parser@8.51.0 --save-exact
+      * npm install
+      * поправить ошибки
+      * закэшировался старый сертификат: chrome://settings/clearBrowserData | dotnet dev-certs https --clean | либо vite создаст при запуске
+    * [x] проверить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
+    * [ ] протестировать обновленный функционал:
+      * подняться локально, накатить дамп
+    * [ ] обновить версию сервиса в ApplicationFullName
     * [ ] в пайплайнах обновить версии образов для билда NET/React (если требуется)
+      * ci.dotnet.build | ci.node.js.build | Dockerfile-net-react (билд для k3s)
     * [ ] поднять версии сервисов в кластере: Pg 18.1 | MySql 8.4 -> 9.5
     * [ ] обновить зависимости кластера k3s
     * [ ] обновить SSL-сертификат, подумать о переходе на `cert-manager`

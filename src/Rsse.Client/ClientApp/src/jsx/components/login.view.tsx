@@ -1,7 +1,7 @@
 ﻿import * as React from "react";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
 
-export const LoginView = (props: {id:string, onClick:(e:React.SyntheticEvent)=>void}) => {
+export const LoginView = (props: {id:string, onClick:(_e:React.SyntheticEvent)=>void}) => {
     return (
         <div id={Doms.loginName}>
             <div id={props.id}>

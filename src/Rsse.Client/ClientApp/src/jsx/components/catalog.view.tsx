@@ -6,10 +6,10 @@ import {JSX} from "react";
 
 export const CatalogView = (props: {
     catalogDto:CatalogResponseDto,
-    onClick:(e:React.SyntheticEvent)=>void,
-    onLogout:(e:React.SyntheticEvent)=>void,
-    onCreateDump:(e:React.SyntheticEvent)=>void,
-    onRestoreDump:(e:React.SyntheticEvent)=>void,
+    onClick:(_e:React.SyntheticEvent)=>void,
+    onLogout:(_e:React.SyntheticEvent)=>void,
+    onCreateDump:(_e:React.SyntheticEvent)=>void,
+    onRestoreDump:(_e:React.SyntheticEvent)=>void,
     elements:JSX.Element[]}) => {
     return (
         <div className={Doms.row} id={Doms.mainContent}>
