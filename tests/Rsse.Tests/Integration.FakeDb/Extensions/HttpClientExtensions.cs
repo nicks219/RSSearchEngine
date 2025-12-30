@@ -16,14 +16,17 @@ namespace Rsse.Tests.Integration.FakeDb.Extensions;
 public static class HttpClientExtensions
 {
     /// <summary>
-    /// Попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха.
+    /// Дождаться прогрева, попытаться авторизоваться в сервисе, прикрепить куки к заголовкам в случае успеха.
     /// </summary>
-    internal static async Task TryAuthorizeToService(
+    internal static async Task WaitAndTryAuthorizeToService(
         this HttpClient client,
         string login = "admin",
         string password = "admin",
         CancellationToken ct = default)
     {
+        // ждём инициализации бд
+        await client.GetAsync(SystemWaitWarmUpGetUrl, ct);
+
         var uri = new Uri($"{AccountLoginGetUrl}?email={login}&password={password}", UriKind.Relative);
         using var authResponse = await client.GetAsync(uri, ct);
         authResponse.EnsureSuccessStatusCode();

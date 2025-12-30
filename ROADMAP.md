@@ -66,10 +66,16 @@
       * закэшировался старый сертификат: chrome://settings/clearBrowserData | dotnet dev-certs https --clean | либо vite создаст при запуске
     * [x] проверить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
     * [ ] протестировать обновленный функционал:
+      * прогнать тесты, чиним:
+        * добавил wait warmup в Rsse.Tests
+        * перенес ответ 403 в IAuthorizationMiddlewareResultHandler
+        * синхронизировал версии MSTest.TestAdapter и MSTest.TestFramework
+        * ... Rsse.Integration.Tests
       * подняться локально, накатить дамп
+        * [ ] при удалении заметки: Unable to cast object of type 'MySqlConnector.MySqlConnection' to type 'MySql.Data.MySqlClient.MySqlConnection'
     * [ ] обновить версию сервиса в ApplicationFullName
     * [ ] в пайплайнах обновить версии образов для билда NET/React (если требуется)
-      * ci.dotnet.build | ci.node.js.build | Dockerfile-net-react (билд для k3s)
+      * ci.dotnet.build | ci.node.js.build | Dockerfile-net-react (билд для k3s, проверить локально)
     * [ ] поднять версии сервисов в кластере: Pg 18.1 | MySql 8.4 -> 9.5
     * [ ] обновить зависимости кластера k3s
     * [ ] обновить SSL-сертификат, подумать о переходе на `cert-manager`
