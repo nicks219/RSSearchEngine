@@ -195,7 +195,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
         return;
 
         // преобразовать DocumentId в int для KVP
-        KeyValuePair<int,double> Convert(KeyValuePair<DocumentId, double> kvp) => new(kvp.Key.Value, kvp.Value);
+        KeyValuePair<int, double> Convert(KeyValuePair<DocumentId, double> kvp) => new(kvp.Key.Value, kvp.Value);
     }
 
     /// <summary>

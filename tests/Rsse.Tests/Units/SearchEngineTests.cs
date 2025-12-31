@@ -1,4 +1,4 @@
-﻿namespace Rsse.Tests.Units;
+namespace Rsse.Tests.Units;
 
 using System;
 using System.Collections.Generic;

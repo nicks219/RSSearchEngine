@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using static Rsse.Domain.Service.Configuration.Constants;
 
 namespace Rsse.Domain.Service.Configuration;
