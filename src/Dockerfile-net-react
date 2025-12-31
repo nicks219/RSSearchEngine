@@ -1,5 +1,5 @@
 ######################################
-FROM node:22-slim AS node-build-env
+FROM node:22.21.1-slim AS node-build-env
 WORKDIR /home/node/app
 COPY ./Rsse.Client/ClientApp/*.json ./
 COPY ./Rsse.Client/ClientApp/index.html ./
@@ -11,7 +11,9 @@ RUN npm run build
 
 ##########################################################################################
 # в образе alpine установить vim либо nano можно с помощью apk: apk update && apk add nano
-FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
+# FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
+# https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md
+FROM mcr.microsoft.com/dotnet/sdk:10.0.101-alpine3.22-amd64 AS build-env
 WORKDIR /app
 
 # CPM: копируем файл версионирования
@@ -31,7 +33,8 @@ WORKDIR /app/Rsse.Service
 RUN dotnet publish -c Release -r linux-musl-x64 -p:IsPublishing=true -o out Rsse.Service.csproj
 
 ################
-FROM alpine:3.19
+# FROM alpine:3.19 | 3.23.2
+FROM alpine:3.22.2
 LABEL org.opencontainers.image.description="RSSearchEngine: .NET/React/K3S ready"
 # пакеты для запуска
 RUN apk add --no-cache libstdc++ libgcc

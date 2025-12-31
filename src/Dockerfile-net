@@ -1,5 +1,7 @@
 ##########################################################################
-FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
+# FROM mcr.microsoft.com/dotnet/sdk:9.0.202-alpine3.21-amd64 AS build-env
+# https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md
+FROM mcr.microsoft.com/dotnet/sdk:10.0.101-alpine3.22-amd64 AS build-env
 WORKDIR /app
 
 # при использовании CPM файл версионирования необходимо скопировать в контейнер
@@ -18,7 +20,8 @@ WORKDIR /app/Rsse.Service
 RUN dotnet publish -c Release -r linux-musl-x64 -o out Rsse.Service.csproj
 
 ################
-FROM alpine:3.19
+# FROM alpine:3.19 | 3.23.2
+FROM alpine:3.22.2
 LABEL org.opencontainers.image.description="RSSearchEngine: .NET"
 # пакеты для запуска
 RUN apk add --no-cache libstdc++ libgcc
