@@ -30,12 +30,17 @@ public readonly partial struct DocumentDataPoint
         {
             int[] data;
 
+            // quick fix: для пустого reduced ("123"): if (source.Count == 0) return [];
+
             var list = new List<KeyValuePair<int, int[]?>>(source);
             int count = list.Count;
 
             int[] hashCodes = list.Select(kv => kv.Key.GetHashCode()).ToArray();
 
-            int bucketsCount = BucketHelper.ComputeOptimalBucketCount(hashCodes, true);
+            int bucketsCount = hashCodes.Length == 0
+                ? 1
+                : BucketHelper.ComputeOptimalBucketCount(hashCodes, true);
+
             ulong fastModMultiplier = HashHelpers.GetFastModMultiplier((uint)bucketsCount);
 
             // Prepare bucket lists for chaining

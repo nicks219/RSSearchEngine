@@ -107,9 +107,13 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
             var notes = dataProvider.GetDataAsync().WithCancellation(stoppingToken);
 
             // todo: на старте сервиса при отсутствии коннекта до баз данных перечисление спамит логами с исключениями
+            // System.ObjectDisposedException: Cannot access a disposed object. Object name: 'Npgsql.UnpooledDataSource'
             await foreach (var note in notes)
             {
-                if (stoppingToken.IsCancellationRequested) throw new OperationCanceledException(nameof(InitializeAsync));
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(nameof(InitializeAsync));
+                }
 
                 var requestNote = note.MapToDto();
                 var tokenLine = CreateTokensLine(requestNote);

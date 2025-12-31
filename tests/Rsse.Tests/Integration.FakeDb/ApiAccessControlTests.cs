@@ -25,7 +25,7 @@ namespace Rsse.Tests.Integration.FakeDb;
 public class ApiAccessControlTests
 {
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
-    private static readonly CancellationToken Token = CancellationToken.None;
+    private static readonly CancellationToken NoneToken = CancellationToken.None;
 
     private static CustomWebAppFactory<Startup> _factory;
     private static WebApplicationFactoryClientOptions _options;
@@ -42,6 +42,7 @@ public class ApiAccessControlTests
         };
     }
 
+    // c MSTest.TestFramework 4.0.0 убрали ClassCleanupBehavior
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void CleanUp() => _factory.Dispose();
 
@@ -53,7 +54,7 @@ public class ApiAccessControlTests
         using var client = _factory.CreateClient(_options);
 
         // act:
-        using var response = await client.DeleteAsync(uri);
+        using var response = await client.DeleteAsync(uri, NoneToken);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var headers = response.Headers;
@@ -80,16 +81,16 @@ public class ApiAccessControlTests
         // arrange:
         const string unauthenticated = "editor";
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(unauthenticated, unauthenticated, ct: Token);
+        await client.WaitAndTryAuthorizeToService(unauthenticated, unauthenticated, ct: NoneToken);
         var uri = new Uri($"{DeleteNoteUrl}?id=1&pg=1", UriKind.Relative);
 
         // act:
-        using var response = await client.DeleteAsync(uri);
+        using var response = await client.DeleteAsync(uri, NoneToken);
         var statusCode = response.StatusCode;
         var reason = response.ReasonPhrase;
         var content = await response
             .Content
-            .ReadAsStringAsync();
+            .ReadAsStringAsync(NoneToken);
 
         // assert:
         statusCode
@@ -100,9 +101,11 @@ public class ApiAccessControlTests
             .Should()
             .Be(nameof(HttpStatusCode.Forbidden));
 
+        Console.WriteLine($"CONTENT: {content}");
+
         content
             .Should()
-            .Be("GET: access denied.");
+            .Be("DELETE: access denied.");
     }
 
     [TestMethod]
@@ -181,7 +184,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
         // запрос на удаление несуществующей заметки, чтобы не аффектить тесты, завязанные на её чтение
         var uri = new Uri($"{DeleteNoteUrl}?id=2&pg=1", UriKind.Relative);
 
@@ -205,7 +208,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -226,7 +229,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
 
         var uri = new Uri(uriString, UriKind.Relative);
         using var content = TestHelper.GetRequestContent(appendFile);
@@ -318,7 +321,7 @@ public class ApiAccessControlTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -350,7 +353,7 @@ public class ApiAccessControlTests
         // arrange:
         await using var factory = new CustomWebAppFactory<Startup>();
         using var client = factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
@@ -388,7 +391,7 @@ public class ApiAccessControlTests
         // arrange:
         await using var factory = new CustomWebAppFactory<Startup>();
         using var client = factory.CreateClient(_options);
-        await client.TryAuthorizeToService(ct: Token);
+        await client.WaitAndTryAuthorizeToService(ct: NoneToken);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:

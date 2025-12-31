@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,9 +8,6 @@ using Npgsql;
 using Rsse.Api.Controllers;
 using Rsse.Api.Startup;
 using Rsse.Infrastructure.Context;
-using Rsse.Infrastructure.Repository;
-using Rsse.Tooling.Contracts;
-using Rsse.Tooling.MigrationAssistant;
 using Serilog;
 
 namespace Rsse.Tests.Integration.RealDb.Api;
@@ -65,11 +61,12 @@ public static class IntegrationExtension
             options.UseLoggerFactory(NullLoggerFactory.Instance);
         });
 
-        var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
+        // var mySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
         services.AddDbContext<MysqlCatalogContext>((sp, options) =>
         {
             var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
-            options.UseMySql(mySqlDataSource, mySqlVersion);
+            var mySqlConnectionString = mySqlDataSource.ConnectionString;
+            options.UseMySQL(mySqlConnectionString);
             options.UseLoggerFactory(NullLoggerFactory.Instance);
             // переполнение кэша EF ServiceProviderCache на тестах в итоге вызовет InvalidOperationException:
             options.EnableServiceProviderCaching(false);
@@ -78,10 +75,10 @@ public static class IntegrationExtension
         // other dependencies:
         services.AddControllers().AddApplicationPart(typeof(ReadController).Assembly);
 
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        /*services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
         services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
-        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();*/
     }
 }

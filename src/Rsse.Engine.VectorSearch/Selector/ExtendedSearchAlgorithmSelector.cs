@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Rsse.Domain.Service.Configuration;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
@@ -38,6 +39,9 @@ public sealed class ExtendedSearchAlgorithmSelector
     public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
+        // защита на случай изменения внешних проверок, до момента готовности алгоритмов
+        EnvironmentReporter.ThrowIfProduction();
+
         _tempStoragePool = tempStoragePool;
         _generalDirectIndex = generalDirectIndex;
 

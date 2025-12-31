@@ -64,7 +64,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddSwaggerGen(swaggerGenOptions =>
         {
             swaggerGenOptions.EnableAnnotations();
-            swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment, new Microsoft.OpenApi.Models.OpenApiInfo
+            swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment,
+                new Microsoft.OpenApi.OpenApiInfo
             {
                 Title = Constants.SwaggerTitle,
                 Version = Constants.ApiVersion
@@ -119,6 +120,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 builder.AddRequirements(new FullAccessRequirement());
             });
 
+        services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomForbidHandler>();
         services.AddSingleton<IAuthorizationHandler, FullAccessRequirementsHandler>();
         services.AddCors(builder =>
         {
@@ -204,12 +206,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 {
                     Predicate = check => check.Tags.Contains("ready")
                 });
-            endpoints.Map("/account/accessDenied", async next =>
-            {
-                next.Response.StatusCode = 403;
-                next.Response.ContentType = "text/plain";
-                await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
-            }).RequireAuthorization();
+
             // endpoints.MapPrometheusScrapingEndpoint();
             endpoints.MapControllers();
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -24,6 +25,7 @@ public class ApiTests
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static CustomWebAppFactory<SqliteStartup> _factory;
     private readonly WebApplicationFactoryClientOptions _options = new() { BaseAddress = BaseAddress };
+    private readonly CancellationToken _token = CancellationToken.None;
 
     [ClassInitialize]
     public static void ClassInitialize(TestContext _) => _factory = new CustomWebAppFactory<SqliteStartup>();
@@ -88,14 +90,16 @@ public class ApiTests
     {
         // arrange:
         using var client = _factory.CreateClient(_options);
+        // Следует дождаться инициализации бд
+        await client.GetAsync(SystemWaitWarmUpGetUrl, _token);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.GetAsync(uri);
+        using var response = await client.GetAsync(uri, _token);
         var content = await response
             .EnsureSuccessStatusCode()
             .Content
-            .ReadFromJsonAsync<Dictionary<string, object?>>();
+            .ReadFromJsonAsync<Dictionary<string, object?>>(_token);
 
         content.EnsureNotNull();
         var value = content[key] as JsonElement?;
@@ -131,14 +135,16 @@ public class ApiTests
         // arrange:
         using var content = TestHelper.GetRequestContentWithTags();
         using var client = _factory.CreateClient(_options);
+        // Следует дождаться инициализации бд
+        await client.GetAsync(SystemWaitWarmUpGetUrl, _token);
         var uri = new Uri(uriString, UriKind.Relative);
 
         // act:
-        using var response = await client.PostAsync(uri, content);
+        using var response = await client.PostAsync(uri, content, _token);
         var result = await response
             .EnsureSuccessStatusCode()
             .Content
-            .ReadFromJsonAsync<Dictionary<string, object?>>();
+            .ReadFromJsonAsync<Dictionary<string, object?>>(_token);
 
         var structuredTagsListResponse = result
             .EnsureNotNull()

@@ -4,18 +4,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rsse.Api.Startup;
-using Rsse.Domain.Service.Configuration;
-using Rsse.Tests.Integration.RealDb.Api;
 
 namespace Rsse.Tests.Integration.RealDb.Infra;
 
 /// <summary>
 /// Базовый класс для тестов.
-/// Обеспечивает однократный подъём докера на локальной разработке, "прогрев" и очистку хоста.
+/// Обеспечивает однократный подъём докера на локальной разработке.
+/// "Прогрев" и очистка хоста должны выполняться тестами (исправлено).
 /// </summary>
-public class TestBase
+public class TestInitializerBase
 {
+
     protected static readonly CancellationToken Token = CancellationToken.None;
     private static readonly Uri BaseAddress = new("http://localhost:5000/");
     private static volatile bool _initialized;
@@ -30,7 +29,7 @@ public class TestBase
     public static async Task Initialize(TestContext testContext)
     {
         // Возможность быстро прервать подъём докера (может повлиять на его стейт).
-        var token = testContext.CancellationTokenSource.Token;
+        var token = testContext.CancellationToken;
         await InitializeAsync(token);
     }
 
@@ -42,7 +41,7 @@ public class TestBase
         switch (isGitHubAction)
         {
             case true:
-                Console.WriteLine($"{nameof(TestBase)} | dbs running in container(s)");
+                Console.WriteLine($"{nameof(TestInitializerBase)} | dbs running in container(s)");
                 break;
 
             case false:
@@ -50,15 +49,18 @@ public class TestBase
                     var sw = Stopwatch.StartNew();
                     await Docker.CleanUpDbContainers(ct);
                     await Docker.InitializeDbContainers(ct);
-                    Console.WriteLine($"docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
+                    Console.WriteLine($"[{nameof(TestInitializerBase)}] docker warmup elapsed: {sw.Elapsed.TotalSeconds:0.000} sec");
                     break;
                 }
         }
 
-        await using var factory = new IntegrationWebAppFactory<Startup>();
+        /*await using var factory = new IntegrationWebAppFactory<Startup>();
         using var client = factory.CreateClient(Options);
-        client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, ct).GetAwaiter().GetResult();
-        Console.WriteLine("host warmup completed");
+        // почему не await?
+        client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, ct)
+            .GetAwaiter()
+            .GetResult();
+        Console.WriteLine($"[{nameof(TestInitializerBase)}] host warmup completed");*/
 
         _initialized = true;
     }

@@ -21,14 +21,18 @@ using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 namespace Rsse.Tests.Integration.RealDb;
 
+/// <summary>
+/// Тесты, зависящие от состояния.
+/// </summary>
 [TestClass]
-public sealed class DestructiveIntegrationTests : TestBase, IDisposable
+public sealed class DestructiveIntegrationTests : TestInitializerBase, IDisposable
 {
     private const string TextToFind = "раз два три четыре";
     private const string ReadNoteTestText = "рас дваа три";
     private const string ReadCatalogPageTestText = "пасчитаим читырех";
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
 
+    // Используется один хост на каждый тест (тк общее состояние)
     private readonly IntegrationWebAppFactory<Startup> _factory = new();
     private static int _processedId;
 
@@ -37,6 +41,9 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
     /// </summary>
     public void Dispose()
     {
+        // Состояние фабрики это поисковые индексы, можно добавить для них метод очистки.
+        // Очистка фабрики (после каждого теста) выглядит как OperationCancelledException в логах.
+        Console.WriteLine("Disposing, next you will see a cancellation message");
         _factory.Dispose();
     }
 
@@ -201,12 +208,22 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
                 response.Text.Should().BeEquivalentTo("dump files created");
             })],
 
+        // дубликат
         [$"{CreateNotePostUrl}", HttpMethod.Post,
             Request.CreateContent,
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<NoteResponse>();
                 response.EnsureNotNull().Title.Should().Be("[Already Exist]");
+            })],
+
+        // пустой reduced вектор, падал индекс DocumentDataPoint.HashMap
+        [$"{CreateNotePostUrl}", HttpMethod.Post,
+            Request.CreateZeroReducedContent,
+            Response.Validate(async message =>
+            {
+                var response = await message.Content.ReadFromJsonAsync<NoteResponse>();
+                response.EnsureNotNull().Title.Should().Be("[OK]");
             })],
 
         [$"{ReadNotePostUrl}?id=946", HttpMethod.Post,

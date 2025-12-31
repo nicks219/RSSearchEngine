@@ -18,7 +18,6 @@ using Rsse.Tests.Common;
 using Rsse.Tests.Integration.FakeDb.Api;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Integration.FakeDb.Infra;
-using RsseEngine.Dto;
 using RsseEngine.Service;
 
 namespace Rsse.Tests.Integration.FakeDb;
@@ -37,62 +36,73 @@ public class ComplianceGeneralTests
     [ClassInitialize]
     public static async Task Initialize(TestContext _)
     {
-        _factory = new CustomWebAppFactory<SqliteStartup>();
-        using var client = _factory.CreateClient(Options);
-        // Cигнатура выбрана из-за конфликта в перегрузках `Microsoft.Testing`.
-        await using var context = (NpgsqlCatalogContext)_factory.Services.GetService(typeof(NpgsqlCatalogContext))!;
-        var db = context.Database;
-
-        await using (var connection = db.GetDbConnection())
+        try
         {
-            await connection.OpenAsync();
+            _factory = new CustomWebAppFactory<SqliteStartup>();
+            using var client = _factory.CreateClient(Options);
+            // Следует дождаться инициализации бд
+            await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, NoneToken);
+            // Cигнатура выбрана из-за конфликта в перегрузках `Microsoft.Testing`.
+            await using var context = (NpgsqlCatalogContext)_factory.Services.GetService(typeof(NpgsqlCatalogContext))!;
+            var db = context.Database;
 
-            await using (var cmd = connection.CreateCommand())
+            await using (var connection = db.GetDbConnection())
             {
-                // Удаляем всё из таблицы потому тк DatabaseInitializer добавляет один документ.
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = "DELETE FROM [Note]";
-                await cmd.ExecuteNonQueryAsync();
-            }
+                await connection.OpenAsync(NoneToken);
 
-            var fileDataProvider = new FileDataOnceProvider();
-            await foreach (var noteEntity in fileDataProvider.GetDataAsync())
-            {
-                await using var cmd = connection.CreateCommand();
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = "INSERT INTO [Note] ([NoteId], [Title], [Text]) VALUES (@param1, @param2, @param3)";
-
-                var parameterFirst = cmd.CreateParameter();
-                parameterFirst.ParameterName = "param1";
-                parameterFirst.Value = noteEntity.NoteId;
-                parameterFirst.DbType = DbType.Int32;
-                cmd.Parameters.Add(parameterFirst);
-
-                var parameterSecond = cmd.CreateParameter();
-                parameterSecond.ParameterName = "param2";
-                parameterSecond.Value = noteEntity.Title;
-                parameterSecond.DbType = DbType.String;
-                cmd.Parameters.Add(parameterSecond);
-
-                var parameterThird = cmd.CreateParameter();
-                parameterThird.ParameterName = "param3";
-                parameterThird.Value = noteEntity.Text;
-                parameterThird.DbType = DbType.String;
-                cmd.Parameters.Add(parameterThird);
-
-                var result = await cmd.ExecuteNonQueryAsync();
-                if (result != 1)
+                await using (var cmd = connection.CreateCommand())
                 {
-                    throw new Exception($"[{nameof(Initialize)}] insert failed | " +
-                                        $"'{parameterFirst.Value}' '{parameterSecond.Value}' '{parameterThird.Value}'");
+                    // Удаляем всё из таблицы потому тк DatabaseInitializer добавляет один документ.
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "DELETE FROM [Note]";
+                    await cmd.ExecuteNonQueryAsync(NoneToken);
+                }
+
+                var fileDataProvider = new FileDataOnceProvider();
+                await foreach (var noteEntity in fileDataProvider.GetDataAsync().WithCancellation(NoneToken))
+                {
+                    await using var cmd = connection.CreateCommand();
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText =
+                        "INSERT INTO [Note] ([NoteId], [Title], [Text]) VALUES (@param1, @param2, @param3)";
+
+                    var parameterFirst = cmd.CreateParameter();
+                    parameterFirst.ParameterName = "param1";
+                    parameterFirst.Value = noteEntity.NoteId;
+                    parameterFirst.DbType = DbType.Int32;
+                    cmd.Parameters.Add(parameterFirst);
+
+                    var parameterSecond = cmd.CreateParameter();
+                    parameterSecond.ParameterName = "param2";
+                    parameterSecond.Value = noteEntity.Title;
+                    parameterSecond.DbType = DbType.String;
+                    cmd.Parameters.Add(parameterSecond);
+
+                    var parameterThird = cmd.CreateParameter();
+                    parameterThird.ParameterName = "param3";
+                    parameterThird.Value = noteEntity.Text;
+                    parameterThird.DbType = DbType.String;
+                    cmd.Parameters.Add(parameterThird);
+
+                    var result = await cmd.ExecuteNonQueryAsync(NoneToken);
+                    if (result != 1)
+                    {
+                        throw new Exception($"[{nameof(Initialize)}] insert failed | " +
+                                            $"'{parameterFirst.Value}' '{parameterSecond.Value}' '{parameterThird.Value}'");
+                    }
                 }
             }
-        }
 
-        // Необходимо заново инициализировать токенайзер тк содержание бд изменилось.
-        var tokenizerApiClient = (ITokenizerApiClient)_factory.Services.GetService(typeof(ITokenizerApiClient))!;
-        var dataProvider = (DbDataProvider)_factory.Services.GetService(typeof(DbDataProvider))!;
-        await tokenizerApiClient.Initialize(dataProvider, NoneToken);
+            // Необходимо заново инициализировать токенайзер тк содержание бд изменилось.
+            var tokenizerApiClient = (ITokenizerApiClient)_factory.Services.GetService(typeof(ITokenizerApiClient))!;
+            var dataProvider = (DbDataProvider)_factory.Services.GetService(typeof(DbDataProvider))!;
+            await tokenizerApiClient.Initialize(dataProvider, NoneToken);
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"{nameof(ComplianceGeneralTests)}.{nameof(Initialize)} failed: {ex.Message}", ex);
+        }
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]

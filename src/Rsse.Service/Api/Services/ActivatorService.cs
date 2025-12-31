@@ -34,7 +34,15 @@ internal class ActivatorService(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
+        try
+        {
+            await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
+        }
+        catch (Exception e)
+        {
+            // вывод в консоль добавлен для тестирования среды, также он работает в контейнере
+            Console.WriteLine($"[{nameof(ActivatorService)}] get exception while init db: '{e.Message}'");
+        }
 
         try
         {
@@ -48,7 +56,14 @@ internal class ActivatorService(
                 using (var scope = factory.CreateScope())
                 {
                     var dataProvider = scope.ServiceProvider.GetRequiredService<DbDataProvider>();
-                    await tokenizer.Initialize(dataProvider, stoppingToken);
+                    try
+                    {
+                        await tokenizer.Initialize(dataProvider, stoppingToken);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[{nameof(ActivatorService)}] get exception while init tokenizer: '{e.Message}'");
+                    }
                 }
 
                 logger.LogInformation("[{Reporter}] finished | awaited for next start", nameof(ActivatorService));
@@ -57,6 +72,10 @@ internal class ActivatorService(
 
                 _count++;
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[{nameof(ActivatorService)}] get exception on await {_count} cycle: '{e.Message}'");
         }
         finally
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Rsse.Domain.Service.Configuration;
 using RsseEngine.Contracts;
 using RsseEngine.Dto;
 using RsseEngine.Indexes;
@@ -52,7 +53,7 @@ public sealed class SearchEngineManager
     {
         _simpleStoragePools = new SimpleStoragePools();
 
-        if (CheckIsProduction())
+        if (EnvironmentReporter.IsProduction())
         {
             _extendedSearchAlgorithmSelector =
                 new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
@@ -277,13 +278,5 @@ public sealed class SearchEngineManager
         {
             _simpleStoragePools.ListPool.Return(tokensList);
         }
-    }
-
-    /// <summary>
-    /// Вернуть признак запуска в производственном окружении.
-    /// </summary>
-    private static bool CheckIsProduction()
-    {
-        return Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "production";
     }
 }
