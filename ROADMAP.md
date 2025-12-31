@@ -95,6 +95,12 @@
 * [.] BucketHelper: добавлен quick fix на пустую запись, исправлен на фикс от автора (CheckIsProduction:false)
 * [.] продумать, как тестировать сервис, учитывая production mode для индексов, вынеси все проверки среды в один метод, добавлять зависимости консистентно
 * [ ] Migration_Requests_ShouldApplyCorrectly бывает нестабилен (не находит таблицу), исследовать
-* [ ] Проверить новый образ на NET10/alpine:3.22.2 (сборка/функционал)
-  * Directory.Build.props уровнем выше над контекстом, продублировал, добавил в докерфайл. Симлинк не помог: `ln -s ../Directory.Build.props .`
+* [.] Проверить новый образ на NET10/alpine:3.22.2 (сборка/функционал)
+  * [x] сбборка: Directory.Build.props уровнем выше над контекстом, продублировал, добавил в докерфайл. Симлинк не помог: `ln -s ../Directory.Build.props .`
+  * [.] запустился: через compose, судя по логам начальные таблицы не инициализированы, также: Cannot load library libgssapi_krb5.so.2
+    * при повторном запуске поднялся стабильно, т.е не инициализируется минимальный дамп, возможно стоит добавить: krb5-libs | libssl3 | icu-libs zlib
+    * [x] решение: добавил хелсчеки в compose
+    * docker compose -f docker-compose-build.yml up --force-recreate
+    * docker-compose -f docker-compose-build.yml down --rmi all --volumes --remove-orphans
+    * docker compose -f docker-compose-build.yml up -d --wait
 * ...

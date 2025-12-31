@@ -22,6 +22,11 @@ services:
   mysql:
     image: mysql:8.0.31-debian
     container_name: mysql_rsse
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     environment:
       - MYSQL_USER=1
       - MYSQL_PASSWORD=1
@@ -38,6 +43,12 @@ services:
   postgres:
     image: postgres:17.4-alpine3.21
     container_name: postgres_rsse
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     environment:
       POSTGRES_PASSWORD: 1
       POSTGRES_USER: 1
@@ -56,7 +67,10 @@ services:
     image: ghcr.io/nicks219/rssearchengine:latest
     container_name: rsse
     depends_on:
-      - otel-collector
+      otel-collector:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     restart: always
     environment:
       OTEL_RESOURCE_ATTRIBUTES="service:name=rsse-app,service:namespace=rsse-group,deployment:environment=production":
