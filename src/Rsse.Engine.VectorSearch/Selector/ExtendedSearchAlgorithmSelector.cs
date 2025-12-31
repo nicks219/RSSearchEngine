@@ -40,7 +40,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         DirectIndex generalDirectIndex, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
-        EnvironmentReporter.ThrowIfProduction();
+        EnvironmentReporter.ThrowIfProduction(nameof(ExtendedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
         _generalDirectIndex = generalDirectIndex;

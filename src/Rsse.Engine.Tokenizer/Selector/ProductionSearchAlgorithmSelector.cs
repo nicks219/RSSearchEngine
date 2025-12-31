@@ -35,10 +35,18 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
+                case ExtendedSearchType.GinOffset:
+                case ExtendedSearchType.GinOffsetFilter:
+                case ExtendedSearchType.GinArrayDirectLs:
+                case ExtendedSearchType.GinArrayDirectFilterLs:
+                case ExtendedSearchType.GinArrayDirectBs:
+                case ExtendedSearchType.GinArrayDirectFilterBs:
+                case ExtendedSearchType.GinArrayDirectHs:
+                case ExtendedSearchType.GinArrayDirectFilterHs:
                 default:
                     {
                         throw new NotSupportedException(
-                            $"Extended[{searchType.ToString()}] GIN optimization is not supported in production yet.");
+                            $"[{nameof(ExtendedSearchType)}] [{searchType.ToString()}] GIN optimization is not supported in production yet.");
                     }
             }
         }
@@ -74,10 +82,15 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
+                case ReducedSearchType.GinArrayDirect:
+                case ReducedSearchType.GinArrayMergeFilter:
+                case ReducedSearchType.GinArrayDirectFilterLs:
+                case ReducedSearchType.GinArrayDirectFilterBs:
+                case ReducedSearchType.GinArrayDirectFilterHs:
                 default:
                     {
                         throw new NotSupportedException(
-                            $"Reduced[{searchType.ToString()}] GIN optimization is not supported in production yet.");
+                            $"[{nameof(ReducedSearchType)}] [{searchType.ToString()}] GIN optimization is not supported in production yet.");
                     }
             }
         }

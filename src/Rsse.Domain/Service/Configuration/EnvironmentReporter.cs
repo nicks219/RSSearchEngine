@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using static Rsse.Domain.Service.Configuration.Constants;
 
 namespace Rsse.Domain.Service.Configuration;
@@ -20,13 +20,13 @@ public static class EnvironmentReporter
     /// <summary>
     /// Бросить исключение в производственном окружении.
     /// </summary>
-    public static void ThrowIfProduction()
+    public static void ThrowIfProduction(string name)
     {
         var environment = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentName)?.ToLower();
         var isProduction = environment?.Equals(ProductionEnvironment, StringComparison.CurrentCultureIgnoreCase) ?? false;
         if (isProduction)
         {
-            throw new NotSupportedException("Not supported for production environment.");
+            throw new NotSupportedException($"[{name}] Is in development and not supported for production environment.");
         }
     }
 
