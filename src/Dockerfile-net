@@ -4,8 +4,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0.101-alpine3.22-amd64 AS build-env
 WORKDIR /app
 
-# при использовании CPM файл версионирования необходимо скопировать в контейнер
+# CPM: файл с описанием зависимостей необходимо скопировать в контейнер
 COPY Directory.Packages.props .
+COPY Directory.Build.props .
 COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
 COPY ./Rsse.Domain/ ./Rsse.Domain/
