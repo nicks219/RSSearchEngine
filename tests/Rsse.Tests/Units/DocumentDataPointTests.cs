@@ -19,6 +19,12 @@ public class DocumentDataPointTests
 
         DocumentDataPoint documentDataPoint = new DocumentDataPoint(source, externalId, externalCount, searchType);
 
+        Assert.AreEqual(0, documentDataPoint.Count);
+        Assert.AreEqual(externalId, documentDataPoint.ExternalId);
+        Assert.AreEqual(externalCount, documentDataPoint.ExternalCount);
+        Assert.AreEqual(10, documentDataPoint.DataSize);
+        Assert.AreEqual(DocumentDataPoint.DocumentDataPointSearchType.HashMap, documentDataPoint.SearchType);
+
         int key = 0;
 
         bool result0 = documentDataPoint.ContainsKey(key);
@@ -63,6 +69,12 @@ public class DocumentDataPointTests
             DocumentDataPoint.DocumentDataPointSearchType.BinaryTree;
 
         DocumentDataPoint documentDataPoint = new DocumentDataPoint(source, externalId, externalCount, searchType);
+
+        Assert.AreEqual(0, documentDataPoint.Count);
+        Assert.AreEqual(externalId, documentDataPoint.ExternalId);
+        Assert.AreEqual(externalCount, documentDataPoint.ExternalCount);
+        Assert.AreEqual(5, documentDataPoint.DataSize);
+        Assert.AreEqual(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree, documentDataPoint.SearchType);
 
         int key = 0;
 
