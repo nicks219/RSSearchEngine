@@ -35,7 +35,10 @@ public readonly partial struct DocumentDataPoint
 
             int[] hashCodes = list.Select(kv => kv.Key.GetHashCode()).ToArray();
 
-            int bucketsCount = BucketHelper.ComputeOptimalBucketCount(hashCodes, true);
+            int bucketsCount = hashCodes.Length == 0
+                ? 1
+                : BucketHelper.ComputeOptimalBucketCount(hashCodes, true);
+
             ulong fastModMultiplier = HashHelpers.GetFastModMultiplier((uint)bucketsCount);
 
             // Prepare bucket lists for chaining
