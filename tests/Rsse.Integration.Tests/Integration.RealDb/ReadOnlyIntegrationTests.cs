@@ -22,32 +22,37 @@ using Rsse.Tests.Integration.RealDb.Infra;
 
 namespace Rsse.Tests.Integration.RealDb;
 
+/// <summary>
+/// Тесты, не зависящие от состояния.
+/// </summary>
 [TestClass]
-public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
+public sealed class ReadOnlyIntegrationTests : TestInitializerBase
 {
-    private readonly IntegrationWebAppFactory<Startup> _factory = new();
+    // исправлено: используется один хост на группу тестов (общее состояние) для ускорения времени запуска тестов
+    private static readonly IntegrationWebAppFactory<Startup> FactoryInternal = new();
 
     [ClassInitialize]
     public static async Task InitializeTests(TestContext context)
     {
-        // Однократная накатка дампа на Postgres.
+        // Однократная накатка дампа на Postgres через копирование из MySql.
         var token = CancellationToken.None;
-        await using var factory = new IntegrationWebAppFactory<Startup>();
-        using var client = factory.CreateClient(Options);
-
+        using var client = FactoryInternal.CreateClient(Options);
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
-        await TestHelper.CleanUpDatabases(factory, Token);
+        await TestHelper.CleanUpDatabases(FactoryInternal, Token);
         await client.TryAuthorizeToService("1@2", "12", ct: Token);
         await client.GetAsync($"{RouteConstants.MigrationRestoreGetUrl}?databaseType=MySql", token);
         await client.GetAsync(RouteConstants.MigrationCopyGetUrl, token);
     }
 
     /// <summary>
-    /// Закрываем фабрику средствами шарпа.
+    /// Закрываем фабрику средствами тестового фреймворка.
     /// </summary>
-    public void Dispose()
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void ClassCleanup()
     {
-        _factory.Dispose();
+        // Очистка фабрики выглядит как OperationCancelledException в логах.
+        Console.WriteLine("Disposing, next you will see a cancellation message");
+        FactoryInternal.Dispose();
     }
 
     /// <summary>
@@ -63,7 +68,7 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
         const double expectedCoefficient = 0.7D;
         var requestCount = 250;
 
-        using var client = _factory.CreateClient(Options);
+        using var client = FactoryInternal.CreateClient(Options);
 
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
 
@@ -154,7 +159,7 @@ public sealed class ReadOnlyIntegrationTests : TestBase, IDisposable
     {
         // arrange:
         var token = CancellationToken.None;
-        using var client = _factory.CreateClient(Options);
+        using var client = FactoryInternal.CreateClient(Options);
         await client.GetAsync(RouteConstants.SystemWaitWarmUpGetUrl, token);
 
         // act:

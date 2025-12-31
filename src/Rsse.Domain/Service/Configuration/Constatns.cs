@@ -55,6 +55,11 @@ public abstract class Constants
 
     // <summary>Именование окружения для тестирования.</summary>
     public const string TestingEnvironment = "Testing";
+    // <summary>Именование производственного окружения.</summary>
+    public const string ProductionEnvironment = "Production";
+    // <summary>Именование окружения для разработки.</summary>
+    public const string DevelopmentEnvironment = "Development";
+
     // <summary>Именование переменной, задающей имя окружения.</summary>
     public const string AspNetCoreEnvironmentName = "ASPNETCORE_ENVIRONMENT";
 

@@ -11,7 +11,11 @@ namespace Rsse.Tests.Integration.RealDb.Extensions;
 /// </summary>
 internal static class Request
 {
-    // Варианты DTO для тестовых запросов.
+    // Corner case: создаёт пустой reduced вектор.
+    private static readonly NoteRequest CreateZeroReduced =
+        new() { Title = "123", Text = "123", CheckedTags = [1] };
+
+    // Варианты DTO для стандартных тестовых запросов.
     internal static readonly NoteRequest CreateWithBracketsRequest =
         new() { Title = "[1]", Text = "посчитаем до четырёх", CheckedTags = [1] };
 
@@ -41,6 +45,9 @@ internal static class Request
 
     // Варианты сериализованного контента для тестовых запросов.
     internal static StringContent CreateContent => new(JsonSerializer.Serialize(CreateWithBracketsRequest),
+        Encoding.UTF8, "application/json");
+
+    internal static StringContent CreateZeroReducedContent => new(JsonSerializer.Serialize(CreateZeroReduced),
         Encoding.UTF8, "application/json");
 
     internal static StringContent UpdateContent =>

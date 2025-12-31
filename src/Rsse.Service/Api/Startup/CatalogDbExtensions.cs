@@ -26,7 +26,10 @@ public static class CatalogDbExtensions
     /// <param name="env">Окружение веб-приложения.</param>
     public static void TryAddCatalogStores(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
-        if (env.EnvironmentName == Constants.TestingEnvironment) return;
+        if (EnvironmentReporter.CheckIfTesting(env.EnvironmentName))
+        {
+            return;
+        }
 
         var npgsqlConnectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);

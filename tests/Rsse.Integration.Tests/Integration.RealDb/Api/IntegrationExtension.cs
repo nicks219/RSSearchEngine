@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,9 +8,6 @@ using Npgsql;
 using Rsse.Api.Controllers;
 using Rsse.Api.Startup;
 using Rsse.Infrastructure.Context;
-using Rsse.Infrastructure.Repository;
-using Rsse.Tooling.Contracts;
-using Rsse.Tooling.MigrationAssistant;
 using Serilog;
 
 namespace Rsse.Tests.Integration.RealDb.Api;
@@ -79,10 +75,10 @@ public static class IntegrationExtension
         // other dependencies:
         services.AddControllers().AddApplicationPart(typeof(ReadController).Assembly);
 
-        services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
+        /*services.AddSingleton<IDbMigrator, MySqlDbMigrator>();
         services.AddSingleton<IDbMigrator, NpgsqlDbMigrator>();
 
         services.AddScoped<CatalogRepository<MysqlCatalogContext>>();
-        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();
+        services.AddScoped<CatalogRepository<NpgsqlCatalogContext>>();*/
     }
 }
