@@ -7,7 +7,7 @@
 
 ## Технологии
 * ```text
-  .NET 9 | TS React 19 | OTLP
+  .NET 10 | TS React 19 | OTLP
   ```    
 * ```text
   PostgreSQL | MySQL | SQLite | EF

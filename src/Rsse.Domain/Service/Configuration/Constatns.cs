@@ -17,7 +17,7 @@ public abstract class Constants
     /// <summary/> Минорная версия.
     private const string MinorVersion = "0";
     /// <summary/> Патч.
-    private const string PatchVersion = "0";
+    private const string PatchVersion = "4";
 
     // <summary/> Рут для статики.
     public const string StaticDirectory = "ClientApp/build";
