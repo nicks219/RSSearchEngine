@@ -67,12 +67,18 @@
     * [x] проверить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
     * [ ] протестировать обновленный функционал:
       * прогнать тесты, чиним:
-        * добавил wait warmup в Rsse.Tests
+        * Rsse.Tests: добавил wait warmup
         * перенес ответ 403 в IAuthorizationMiddlewareResultHandler
         * синхронизировал версии MSTest.TestAdapter и MSTest.TestFramework
-        * ... Rsse.Integration.Tests
-      * подняться локально, накатить дамп
-        * [ ] при удалении заметки: Unable to cast object of type 'MySqlConnector.MySqlConnection' to type 'MySql.Data.MySqlClient.MySqlConnection'
+        * Rsse.Integration.Tests: добавил нового провайдера в seed
+        * [ ] проблема: в интеграционных тестах ActivatorService запускается/падает (на Delay) три раза по отмене, хотя stoppingToken = false, при запуске такого нет
+      * подняться локально, проверить накатку дампа:
+        * [.] при удалении заметки: Unable to cast object of type 'MySqlConnector.MySqlConnection' to type 'MySql.Data.MySqlClient.MySqlConnection'
+          * решение: до замены провайдера на Pomelo подключаем UseMySql через строку подключения
+        * [ ] токенайзер падает при сохранении записи (CheckIsProduction:false) System.IndexOutOfRangeException BucketHelper:396 (код Вити, индекс)
+          * TokenizerServiceCore.CreateAsync. заметка "1234" это пустая коллекция для reduced, вот и падает.
+          * разобраться, воспроизвести, покрыть тестами, убедиться что можно выкладываться (SearchEngineManager.CheckIsProduction:true для выкладки)
+          * SearchEngineManager - поставь throw везде, чтоб быть уверенным) заодно CSS для мобильного поправил)
     * [ ] обновить версию сервиса в ApplicationFullName
     * [ ] в пайплайнах обновить версии образов для билда NET/React (если требуется)
       * ci.dotnet.build | ci.node.js.build | Dockerfile-net-react (билд для k3s, проверить локально)

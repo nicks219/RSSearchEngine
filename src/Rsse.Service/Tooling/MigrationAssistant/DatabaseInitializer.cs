@@ -58,6 +58,7 @@ public abstract class DatabaseInitializer
                 Console.WriteLine($"[{nameof(NpgsqlScript)}] rows affected | {rows}");
                 break;
 
+            case "MySql.EntityFrameworkCore":
             case "Pomelo.EntityFrameworkCore.MySql":
                 rows = await database.ExecuteSqlRawAsync(MySqlScript.DdlData, ct);
                 Console.WriteLine($"[{nameof(MySqlScript)}] rows affected | {rows}");

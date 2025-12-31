@@ -73,8 +73,8 @@ public static class CatalogDbExtensions
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             // логирование data source не зависит от environment
             var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
-            var mySqlConnection = mySqlDataSource.CreateConnection();
-            options.UseMySQL(mySqlConnection);
+            var mySqlConnectionString = mySqlDataSource.ConnectionString;
+            options.UseMySQL(mySqlConnectionString);
             options.UseLoggerFactory(loggerFactory);
         });
     }
