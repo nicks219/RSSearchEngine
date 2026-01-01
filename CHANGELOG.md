@@ -143,7 +143,7 @@
   * `d0.0.1` upd: рассмотреть возможность заменить в Rsse.Data конкретные зависимости на абстрактные
 
 
-* `OTLP` `develop/release/6.0.0-pre-3` `latest`
+* `OTLP` `develop/release/6.0.0-pre-3`
   * [сравнение ветки 6.0.0-pre-3 с 6.0.0-pre-2 в github](https://github.com/nicks219/RSSearchEngine/compare/6.0.0-pre-release-2...6.0.0-pre-release-3)
   * [информация про включение самодиагностики в OpenTelemetry SDK NET](https://www.nuget.org/packages/OpenTelemetry#self-diagnostics)
   * [информация по созданию k3s ресурсов для проекта](.common/scripts.k3s.bash)
@@ -180,7 +180,7 @@
   * upd: связь трейсов и логов - настройка OTLP-экспортера Serilog через код | энричер с идентификаторами
 
 
-* `k6.0.2` `exemplar` `ok`
+* `k6.0.2` `exemplar` `ok` `stable` `latest`
   * upd: добавлен сорс Npgsql к трассам
   * upd: роуты `/system` и `/v6/account` исключены из логов
   * upd: явно выставлять статусы для трасс в middleware
@@ -195,24 +195,37 @@
     - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
 
 
-* `в разработке` `develop`
-* [x] `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
-  - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
-  - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
- * [x] выделить поиск и токенайзер в отдельные проекты
- * [x] "освободить" **SearchEngine** для именования класса
- * [ ] `research` подумать над компоновкой библиотек токенайзера и связанного функционала
-   - в **CommonBaseOptions** используются типы из **Rsse.Engine**
- * [x] выделить `Tests.Common`
- * [x] получить метрики от кубера
-   * [x] для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
-   * [x] добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
-   * [x] настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
-	 - под дебагом в otel виден ответ 403: добавил в ClusterRole `resources: nodes/metrics` вместе и `nonResourceURLs` и `hostNetwork`
-	 - использовал под `debug-curl` для проверки смонтированного токена и чека авторизации на запросе метрики
-     - манифесты: [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml) | [debug-shell.yaml](.k3s/debug-shell.yaml)
-     - потребление cpu нодой выросло на 0.1 ядро
-   * [x] `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)
+* `в разработке` `develop` `описание процесса`
+  * ✅ `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
+    - ✅ отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+    - ✅ активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+  * ✅ выделить поиск и токенайзер в отдельные проекты
+  * ✅ "освободить" **SearchEngine** для именования класса
+  * `.` `research` подумать над компоновкой библиотек токенайзера и связанного функционала
+    - в **CommonBaseOptions** используются типы из **Rsse.Engine**
+  * ✅ выделить `Tests.Common`
+  * ✅ получить метрики от кубера
+    * ✅ для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
+    * ✅ добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
+    * ✅ настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
+	  - под дебагом в otel виден ответ 403: добавил в ClusterRole `resources: nodes/metrics` вместе и `nonResourceURLs` и `hostNetwork`
+	  - использовал под `debug-curl` для проверки смонтированного токена и чека авторизации на запросе метрики
+      - манифесты: [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml) | [debug-shell.yaml](.k3s/debug-shell.yaml)
+      - потребление cpu нодой выросло на 0.1 ядро
+  * ✅ `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)  
+
+
+#### v6.0.4 `6.0.4` `testing`
+#### NET10 | React 19.2.3
+* `NET10` `React19.2.3` `alpine:3.22.2`
+  * [сравнение ветки 6.0.2 с 6.0.4 в github](https://github.com/nicks219/RSSearchEngine/compare/6.0.2...6.0.4)
+  * sec: полное обновление зависимостей JS, в т.ч уязвимых пакетов (Node22.21.1)
+  * upd: **NET10**, докерфайлы, пайплайны
+  * upd: в compose файлы добавлено ожидание на хелсчеках для детерминированного запуска сервисов
+  * upd: проведен небольшой рефакторинг тестов, учитывающий большой набор алгоритмов поиска (тесты ускорились на 30%)
+  * upd: заменен провайдер до **MySql** до появления совместимой версии от **Pomelo** 
+  * fix: исправлена ошибка в инвертированном индексе
+
 
 * '6.0.4' `develop`
   * NET10
