@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контракт ответа ручки с системной информацией.

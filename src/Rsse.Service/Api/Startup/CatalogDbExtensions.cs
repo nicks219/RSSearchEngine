@@ -6,17 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Infrastructure.Context;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для регистрации требуемых хранилищ данных.
 /// </summary>
 public static class CatalogDbExtensions
 {
-    private static readonly ServerVersion MySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
+    // private static readonly ServerVersion MySqlVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
     /// <summary>
     /// Зарегистрировать все необходимые хранилища данных для всех окружений, кроме тестового.
@@ -26,7 +26,10 @@ public static class CatalogDbExtensions
     /// <param name="env">Окружение веб-приложения.</param>
     public static void TryAddCatalogStores(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
-        if (env.EnvironmentName == Constants.TestingEnvironment) return;
+        if (EnvironmentReporter.CheckIfTesting(env.EnvironmentName))
+        {
+            return;
+        }
 
         var npgsqlConnectionString = configuration.GetConnectionString(Startup.AdditionalConnectionKey);
         var mysqlConnectionString = configuration.GetConnectionString(Startup.DefaultConnectionKey);
@@ -73,7 +76,8 @@ public static class CatalogDbExtensions
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             // логирование data source не зависит от environment
             var mySqlDataSource = sp.GetRequiredService<MySqlDataSource>();
-            options.UseMySql(mySqlDataSource, MySqlVersion);
+            var mySqlConnectionString = mySqlDataSource.ConnectionString;
+            options.UseMySQL(mySqlConnectionString);
             options.UseLoggerFactory(loggerFactory);
         });
     }

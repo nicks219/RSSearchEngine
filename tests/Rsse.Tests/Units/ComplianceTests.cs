@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -7,23 +6,24 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Controllers;
-using SearchEngine.Api.Services;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
-using SearchEngine.Services;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Units.Infra;
+using Rsse.Api.Controllers;
+using Rsse.Api.Services;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Tests.Common;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Units.Infra;
 
-namespace SearchEngine.Tests.Units;
+namespace Rsse.Tests.Units;
 
+/// <summary>
+/// Тестирование поисковых метрик по всем алгоритмам на стабе данных.
+/// </summary>
 [TestClass]
 public class ComplianceTests
 {
-    private readonly List<SearchType> _searchTypes =
-        [SearchType.GinOptimized, SearchType.GinSimple, SearchType.Original, SearchType.GinFast];
     private readonly CancellationToken _token = CancellationToken.None;
 
     [TestMethod]
@@ -36,41 +36,44 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnExpectedNoteWeights_WhenFindIncorrectTypedTextOnStubData(
         string text, string expected)
     {
-        foreach (var searchType in _searchTypes)
+        foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
-            // arrange:
-            using var stub = new ServiceProviderStub(searchType);
-            var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
-            var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
+            foreach (var reducedSearchTypes in TestData.ReducedSearchTypes)
+            {
+                // arrange:
+                using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
+                var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
-            var complianceController = new ComplianceSearchController(complianceManager);
-            complianceController.AddHttpContext(stub.Provider);
+                var complianceController = new ComplianceSearchController(complianceManager);
+                complianceController.AddHttpContext(stub.Provider);
 
-            // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-            var repo = stub.Provider.GetRequiredService<IDataRepository>();
-            var dbDataProvider = new DbDataProvider(repo);
-            await tokenizer.Initialize(dbDataProvider, _token);
+                // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+                var repo = stub.Provider.GetRequiredService<IDataRepository>();
+                var dbDataProvider = new DbDataProvider(repo);
+                await tokenizer.Initialize(dbDataProvider, _token);
 
-            // act:
-            var actionResult = complianceController.GetComplianceIndices(text, _token);
-            var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
-            var serialized = JsonSerializer.Serialize(okObjectResult);
-            var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
+                // act:
+                var actionResult = complianceController.GetComplianceIndices(text, _token);
+                var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+                var serialized = JsonSerializer.Serialize(okObjectResult);
+                var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
-            // assert:
-            serialized.Should().Be(expected);
-            deserialized.Should().NotBeNull();
-            deserialized.Error.Should().BeNull();
-            deserialized.Res.Should().NotBeNull();
+                // assert:
+                serialized.Should().Be(expected);
+                deserialized.Should().NotBeNull();
+                deserialized.Error.Should().BeNull();
+                deserialized.Res.Should().NotBeNull();
 
-            deserialized.Res.Keys.Should().NotBeEmpty();
-            deserialized.Res.Values.Should().NotBeEmpty();
+                deserialized.Res.Select(kvp => kvp.Key).ToList().Should().NotBeEmpty();
+                deserialized.Res.Select(kvp => kvp.Value).ToList().Should().NotBeEmpty();
 
-            deserialized.Res
-                .Keys
-                .ElementAt(0)
-                .Should()
-                .Be(1);
+                deserialized.Res
+                    .ElementAt(0)
+                    .Key
+                    .Should()
+                    .Be(1);
+            }
         }
     }
 
@@ -83,32 +86,35 @@ public class ComplianceTests
     public async Task ComplianceController_ShouldReturnNullResult_WhenFindGarbageTextOnStubData(
         string text, string expected)
     {
-        foreach (var searchType in _searchTypes)
+        foreach (var extendedSearchType in TestData.ExtendedSearchTypes)
         {
-            // arrange:
-            using var stub = new ServiceProviderStub(searchType);
-            var tokenizer = stub.Provider.GetRequiredService<ITokenizerService>();
-            var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
+            foreach (var reducedSearchTypes in TestData.ReducedSearchTypes)
+            {
+                // arrange:
+                using var stub = new ServiceProviderStub(extendedSearchType, reducedSearchTypes);
+                var tokenizer = stub.Provider.GetRequiredService<ITokenizerApiClient>();
+                var complianceManager = stub.Provider.GetRequiredService<ComplianceSearchService>();
 
-            var complianceController = new ComplianceSearchController(complianceManager);
-            complianceController.AddHttpContext(stub.Provider);
+                var complianceController = new ComplianceSearchController(complianceManager);
+                complianceController.AddHttpContext(stub.Provider);
 
-            // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
-            var repo = stub.Provider.GetRequiredService<IDataRepository>();
-            var dbDataProvider = new DbDataProvider(repo);
-            await tokenizer.Initialize(dbDataProvider, _token);
+                // токенайзер необходимо инициализировать явно, тк активируется из фоновой службы, которая в данном тесте не запущена
+                var repo = stub.Provider.GetRequiredService<IDataRepository>();
+                var dbDataProvider = new DbDataProvider(repo);
+                await tokenizer.Initialize(dbDataProvider, _token);
 
-            // act:
-            var actionResult = complianceController.GetComplianceIndices(text, _token);
-            var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
-            var serialized = JsonSerializer.Serialize(okObjectResult);
-            var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
+                // act:
+                var actionResult = complianceController.GetComplianceIndices(text, _token);
+                var okObjectResult = ((OkObjectResult)actionResult.Result.EnsureNotNull()).Value as ComplianceResponse;
+                var serialized = JsonSerializer.Serialize(okObjectResult);
+                var deserialized = JsonSerializer.Deserialize<ComplianceResponse>(serialized);
 
-            // assert:
-            serialized.Should().Be(expected);
-            deserialized.Should().NotBeNull();
-            deserialized.Error.Should().BeNull();
-            deserialized.Res.Should().BeNull();
+                // assert:
+                serialized.Should().Be(expected);
+                deserialized.Should().NotBeNull();
+                deserialized.Error.Should().BeNull();
+                deserialized.Res.Should().BeNull();
+            }
         }
     }
 }

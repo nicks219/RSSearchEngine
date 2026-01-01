@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace SearchEngine.Tooling.DevelopmentAssistant;
+namespace Rsse.Tooling.DevelopmentAssistant;
 
 /// <summary>
 /// Утилита для определения родительского процесса.

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SearchEngine.Data.Entities;
+namespace Rsse.Domain.Data.Entities;
 
 /// <summary>
 /// Представление строки таблицы бд, связывающей заметки и теги.

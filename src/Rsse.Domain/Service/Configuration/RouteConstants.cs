@@ -1,4 +1,4 @@
-namespace SearchEngine.Service.Configuration;
+namespace Rsse.Domain.Service.Configuration;
 
 public abstract class RouteConstants
 {

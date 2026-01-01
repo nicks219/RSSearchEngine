@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Services;
+using Rsse.Domain.Service.Api;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение, регистрирующее зависимости для слоя бизнес-логики.

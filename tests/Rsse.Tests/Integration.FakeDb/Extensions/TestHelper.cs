@@ -5,10 +5,10 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Extensions;
+namespace Rsse.Tests.Integration.FakeDb.Extensions;
 
 /// <summary>
 /// Контейнер с вспомогательным функционалом для тестов.

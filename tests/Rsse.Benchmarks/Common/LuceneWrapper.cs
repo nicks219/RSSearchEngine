@@ -8,8 +8,9 @@ using Lucene.Net.Search;
 using Lucene.Net.Search.Spans;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+using Rsse.Tests.Common;
 
-namespace SearchEngine.Benchmarks.Common;
+namespace RsseEngine.Benchmarks.Common;
 
 /// <summary>
 /// Компонент с Lucene.
@@ -27,7 +28,7 @@ public static class LuceneWrapper
         var analyzer = new StandardAnalyzer(appLuceneVersion);
         using var writer = new IndexWriter(Dir, new IndexWriterConfig(appLuceneVersion, analyzer));
 
-        var dataProvider = new FileDataProvider();
+        var dataProvider = new FileDataMultipleProvider();
         await foreach (var entity in dataProvider.GetDataAsync())
         {
             var text = entity.Title + " " + entity.Text;

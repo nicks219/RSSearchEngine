@@ -2,12 +2,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер, поставляющий системную информацию.
@@ -16,7 +16,7 @@ namespace SearchEngine.Api.Controllers;
 public class SystemController(
     IOptionsSnapshot<DatabaseOptions> databaseOptions,
     IOptionsMonitor<ElectionTypeOptions> electionType,
-    ITokenizerService tokenizerService) : ControllerBase
+    ITokenizerApiClient tokenizerApiClient) : ControllerBase
 {
     /// <summary>
     /// Дефолтный таймаут ожидания прогрева сервиса, используется в <see cref="WaitReadinessWithTimeout"/>.
@@ -58,7 +58,7 @@ public class SystemController(
         while (true)
         {
             if (timeoutToken.IsCancellationRequested) return StatusCode(503, nameof(WaitReadinessWithTimeout));
-            if (await tokenizerService.WaitWarmUp(timeoutToken)) break;
+            if (await tokenizerApiClient.WaitWarmUp(timeoutToken)) break;
         }
 
         return Ok();

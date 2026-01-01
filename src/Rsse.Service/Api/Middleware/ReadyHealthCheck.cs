@@ -1,14 +1,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using SearchEngine.Service.Contracts;
+using Rsse.Domain.Service.Contracts;
 
-namespace SearchEngine.Api.Middleware;
+namespace Rsse.Api.Middleware;
 
 /// <summary>
 /// Проверка готовности сервиса принимать трафик.
 /// </summary>
-public class ReadyHealthCheck(ITokenizerService tokenizer) : IHealthCheck
+public class ReadyHealthCheck(ITokenizerApiClient tokenizer) : IHealthCheck
 {
     /// <summary>
     /// Проверить доступность сервиса. Считаем доступным если инициализация токенизатора прошла успешно.

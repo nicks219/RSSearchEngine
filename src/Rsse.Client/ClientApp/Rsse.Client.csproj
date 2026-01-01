@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <IsPackable>false</IsPackable>
-        <IsPublishable>false</IsPublishable>
-        <Configurations>Debug;Release</Configurations>
-    </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
 
 </Project>

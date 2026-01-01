@@ -8,15 +8,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Data.Dto;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Mapping;
-using SearchEngine.Services;
-using static SearchEngine.Api.Configuration.ControllerErrorMessages;
-using static SearchEngine.Api.Configuration.ControllerMessages;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Mapping;
+using static Rsse.Api.Configuration.ControllerErrorMessages;
+using static Rsse.Api.Configuration.ControllerMessages;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер авторизации.

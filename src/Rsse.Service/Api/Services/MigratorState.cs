@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Контейнер с состоянием миграторов.

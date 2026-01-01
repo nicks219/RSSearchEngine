@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+# роут по https/http notefinder.ru , редирект не отрабатывает
+kind: Ingress
+metadata:
+  name: rsse-app-ingress-https-ru-https-only
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/redirect-entry-point: "https"
+spec:
+  rules:
+    - host: notefinder.ru
+      http:
+        paths:
+          - backend:
+              service:
+                name: rsse-app-service
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - notefinder.ru
+      secretName: secret-tls-ru
+---
+

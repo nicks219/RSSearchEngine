@@ -1,4 +1,5 @@
 apiVersion: networking.k8s.io/v1
+# роут по https/http notefinder.ru , без редиректа
 kind: Ingress
 metadata:
   name: rsse-app-ingress-https-ru
@@ -21,4 +22,3 @@ spec:
         - notefinder.ru
       secretName: secret-tls-ru
 ---
-

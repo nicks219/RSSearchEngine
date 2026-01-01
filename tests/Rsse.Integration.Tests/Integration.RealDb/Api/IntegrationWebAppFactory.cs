@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integration.RealDb.Infra;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Tests.Integration.RealDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.RealDb.Api;
+namespace Rsse.Tests.Integration.RealDb.Api;
 
-public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : class
+public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : Startup
 {
     protected override IHostBuilder CreateHostBuilder()
     {
@@ -33,7 +34,8 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
         var builder = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.TestingEnvironment);
+                // TestingEnvironment | ProductionEnvironment
+                Environment.SetEnvironmentVariable(Constants.AspNetCoreEnvironmentName, Constants.ProductionEnvironment);
                 Environment.SetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable, Constants.DisableValue);
                 webBuilder.UseStartup<T>();
             })
@@ -43,7 +45,11 @@ public class IntegrationWebAppFactory<T> : WebApplicationFactory<T> where T : cl
             })
             .ConfigureServices(services =>
             {
-                services.AddDbsIntegrationTestEnvironment();
+                if (EnvironmentReporter.IsTesting())
+                {
+                    // не вызывать, если тест запущен для production тк сервисы подключатся в startup
+                    services.AddDbsIntegrationTestEnvironment();
+                }
             });
 
         builder.UseSerilog();

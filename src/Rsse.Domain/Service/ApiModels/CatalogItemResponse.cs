@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контейнер с одной записью в странице каталога, для контракта ответа со страницей каталога.

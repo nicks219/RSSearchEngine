@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace SearchEngine.Service.ApiModels;
+namespace Rsse.Domain.Service.ApiModels;
 
 /// <summary>
 /// Контракт запроса данных авторизации.

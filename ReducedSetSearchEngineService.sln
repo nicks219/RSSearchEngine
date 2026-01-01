@@ -19,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		CHANGELOG.md = CHANGELOG.md
-		Directory.Build.props = Directory.Build.props
 		src\Directory.Packages.props = src\Directory.Packages.props
 		tests\Directory.Packages.props = tests\Directory.Packages.props
 		src\Rsse.Service\Properties\launchSettings.json = src\Rsse.Service\Properties\launchSettings.json
@@ -29,6 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{307C
 		.common\scripts.docker.md = .common\scripts.docker.md
 		.common\scripts.k3s.bash = .common\scripts.k3s.bash
 		.common\ssl.update.md = .common\ssl.update.md
+		src\Directory.Build.props = src\Directory.Build.props
+		tests\Directory.Build.props = tests\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client.jsx", "client.jsx", "{F63409DD-059D-445B-95EA-897A6333935C}"
@@ -99,7 +100,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\deployment.rsse.yml = .k3s\deployment.rsse.yml
 		.k3s\ingress.traefik.ip.yml = .k3s\ingress.traefik.ip.yml
 		.k3s\ingress.traefik.ru.yml = .k3s\ingress.traefik.ru.yml
-		.k3s\ingress.traefik.yml = .k3s\ingress.traefik.yml
 		.k3s\kustomization.yaml = .k3s\kustomization.yaml
 		.k3s\otel.collector.metrics.yml = .k3s\otel.collector.metrics.yml
 		.k3s\otel.collector.otlp.v2.yml = .k3s\otel.collector.otlp.v2.yml
@@ -107,6 +107,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".k3s", ".k3s", "{637065C8-A
 		.k3s\resource.mysql.yml = .k3s\resource.mysql.yml
 		.k3s\resource.postgres.yml = .k3s\resource.postgres.yml
 		.k3s\service.rsse.yml = .k3s\service.rsse.yml
+		.k3s\ingress.traefik.ru.https.yml = .k3s\ingress.traefik.ru.https.yml
+		.k3s\ingress.traefik.ru.redirect.yml = .k3s\ingress.traefik.ru.redirect.yml
+		.k3s\sa-metrics.yml = .k3s\sa-metrics.yml
+		.k3s\otel.collector.otlp.v3.yml = .k3s\otel.collector.otlp.v3.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".drafts", ".drafts", "{BCD5C309-5EAC-4FA1-B877-7C415C0BD1C9}"
@@ -121,6 +125,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Integration.Tests", "tests\Rsse.Integration.Tests\Rsse.Integration.Tests.csproj", "{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Benchmarks", "tests\Rsse.Benchmarks\Rsse.Benchmarks.csproj", "{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.VectorSearch", "src\Rsse.Engine.VectorSearch\Rsse.Engine.VectorSearch.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.Tokenizer", "src\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj", "{30D48870-9CBB-4466-A78F-9FFF64318EE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests.Common", "tests\Rsse.Tests.Common\Rsse.Tests.Common.csproj", "{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.LoadTest", "tests\Rsse.LoadTest\Rsse.LoadTest.csproj", "{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -160,6 +172,22 @@ Global
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Debug|x64.Build.0 = Debug|x64
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Release|x64.ActiveCfg = Release|x64
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}.Release|x64.Build.0 = Release|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Debug|x64.ActiveCfg = Debug|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Debug|x64.Build.0 = Debug|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Release|x64.ActiveCfg = Release|x64
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101}.Release|x64.Build.0 = Release|x64
+		{30D48870-9CBB-4466-A78F-9FFF64318EE9}.Debug|x64.ActiveCfg = Debug|x64
+		{30D48870-9CBB-4466-A78F-9FFF64318EE9}.Debug|x64.Build.0 = Debug|x64
+		{30D48870-9CBB-4466-A78F-9FFF64318EE9}.Release|x64.ActiveCfg = Release|x64
+		{30D48870-9CBB-4466-A78F-9FFF64318EE9}.Release|x64.Build.0 = Release|x64
+		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}.Debug|x64.ActiveCfg = Debug|x64
+		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}.Debug|x64.Build.0 = Debug|x64
+		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}.Release|x64.ActiveCfg = Release|x64
+		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}.Release|x64.Build.0 = Release|x64
+		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Debug|x64.ActiveCfg = Debug|x64
+		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Debug|x64.Build.0 = Debug|x64
+		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Release|x64.ActiveCfg = Release|x64
+		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +205,10 @@ Global
 		{7E56FDDB-DAF3-4FB2-B528-2D1EB1B755B4} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{A9D148B4-ACE5-45B3-9F86-0733497BBA0B} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
+		{DED7D097-237F-D021-A6BB-A6E7EDE56101} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{30D48870-9CBB-4466-A78F-9FFF64318EE9} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
+		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
+		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}

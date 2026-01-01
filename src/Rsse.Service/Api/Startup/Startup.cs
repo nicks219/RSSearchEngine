@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -12,24 +11,23 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Api.Authorization;
-using SearchEngine.Api.Middleware;
-using SearchEngine.Api.Services;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Infrastructure.Repository;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
+using Rsse.Api.Authorization;
+using Rsse.Api.Configuration;
+using Rsse.Api.Middleware;
+using Rsse.Api.Services;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Infrastructure.Context;
+using Rsse.Infrastructure.Repository;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Настройка зависимостей и пайплайна запроса сервиса.
@@ -57,26 +55,24 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         services.AddHostedService<ActivatorService>();
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         services.AddHttpContextAccessor();
 
         services.AddSwaggerGen(swaggerGenOptions =>
         {
             swaggerGenOptions.EnableAnnotations();
-            swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment, new Microsoft.OpenApi.Models.OpenApiInfo
+            swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment,
+                new Microsoft.OpenApi.OpenApiInfo
             {
                 Title = Constants.SwaggerTitle,
                 Version = Constants.ApiVersion
             });
         });
 
-        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        services.Configure<JsonOptions>(options =>
         {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<DatabaseType>());
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<ElectionType>());
+            options.SerializerOptions.TypeInfoResolver = AppJsonContext.Default;
         });
 
         services.Configure<ElectionTypeOptions>(o => o.ElectionType = ElectionType.SqlRandom);
@@ -122,6 +118,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 builder.AddRequirements(new FullAccessRequirement());
             });
 
+        services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomForbidHandler>();
         services.AddSingleton<IAuthorizationHandler, FullAccessRequirementsHandler>();
         services.AddCors(builder =>
         {
@@ -185,6 +182,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         app.UseRouting();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
+        app.UseMiddleware<SetActivityStatusMiddleware>();
 
         app.UseCors(Constants.DevelopmentCorsPolicy);
 
@@ -193,6 +191,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseAuthorization();
 
         app.UseRateLimiter();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHealthChecks("/system/live",
@@ -205,12 +204,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 {
                     Predicate = check => check.Tags.Contains("ready")
                 });
-            endpoints.Map("/account/accessDenied", async next =>
-            {
-                next.Response.StatusCode = 403;
-                next.Response.ContentType = "text/plain";
-                await next.Response.WriteAsync($"{next.Request.Method}: access denied.");
-            }).RequireAuthorization();
+
+            // endpoints.MapPrometheusScrapingEndpoint();
             endpoints.MapControllers();
 
 #if TRACING_ENABLE

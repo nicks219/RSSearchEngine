@@ -203,7 +203,7 @@ export class Loader {
     // LOGIN & LOGOUT request: /account/login?email= &password= or /account/logout
     static fireAndForgetWithQuery(url: string,
                                   query: string,
-                                  callback: (v: Response) => Response|PromiseLike<Response>|void,
+                                  callback: (_v: Response) => Response|PromiseLike<Response>|void,
                                   stateWrapper: FunctionComponentStateWrapper<StateTypesAlias>|null,
                                   recoveryContext?: RecoveryStateStorage<StateTypesAlias>): void {
         const error: string = `${Loader.name}: FnF or login/logout/check exception`;
@@ -224,7 +224,7 @@ export class Loader {
     }
 
     // CREATE: /api/find?text= or /api/read/title?id=
-    static getWithPromise = async(url: string, query: string, callback: (data: Response) => Promise<void>|void): Promise<void> => {
+    static getWithPromise = async(url: string, query: string, callback: (_data: Response) => Promise<void>|void): Promise<void> => {
         const error: string = `${Loader.name}: promise exception`;
         Loader.setupDevEnvironment();
 

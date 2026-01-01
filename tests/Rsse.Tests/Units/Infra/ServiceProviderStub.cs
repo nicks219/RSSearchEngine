@@ -1,15 +1,13 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using SearchEngine.Api.Services;
-using SearchEngine.Api.Startup;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Tokenizer;
-using SearchEngine.Service.Tokenizer.Contracts;
-using SearchEngine.Service.Tokenizer.SearchProcessor;
+using Rsse.Api.Configuration;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Service.Contracts;
+using RsseEngine.SearchType;
 
-namespace SearchEngine.Tests.Units.Infra;
+namespace Rsse.Tests.Units.Infra;
 
 /// <summary/> Для тестов, с двумя логгерами.
 public sealed class ServiceProviderStub : IDisposable
@@ -17,7 +15,8 @@ public sealed class ServiceProviderStub : IDisposable
     internal readonly IServiceScope Scope;
     internal readonly IServiceProvider Provider;
 
-    public ServiceProviderStub(SearchType searchType = SearchType.Original)
+    public ServiceProviderStub(ExtendedSearchType extendedSearchType = ExtendedSearchType.Legacy,
+        ReducedSearchType reducedSearchType = ReducedSearchType.Legacy)
     {
         var services = new ServiceCollection();
 
@@ -25,12 +24,11 @@ public sealed class ServiceProviderStub : IDisposable
         services.Configure<CommonBaseOptions>(options =>
         {
             options.TokenizerIsEnable = true;
-            options.SearchType = searchType;
+            options.ExtendedSearchType = extendedSearchType;
+            options.ReducedSearchType = reducedSearchType;
         });
 
-        services.AddSingleton<ITokenizerService, TokenizerService>();
-
-        services.AddSingleton<ITokenizerProcessorFactory, TokenizerProcessorFactory>();
+        services.AddSingleton<ITokenizerApiClient, TokenizerApiClient>();
 
         // для тестов create
         services.AddDomainLayerDependencies();

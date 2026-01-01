@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using SearchEngine.Data.Contracts;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Contracts;
+using Rsse.Domain.Data.Entities;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Компонент поставщика данных из базы, регистрировать как scoped-зависимость.

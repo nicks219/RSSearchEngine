@@ -1,18 +1,29 @@
 #if TRACING_ENABLE
 using System;
+using System.Diagnostics.Metrics;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение функционала поставки метрик.
 /// </summary>
 internal static class MetricsExtensions
 {
+    private static readonly Meter CustomMeter = new("exemplar.metrics", "1.0.0");
+    private const string HistogramWithExemplarName = "http.server.duration_with_trace";
+    internal static readonly Histogram<double> HistogramWithExemplar =
+        CustomMeter.CreateHistogram<double>(HistogramWithExemplarName);
+
+    private static readonly ExplicitBucketHistogramConfiguration CustomBuckets = new()
+    {
+        Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+    };
+
     /// <summary>
     /// Добавить функционал поставки метрик.
     /// </summary>
@@ -23,48 +34,29 @@ internal static class MetricsExtensions
         return builder
             .WithMetrics(meterProviderBuilder =>
             {
-                // todo: подумать, стоит ли удалить после настройки OTLP (в тч зависимость OpenTelemetry.Exporter)
-                // meterProviderBuilder.AddPrometheusExporter();
-
-                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) !=
-                    Constants.DisableValue)
+                if (Environment.GetEnvironmentVariable(Constants.AspNetCoreOtlpExportersDisable) == Constants.DisableValue)
                 {
-                    if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
-                    meterProviderBuilder.AddOtlpExporter(options =>
+                    return;
+                }
+
+                if (otlpEndpoint == null) throw new Exception("Otlp:Endpoint not found.");
+
+                // kestrel_connection_duration_seconds_bucket
+                // Microsoft.AspNetCore.Server.Kestrel: [0.01 , 0.02 , 0.05 , 0.1 , 0.2 , 0.5 , 1 , 2 , 5 , 10 , 30 , 60 , 120 , 300]
+                meterProviderBuilder
+                    .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "exemplar.metrics")
+                    .AddView("http.server.request.duration", CustomBuckets)
+                    .AddView(HistogramWithExemplarName, CustomBuckets)
+                    .SetExemplarFilter(ExemplarFilterType.TraceBased)
+                    // .AddPrometheusExporter()
+                    .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);
                         options.Protocol = OtlpExportProtocol.Grpc;
-                        Log.ForContext<Startup>().Information("OTLP exporter for metrics was added");
                     });
-                }
 
-                // kestrel_connection_duration_seconds_bucket
-                // Microsoft.AspNetCore.Server.Kestrel: 0.01 , 0.02 , 0.05 , 0.1 , 0.2 , 0.5 , 1 , 2 , 5 , 10 , 30 , 60 , 120 , 300
-                meterProviderBuilder.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel");
-                meterProviderBuilder.AddView("http.server.request.duration",
-                    new ExplicitBucketHistogramConfiguration
-                    {
-                        Boundaries =
-                        [
-                            0,
-                            0.005,
-                            0.01,
-                            0.025,
-                            0.05,
-                            0.075,
-                            0.1,
-                            0.25,
-                            0.5,
-                            0.75,
-                            1,
-                            2.5,
-                            5,
-                            7.5,
-                            10
-                        ]
-                    });
+                Log.ForContext<Startup>().Information("OTLP exporter for metrics was added");
             });
     }
 }
 #endif
-

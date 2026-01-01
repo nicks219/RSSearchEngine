@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Exceptions;
+using Rsse.Domain.Exceptions;
 
-namespace SearchEngine.Api.Middleware;
+namespace Rsse.Api.Middleware;
 
 /// <summary>
 /// Компонент централизованной обработки исключений.

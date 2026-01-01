@@ -40,13 +40,13 @@ spec:
               path: /system/live
               port: 5000
             periodSeconds: 30
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
           readinessProbe:
             httpGet:
               path: /system/ready
               port: 5000
-            periodSeconds: 20
-            initialDelaySeconds: 10
+            periodSeconds: 30
+            initialDelaySeconds: 30
       volumes:
         - name: dataprotection-keys
           persistentVolumeClaim:

@@ -1,4 +1,4 @@
-namespace SearchEngine.Tooling.Contracts;
+namespace Rsse.Tooling.Contracts;
 
 /// <summary/> Контракт конвертации дампа.
 internal interface IDbConvertor

@@ -5,18 +5,18 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Tooling.MigrationAssistant;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Tooling.MigrationAssistant;
 
-namespace SearchEngine.Api.Services;
+namespace Rsse.Api.Services;
 
 /// <summary>
 /// Сервис запуска по расписанию инициализации функционала токенизатора.
 /// </summary>
 internal class ActivatorService(
     MigratorState migratorState,
-    ITokenizerService tokenizer,
+    ITokenizerApiClient tokenizer,
     IServiceScopeFactory factory,
     ILogger<ActivatorService> logger) : BackgroundService
 {
@@ -34,7 +34,15 @@ internal class ActivatorService(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
+        try
+        {
+            await DatabaseInitializer.CreateAndSeedAsync(factory, logger, stoppingToken);
+        }
+        catch (Exception e)
+        {
+            // вывод в консоль добавлен для тестирования среды, также он работает в контейнере
+            Console.WriteLine($"[{nameof(ActivatorService)}] get exception while init db: '{e.Message}'");
+        }
 
         try
         {
@@ -42,21 +50,32 @@ internal class ActivatorService(
             {
                 var currentDateTime = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-                logger.LogInformation("[{Reporter}] is active, prepare to runs for '{Count}' time | {Date}",
+                logger.LogInformation("[{Reporter}] started | prepare to runs for '{Count}' time | {Date}",
                     nameof(ActivatorService), _count.ToString(), currentDateTime);
 
                 using (var scope = factory.CreateScope())
                 {
                     var dataProvider = scope.ServiceProvider.GetRequiredService<DbDataProvider>();
-                    await tokenizer.Initialize(dataProvider, stoppingToken);
+                    try
+                    {
+                        await tokenizer.Initialize(dataProvider, stoppingToken);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[{nameof(ActivatorService)}] get exception while init tokenizer: '{e.Message}'");
+                    }
                 }
 
-                logger.LogInformation("[{Reporter}] awaited for next start", nameof(ActivatorService));
+                logger.LogInformation("[{Reporter}] finished | awaited for next start", nameof(ActivatorService));
 
                 await Task.Delay(WaitMs, stoppingToken);
 
                 _count++;
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[{nameof(ActivatorService)}] get exception on await {_count} cycle: '{e.Message}'");
         }
         finally
         {

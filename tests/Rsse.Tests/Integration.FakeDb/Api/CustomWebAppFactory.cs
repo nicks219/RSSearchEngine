@@ -11,14 +11,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MySqlConnector;
 using Npgsql;
-using SearchEngine.Api.Startup;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Tests.Integration.FakeDb.Extensions;
-using SearchEngine.Tests.Integration.FakeDb.Infra;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Infrastructure.Context;
+using Rsse.Tests.Integration.FakeDb.Extensions;
+using Rsse.Tests.Integration.FakeDb.Infra;
 using Serilog;
 
-namespace SearchEngine.Tests.Integration.FakeDb.Api;
+namespace Rsse.Tests.Integration.FakeDb.Api;
 
 public class CustomWebAppFactory<T> : WebApplicationFactory<T> where T : class
 {

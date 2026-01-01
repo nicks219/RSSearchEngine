@@ -50,3 +50,57 @@
         * ✅ зафиксировать в документации и [README.md](README.md)
         * зафиксировать в system/version
         * создать релиз
+---
+  * Обновление до актуальных версий на начало **2026** года:
+    * [x] обновить rider 2025.2.3 -> 2025.3.1 для поддержки NET10 (2025.2.3 проблемы на билде)
+    * [x] поднять версии до NET10 (перенес в [Directory.Build,props](Directory.Build.props))
+    * [x] обновить зависимости NET проекта:
+      * ждём релиза `Pomelo.EntityFrameworkCore.MySql` -> замена на `MySql.EntityFrameworkCore` | `MySqlConnector`
+      * `MSTest.TestFramework` выше 3.11.1 отвалятся атрибуты `[ClassCleanup(ClassCleanupBehavior.EndOfClass)]`
+    * [x] поднять React до 19.2.3
+      * напоминалка: npm outdated | npm update | npm install <package>@latest | npm run build | npx npm-check-updates | npx npm-check-updates -u | npm install
+      * обновить Node: nvm install 22.12.0 | nvm use 22.12.0 | 22.21.1 LTS с сайта
+      * если ругается на eslint: npm install @typescript-eslint/eslint-plugin@8.51.0 @typescript-eslint/parser@8.51.0 --save-exact | npm install
+      * поправить ошибки, закэшировался старый сертификат: chrome://settings/clearBrowserData | dotnet dev-certs https --clean | либо vite создаст при запуске
+    * [x] проверить зависимости по dependabot: vite ~> 6.3.6 | js-yaml ~> 4.1.1 | glob ~> 10.5.0 (High severity)
+    * [ ] протестировать обновленный функционал:
+      * прогнать тесты, чиним:
+        * Rsse.Tests: добавил wait warmup
+        * перенес ответ 403 в IAuthorizationMiddlewareResultHandler
+        * синхронизировал версии MSTest.TestAdapter и MSTest.TestFramework
+        * Rsse.Integration.Tests: добавил нового провайдера в seed
+        * [.] проблема: в интеграционных тестах ActivatorService многократно запускается/падает (на Delay) по отмене, хотя stoppingToken = false
+          * причина: очистка хоста на запуск каждого теста (а также создание/очистка хостов для прогрева), лог общий, хотя и выводится фрагментировано
+          * решение: для не зависящих от состояния тестов оставлен один тестовый хост
+          * для зависящих от состояния тестов убраны дополнительные хосты для прогрева, далее можно заменить на очистку индексов по требованию
+      * подняться локально, накатить дамп:
+        * [.] при удалении заметки: Unable to cast object of type 'MySqlConnector.MySqlConnection' to type 'MySql.Data.MySqlClient.MySqlConnection'
+          * решение: до замены провайдера на Pomelo подключаем UseMySql через строку подключения
+        * [.] токенайзер падает при сохранении записи "123" (запусти тесты на CheckIsProduction:false) System.IndexOutOfRangeException BucketHelper:396
+          * [x] SearchEngineTests: фикс и правка от автора кода для обработки пустых коллекций
+          * [x] дополнительно добавлен выброс исключения при попытке запуска AlgorithmSelector на проде
+    * [.] в пайплайнах обновить версии образов для билда NET/React (если требуется)
+      * ci.dotnet.build | ci.node.js.build | Dockerfile-net-react (билд для k3s, проверить локально)
+    * [.] обновить версию сервиса в ApplicationFullName и в README
+    * [ ] поднять версии сервисов в кластере: Pg 18.1 | MySql 8.4 -> 9.5
+    * [ ] обновить зависимости кластера k3s
+    * [ ] обновить SSL-сертификат, подумать о переходе на `cert-manager`
+    * ...
+
+
+---
+# техдолг
+
+* [ ] DestructiveTests: сервис (фабрика) хранит состояние (поисковые индексы), добавить метод очистки для тестов (сейчас на каждый тест новая фабрика)
+* [.] BucketHelper: добавлен quick fix на пустую запись, исправлен на фикс от автора (CheckIsProduction:false)
+* [.] продумать, как тестировать сервис, учитывая production mode для индексов, вынеси все проверки среды в один метод, добавлять зависимости консистентно
+* [ ] Migration_Requests_ShouldApplyCorrectly бывает нестабилен (не находит таблицу), исследовать
+* [.] Проверить новый образ на NET10/alpine:3.22.2 (сборка/функционал)
+  * [x] сбборка: Directory.Build.props уровнем выше над контекстом, продублировал, добавил в докерфайл. Симлинк не помог: `ln -s ../Directory.Build.props .`
+  * [.] запустился: через compose, судя по логам начальные таблицы не инициализированы, также: Cannot load library libgssapi_krb5.so.2
+    * при повторном запуске поднялся стабильно, т.е не инициализируется минимальный дамп, возможно стоит добавить: krb5-libs | libssl3 | icu-libs zlib
+    * [x] решение: добавил хелсчеки в compose
+    * docker compose -f docker-compose-build.yml up --force-recreate
+    * docker-compose -f docker-compose-build.yml down --rmi all --volumes --remove-orphans
+    * docker compose -f docker-compose-build.yml up -d --wait
+* ...

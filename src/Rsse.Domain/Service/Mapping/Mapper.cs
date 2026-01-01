@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
-using SearchEngine.Service.ApiModels;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
+using Rsse.Domain.Service.ApiModels;
 
-namespace SearchEngine.Service.Mapping;
+namespace Rsse.Domain.Service.Mapping;
 
 /// <summary>
 /// Расширения для маппинга.

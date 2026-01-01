@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Api.Services;
-using SearchEngine.Services;
+using Rsse.Api.Services;
+using Rsse.Domain.Service.Api;
+using CreateService = Rsse.Domain.Service.Api.CreateService;
 
-namespace SearchEngine.Tests.Units.Infra;
+namespace Rsse.Tests.Units.Infra;
 
 /// <summary>
 /// Регистратор логгеров для тестов.
@@ -23,6 +24,6 @@ public static class NoopLoggerRegistrar
         services.AddSingleton<ILogger<ReadService>, NoopLogger<ReadService>>();
         services.AddSingleton<ILogger<UpdateService>, NoopLogger<UpdateService>>();
 
-        services.AddSingleton<ILogger<TokenizerService>, NoopLogger<TokenizerService>>();
+        services.AddSingleton<ILogger<TokenizerApiClient>, NoopLogger<TokenizerApiClient>>();
     }
 }

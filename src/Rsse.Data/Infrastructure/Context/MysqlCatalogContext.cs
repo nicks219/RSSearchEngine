@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace SearchEngine.Infrastructure.Context;
+namespace Rsse.Infrastructure.Context;
 
 /// <summary>
 /// Маркер для контекста MySql.

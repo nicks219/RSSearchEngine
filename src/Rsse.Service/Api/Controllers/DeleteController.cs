@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Service.Mapping;
-using SearchEngine.Services;
+using Rsse.Domain.Service.Api;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Domain.Service.Mapping;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для удаления сущностей.
@@ -18,7 +18,7 @@ namespace SearchEngine.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = !Constants.IsDebug)]
 public class DeleteController(
     IHostApplicationLifetime lifetime,
-    ITokenizerService tokenizerService,
+    ITokenizerApiClient tokenizerApiClient,
     DeleteService deleteService,
     CatalogService catalogService) : ControllerBase
 {
@@ -38,7 +38,7 @@ public class DeleteController(
         if (stoppingToken.IsCancellationRequested) return StatusCode(503);
 
         await deleteService.DeleteNote(id, stoppingToken);
-        await tokenizerService.Delete(id, stoppingToken);
+        await tokenizerApiClient.Delete(id, stoppingToken);
         var catalogResultDto = await catalogService.ReadPage(pg, stoppingToken);
         var catalogResponse = catalogResultDto.MapFromDto();
         return Ok(catalogResponse);

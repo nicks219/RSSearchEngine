@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,15 +7,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using SearchEngine.Api.Services;
-using SearchEngine.Data.Configuration;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Service.Configuration;
-using SearchEngine.Service.Contracts;
-using SearchEngine.Tooling.Contracts;
+using Rsse.Api.Services;
+using Rsse.Api.Startup;
+using Rsse.Domain.Data.Configuration;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Domain.Service.Configuration;
+using Rsse.Domain.Service.Contracts;
+using Rsse.Tooling.Contracts;
+using Serilog;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace SearchEngine.Api.Controllers;
+namespace Rsse.Api.Controllers;
 
 /// <summary>
 /// Контроллер для работы с миграциями бд.
@@ -25,8 +28,35 @@ public class MigrationController(
     DbDataProvider dbDataProvider,
     IHostApplicationLifetime lifetime,
     IDbMigratorFactory migratorFactory,
-    ITokenizerService tokenizerService) : ControllerBase
+    ITokenizerApiClient tokenizerApiClient) : ControllerBase
 {
+    /// <summary>
+    /// Залогировать тестовое сообщение с уровнем warning и отдать метрику.
+    /// </summary>
+    [HttpGet("/observabilty/report")]
+    public ActionResult ReportTestDataWithMetrics()
+    {
+        var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("trace-log-event"));
+        MetricsExtensions.HistogramWithExemplar.Record(1D);
+        Log.Warning(
+            $"{nameof(ReportTestDataWithMetrics)} | produce warning log with activity and histogram for testing purposes only.");
+        return Ok("Span, log and histogram created via ActivityEvent");
+    }
+
+    /// <summary>
+    /// Залогировать тестовое сообщение с уровнем warning.
+    /// </summary>
+    [HttpGet("/observabilty/report-without-metrcis")]
+    public ActionResult ReportTestDataWithoutMetrics()
+    {
+        var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("trace-log-event"));
+        Log.Warning(
+            $"{nameof(ReportTestDataWithoutMetrics)} | produce warning log with activity for testing purposes only.");
+        return Ok("Span and log created via ActivityEvent");
+    }
+
     /// <summary>
     /// Копировать данные (включая Users) из MySql в Postgres.
     /// </summary>
@@ -40,7 +70,7 @@ public class MigrationController(
 
         var mySqlMigrator = migratorFactory.CreateMigrator(DatabaseType.MySql);
         await mySqlMigrator.CopyDbFromMysqlToNpgsql(stoppingToken);
-        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
+        await tokenizerApiClient.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = "success" };
         return Ok(response);
     }
@@ -80,7 +110,7 @@ public class MigrationController(
 
         var migrator = migratorFactory.CreateMigrator(databaseType);
         var result = await migrator.Restore(fileName, stoppingToken);
-        await tokenizerService.Initialize(dbDataProvider, stoppingToken);
+        await tokenizerApiClient.Initialize(dbDataProvider, stoppingToken);
         var response = new StringResponse { Res = Path.GetFileName(result) };
         return Ok(response);
     }

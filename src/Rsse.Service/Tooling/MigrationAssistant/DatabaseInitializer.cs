@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SearchEngine.Infrastructure.Context;
-using SearchEngine.Tooling.Scripts;
+using Rsse.Infrastructure.Context;
+using Rsse.Tooling.Scripts;
 
-namespace SearchEngine.Tooling.MigrationAssistant;
+namespace Rsse.Tooling.MigrationAssistant;
 
 /// <summary>
 /// Создание и первоначальное заполнение базы данных.
@@ -27,6 +27,8 @@ public abstract class DatabaseInitializer
 
         try
         {
+            logger.LogInformation("[{Name}] started", nameof(DatabaseInitializer));
+
             // Исходим из того, что бд 'tagit' уже существует, например, создана при инициализации контейнера.
             await SeedDatabase(mysqlContext, ct);
             await SeedDatabase(npgsqlContext, ct);
@@ -56,6 +58,7 @@ public abstract class DatabaseInitializer
                 Console.WriteLine($"[{nameof(NpgsqlScript)}] rows affected | {rows}");
                 break;
 
+            case "MySql.EntityFrameworkCore":
             case "Pomelo.EntityFrameworkCore.MySql":
                 rows = await database.ExecuteSqlRawAsync(MySqlScript.DdlData, ct);
                 Console.WriteLine($"[{nameof(MySqlScript)}] rows affected | {rows}");

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 
-namespace SearchEngine.Api.Authorization;
+namespace Rsse.Api.Authorization;
 
 /// <summary>
 /// Обработчик правила авторизации <see cref="FullAccessRequirement"/>.

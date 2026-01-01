@@ -1,7 +1,8 @@
 ﻿import {createPortal} from "react-dom";
 import {Doms, SystemConstants} from "../dto/doms.tsx";
+import * as React from "react";
 
-export const Dialog = (props:{header:string, onAction:(action:string) => void, children:any}) => {
+export const Dialog = (props:{header:string, onAction:(_action:string) => void, children:React.ReactNode}) => {
     const {onAction, children, header} = props;
 
     // рендерим портал только для более простого поиска при необходимости отладки

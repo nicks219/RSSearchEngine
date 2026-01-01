@@ -6,10 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Rsse.Domain.Service.Configuration;
 
 #pragma warning disable CS0162 // Unreachable code detected
 
-namespace SearchEngine.Tooling.DevelopmentAssistant;
+namespace Rsse.Tooling.DevelopmentAssistant;
 
 /// <summary>
 /// Подъём и остановка среды разработки JS.
@@ -74,53 +75,57 @@ internal static class ClientLauncher
     /// </summary>
     private static void Up()
     {
-        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        var isDevelopment = EnvironmentReporter.IsDevelopment();
 
-        if (isDevelopment == false || _initialized)
+        lock (Lock)
         {
-            return;
-        }
-
-        // явный контроль необходим для гарантированного завершения всех дочерних процессов
-        if (RunDevServerOnStart)
-        {
-            Console.WriteLine($"[{nameof(ClientLauncher)}] make sure you have previously installed Node.js and run `npm install`");
-
-            var pathToShell = Path.Combine(Directory.GetCurrentDirectory(), ShellFolder);
-            var devServerInitializer = new Process();
-            devServerInitializer.StartInfo.FileName = "cmd.exe";
-            devServerInitializer.StartInfo.Arguments = DevServerControl == DevServerControl.Manual ?
-                $"/C cd {ClientRoot} && start {pathToShell}{ShellProcessName} @cmk /k {ShellCommand}" :
-                $"/C cd {ClientRoot} && {ShellCommand}";
-
-            devServerInitializer.Start();
-
-            // Rider в состоянии самостоятельно завершить дочерние процессы с dev-сервером, хотя этому можно помешать
-            // В любом случае, при управлении со стороны IDE явно ожидать завершение этого процесса бессмысленно
-            if (DevServerControl == DevServerControl.Manual)
+            if (!isDevelopment || _initialized)
             {
-                devServerInitializer.WaitForExit();
-                devServerInitializer.Close();
+                return;
             }
+
+            // явный контроль необходим для гарантированного завершения всех дочерних процессов
+            if (RunDevServerOnStart)
+            {
+                Console.WriteLine(
+                    $"[{nameof(ClientLauncher)}] make sure you have previously installed Node.js and run `npm install`");
+
+                var pathToShell = Path.Combine(Directory.GetCurrentDirectory(), ShellFolder);
+                var devServerInitializer = new Process();
+                devServerInitializer.StartInfo.FileName = "cmd.exe";
+                devServerInitializer.StartInfo.Arguments = DevServerControl == DevServerControl.Manual
+                    ? $"/C cd {ClientRoot} && start {pathToShell}{ShellProcessName} @cmk /k {ShellCommand}"
+                    : $"/C cd {ClientRoot} && {ShellCommand}";
+
+                devServerInitializer.Start();
+
+                // Rider в состоянии самостоятельно завершить дочерние процессы с dev-сервером, хотя этому можно помешать
+                // В любом случае, при управлении со стороны IDE явно ожидать завершение этого процесса бессмысленно
+                if (DevServerControl == DevServerControl.Manual)
+                {
+                    devServerInitializer.WaitForExit();
+                    devServerInitializer.Close();
+                }
+            }
+
+            if (RunBrowserOnStart)
+            {
+                var devClientInitializer = new Process();
+                devClientInitializer.StartInfo.FileName = "cmd.exe";
+                devClientInitializer.StartInfo.Arguments = $"/C rundll32 url.dll,FileProtocolHandler {DevServerUrl}";
+                devClientInitializer.Start();
+                devClientInitializer.WaitForExit();
+                devClientInitializer.Close();
+            }
+
+            // запустить делегат при завершении Main
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => TryHackDown();
+            // запустить делегат при остановке из IDE
+            Console.CancelKeyPress += (_, _) => TryHackDown();
+
+            _initialized = true;
+            Console.WriteLine($"[{nameof(ClientLauncher)}] started");
         }
-
-        if (RunBrowserOnStart)
-        {
-            var devClientInitializer = new Process();
-            devClientInitializer.StartInfo.FileName = "cmd.exe";
-            devClientInitializer.StartInfo.Arguments = $"/C rundll32 url.dll,FileProtocolHandler {DevServerUrl}";
-            devClientInitializer.Start();
-            devClientInitializer.WaitForExit();
-            devClientInitializer.Close();
-        }
-
-        // запустить делегат при завершении Main
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => TryHackDown();
-        // запустить делегат при остановке из IDE
-        Console.CancelKeyPress += (_, _) => TryHackDown();
-
-        _initialized = true;
-        Console.WriteLine($"[{nameof(ClientLauncher)}] started");
     }
 
     /// <summary>

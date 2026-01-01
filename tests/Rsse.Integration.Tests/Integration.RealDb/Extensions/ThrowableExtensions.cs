@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SearchEngine.Tests.Integration.RealDb.Extensions;
+namespace Rsse.Tests.Integration.RealDb.Extensions;
 
 /// <summary>
 /// Для отключения проверки типа на null в коде

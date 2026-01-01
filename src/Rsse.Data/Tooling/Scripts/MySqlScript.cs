@@ -1,6 +1,6 @@
-using SearchEngine.Data.Configuration;
+using Rsse.Domain.Data.Configuration;
 
-namespace SearchEngine.Tooling.Scripts;
+namespace Rsse.Tooling.Scripts;
 
 /// <summary>
 /// Инициализация данных для MySql.

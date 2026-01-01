@@ -86,8 +86,8 @@
   * fix: выгрузка дампов из рута закрыта под авторизацию, добавлена ручка даунлоада, расширение mysql-дампа заменено на .dump  
   * upd: дампы по умолчанию создаются для postgres, без применения DDL бд пересоздаётся средствами EF
 
-#### v6.0.0 `на проверке`
-#### NET9 | OTLP | рефакторинг API, архитектуры и тестов с code review
+#### v6.0.0 `k6.0.0`
+#### NET9 | OTLP | рефакторинг API, архитектуры и тестов, оптимизация поиска с code review
 * `NET9` `React19` `alpine:3.21`
   * [сравнение тега k6.0.0 с последним релизом k5.2.9 в github](https://github.com/nicks219/RSSearchEngine/compare/k5.2.9...k6.0.0)
   * upd: NET9 | React19 | интеграционники с services: GitHub Actions | k3s PVC для сервиса 
@@ -156,6 +156,9 @@
   * upd: поставлять observability в OTLP формате и экспортировать из кластера в Grafana Cloud
     * otlp-экспортеры отключаются переменной `ASPNETCORE_OTLP_EXPORTERS_DISABLE`
   * upd: `k6.0.0` манифесты k3s обновлены до *.v2.yml
+
+
+* `Оптимизации`
   * upd: выбор алгоритма случайной заметки | теги ci/cd | кастомизация манифестов
   * upd: бенчмарки токенайзер vs Lucene
   * fix: возможность билда отдельного проекта (замена переменной MSBuild $SolutionDir)
@@ -169,8 +172,70 @@
   * upd: `code-review` добавить инвертированный индекс. Не готов для прома, в данной версии допускается использование только на разработке
   * upd: исключаем роут `/system/*` из трассировки
   * upd: `master` использование Node.js 22 - подъем версий пакетов клиента | докерфайл | пайплайн
+  * upd: оптимизация предобработки текста (сокращено потребление памяти)
+  * upd: `master` `k6.0.0` использование Node.js 22 - подъем версий пакетов клиента | докерфайл | пайплайн
+  * [сравнение тегов 6.0.0-pre-3 с k6.0.0 в github](https://github.com/nicks219/RSSearchEngine/compare/6.0.0-pre-release-3...k6.0.0)
+
+
+* `k6.0.1` `open-telemetry` `ok`
+  * upd: связь трейсов и логов - настройка OTLP-экспортера Serilog через код | энричер с идентификаторами
+
+
+* `k6.0.2` `exemplar` `ok`
+  * upd: добавлен сорс Npgsql к трассам
+  * upd: роуты `/system` и `/v6/account` исключены из логов
+  * upd: явно выставлять статусы для трасс в middleware
+  * upd: увеличить время перед отдачей хелсчеков
+  * upd: для связки метрик с трассами в Grafana Cloud создать datasource до prometheus и переименовать лейбл для exemplar в `trace_id`
+    - вместо **password** выставить токен из **access policy**, см [документацию Grafana Cloud](https://grafana.com/docs/grafana-cloud/security-and-account-management/authentication-and-permissions/access-policies/using-an-access-policy-token/#creating-a-data-source-with-a-grafana-cloud-token-in-grafana-ui).
+
+
+* `k6.0.3` `pyroscope` `отмена`
+  * upd: `не слито` запретить трассировку на инициализации сервиса
+  * upd: `исследование` настроить сбор профилей с помощью Pyroscope `0.9.4` (файлы `*.v2`)
+    - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
+
+
+* `в разработке` `develop`
+* [x] `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
+  - [x] отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+  - [x] активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+ * [x] выделить поиск и токенайзер в отдельные проекты
+ * [x] "освободить" **SearchEngine** для именования класса
+ * [ ] `research` подумать над компоновкой библиотек токенайзера и связанного функционала
+   - в **CommonBaseOptions** используются типы из **Rsse.Engine**
+ * [x] выделить `Tests.Common`
+ * [x] получить метрики от кубера
+   * [x] для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
+   * [x] добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
+   * [x] настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
+	 - под дебагом в otel виден ответ 403: добавил в ClusterRole `resources: nodes/metrics` вместе и `nonResourceURLs` и `hostNetwork`
+	 - использовал под `debug-curl` для проверки смонтированного токена и чека авторизации на запросе метрики
+     - манифесты: [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml) | [debug-shell.yaml](.k3s/debug-shell.yaml)
+     - потребление cpu нодой выросло на 0.1 ядро
+   * [x] `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)
 
 ---
-  * [ ] попробовать на CI использовать кэш NuGet и параллельный запуск (если поддерживается)
-  * [ ] todo: выпустить релиз `6.0.0` в **GitHub**
+#### Эпик разработки поискового движка
+`epic` `search.engine` `в разработке`
+* эпик по доработке поискового движка раскидан по коммитам ветки `develop`
+    * [список коммитов эпика](src/Rsse.Engine.VectorSearch/CHANGELOG.md)
+    * [бенчмарки на функционал](src/Rsse.Engine.VectorSearch/benchmarks.md)
+
 ---
+#### Эпик по оптимизации работы сервиса
+* [ ] уменьшить время ответа сервиса на запросы
+    * [x] добавить функционал нагрузочного тестирования `develop`
+
+---
+#### Идеи:
+  * [x] протестировать Pyroscope для профилирования на проме и отправки в Grafana
+    - [.NET Pyroscope](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/dotnet/?utm_source=chatgpt.com)
+    - [Traces to profiles](https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/dotnet-span-profiles/?utm_source=chatgpt.com)
+  * [ ] уменьшить время выполнения запросов на получение тегов с количеством заметок
+  * [ ] попробовать на CI использовать кэш NuGet и параллельный запуск (если поддерживается)
+  * [x] выпустить релиз `6.0.0` в **GitHub**
+
+---
+#### Инциденты:
+* **[Список инцидентов](.common/.incidents/incidents.md)**

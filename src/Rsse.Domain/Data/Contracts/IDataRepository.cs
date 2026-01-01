@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SearchEngine.Data.Dto;
-using SearchEngine.Data.Entities;
+using Rsse.Domain.Data.Dto;
+using Rsse.Domain.Data.Entities;
 
-namespace SearchEngine.Data.Contracts;
+namespace Rsse.Domain.Data.Contracts;
 
 /// <summary>
 /// Контракт репозитория для данных.

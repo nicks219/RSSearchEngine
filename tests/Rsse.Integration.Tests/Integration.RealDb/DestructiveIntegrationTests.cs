@@ -10,25 +10,29 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SearchEngine.Api.Startup;
-using SearchEngine.Service.ApiModels;
-using SearchEngine.Tests.Integration.RealDb.Api;
-using SearchEngine.Tests.Integration.RealDb.Extensions;
-using SearchEngine.Tests.Integration.RealDb.Infra;
-using static SearchEngine.Service.Configuration.RouteConstants;
+using Rsse.Api.Startup;
+using Rsse.Domain.Service.ApiModels;
+using Rsse.Tests.Integration.RealDb.Api;
+using Rsse.Tests.Integration.RealDb.Extensions;
+using Rsse.Tests.Integration.RealDb.Infra;
+using static Rsse.Domain.Service.Configuration.RouteConstants;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-namespace SearchEngine.Tests.Integration.RealDb;
+namespace Rsse.Tests.Integration.RealDb;
 
+/// <summary>
+/// Тесты, зависящие от состояния.
+/// </summary>
 [TestClass]
-public sealed class DestructiveIntegrationTests : TestBase, IDisposable
+public sealed class DestructiveIntegrationTests : TestInitializerBase, IDisposable
 {
     private const string TextToFind = "раз два три четыре";
     private const string ReadNoteTestText = "рас дваа три";
     private const string ReadCatalogPageTestText = "пасчитаим читырех";
     private const string TitleToFind = "Розенбаум Вечерняя Застольная Черт с ними за столом сидим поем пляшем";
 
+    // Используется один хост на каждый тест (тк общее состояние)
     private readonly IntegrationWebAppFactory<Startup> _factory = new();
     private static int _processedId;
 
@@ -37,6 +41,9 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
     /// </summary>
     public void Dispose()
     {
+        // Состояние фабрики это поисковые индексы, можно добавить для них метод очистки.
+        // Очистка фабрики (после каждого теста) выглядит как OperationCancelledException в логах.
+        Console.WriteLine("Disposing, next you will see a cancellation message");
         _factory.Dispose();
     }
 
@@ -97,7 +104,7 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                var complianceId = response.EnsureNotNull().Res!.Keys.ElementAt(0);
+                var complianceId = response.EnsureNotNull().Res!.ElementAt(0).Key;
                 _processedId.Should().Be(complianceId);
             })],
 
@@ -201,12 +208,22 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
                 response.Text.Should().BeEquivalentTo("dump files created");
             })],
 
+        // дубликат
         [$"{CreateNotePostUrl}", HttpMethod.Post,
             Request.CreateContent,
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<NoteResponse>();
                 response.EnsureNotNull().Title.Should().Be("[Already Exist]");
+            })],
+
+        // пустой reduced вектор, падал индекс DocumentDataPoint.HashMap
+        [$"{CreateNotePostUrl}", HttpMethod.Post,
+            Request.CreateZeroReducedContent,
+            Response.Validate(async message =>
+            {
+                var response = await message.Content.ReadFromJsonAsync<NoteResponse>();
+                response.EnsureNotNull().Title.Should().Be("[OK]");
             })],
 
         [$"{ReadNotePostUrl}?id=946", HttpMethod.Post,
@@ -232,8 +249,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(946);
-                response.EnsureNotNull().Res.EnsureNotNull().Values.First().Should().Be(0.5D);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(946);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Value.Should().Be(0.5D);
             })],
 
         [$"{ReadNotePostUrl}?id=946", HttpMethod.Post,
@@ -320,8 +337,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(1);
-                var value = Math.Round(response.Res.EnsureNotNull().Values.First(), 2);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(1);
+                var value = Math.Round(response.Res.EnsureNotNull().First().Value, 2);
                 value.Should().Be(1.2D);
             })],
 
@@ -363,8 +380,8 @@ public sealed class DestructiveIntegrationTests : TestBase, IDisposable
             Response.Validate(async message =>
             {
                 var response = await message.Content.ReadFromJsonAsync<ComplianceResponse>();
-                response.EnsureNotNull().Res.EnsureNotNull().Keys.First().Should().Be(946);
-                var value = Math.Round(response.Res.EnsureNotNull().Values.First(), 2);
+                response.EnsureNotNull().Res.EnsureNotNull().First().Key.Should().Be(946);
+                var value = Math.Round(response.Res.EnsureNotNull().First().Value, 2);
                 value.Should().Be(6.67D);
             })],
 

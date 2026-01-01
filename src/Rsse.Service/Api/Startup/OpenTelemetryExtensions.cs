@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
-using SearchEngine.Service.Configuration;
+using Rsse.Domain.Service.Configuration;
 using Serilog;
 
-namespace SearchEngine.Api.Startup;
+namespace Rsse.Api.Startup;
 
 /// <summary>
 /// Расширение для функционала поставки диагностиков.
@@ -29,15 +29,13 @@ internal static class OpenTelemetryExtensions
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 // далее service name оверрайдится на Rsse.Service
-                .AddService(serviceName: "rsse-app",
-                    serviceNamespace: "rsse-group",
+                .AddService(serviceName: Constants.ServiceName,
+                    serviceNamespace: Constants.ServiceNamespace,
                     serviceVersion: Constants.ApplicationVersion,
                     serviceInstanceId: podName
-                    // autoGenerateServiceInstanceId: true
-                    )
-                .AddAttributes([
-                    new KeyValuePair<string, object>("deployment.environment", "production")
-                ]))
+                // autoGenerateServiceInstanceId: true
+                )
+                .AddAttributes([new KeyValuePair<string, object>("deployment.environment", "production")]))
             .WithTracingInternal(otlpEndpoint)
             .WithMetricsInternal(otlpEndpoint);
     }

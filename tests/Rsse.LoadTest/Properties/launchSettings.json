@@ -1,0 +1,10 @@
+{
+  "profiles": {
+
+    "NBomber: election": {
+      "commandName": "Project",
+      "commandLineArgs": "election"
+    }
+
+  }
+}
