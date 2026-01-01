@@ -104,3 +104,16 @@
     * docker-compose -f docker-compose-build.yml down --rmi all --volumes --remove-orphans
     * docker compose -f docker-compose-build.yml up -d --wait
 * ...
+
+---
+# подпись GPG для git
+
+* через git bash: 
+  * gpg --quick-gen-key "имя@почта" rsa2048 sign 0
+  * gpg --list-secret-keys --keyid-format SHORT "имя@почта"
+  * git config --global user.signingkey КЛЮЧ
+  * git config user.signingkey
+  * gpg --armor --export КЛЮЧ
+  * GitHub → Profile Settings → SSH and GPG keys → New GPG key → вставь
+  * настройки GE: C:\Users\%USERNAME%\AppData\Roaming\GitExtensions\GitExtensions\GitExtensions.settings
+  * ...

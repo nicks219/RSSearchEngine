@@ -214,6 +214,9 @@
      - потребление cpu нодой выросло на 0.1 ядро
    * [x] `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)
 
+* '6.0.4' `develop`
+  * NET10
+
 ---
 #### Эпик разработки поискового движка
 `epic` `search.engine` `в разработке`
