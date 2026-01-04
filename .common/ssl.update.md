@@ -165,6 +165,7 @@ ingressRoute:
 ...
 
 # чиним редирект: вместо редиректа переход по http отдает 404
+
 1) узнаем версию traefik (3.3.2): kubectl describe deployment traefik -n kube-system | grep "Image:" | grep -o ":[0-9.]*"
 2) проверяем его конфиг на отсутствие редиректа: kubectl get configmap chart-content-traefik -n kube-system -o yaml
 3) он установлен через rancher, смотрим описание аргументов пода: kubectl describe pod -n kube-system -l app.kubernetes.io/name=traefik | grep -A5 "Args:"

@@ -227,15 +227,16 @@
   * fix: исправлена ошибка в инвертированном индексе
 
 
-* '6.0.4' `develop`
-  * NET10
+* `develop`
+  * 2026: плановое обновление k3s до `v1.34.3+k3s1` и SSL
+  * ...
 
 ---
 #### Эпик разработки поискового движка
 `epic` `search.engine` `в разработке`
 * эпик по доработке поискового движка раскидан по коммитам ветки `develop`
-    * [список коммитов эпика](src/Rsse.Engine.VectorSearch/CHANGELOG.md)
-    * [бенчмарки на функционал](src/Rsse.Engine.VectorSearch/benchmarks.md)
+    * [список коммитов эпика](src/Rsse.Engine.VectorSearch/changelog.md)
+    * [бенчмарки на функционал токенизатора](src/Rsse.Engine.VectorSearch/docs/benchmarks.tokenization.md)
 
 ---
 #### Эпик по оптимизации работы сервиса

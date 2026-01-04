@@ -14,7 +14,7 @@ public static class EnvironmentReporter
     public static bool IsProduction()
     {
         var environment = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentName)?.ToLower();
-        return environment?.Equals(ProductionEnvironment, StringComparison.CurrentCultureIgnoreCase) ?? false;
+        return environment?.Equals(ProductionEnvironment, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 
     /// <summary>
@@ -23,7 +23,7 @@ public static class EnvironmentReporter
     public static void ThrowIfProduction(string name)
     {
         var environment = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentName)?.ToLower();
-        var isProduction = environment?.Equals(ProductionEnvironment, StringComparison.CurrentCultureIgnoreCase) ?? false;
+        var isProduction = environment?.Equals(ProductionEnvironment, StringComparison.OrdinalIgnoreCase) ?? false;
         if (isProduction)
         {
             throw new NotSupportedException($"[{name}] Is in development and not supported for production environment.");
@@ -36,7 +36,7 @@ public static class EnvironmentReporter
     public static bool IsDevelopment()
     {
         var environment = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentName)?.ToLower();
-        return environment?.Equals(DevelopmentEnvironment, StringComparison.CurrentCultureIgnoreCase) ?? false;
+        return environment?.Equals(DevelopmentEnvironment, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 
     /// <summary>
@@ -53,6 +53,6 @@ public static class EnvironmentReporter
     public static bool IsTesting()
     {
         var environment = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentName)?.ToLower();
-        return environment?.Equals(TestingEnvironment, StringComparison.CurrentCultureIgnoreCase) ?? false;
+        return environment?.Equals(TestingEnvironment, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }
