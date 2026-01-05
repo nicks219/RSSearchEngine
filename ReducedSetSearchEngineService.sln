@@ -134,6 +134,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests.Common", "tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.LoadTest", "tests\Rsse.LoadTest\Rsse.LoadTest.csproj", "{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RD.Rsse.Engine.VectorSearch", "src\RD.Rsse.Engine.VectorSearch\RD.Rsse.Engine.VectorSearch.csproj", "{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -188,6 +190,10 @@ Global
 		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Debug|x64.Build.0 = Debug|x64
 		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Release|x64.ActiveCfg = Release|x64
 		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D}.Release|x64.Build.0 = Release|x64
+		{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4}.Debug|x64.ActiveCfg = Debug|x64
+		{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4}.Debug|x64.Build.0 = Debug|x64
+		{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4}.Release|x64.ActiveCfg = Release|x64
+		{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -209,6 +215,7 @@ Global
 		{30D48870-9CBB-4466-A78F-9FFF64318EE9} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 		{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
 		{C5C35930-5C00-4386-BCF9-394E7C0D1F0D} = {C685C254-6FDC-47DB-B1FD-3E9DF75688B3}
+		{4898E3B7-8932-4E9A-AAAF-812AFEAD39C4} = {AA4EF658-DA2E-4C04-AE32-6D2576462FCA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0BCBAEC4-7C63-49C7-A34C-99E073B3A6DC}

@@ -229,6 +229,7 @@
 
 * `develop`
   * 2026: плановое обновление k3s до `v1.34.3+k3s1` и SSL
+  * полная версия `Engine.VectorSearch` перенесена в проект `RD.Engine.VectorSearch` (Research & Development)
   * ...
 
 ---
