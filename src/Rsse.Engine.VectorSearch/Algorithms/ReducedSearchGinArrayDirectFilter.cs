@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -53,7 +53,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -129,7 +129,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (!_invertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+            if (!_invertedIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
             {
                 return;
             }

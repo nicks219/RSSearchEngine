@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -50,7 +50,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -176,7 +176,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                 counter++;
             }
 
-            if (_invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (_invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 _metricsCalculator.AppendReducedMetric(score, _searchVector, externalDocument);
             }

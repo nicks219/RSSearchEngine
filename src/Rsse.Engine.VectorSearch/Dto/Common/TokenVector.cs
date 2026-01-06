@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Вектор из хэшей, представляющий собой токенизированную заметку.
@@ -63,24 +63,28 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// <returns>Коллекция хэшей.</returns>
     public List<int> ToIntList() => _tokens.ToList();
 
-    public Dictionary<Token, List<int>> ToDictionary()
+    /// <summary>
+    /// Преобразовать вектор в словарь с позициями токенов.
+    /// </summary>
+    /// <returns>Словарь с позициями токенов.</returns>
+    public Dictionary<Token, List<int>> ToPositionVector()
     {
-        var dictionary = new Dictionary<Token, List<int>>();
+        var indexDictionary = new Dictionary<Token, List<int>>();
 
-        for (int index = 0; index < _tokens.Count; index++)
+        for (var index = 0; index < _tokens.Count; index++)
         {
             var token = new Token(_tokens[index]);
 
-            if (!dictionary.TryGetValue(token, out var offsets))
+            if (!indexDictionary.TryGetValue(token, out var indices))
             {
-                offsets = new List<int>();
-                dictionary.Add(token, offsets);
+                indices = [];
+                indexDictionary.Add(token, indices);
             }
 
-            offsets.Add(index);
+            indices.Add(index);
         }
 
-        return dictionary;
+        return indexDictionary;
     }
 
     /// <summary>

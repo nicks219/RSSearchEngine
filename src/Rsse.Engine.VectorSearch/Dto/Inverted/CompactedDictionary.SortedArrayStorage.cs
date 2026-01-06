@@ -4,36 +4,30 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace RsseEngine.Dto.Offsets;
+namespace RsseEngine.Dto.Inverted;
 
-public readonly partial struct DocumentDataPoint
+// Макет данных для searchType == 1 (SortedArrayStorage):
+// Шаблон: [dataSize, count, searchType, keys..., values..., externalCount, externalId]
+// Ключи: [key0, key1, ..., keyN, valueLength0, valuesOffset0, valueLength1, valuesOffset1, ..., valueLengthN, valuesOffsetN]
+// Значения: [v0, v1, ..., vN]
+// Для бинарного поиска ключи должны быть отсортированы, в этом случае используйте его на TryGetValue.
+
+public readonly partial struct CompactedDictionary
 {
     /// <summary>
-    /// High-performance, immutable dictionary for int keys and int[] values (variable length).
-    /// If searchType == 0, uses:
-    /// Layout: [dataSize, count, searchType, bucketsCount, fastModMultiplierLow, fastModMultiplierHigh, bucket0, ..., bucketN, keys..., values..., externalCount, externalId]
-    /// Each bucket: [start, end]
-    /// Keys: [key0, valueLength0, valuesOffset0, ...]
-    /// Values: [v0, v1, ..., vN]
-    /// If searchType == 1, uses:
-    /// Layout: [dataSize, count, searchType, keys..., values..., externalCount, externalId]
-    /// Keys: [key0, key1, ..., keyN, valueLength0, valuesOffset0, valueLength1, valuesOffset1, ..., valueLengthN, valuesOffsetN]
-    /// Values: [v0, v1, ..., vN]
-    /// Keys should be sorted for binary search, use binary search for search in TryGetValue in this case.
+    /// Словарь представлен в виде отсортированного массива, см. макет данных.
     /// </summary>
     [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
     [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    private readonly struct BinaryTree
+    private readonly struct SortedArrayStorage
     {
-        public static int[] Create(Dictionary<int, int[]?> source, int externalId, int externalCount, DocumentDataPointSearchType searchType)
+        public static int[] Create(Dictionary<int, int[]?> source, int externalId, int externalCount, DictionaryStorageType searchType)
         {
-            int[] data;
-
-            List<KeyValuePair<int, int[]?>> list = new List<KeyValuePair<int, int[]?>>(source);
+            var list = new List<KeyValuePair<int, int[]?>>(source);
             int count = list.Count;
 
             // Keys sorted for binary search
-            List<KeyValuePair<int, int[]?>> sortedList = list.OrderBy(kv => kv.Key).ToList();
+            var sortedList = list.OrderBy(kv => kv.Key).ToList();
 
             //int valuesSize = sortedList.Sum(kv => kv.Value?.Length ?? 0);
             int valuesSize = sortedList.Sum(kv => kv.Value?.Length > 2 ? kv.Value.Length : 0);
@@ -47,7 +41,7 @@ public readonly partial struct DocumentDataPoint
 
             int dataSize = BinaryTreeHeader.CalculateDataSize(keysSize, valuesSize);
 
-            data = new int[dataSize];
+            var data = new int[dataSize];
             DataPointHeader.WriteDataSize(data, dataSize);
             DataPointHeader.WriteCount(data, count);
             DataPointHeader.WriteSearchType(data, searchType);
@@ -66,26 +60,23 @@ public readonly partial struct DocumentDataPoint
                 // write value
                 int[] value = sortedList[i].Value ?? Array.Empty<int>();
 
-                if (value.Length > 2)
+                switch (value.Length)
                 {
-                    data[metaWritePos++] = value.Length;
-                    data[metaWritePos++] = valuesWritePos;
+                    case > 2:
+                        data[metaWritePos++] = value.Length;
+                        data[metaWritePos++] = valuesWritePos;
 
-                    Array.Copy(value, 0, data, valuesWritePos, value.Length);
-                    valuesWritePos += value.Length;
-                }
-                else
-                {
-                    if (value.Length == 2)
-                    {
+                        Array.Copy(value, 0, data, valuesWritePos, value.Length);
+                        valuesWritePos += value.Length;
+                        break;
+                    case 2:
                         data[metaWritePos++] = -value[0];
                         data[metaWritePos++] = -value[1];
-                    }
-                    else
-                    {
+                        break;
+                    default:
                         data[metaWritePos++] = -value[0];
                         data[metaWritePos++] = 0;
-                    }
+                        break;
                 }
             }
 
@@ -120,9 +111,8 @@ public readonly partial struct DocumentDataPoint
 
             if (index != -1)
             {
-                int idx = index;
-                valueLength = data[metaOffset + idx * 2];
-                valueOffset = data[metaOffset + idx * 2 + 1];
+                valueLength = data[metaOffset + index * 2];
+                valueOffset = data[metaOffset + index * 2 + 1];
                 return true;
             }
 

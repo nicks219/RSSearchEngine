@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.SearchType;
 using RsseEngine.Service;
 

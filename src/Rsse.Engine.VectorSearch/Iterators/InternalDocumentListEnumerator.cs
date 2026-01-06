@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Iterators;
 

@@ -8,7 +8,7 @@ using Rsse.Domain.Exceptions;
 using Rsse.Domain.Service.Contracts;
 using Rsse.Domain.Service.Mapping;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 using RsseEngine.Tokenizer.Common;

@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -30,7 +30,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
 
         try
         {
-            InvertedIndex.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
+            InvertedIndex.CreateNonEmptyDocumentIdsCollection(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {
@@ -42,7 +42,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                     {
                         foreach (var documentId in idsFromGin[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -78,7 +78,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     {
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 metricsCalculator.AppendReducedMetric(score, searchVector, externalDocument);
             }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Iterators;
 
 namespace RsseEngine.Processor;

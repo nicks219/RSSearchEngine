@@ -3,8 +3,8 @@ using System.Threading;
 using Rsse.Domain.Service.Configuration;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
-using RsseEngine.Dto.Offsets;
+using RsseEngine.Dto.Common;
+using RsseEngine.Dto.Inverted;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
@@ -24,9 +24,9 @@ public sealed class ReducedSearchAlgorithmSelector
 
     private readonly DirectIndex _generalDirectIndex;
 
-    private readonly InvertedIndexPartitions _partitions = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly InvertedIndexPartitions _partitions = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly InvertedIndexPartitions _partitionsHs = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.

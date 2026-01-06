@@ -1,7 +1,7 @@
 using System;
 using RsseEngine.Contracts;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Внутренний идентификатор заметки.
@@ -17,10 +17,11 @@ public readonly struct InternalDocumentId : IDocumentId<InternalDocumentId>
     /// <param name="documentId">Внутренний идентификатор заметки.</param>
     public InternalDocumentId(int documentId)
     {
-        if (documentId < 0 || documentId > ushort.MaxValue)
+        if (documentId is < 0 or > ushort.MaxValue)
         {
+            const ushort maxValue = ushort.MaxValue;
             throw new ArgumentOutOfRangeException(nameof(documentId), documentId,
-                $"Внутренний идентификатор документа должен быть в диапазоне от 0 до {ushort.MaxValue} включительно.");
+                $"Внутренний идентификатор документа должен быть в диапазоне от 0 до {maxValue} включительно.");
         }
 
         _documentId = (ushort)documentId;

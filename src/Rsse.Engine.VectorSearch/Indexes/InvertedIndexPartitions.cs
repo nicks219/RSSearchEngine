@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using RsseEngine.Dto;
-using RsseEngine.Dto.Offsets;
+using RsseEngine.Dto.Common;
+using RsseEngine.Dto.Inverted;
 
 namespace RsseEngine.Indexes;
 
@@ -8,12 +8,12 @@ public sealed class InvertedIndexPartitions
 {
     public readonly List<InvertedIndex> Indices = new();
 
-    private readonly DocumentDataPoint.DocumentDataPointSearchType _searchType;
+    private readonly CompactedDictionary.DictionaryStorageType _searchType;
 
     private InvertedIndex _currentIndex;
 
     public InvertedIndexPartitions(
-        DocumentDataPoint.DocumentDataPointSearchType searchType)
+        CompactedDictionary.DictionaryStorageType searchType)
     {
         _searchType = searchType;
 

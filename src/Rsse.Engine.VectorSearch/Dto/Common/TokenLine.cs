@@ -1,4 +1,4 @@
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Контейнер с двумя векторами для заметки.

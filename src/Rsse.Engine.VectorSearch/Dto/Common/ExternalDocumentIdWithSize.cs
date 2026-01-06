@@ -1,4 +1,4 @@
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 public readonly struct ExternalDocumentIdWithSize(DocumentId externalDocumentId, int size)
 {

@@ -8,8 +8,8 @@ using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Service.Mapping;
 using Rsse.Tests.Common;
 using RsseEngine.Benchmarks.Common;
-using RsseEngine.Dto;
-using RsseEngine.Dto.Offsets;
+using RsseEngine.Dto.Common;
+using RsseEngine.Dto.Inverted;
 using RsseEngine.Indexes;
 using RsseEngine.Service;
 
@@ -32,13 +32,13 @@ public class TokenizationBenchmark
 
     private readonly InvertedOffsetIndexPartitions _invertedOffsetIndexExtended = new();
 
-    private readonly InvertedIndexPartitions _invertedIndexExtended = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly InvertedIndexPartitions _invertedIndexExtended = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexHsExtended = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly InvertedIndexPartitions _invertedIndexHsExtended = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexReduced = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly InvertedIndexPartitions _invertedIndexReduced = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexHsReduced = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly InvertedIndexPartitions _invertedIndexHsReduced = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
 
     public static List<IndexType> Parameters =>
     [

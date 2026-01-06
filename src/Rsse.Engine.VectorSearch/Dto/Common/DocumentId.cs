@@ -1,6 +1,6 @@
 using RsseEngine.Contracts;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Идентификатор заметки.

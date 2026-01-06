@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 
 namespace Rsse.Tests.Integration.FakeDb.Infra;
 

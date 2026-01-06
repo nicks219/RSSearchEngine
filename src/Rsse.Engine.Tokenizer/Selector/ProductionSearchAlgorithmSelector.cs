@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 

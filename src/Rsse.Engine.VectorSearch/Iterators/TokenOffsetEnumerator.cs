@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Dto.Offsets;
 
 namespace RsseEngine.Iterators;

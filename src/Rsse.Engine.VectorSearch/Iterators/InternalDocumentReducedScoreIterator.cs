@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
 

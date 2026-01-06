@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
@@ -57,7 +57,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 metricsCalculator.AppendExtendedMetric(1, searchVector, externalDocument);
                             }
@@ -93,7 +93,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<InternalDocumentIdList> sortedIds, int filteredTokensCount, int minRelevancyCount)
+        List<InternalDocumentIds> sortedIds, int filteredTokensCount, int minRelevancyCount)
     {
         var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
         var listExists = TempStoragePool.IntListsStorage.Get();
@@ -206,7 +206,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int minRelevancyCount)
     {
-        if (!InvertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+        if (!InvertedIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }

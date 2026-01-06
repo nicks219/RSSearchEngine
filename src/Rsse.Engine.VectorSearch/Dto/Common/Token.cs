@@ -1,6 +1,6 @@
 using System;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Хэш, представляющий токенизированное слово в векторе.

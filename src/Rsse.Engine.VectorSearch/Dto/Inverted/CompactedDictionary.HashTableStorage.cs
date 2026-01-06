@@ -5,31 +5,25 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace RsseEngine.Dto.Offsets;
+namespace RsseEngine.Dto.Inverted;
 
-public readonly partial struct DocumentDataPoint
+// Макет данных для searchType == 0 (HashTableStorage):
+// Шаблон: [dataSize, count, searchType, bucketsCount, fastModMultiplierLow, fastModMultiplierHigh, bucket0, ..., bucketN, keys..., values..., externalCount, externalId]
+// Каждый бакет: [start, end]
+// Ключи: [key0, valueLength0, valuesOffset0, ...]
+// Значения: [v0, v1, ..., vN]
+
+public readonly partial struct CompactedDictionary
 {
     /// <summary>
-    /// High-performance, immutable dictionary for int keys and int[] values (variable length).
-    /// If searchType == 0, uses:
-    /// Layout: [dataSize, count, searchType, bucketsCount, fastModMultiplierLow, fastModMultiplierHigh, bucket0, ..., bucketN, keys..., values..., externalCount, externalId]
-    /// Each bucket: [start, end]
-    /// Keys: [key0, valueLength0, valuesOffset0, ...]
-    /// Values: [v0, v1, ..., vN]
-    /// If searchType == 1, uses:
-    /// Layout: [dataSize, count, searchType, keys..., values..., externalCount, externalId]
-    /// Keys: [key0, key1, ..., keyN, valueLength0, valuesOffset0, valueLength1, valuesOffset1, ..., valueLengthN, valuesOffsetN]
-    /// Values: [v0, v1, ..., vN]
-    /// Keys should be sorted for binary search, use binary search for search in TryGetValue in this case.
+    /// Словарь представлен в виде хэш-таблицы, см. макет данных.
     /// </summary>
     [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
     [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    private readonly struct HashMap
+    private readonly struct HashTableStorage
     {
-        public static int[] Create(Dictionary<int, int[]?> source, int externalId, int externalCount, DocumentDataPointSearchType searchType)
+        public static int[] Create(Dictionary<int, int[]?> source, int externalId, int externalCount, DictionaryStorageType searchType)
         {
-            int[] data;
-
             // quick fix: для пустого reduced ("123"): if (source.Count == 0) return [];
 
             var list = new List<KeyValuePair<int, int[]?>>(source);
@@ -44,7 +38,7 @@ public readonly partial struct DocumentDataPoint
             ulong fastModMultiplier = HashHelpers.GetFastModMultiplier((uint)bucketsCount);
 
             // Prepare bucket lists for chaining
-            List<(int key, int[] value)>[] bucketLists = new List<(int key, int[] value)>[bucketsCount];
+            var bucketLists = new List<(int key, int[] value)>[bucketsCount];
             for (int i = 0; i < bucketsCount; i++)
             {
                 bucketLists[i] = new List<(int, int[])>();
@@ -85,7 +79,7 @@ public readonly partial struct DocumentDataPoint
 
             int dataSize = HashMapHeader.CalculateDataSize(bucketsSize, keysSize, valuesSize);
 
-            data = new int[dataSize];
+            var data = new int[dataSize];
             DataPointHeader.WriteDataSize(data, dataSize);
             DataPointHeader.WriteCount(data, count);
             DataPointHeader.WriteSearchType(data, searchType);
@@ -97,12 +91,11 @@ public readonly partial struct DocumentDataPoint
             int bucketsWritePos = bucketsOffset;
             int keysWritePos = keysOffset;
             int valuesWritePos = valuesOffset;
-            int keysBase = keysOffset;
             int bucketKeyIndex = 0;
             for (int bucketIndex = 0; bucketIndex < bucketsCount; bucketIndex++)
             {
                 var bucket = bucketLists[bucketIndex];
-                int start = keysBase + bucketKeyIndex * DataPointHeader.KeyEntrySize;
+                int start = keysOffset + bucketKeyIndex * DataPointHeader.KeyEntrySize;
                 int end = start + bucket.Count * DataPointHeader.KeyEntrySize;
                 data[bucketsWritePos++] = start;
                 data[bucketsWritePos++] = end;
@@ -114,6 +107,7 @@ public readonly partial struct DocumentDataPoint
                     Array.Copy(value, 0, data, valuesWritePos, value.Length);
                     valuesWritePos += value.Length;
                 }
+
                 bucketKeyIndex += bucket.Count;
             }
 
@@ -218,10 +212,6 @@ public readonly partial struct DocumentDataPoint
                         right = mid - DataPointHeader.KeyEntrySize;
                     }
                 }
-
-                valueLength = 0;
-                valueOffset = 0;
-                return false;
             }
             else
             {
@@ -235,11 +225,11 @@ public readonly partial struct DocumentDataPoint
                         return true;
                     }
                 }
-
-                valueLength = 0;
-                valueOffset = 0;
-                return false;
             }
+
+            valueLength = 0;
+            valueOffset = 0;
+            return false;
         }
 
         public static IEnumerable<int> GetKeys(int[] data)
@@ -371,7 +361,7 @@ public static class BucketHelper
     public static int ComputeOptimalBucketCount(ReadOnlySpan<int> hashCodes, bool hashCodesAreUnique = false)
     {
         HashSet<int>? uniqueSet = null;
-        int min = hashCodes.Length;
+        var min = hashCodes.Length;
         if (!hashCodesAreUnique)
         {
             uniqueSet = new HashSet<int>(hashCodes.ToArray());
@@ -386,58 +376,54 @@ public static class BucketHelper
             3471899, 4166287, 4999559, 5999471, 7199369
         };
 
-        int minBuckets = min * 2;
-        int primeIdx = 0;
+        var minBuckets = min * 2;
+        var primeIdx = 0;
         while (primeIdx < primes.Length && minBuckets > primes[primeIdx])
-            primeIdx++;
-        if (primeIdx >= primes.Length)
-            return GetPrime(min);
-
-        int maxBuckets = min * (min >= 1000 ? 3 : 16);
-        int maxIdx = primeIdx;
-        while (maxIdx < primes.Length && maxBuckets > primes[maxIdx])
-            maxIdx++;
-        if (maxIdx < primes.Length)
-            maxBuckets = primes[maxIdx - 1];
-
-        int[] seenBuckets = ArrayPool<int>.Shared.Rent(maxBuckets / 32 + 1);
-        int bestBuckets = maxBuckets;
-        int bestCollisions = min;
-        for (int idx = primeIdx; idx < maxIdx; idx++)
         {
-            int numBuckets = primes[idx];
-            Array.Clear(seenBuckets, 0, Math.Min(numBuckets, seenBuckets.Length));
-            int collisions = 0;
+            primeIdx++;
+        }
 
-            bool IsBucketFirstVisit(int code)
-            {
-                uint bucket = (uint)code % (uint)numBuckets;
-                int arrIdx = (int)(bucket / 32);
-                int bit = 1 << (int)(bucket % 32);
-                if ((seenBuckets[arrIdx] & bit) != 0)
-                {
-                    collisions++;
-                    if (collisions >= bestCollisions)
-                        return false;
-                }
-                else
-                {
-                    seenBuckets[arrIdx] |= bit;
-                }
-                return true;
-            }
+        if (primeIdx >= primes.Length)
+        {
+            return GetPrime(min);
+        }
+
+        var maxBuckets = min * (min >= 1000 ? 3 : 16);
+        var maxIdx = primeIdx;
+        while (maxIdx < primes.Length && maxBuckets > primes[maxIdx])
+        {
+            maxIdx++;
+        }
+
+        if (maxIdx < primes.Length)
+        {
+            maxBuckets = primes[maxIdx - 1];
+        }
+
+        var seenBuckets = ArrayPool<int>.Shared.Rent(maxBuckets / 32 + 1);
+        var bestBuckets = maxBuckets;
+        var bestCollisions = min;
+        for (var idx = primeIdx; idx < maxIdx; idx++)
+        {
+            var numBuckets = primes[idx];
+            Array.Clear(seenBuckets, 0, Math.Min(numBuckets, seenBuckets.Length));
+            var collisions = 0;
 
             if (uniqueSet != null && min != hashCodes.Length)
             {
-                foreach (int code in uniqueSet)
+                foreach (var code in uniqueSet)
                 {
                     if (!IsBucketFirstVisit(code))
+                    {
                         break;
+                    }
                 }
             }
             else
             {
-                for (int i = 0; i < hashCodes.Length && IsBucketFirstVisit(hashCodes[i]); i++) { }
+                for (var i = 0; i < hashCodes.Length && IsBucketFirstVisit(hashCodes[i]); i++)
+                {
+                }
             }
 
             if (collisions < bestCollisions)
@@ -450,12 +436,33 @@ public static class BucketHelper
                 }
                 bestCollisions = collisions;
             }
+
+            continue;
+
+            bool IsBucketFirstVisit(int code)
+            {
+                var bucket = (uint)code % (uint)numBuckets;
+                var arrIdx = (int)(bucket / 32);
+                var bit = 1 << (int)(bucket % 32);
+                if ((seenBuckets[arrIdx] & bit) != 0)
+                {
+                    collisions++;
+                    if (collisions >= bestCollisions)
+                        return false;
+                }
+                else
+                {
+                    seenBuckets[arrIdx] |= bit;
+                }
+                return true;
+            }
         }
+
         ArrayPool<int>.Shared.Return(seenBuckets);
         return bestBuckets;
     }
 
-    public static int GetPrime(int min)
+    private static int GetPrime(int min)
     {
         int[] primes = {
             3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919, 1103,
@@ -464,14 +471,20 @@ public static class BucketHelper
             389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263, 1674319, 2009191, 2411033, 2893249,
             3471899, 4166287, 4999559, 5999471, 7199369
         };
-        foreach (int prime in primes)
-            if (prime >= min)
-                return prime;
-        for (int i = (min | 1); i < int.MaxValue; i += 2)
+
+        foreach (var prime in primes)
         {
-            bool isPrime = true;
-            int sqrt = (int)Math.Sqrt(i);
-            for (int j = 3; j <= sqrt; j += 2)
+            if (prime >= min)
+            {
+                return prime;
+            }
+        }
+
+        for (var i = (min | 1); i < int.MaxValue; i += 2)
+        {
+            var isPrime = true;
+            var sqrt = (int)Math.Sqrt(i);
+            for (var j = 3; j <= sqrt; j += 2)
             {
                 if (i % j == 0)
                 {
@@ -479,8 +492,11 @@ public static class BucketHelper
                     break;
                 }
             }
+
             if (isPrime)
+            {
                 return i;
+            }
         }
         return min;
     }
@@ -489,8 +505,7 @@ public static class BucketHelper
 public static class HashHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong GetFastModMultiplier(uint divisor) =>
-        ulong.MaxValue / divisor + 1;
+    public static ulong GetFastModMultiplier(uint divisor) => ulong.MaxValue / divisor + 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint FastMod(uint value, uint divisor, ulong multiplier)

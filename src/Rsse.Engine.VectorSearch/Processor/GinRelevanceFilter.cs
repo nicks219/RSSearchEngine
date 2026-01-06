@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Dto.Offsets;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
@@ -30,7 +30,7 @@ public sealed class GinRelevanceFilter
     /// <returns>Идентификаторы документов, обеспечивающие релевантность не пустые.</returns>
     public bool FindFilteredDocumentsExtended(
         InvertedIndex invertedIndex, TokenVector searchVector,
-        List<InternalDocumentIdList> idsFromGin, List<InternalDocumentIdList> sortedIds,
+        List<InternalDocumentIds> idsFromGin, List<InternalDocumentIds> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount)
     {
         return FindFilteredDocumentsExtendedInternal(invertedIndex, searchVector, idsFromGin, sortedIds,
@@ -104,18 +104,18 @@ public sealed class GinRelevanceFilter
 
     private bool FindFilteredDocumentsExtendedInternal(
         InvertedIndex invertedIndex, TokenVector searchVector,
-        List<InternalDocumentIdList> idsFromGin, List<InternalDocumentIdList> sortedIds,
+        List<InternalDocumentIds> idsFromGin, List<InternalDocumentIds> sortedIds,
         out int filteredTokensCount, out int minRelevancyCount)
     {
         minRelevancyCount = CalculateMinRelevancyCount(searchVector);
 
-        var emptyDocIdVector = new InternalDocumentIdList(new List<InternalDocumentId>());
+        var emptyDocIdVector = new InternalDocumentIds(new List<InternalDocumentId>());
 
         var emptyCount = 0;
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 idsFromGin.Add(documentIds);
                 sortedIds.Add(documentIds);
@@ -151,7 +151,7 @@ public sealed class GinRelevanceFilter
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIdVector(token, out var documentIds))
+            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 sortedIds.Add(new InternalDocumentIdsWithToken(documentIds, token));
             }

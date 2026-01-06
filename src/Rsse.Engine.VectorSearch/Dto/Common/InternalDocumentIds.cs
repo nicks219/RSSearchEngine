@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using RsseEngine.Iterators;
 
-namespace RsseEngine.Dto;
+namespace RsseEngine.Dto.Common;
 
 /// <summary>
 /// Сортированный вектор с уникальными идентификаторами документов, используется в GIN.
 /// </summary>
 /// <param name="list">Список идентификаторов документов.</param>
-public readonly struct InternalDocumentIdList(List<InternalDocumentId> list) : IEquatable<InternalDocumentIdList>
+public readonly struct InternalDocumentIds(List<InternalDocumentId> list) : IEquatable<InternalDocumentIds>
 {
     // Коллекция уникальных идентификаторов заметок.
     private readonly List<InternalDocumentId> _list = list;
@@ -30,15 +30,15 @@ public readonly struct InternalDocumentIdList(List<InternalDocumentId> list) : I
         return new InternalDocumentListEnumerator(_list);
     }
 
-    public bool Equals(InternalDocumentIdList other) => _list.Equals(other._list);
+    public bool Equals(InternalDocumentIds other) => _list.Equals(other._list);
 
-    public override bool Equals(object? obj) => obj is InternalDocumentIdList other && Equals(other);
+    public override bool Equals(object? obj) => obj is InternalDocumentIds other && Equals(other);
 
     public override int GetHashCode() => _list.GetHashCode();
 
-    public static bool operator ==(InternalDocumentIdList left, InternalDocumentIdList right) => left.Equals(right);
+    public static bool operator ==(InternalDocumentIds left, InternalDocumentIds right) => left.Equals(right);
 
-    public static bool operator !=(InternalDocumentIdList left, InternalDocumentIdList right) => !(left == right);
+    public static bool operator !=(InternalDocumentIds left, InternalDocumentIds right) => !(left == right);
 
     /// <summary>
     /// Добавить идентификатор документа в вектор с сохранением сортировки.

@@ -4,42 +4,39 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace RsseEngine.Dto.Offsets;
+namespace RsseEngine.Dto.Inverted;
 
 /// <summary>
-/// High-performance, immutable dictionary for int keys and int[] values (variable length).
-/// If searchType == 0, uses:
-/// Layout: [dataSize, count, searchType, bucketsCount, fastModMultiplierLow, fastModMultiplierHigh, bucket0, ..., bucketN, keys..., values..., externalCount, externalId]
-/// Each bucket: [start, end]
-/// Keys: [key0, valueLength0, valuesOffset0, ...]
-/// Values: [v0, v1, ..., vN]
-/// If searchType == 1, uses:
-/// Layout: [dataSize, count, searchType, keys..., values..., externalCount, externalId]
-/// Keys: [key0, key1, ..., keyN, valueLength0, valuesOffset0, valueLength1, valuesOffset1, ..., valueLengthN, valuesOffsetN]
-/// Values: [v0, v1, ..., vN]
-/// Keys should be sorted for binary search, use binary search for search in TryGetValue in this case.
+/// Высокопроизводительный неизменяемый компактный словарь для целочисленных ключей и массивов значений.
+/// Данные хранятся в едином массиве для минимизации аллокаций и улучшения локальности памяти.
+/// Поддерживает два режима хранения: хэш-таблица и отсортированный массив.
+/// Используется как оптимизированный элемент с заметкой для дополнительного индекса.
 /// </summary>
 [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
 [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[]>, IEquatable<DocumentDataPoint>
+public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, int[]>//, IEquatable<CompactedDictionary>
 {
-    public enum DocumentDataPointSearchType : int
+    public enum DictionaryStorageType
     {
-        HashMap = 0,
-        BinaryTree = 1
+        HashTableStorage = 0,
+        SortedArrayStorage = 1
     }
 
     private const int BucketBinarySearchThreshold = 6;
 
     private readonly int[] _data;
 
-    public DocumentDataPoint(Dictionary<int, int[]?> source, int externalId, int externalCount, DocumentDataPointSearchType searchType)
+    public CompactedDictionary(
+        Dictionary<int, int[]?> source,
+        int externalId,
+        int externalCount,
+        DictionaryStorageType searchType)
     {
         int[] data = searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.Create(source, externalId, externalCount, searchType),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.Create(source, externalId, externalCount, searchType),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            DictionaryStorageType.HashTableStorage => HashTableStorage.Create(source, externalId, externalCount, searchType),
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.Create(source, externalId, externalCount, searchType),
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
 
         _data = data;
@@ -49,20 +46,20 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     public int Count => DataPointHeader.ReadCount(_data);
     public int ExternalId => DataPointHeader.ReadExternalId(_data);
     public int ExternalCount => DataPointHeader.ReadExternalCount(_data);
-    public DocumentDataPointSearchType SearchType => DataPointHeader.ReadSearchType(_data);
+    public DictionaryStorageType SearchType => DataPointHeader.ReadSearchType(_data);
 
     public IEnumerable<int> Keys
     {
         get
         {
             int[] data = _data;
-            DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+            var searchType = DataPointHeader.ReadSearchType(data);
 
             return searchType switch
             {
-                DocumentDataPointSearchType.HashMap => HashMap.GetKeys(data),
-                DocumentDataPointSearchType.BinaryTree => BinaryTree.GetKeys(data),
-                _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+                DictionaryStorageType.HashTableStorage => HashTableStorage.GetKeys(data),
+                DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.GetKeys(data),
+                _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
             };
         }
     }
@@ -72,18 +69,20 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
         get
         {
             int[] data = _data;
-            DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+            var searchType = DataPointHeader.ReadSearchType(data);
 
             return searchType switch
             {
-                DocumentDataPointSearchType.HashMap => HashMap.GetValues(data),
-                DocumentDataPointSearchType.BinaryTree => BinaryTree.GetValues(data),
-                _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+                DictionaryStorageType.HashTableStorage => HashTableStorage.GetValues(data),
+                DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.GetValues(data),
+                _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
             };
         }
     }
 
     public bool ContainsKey(int key) => TryGetValue(key, out ReadOnlySpan<int> value);
+
+    private static readonly int[] EmptyArray = [];
 
     public bool TryGetValue(int key, out int[] value)
     {
@@ -92,11 +91,9 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
             value = span.ToArray();
             return true;
         }
-        else
-        {
-            value = default;
-            return false;
-        }
+
+        value = EmptyArray;
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,11 +106,9 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
             count = valueLength;
             return true;
         }
-        else
-        {
-            count = 0;
-            return false;
-        }
+
+        count = 0;
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,40 +121,38 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
             count = valueLength;
             return true;
         }
-        else
-        {
-            count = 0;
-            return false;
-        }
+
+        count = 0;
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryGetValueLinearScan(int[] data, int key, out int valueLength, out int valueOffset)
     {
-        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+        var searchType = DataPointHeader.ReadSearchType(data);
 
         return searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.TryGetValue(data, key,
+            DictionaryStorageType.HashTableStorage => HashTableStorage.TryGetValue(data, key,
                 out valueLength, out valueOffset),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.TryGetValueLinearScan(data, key,
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.TryGetValueLinearScan(data, key,
                 out valueLength, out valueOffset),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryGetValueBinarySearch(int[] data, int key, out int valueLength, out int valueOffset)
     {
-        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+        var searchType = DataPointHeader.ReadSearchType(data);
 
         return searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.TryGetValue(data, key,
+            DictionaryStorageType.HashTableStorage => HashTableStorage.TryGetValue(data, key,
                 out valueLength, out valueOffset),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.TryGetValueBinarySearch(data, key,
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.TryGetValueBinarySearch(data, key,
                 out valueLength, out valueOffset),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
     }
 
@@ -173,11 +166,9 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
             valueSpan = new ReadOnlySpan<int>(data, valueOffset, valueLength);
             return true;
         }
-        else
-        {
-            valueSpan = default;
-            return false;
-        }
+
+        valueSpan = default;
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -185,13 +176,13 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     {
         int[] data = _data;
 
-        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+        var searchType = DataPointHeader.ReadSearchType(data);
 
         return searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.ContainsKey(data, key),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.ContainsKeyLinearScan(data, key),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            DictionaryStorageType.HashTableStorage => HashTableStorage.ContainsKey(data, key),
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.ContainsKeyLinearScan(data, key),
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
     }
 
@@ -200,13 +191,13 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     {
         int[] data = _data;
 
-        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+        var searchType = DataPointHeader.ReadSearchType(data);
 
         return searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.ContainsKey(data, key),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.ContainsKeyBinarySearch(data, key),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            DictionaryStorageType.HashTableStorage => HashTableStorage.ContainsKey(data, key),
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.ContainsKeyBinarySearch(data, key),
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
     }
 
@@ -233,98 +224,81 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
     {
         if (size > 0)
         {
-            var offsetsSpan = data.AsSpan()
+            var offsetsSpan = data
+                .AsSpan()
                 .Slice(offsetIndex, size);
 
-            //*
-            foreach (var offset in offsetsSpan)
+            foreach (var offsetElement in offsetsSpan)
             {
-                if (offset > position)
+                if (offsetElement > position)
                 {
-                    position = offset;
+                    position = offsetElement;
                     return true;
                 }
             }
+
             return false;
-            /*/
-            var offset = offsetsSpan.BinarySearch(position + 1);
-
-            if (offset < 0)
-            {
-                offset = ~offset;
-                if (offset == offsetsSpan.Length)
-                {
-                    return false;
-                }
-            }
-
-            position = offsetsSpan[offset];
-            return true;
-            //*/
         }
-        else
+
+        var offset = -size;
+
+        if (offset > position)
         {
-            var offset = -size;
+            position = offset;
+            return true;
+        }
 
-            if (offset > position)
-            {
-                position = offset;
-                return true;
-            }
+        offset = offsetIndex;
 
-            offset = offsetIndex;
-
-            if (offset < 0)
-            {
-                offset = -offset;
-
-                if (offset > position)
-                {
-                    position = offset;
-                    return true;
-                }
-            }
-
+        if (offset >= 0)
+        {
             return false;
         }
+
+        offset = -offset;
+
+        if (offset <= position)
+        {
+            return false;
+        }
+
+        position = offset;
+        return true;
     }
 
     public int[] this[int key]
     {
         get
         {
-            if (TryGetValue(key, out int[] value))
-            {
-                return value;
-            }
-
-            throw new KeyNotFoundException();
+            return TryGetValue(key, out int[] value)
+                ? value
+                : throw new KeyNotFoundException();
         }
     }
 
     public IEnumerator<KeyValuePair<int, int[]>> GetEnumerator()
     {
         int[] data = _data;
-        DocumentDataPointSearchType searchType = DataPointHeader.ReadSearchType(data);
+        var searchType = DataPointHeader.ReadSearchType(data);
 
         return searchType switch
         {
-            DocumentDataPointSearchType.HashMap => HashMap.GetEnumerator(data),
-            DocumentDataPointSearchType.BinaryTree => BinaryTree.GetEnumerator(data),
-            _ => throw new NotSupportedException("Only searchType 0 and 1 are supported.")
+            DictionaryStorageType.HashTableStorage => HashTableStorage.GetEnumerator(data),
+            DictionaryStorageType.SortedArrayStorage => SortedArrayStorage.GetEnumerator(data),
+            _ => throw new NotSupportedException($"Only {nameof(DictionaryStorageType.HashTableStorage)} and {nameof(DictionaryStorageType.SortedArrayStorage)} are supported.")
         };
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool Equals(DocumentDataPoint other)
+    /*public bool Equals(CompactedDictionary other)
     {
         return _data.Equals(other._data);
     }
 
     public override bool Equals(object? obj)
     {
-        return obj is DocumentDataPoint other && Equals(other);
+        return obj is CompactedDictionary other && Equals(other);
     }
 
     public override int GetHashCode()
@@ -332,15 +306,15 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
         return _data.GetHashCode();
     }
 
-    public static bool operator ==(DocumentDataPoint left, DocumentDataPoint right)
+    public static bool operator ==(CompactedDictionary left, CompactedDictionary right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(DocumentDataPoint left, DocumentDataPoint right)
+    public static bool operator !=(CompactedDictionary left, CompactedDictionary right)
     {
         return !left.Equals(right);
-    }
+    }*/
 
     private static class DataPointHeader
     {
@@ -367,34 +341,34 @@ public readonly partial struct DocumentDataPoint : IReadOnlyDictionary<int, int[
             return data[1];
         }
 
-        public static void WriteSearchType(int[] data, DocumentDataPointSearchType searchType)
+        public static void WriteSearchType(int[] data, DictionaryStorageType searchType)
         {
             data[2] = (int)searchType;
         }
 
-        public static DocumentDataPointSearchType ReadSearchType(int[] data)
+        public static DictionaryStorageType ReadSearchType(int[] data)
         {
-            return (DocumentDataPointSearchType)data[2];
+            return (DictionaryStorageType)data[2];
         }
 
         public static void WriteExternalCount(int[] data, int externalCount)
         {
-            data[data.Length - 2] = externalCount;
+            data[^2] = externalCount;
         }
 
         public static int ReadExternalCount(int[] data)
         {
-            return data[data.Length - 2];
+            return data[^2];
         }
 
         public static void WriteExternalId(int[] data, int externalId)
         {
-            data[data.Length - 1] = externalId;
+            data[^1] = externalId;
         }
 
         public static int ReadExternalId(int[] data)
         {
-            return data[data.Length - 1];
+            return data[^1];
         }
     }
 }

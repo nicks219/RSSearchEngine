@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Dto.Offsets;
 
 namespace RsseEngine.Indexes;
@@ -104,7 +104,7 @@ public sealed class InvertedOffsetIndex
 
     private void AppendTokenVector(InternalDocumentId internalDocumentId, TokenVector tokenVector)
     {
-        var dictionary = tokenVector.ToDictionary();
+        var dictionary = tokenVector.ToPositionVector();
 
         foreach (var (token, tokenOffsets) in dictionary)
         {
@@ -114,7 +114,7 @@ public sealed class InvertedOffsetIndex
             if (!exists)
             {
                 documentIdsWithOffsets = new DocumentIdsWithOffsets(
-                    new InternalDocumentIdList([]), new List<OffsetInfo>(), new List<int>());
+                    new InternalDocumentIds([]), new List<OffsetInfo>(), new List<int>());
             }
 
             documentIdsWithOffsets.DocumentIds.Add(internalDocumentId);
