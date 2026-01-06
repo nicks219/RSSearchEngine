@@ -8,25 +8,25 @@ namespace RsseEngine.Dto.Inverted;
 /// Элемент дополнительного индекса, представляет собой обертку над оптимизированными данными с заметкой.
 /// </summary>
 /// <param name="tokens">Оптимизированные данные с заметкой.</param>
-public readonly struct PositionVectorWrapper(CompactedDictionary tokens) : IEquatable<PositionVectorWrapper>
+public readonly struct IndexPointWrapper(IndexPoint tokens) : IEquatable<IndexPointWrapper>
 {
     // Токенизированная заметка.
-    private readonly CompactedDictionary _tokens = tokens;
+    private readonly IndexPoint _tokens = tokens;
 
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.
     /// </summary>
     public int Count => _tokens.Count;
 
-    public bool Equals(PositionVectorWrapper other) => _tokens.Equals(other._tokens);
+    public bool Equals(IndexPointWrapper other) => _tokens.Equals(other._tokens);
 
-    public override bool Equals(object? obj) => obj is PositionVectorWrapper other && Equals(other);
+    public override bool Equals(object? obj) => obj is IndexPointWrapper other && Equals(other);
 
     public override int GetHashCode() => _tokens.GetHashCode();
 
-    public static bool operator ==(PositionVectorWrapper left, PositionVectorWrapper right) => left.Equals(right);
+    public static bool operator ==(IndexPointWrapper left, IndexPointWrapper right) => left.Equals(right);
 
-    public static bool operator !=(PositionVectorWrapper left, PositionVectorWrapper right) => !(left == right);
+    public static bool operator !=(IndexPointWrapper left, IndexPointWrapper right) => !(left == right);
 
     /// <summary>
     ///

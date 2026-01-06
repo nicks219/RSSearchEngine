@@ -30,7 +30,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
 
         try
         {
-            InvertedIndex.CreateNonEmptyDocumentIdsCollection(searchVector, idsFromGin);
+            InvertedIndex.FillWithNonEmptyDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {

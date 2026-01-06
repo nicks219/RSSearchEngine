@@ -26,9 +26,9 @@ public sealed class ExtendedSearchAlgorithmSelector
 
     private readonly InvertedOffsetIndexPartitions _offsetPartitions = new();
 
-    private readonly InvertedIndexPartitions _partitions = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexPartitions _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexPartitions _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с extended-алгоритмами.

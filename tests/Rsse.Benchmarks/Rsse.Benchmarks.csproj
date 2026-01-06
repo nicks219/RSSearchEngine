@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
 
 </Project>

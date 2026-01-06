@@ -12,7 +12,7 @@ namespace RsseEngine.Dto.Inverted;
 // Значения: [v0, v1, ..., vN]
 // Для бинарного поиска ключи должны быть отсортированы, в этом случае используйте его на TryGetValue.
 
-public readonly partial struct CompactedDictionary
+public readonly partial struct IndexPoint
 {
     /// <summary>
     /// Словарь представлен в виде отсортированного массива, см. макет данных.
@@ -73,9 +73,11 @@ public readonly partial struct CompactedDictionary
                         data[metaWritePos++] = -value[0];
                         data[metaWritePos++] = -value[1];
                         break;
-                    default:
+                    case 1:
                         data[metaWritePos++] = -value[0];
                         data[metaWritePos++] = 0;
+                        break;
+                    case 0:
                         break;
                 }
             }

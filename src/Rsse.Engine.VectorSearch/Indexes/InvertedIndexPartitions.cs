@@ -8,12 +8,12 @@ public sealed class InvertedIndexPartitions
 {
     public readonly List<InvertedIndex> Indices = new();
 
-    private readonly CompactedDictionary.DictionaryStorageType _searchType;
+    private readonly IndexPoint.DictionaryStorageType _searchType;
 
     private InvertedIndex _currentIndex;
 
     public InvertedIndexPartitions(
-        CompactedDictionary.DictionaryStorageType searchType)
+        IndexPoint.DictionaryStorageType searchType)
     {
         _searchType = searchType;
 

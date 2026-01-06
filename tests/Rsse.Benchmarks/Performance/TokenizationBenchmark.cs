@@ -32,13 +32,13 @@ public class TokenizationBenchmark
 
     private readonly InvertedOffsetIndexPartitions _invertedOffsetIndexExtended = new();
 
-    private readonly InvertedIndexPartitions _invertedIndexExtended = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexPartitions _invertedIndexExtended = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexHsExtended = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexPartitions _invertedIndexHsExtended = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexReduced = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexPartitions _invertedIndexReduced = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _invertedIndexHsReduced = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexPartitions _invertedIndexHsReduced = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     public static List<IndexType> Parameters =>
     [

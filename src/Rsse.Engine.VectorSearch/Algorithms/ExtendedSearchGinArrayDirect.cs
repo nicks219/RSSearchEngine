@@ -37,7 +37,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
         try
         {
-            InvertedIndex.CreateDocumentIdsCollection(searchVector, idsFromGin);
+            InvertedIndex.FillWithDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {

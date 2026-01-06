@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Threading;
 using RD.RsseEngine.Algorithms;
@@ -15,6 +17,7 @@ namespace RD.RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам extended-поиска.
 /// </summary>
+[Obsolete("R&D only")]
 public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
 {
@@ -282,3 +285,5 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 }
+
+#endif

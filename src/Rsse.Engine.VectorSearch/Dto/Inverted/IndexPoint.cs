@@ -10,12 +10,15 @@ namespace RsseEngine.Dto.Inverted;
 /// Высокопроизводительный неизменяемый компактный словарь для целочисленных ключей и массивов значений.
 /// Данные хранятся в едином массиве для минимизации аллокаций и улучшения локальности памяти.
 /// Поддерживает два режима хранения: хэш-таблица и отсортированный массив.
-/// Используется как оптимизированный элемент с заметкой для дополнительного индекса.
+/// Используется как оптимизированный элемент с документом для дополнительного индекса (id документа -> токены с их позициями).
 /// </summary>
 [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
 [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, int[]>//, IEquatable<CompactedDictionary>
+public readonly partial struct IndexPoint : IReadOnlyDictionary<int, int[]>, IEquatable<IndexPoint>
 {
+    /// <summary>
+    /// Режим хранения словаря.
+    /// </summary>
     public enum DictionaryStorageType
     {
         HashTableStorage = 0,
@@ -26,7 +29,7 @@ public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, in
 
     private readonly int[] _data;
 
-    public CompactedDictionary(
+    public IndexPoint(
         Dictionary<int, int[]?> source,
         int externalId,
         int externalCount,
@@ -80,7 +83,7 @@ public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, in
         }
     }
 
-    public bool ContainsKey(int key) => TryGetValue(key, out ReadOnlySpan<int> value);
+    public bool ContainsKey(int key) => ContainsKeyBinarySearch(key);
 
     private static readonly int[] EmptyArray = [];
 
@@ -157,12 +160,27 @@ public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, in
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // при использовании этого метода сжатие массивов теряет смысл
     public bool TryGetValue(int key, out ReadOnlySpan<int> valueSpan)
     {
         int[] data = _data;
 
         if (TryGetValueBinarySearch(data, key, out int valueLength, out int valueOffset))
         {
+            // поддерживаем сжатый массив из 2х элементов
+            if (valueLength < 0 & valueOffset < 0)
+            {
+                valueSpan = new[]{-valueLength, -valueOffset}.AsSpan();
+                return true;
+            }
+
+            // поддерживаем сжатый массив из одного элемента
+            if (valueLength < 0)
+            {
+                valueSpan = new[]{-valueLength}.AsSpan();
+                return true;
+            }
+
             valueSpan = new ReadOnlySpan<int>(data, valueOffset, valueLength);
             return true;
         }
@@ -291,14 +309,15 @@ public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, in
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    /*public bool Equals(CompactedDictionary other)
+    // IEquatable impl
+    public bool Equals(IndexPoint other)
     {
         return _data.Equals(other._data);
     }
 
     public override bool Equals(object? obj)
     {
-        return obj is CompactedDictionary other && Equals(other);
+        return obj is IndexPoint other && Equals(other);
     }
 
     public override int GetHashCode()
@@ -306,15 +325,15 @@ public readonly partial struct CompactedDictionary : IReadOnlyDictionary<int, in
         return _data.GetHashCode();
     }
 
-    public static bool operator ==(CompactedDictionary left, CompactedDictionary right)
+    public static bool operator ==(IndexPoint left, IndexPoint right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(CompactedDictionary left, CompactedDictionary right)
+    public static bool operator !=(IndexPoint left, IndexPoint right)
     {
         return !left.Equals(right);
-    }*/
+    }
 
     private static class DataPointHeader
     {

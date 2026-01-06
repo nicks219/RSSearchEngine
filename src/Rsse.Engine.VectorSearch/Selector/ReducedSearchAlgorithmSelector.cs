@@ -24,9 +24,9 @@ public sealed class ReducedSearchAlgorithmSelector
 
     private readonly DirectIndex _generalDirectIndex;
 
-    private readonly InvertedIndexPartitions _partitions = new(CompactedDictionary.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexPartitions _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(CompactedDictionary.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexPartitions _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.

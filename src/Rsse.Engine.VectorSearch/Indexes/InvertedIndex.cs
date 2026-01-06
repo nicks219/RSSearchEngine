@@ -7,16 +7,16 @@ using RsseEngine.Dto.Inverted;
 namespace RsseEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего инвертированного индекса "токен-идентификаторы.
+/// Поддержка общего инвертированного индекса "токен-идентификаторы".
 /// </summary>
-public sealed class InvertedIndex(CompactedDictionary.DictionaryStorageType dataPointSearchType)
+public sealed class InvertedIndex(IndexPoint.DictionaryStorageType dataPointSearchType)
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
     /// </summary>
     private readonly Dictionary<Token, InternalDocumentIds> _invertedIndex = new();
 
-    private readonly List<PositionVectorWrapper> _directIndex = [];
+    private readonly List<IndexPointWrapper> _directIndex = [];
 
     private readonly List<ExternalDocumentIdWithSize> _externalDocumentIds = [];
 
@@ -58,14 +58,14 @@ public sealed class InvertedIndex(CompactedDictionary.DictionaryStorageType data
     /// <param name="documentId">Идентификатор заметки.</param>
     public void RemoveVector(DocumentId documentId)
     {
-        if (_actualDocuments.Remove(documentId, out var oldInternalDocumentId))
+        if (_actualDocuments.Remove(documentId, out var oldDocumentIdInternal))
         {
-            _deletedDocuments.Add(oldInternalDocumentId);
+            _deletedDocuments.Add(oldDocumentIdInternal);
         }
     }
 
     /// <summary>
-    /// Очистить индекс.
+    /// Очистить индексы.
     /// </summary>
     public void Clear()
     {
@@ -77,44 +77,44 @@ public sealed class InvertedIndex(CompactedDictionary.DictionaryStorageType data
     }
 
     /// <summary>
-    /// Получить идентификаторы заметок, в которых присутствует токен.
+    /// Получить из индекса идентификаторы заметок, в которых присутствует токен.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="internalDocumentIds">Вектор с идентификаторами заметок.</param>
+    /// <param name="documentIdsInternal">Вектор с идентификаторами заметок из индекса.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds internalDocumentIds)
+    public bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
     {
-        return _invertedIndex.TryGetValue(token, out internalDocumentIds) && internalDocumentIds.Count > 0;
+        return _invertedIndex.TryGetValue(token, out documentIdsInternal) && documentIdsInternal.Count > 0;
     }
 
     /// <summary>
-    /// Заполнить коллекцию с актуальными идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// Заполнить коллекцию с актуальными идентификаторами из индекса, которые соответствуют токенам из запрашиваемого вектора.
     /// </summary>
     /// <param name="tokens">Вектор с целевыми токенами.</param>
-    /// <param name="documentIdsCollection">Коллекция токен-идентификаторы.</param>
-    public void CreateNonEmptyDocumentIdsCollection(TokenVector tokens, List<InternalDocumentIdsWithToken> documentIdsCollection)
+    /// <param name="documentIdsInternal">Коллекция токен-идентификаторы индекса.</param>
+    public void FillWithNonEmptyDocumentIds(TokenVector tokens, List<InternalDocumentIdsWithToken> documentIdsInternal)
     {
         foreach (var token in tokens)
         {
             if (TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
-                documentIdsCollection.Add(new InternalDocumentIdsWithToken(documentIds, token));
+                documentIdsInternal.Add(new InternalDocumentIdsWithToken(documentIds, token));
             }
         }
     }
 
     /// <summary>
-    /// Заполнить коллекцию актуальными (либо пустыми) идентификаторами, которые соответствуют токенам из запрашиваемого вектора.
+    /// Заполнить коллекцию актуальными (либо пустыми) идентификаторами из индекса, которые соответствуют токенам из запрашиваемого вектора.
     /// </summary>
     /// <param name="tokens">Вектор с целевыми токенами.</param>
-    /// <param name="documentIdsCollection">Коллекция токен-идентификаторы.</param>
-    public void CreateDocumentIdsCollection(TokenVector tokens, List<InternalDocumentIds> documentIdsCollection)
+    /// <param name="documentIdsInternal">Коллекция токен-идентификаторы индекса.</param>
+    public void FillWithDocumentIds(TokenVector tokens, List<InternalDocumentIds> documentIdsInternal)
     {
         var emptyVector = new InternalDocumentIds([]);
 
         foreach (var token in tokens)
         {
-            documentIdsCollection.Add(TryGetNonEmptyDocumentIds(token, out var documentIds)
+            documentIdsInternal.Add(TryGetNonEmptyDocumentIds(token, out var documentIds)
                 ? documentIds
                 : emptyVector);
         }
@@ -123,33 +123,33 @@ public sealed class InvertedIndex(CompactedDictionary.DictionaryStorageType data
     /// <summary>
     /// Получить документ (если он не помечен к удалению) в виде коллекции токенов и их позиций.
     /// </summary>
-    /// <param name="documentId">Идентификатор документа.</param>
-    /// <param name="positionVector"></param>
-    /// <param name="externalDocument"></param>
+    /// <param name="documentId">Идентификатор документа в индексе.</param>
+    /// <param name="directIndexPoint">Контейнер с компактным вектором позиций токенов документа.</param>
+    /// <param name="externalDocumentId">Идентификатор документа в бд.</param>
     /// <returns></returns>
     public bool TryGetPositionVector(
         InternalDocumentId documentId,
-        out PositionVectorWrapper positionVector,
-        out ExternalDocumentIdWithSize externalDocument)
+        out IndexPointWrapper directIndexPoint,
+        out ExternalDocumentIdWithSize externalDocumentId)
     {
         if (_deletedDocuments.Contains(documentId))
         {
-            positionVector = default;
-            externalDocument = default;
+            directIndexPoint = default;
+            externalDocumentId = default;
             return false;
         }
 
-        positionVector = _directIndex[documentId.Value];
+        directIndexPoint = _directIndex[documentId.Value];
         // externalDocument = new ExternalDocumentIdWithSize(new DocumentId(positionVector.Value.ExternalId), positionVector.Value.ExternalCount);
-        externalDocument = _externalDocumentIds[documentId.Value];
+        externalDocumentId = _externalDocumentIds[documentId.Value];
         return true;
     }
 
     /// <summary>
     /// Добавить заметку в инвертированный индекс.
     /// </summary>
-    /// <param name="externalDocumentId">Идентификатор в бд.</param>
-    /// <param name="internalDocumentId"></param>
+    /// <param name="externalDocumentId">Идентификатор документа в бд.</param>
+    /// <param name="internalDocumentId">Идентификатор документа в индексе.</param>
     /// <param name="tokenVector">Заметка в виде вектора.</param>
     private void AppendTokenVector(
         DocumentId externalDocumentId,
@@ -176,14 +176,14 @@ public sealed class InvertedIndex(CompactedDictionary.DictionaryStorageType data
             .Select(pair => new KeyValuePair<int, int[]?>(pair.Key.Value, pair.Value.ToArray()))
             .ToDictionary();
 
-        var positionVectorElement = new CompactedDictionary(
+        var indexPoint = new IndexPoint(
             positionVectorConverted,
             externalDocumentId.Value,
             tokenVector.Count,
             dataPointSearchType);
 
-        var positionVector = new PositionVectorWrapper(positionVectorElement);
+        var indexPointWrapper = new IndexPointWrapper(indexPoint);
 
-        _directIndex.Add(positionVector);
+        _directIndex.Add(indexPointWrapper);
     }
 }

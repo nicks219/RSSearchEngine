@@ -13,7 +13,7 @@ namespace RsseEngine.Dto.Inverted;
 // Ключи: [key0, valueLength0, valuesOffset0, ...]
 // Значения: [v0, v1, ..., vN]
 
-public readonly partial struct CompactedDictionary
+public readonly partial struct IndexPoint
 {
     /// <summary>
     /// Словарь представлен в виде хэш-таблицы, см. макет данных.
@@ -48,7 +48,7 @@ public readonly partial struct CompactedDictionary
             for (int i = 0; i < count; i++)
             {
                 int key = list[i].Key;
-                int[] value = list[i].Value ?? Array.Empty<int>();
+                int[] value = list[i].Value ?? EmptyArray;
                 int hash = key.GetHashCode();
                 int bucket = (int)HashHelpers.FastMod((uint)hash, (uint)bucketsCount, fastModMultiplier);
                 bucketLists[bucket].Add((key, value));
@@ -155,8 +155,6 @@ public readonly partial struct CompactedDictionary
                         right = mid - DataPointHeader.KeyEntrySize;
                     }
                 }
-
-                return false;
             }
             else
             {
@@ -168,9 +166,9 @@ public readonly partial struct CompactedDictionary
                         return true;
                     }
                 }
-
-                return false;
             }
+
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -355,6 +353,8 @@ public readonly partial struct CompactedDictionary
         }
     }
 }
+
+// копия internal типа: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/HashHelpers.cs
 
 public static class BucketHelper
 {

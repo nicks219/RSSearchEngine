@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Threading;
 using RD.RsseEngine.Algorithms;
@@ -15,6 +17,7 @@ namespace RD.RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
 /// </summary>
+[Obsolete("R&D only")]
 public sealed class ReducedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
 {
@@ -213,3 +216,5 @@ public sealed class ReducedSearchAlgorithmSelector
         }
     }
 }
+
+#endif
