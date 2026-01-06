@@ -25,7 +25,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
     /// </summary>
     public required InvertedIndex InvertedIndex { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     public required PositionSearchType PositionSearchType { private get; init; }
 
@@ -33,11 +33,11 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var sortedIds = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var sortedIds = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -76,7 +76,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(sortedIds);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(sortedIds);
         }
     }
 

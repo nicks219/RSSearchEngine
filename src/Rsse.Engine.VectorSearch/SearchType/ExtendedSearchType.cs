@@ -3,7 +3,7 @@ using RsseEngine.Algorithms;
 namespace RsseEngine.SearchType;
 
 /// <summary>
-/// Тип оптимизации extended-алгоритмов поиска.
+/// Варианты конфигураций для различных extended-алгоритмов поиска.
 /// </summary>
 public enum ExtendedSearchType
 {
@@ -17,47 +17,47 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffset"/>
     /// </summary>
-    GinOffset = 1,
+    Offset = 1,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffsetFilter"/>
     /// </summary>
-    GinOffsetFilter = 2,
+    OffsetFilter = 2,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, линейный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
-    GinArrayDirectLs = 3,
+    DirectLinear = 3,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, линейный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterLs = 4,
+    DirectFilterLinear = 4,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, бинарный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
-    GinArrayDirectBs = 5,
+    DirectBinary = 5,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, бинарный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterBs = 6,
+    DirectFilterBinary = 6,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
-    GinArrayDirectHs = 7,
+    DirectHash = 7,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterHs = 8
+    DirectFilterHash = 8
 }

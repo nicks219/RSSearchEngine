@@ -30,16 +30,16 @@ public class MtQueryBenchmarkReduced : IBenchmarkRunner
     public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
     [
         new(ReducedSearchType.Legacy),
-        new(ReducedSearchType.GinArrayDirect),
-        new(ReducedSearchType.GinArrayDirect, true),
-        new(ReducedSearchType.GinArrayMergeFilter),
-        new(ReducedSearchType.GinArrayMergeFilter, true),
-        new(ReducedSearchType.GinArrayDirectFilterLs),
-        new(ReducedSearchType.GinArrayDirectFilterLs, true),
-        new(ReducedSearchType.GinArrayDirectFilterBs),
-        new(ReducedSearchType.GinArrayDirectFilterBs, true),
-        new(ReducedSearchType.GinArrayDirectFilterHs),
-        new(ReducedSearchType.GinArrayDirectFilterHs, true)
+        new(ReducedSearchType.Direct),
+        new(ReducedSearchType.Direct, true),
+        new(ReducedSearchType.MergeFilter),
+        new(ReducedSearchType.MergeFilter, true),
+        new(ReducedSearchType.DirectFilterLinear),
+        new(ReducedSearchType.DirectFilterLinear, true),
+        new(ReducedSearchType.DirectFilterBinary),
+        new(ReducedSearchType.DirectFilterBinary, true),
+        new(ReducedSearchType.DirectFilterHash),
+        new(ReducedSearchType.DirectFilterHash, true)
     ];
 
     public static List<string> SearchQueries =>

@@ -28,7 +28,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var enumerators = TempStoragePool.TokenOffsetEnumeratorListsStorage.Get();
+        var enumerators = TempStoragePool.OffsetEnumeratorCollections.Get();
 
         try
         {
@@ -57,7 +57,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.TokenOffsetEnumeratorListsStorage.Return(enumerators);
+            TempStoragePool.OffsetEnumeratorCollections.Return(enumerators);
         }
     }
 
@@ -102,7 +102,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     {
         while (enumerators.Count > 1)
         {
-            MergeAlgorithm.FindMin(enumerators, out var minI0, out var docId0, out var docId1);
+            MergeHelpers.FindTwoMinimumIds(enumerators, out var minI0, out var docId0, out var docId1);
 
         START:
             if (docId0 < docId1)

@@ -26,7 +26,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var idsFromGin = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
@@ -69,7 +69,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(idsFromGin);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(idsFromGin);
         }
     }
 

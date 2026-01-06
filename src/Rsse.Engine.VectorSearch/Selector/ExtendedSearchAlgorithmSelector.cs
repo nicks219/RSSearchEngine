@@ -20,9 +20,9 @@ public sealed class ExtendedSearchAlgorithmSelector
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    private readonly GinRelevanceFilter _relevanceFilter;
+    private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndex _generalDirectIndex;
+    private readonly DirectIndex _generalDirectIndexLegacy;
 
     private readonly InvertedOffsetIndexPartitions _offsetPartitions = new();
 
@@ -34,18 +34,18 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// Компонент с extended-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndex">Общий индекс.</param>
+    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности.</param>
     public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndex generalDirectIndex, double relevancyThreshold)
+        DirectIndex generalDirectIndexLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ExtendedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndex = generalDirectIndex;
+        _generalDirectIndexLegacy = generalDirectIndexLegacy;
 
-        _relevanceFilter = new GinRelevanceFilter
+        _relevanceFilter = new RelevanceFilter
         {
             Threshold = relevancyThreshold
         };
@@ -55,51 +55,56 @@ public sealed class ExtendedSearchAlgorithmSelector
     public void Find(ExtendedSearchType searchType, TokenVector searchVector,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
+        // todo: именования состоят из набора параметров для алгоритмов ("как" а не "что") - можно добавить атрибуты
+        // Offset в нейминге означает использование InvertedOffsetIndex, иначе InvertedIndex (UsesIndex)
+        // Filter в нейминге означает использование GinRelevanceFilter (UsesFilter)
+        // Linear - Binary - Hash в нейминге означают тип поиска в позициях токена (PositionSearchType)
+
         switch (searchType)
         {
             case ExtendedSearchType.Legacy:
                 {
-                    FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
+                    RunLegacySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinOffset:
+            case ExtendedSearchType.Offset:
                 {
-                    FindExtendedGinOffset(searchVector, metricsCalculator, cancellationToken);
+                    RunOffsetSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinOffsetFilter:
+            case ExtendedSearchType.OffsetFilter:
                 {
-                    FindExtendedGinOffsetFilter(searchVector, metricsCalculator, cancellationToken);
+                    RunOffsetFilterSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectLs:
+            case ExtendedSearchType.DirectLinear:
                 {
-                    FindExtendedGinArrayDirectLs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectFilterLs:
+            case ExtendedSearchType.DirectFilterLinear:
                 {
-                    FindExtendedGinArrayDirectFilterLs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectBs:
+            case ExtendedSearchType.DirectBinary:
                 {
-                    FindExtendedGinArrayDirectBs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectFilterBs:
+            case ExtendedSearchType.DirectFilterBinary:
                 {
-                    FindExtendedGinArrayDirectFilterBs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectHs:
+            case ExtendedSearchType.DirectHash:
                 {
-                    FindExtendedGinArrayDirectHs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.GinArrayDirectFilterHs:
+            case ExtendedSearchType.DirectFilterHash:
                 {
-                    FindExtendedGinArrayDirectFilterHs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
             default:
@@ -141,18 +146,18 @@ public sealed class ExtendedSearchAlgorithmSelector
         _partitionsHs.Clear();
     }
 
-    private void FindExtendedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         var extendedSearchLegacy = new ExtendedSearchLegacy
         {
-            GeneralDirectIndex = _generalDirectIndex
+            GeneralDirectIndex = _generalDirectIndexLegacy
         };
 
         extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
     }
 
-    private void FindExtendedGinOffset(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunOffsetSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
@@ -167,7 +172,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinOffsetFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunOffsetFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
@@ -183,7 +188,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -199,7 +204,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -216,7 +221,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -232,7 +237,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -249,7 +254,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndexHs in _partitionsHs.Indices)
@@ -265,7 +270,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void FindExtendedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndexHs in _partitionsHs.Indices)

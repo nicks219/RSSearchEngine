@@ -3,7 +3,7 @@ using RsseEngine.Algorithms;
 namespace RsseEngine.SearchType;
 
 /// <summary>
-/// Тип оптимизации reduced-алгоритмов поиска.
+/// Варианты конфигураций для различных reduced-алгоритмов поиска.
 /// </summary>
 public enum ReducedSearchType
 {
@@ -17,29 +17,29 @@ public enum ReducedSearchType
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirect"/>
     /// </summary>
-    GinArrayDirect = 1,
+    Direct = 1,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayMergeFilter"/>
     /// </summary>
-    GinArrayMergeFilter = 2,
+    MergeFilter = 2,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, линейный поиск.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterLs = 3,
+    DirectFilterLinear = 3,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, бинарный поиск.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterBs = 4,
+    DirectFilterBinary = 4,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
     /// </summary>
-    GinArrayDirectFilterHs = 5
+    DirectFilterHash = 5
 }

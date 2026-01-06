@@ -170,14 +170,14 @@ public readonly partial struct IndexPoint : IReadOnlyDictionary<int, int[]>, IEq
             // поддерживаем сжатый массив из 2х элементов
             if (valueLength < 0 & valueOffset < 0)
             {
-                valueSpan = new[]{-valueLength, -valueOffset}.AsSpan();
+                valueSpan = new[] { -valueLength, -valueOffset }.AsSpan();
                 return true;
             }
 
             // поддерживаем сжатый массив из одного элемента
             if (valueLength < 0)
             {
-                valueSpan = new[]{-valueLength}.AsSpan();
+                valueSpan = new[] { -valueLength }.AsSpan();
                 return true;
             }
 

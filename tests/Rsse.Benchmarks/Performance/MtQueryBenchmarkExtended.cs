@@ -30,22 +30,22 @@ public class MtQueryBenchmarkExtended : IBenchmarkRunner
     public static List<BenchmarkParameter<ExtendedSearchType>> Parameters =>
     [
         new(ExtendedSearchType.Legacy),
-        new(ExtendedSearchType.GinOffset),
-        new(ExtendedSearchType.GinOffset, true),
-        new(ExtendedSearchType.GinOffsetFilter),
-        new(ExtendedSearchType.GinOffsetFilter, true),
-        new(ExtendedSearchType.GinArrayDirectLs),
-        new(ExtendedSearchType.GinArrayDirectLs, true),
-        new(ExtendedSearchType.GinArrayDirectFilterLs),
-        new(ExtendedSearchType.GinArrayDirectFilterLs, true),
-        new(ExtendedSearchType.GinArrayDirectBs),
-        new(ExtendedSearchType.GinArrayDirectBs, true),
-        new(ExtendedSearchType.GinArrayDirectFilterBs),
-        new(ExtendedSearchType.GinArrayDirectFilterBs, true),
-        new(ExtendedSearchType.GinArrayDirectHs),
-        new(ExtendedSearchType.GinArrayDirectHs, true),
-        new(ExtendedSearchType.GinArrayDirectFilterHs),
-        new(ExtendedSearchType.GinArrayDirectFilterHs, true)
+        new(ExtendedSearchType.Offset),
+        new(ExtendedSearchType.Offset, true),
+        new(ExtendedSearchType.OffsetFilter),
+        new(ExtendedSearchType.OffsetFilter, true),
+        new(ExtendedSearchType.DirectLinear),
+        new(ExtendedSearchType.DirectLinear, true),
+        new(ExtendedSearchType.DirectFilterLinear),
+        new(ExtendedSearchType.DirectFilterLinear, true),
+        new(ExtendedSearchType.DirectBinary),
+        new(ExtendedSearchType.DirectBinary, true),
+        new(ExtendedSearchType.DirectFilterBinary),
+        new(ExtendedSearchType.DirectFilterBinary, true),
+        new(ExtendedSearchType.DirectHash),
+        new(ExtendedSearchType.DirectHash, true),
+        new(ExtendedSearchType.DirectFilterHash),
+        new(ExtendedSearchType.DirectFilterHash, true)
     ];
 
     public static List<string> SearchQueries =>

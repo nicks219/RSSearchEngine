@@ -6,26 +6,26 @@ using RsseEngine.Iterators;
 namespace RsseEngine.Pools;
 
 /// <summary>
-/// Пул коллекций
+/// Пул коллекций.
 /// </summary>
 /// <param name="enable">Пул активирован.</param>
 public sealed class TempStoragePool(bool enable)
 {
-    internal readonly CollectionPool<List<InternalDocumentListEnumerator>, InternalDocumentListEnumerator> ListInternalEnumeratorListsStorage = new(enable);
+    internal readonly CollectionPool<List<InternalDocumentListEnumerator>, InternalDocumentListEnumerator> InternalEnumeratorCollections = new(enable);
 
-    public readonly CollectionPool<List<int>, int> IntListsStorage = new(enable);
+    public readonly CollectionPool<List<int>, int> IntCollections = new(enable);
 
-    internal readonly CollectionPool<Dictionary<InternalDocumentIds, int>, KeyValuePair<InternalDocumentIds, int>> InternalDocumentIdListCountStorage = new(enable);
+    internal readonly CollectionPool<Dictionary<InternalDocumentIds, int>, KeyValuePair<InternalDocumentIds, int>> InternalIdsStorage = new(enable);
 
-    internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> TokenOffsetEnumeratorListsStorage = new(enable);
+    internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> OffsetEnumeratorCollections = new(enable);
 
-    internal readonly CollectionPool<List<InternalDocumentIds>, InternalDocumentIds> InternalDocumentIdListsStorage = new(enable);
+    internal readonly CollectionPool<List<InternalDocumentIds>, InternalDocumentIds> InternalIdsCollections = new(enable);
 
-    internal readonly CollectionPool<List<InternalDocumentIdsWithToken>, InternalDocumentIdsWithToken> InternalDocumentIdListsWithTokenStorage = new(enable);
+    internal readonly CollectionPool<List<InternalDocumentIdsWithToken>, InternalDocumentIdsWithToken> InternalIdsWithTokenCollections = new(enable);
 
-    public sealed class CollectionPool<T, TV> where T : ICollection<TV>, new()
+    public sealed class CollectionPool<T1, T2> where T1 : ICollection<T2>, new()
     {
-        private readonly ConcurrentBag<T>? _bag;
+        private readonly ConcurrentBag<T1>? _bag;
 
         public CollectionPool(bool enable)
         {
@@ -35,14 +35,14 @@ public sealed class TempStoragePool(bool enable)
             }
         }
 
-        public T Get()
+        public T1 Get()
         {
             return _bag != null && _bag.TryTake(out var result)
                 ? result
                 : [];
         }
 
-        public void Return(T result)
+        public void Return(T1 result)
         {
             if (_bag != null)
             {

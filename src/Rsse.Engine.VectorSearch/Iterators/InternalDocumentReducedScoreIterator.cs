@@ -22,7 +22,7 @@ public readonly ref struct InternalDocumentReducedScoreIterator : IDisposable
         List<InternalDocumentIdsWithToken> sortedIds, int filteredTokensCount)
     {
         _tempStoragePool = tempStoragePool;
-        _list = tempStoragePool.ListInternalEnumeratorListsStorage.Get();
+        _list = tempStoragePool.InternalEnumeratorCollections.Get();
 
         for (var index = 0; index < filteredTokensCount; index++)
         {
@@ -38,7 +38,7 @@ public readonly ref struct InternalDocumentReducedScoreIterator : IDisposable
 
     public void Dispose()
     {
-        _tempStoragePool.ListInternalEnumeratorListsStorage.Return(_list);
+        _tempStoragePool.InternalEnumeratorCollections.Return(_list);
     }
 
     public void Iterate<TConsumer>(in TConsumer consumer)
@@ -46,7 +46,7 @@ public readonly ref struct InternalDocumentReducedScoreIterator : IDisposable
     {
         while (_list.Count > 1)
         {
-            MergeAlgorithm.FindMin(_list, out var minI0, out var docId0, out var docId1);
+            MergeHelpers.FindTwoMinimumIds(_list, out var minI0, out var docId0, out var docId1);
 
         START:
 

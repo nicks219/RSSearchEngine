@@ -271,7 +271,7 @@ public class IndexPointTests
 
         // Keys should be accessible
         var keys = indexPoint.Keys.ToList();
-        CollectionAssert.AreEqual(ExpectedKeys, keys.OrderBy(k => k).ToArray() );
+        CollectionAssert.AreEqual(ExpectedKeys, keys.OrderBy(k => k).ToArray());
     }
 
     [TestMethod]

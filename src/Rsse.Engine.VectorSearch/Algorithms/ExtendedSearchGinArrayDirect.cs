@@ -33,7 +33,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.InternalDocumentIdListsStorage.Get();
+        var idsFromGin = TempStoragePool.InternalIdsCollections.Get();
 
         try
         {
@@ -73,7 +73,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsStorage.Return(idsFromGin);
+            TempStoragePool.InternalIdsCollections.Return(idsFromGin);
         }
     }
 
@@ -87,10 +87,10 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         List<InternalDocumentIds> idsFromGin)
     {
-        var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
-        var multi = TempStoragePool.IntListsStorage.Get();
-        var listExists = TempStoragePool.IntListsStorage.Get();
-        var dictionary = TempStoragePool.InternalDocumentIdListCountStorage.Get();
+        var list = TempStoragePool.InternalEnumeratorCollections.Get();
+        var multi = TempStoragePool.IntCollections.Get();
+        var listExists = TempStoragePool.IntCollections.Get();
+        var dictionary = TempStoragePool.InternalIdsStorage.Get();
 
         try
         {
@@ -116,7 +116,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
             while (listExists.Count > 1)
             {
-                MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                MergeHelpers.FindTwoMinimumIdsFromSubset(list, listExists, out var minI0, out var docId0, out var docId1);
 
                 var isMulti = multi[minI0] > 0;
 
@@ -170,10 +170,10 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListCountStorage.Return(dictionary);
-            TempStoragePool.IntListsStorage.Return(listExists);
-            TempStoragePool.IntListsStorage.Return(multi);
-            TempStoragePool.ListInternalEnumeratorListsStorage.Return(list);
+            TempStoragePool.InternalIdsStorage.Return(dictionary);
+            TempStoragePool.IntCollections.Return(listExists);
+            TempStoragePool.IntCollections.Return(multi);
+            TempStoragePool.InternalEnumeratorCollections.Return(list);
         }
     }
 

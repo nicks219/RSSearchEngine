@@ -25,17 +25,17 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
     /// </summary>
     public required InvertedOffsetIndex GinExtended { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var enumerators = TempStoragePool.TokenOffsetEnumeratorListsStorage.Get();
+        var enumerators = TempStoragePool.OffsetEnumeratorCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.CreateEnumerators(GinExtended, searchVector, enumerators,
+            if (!RelevanceFilter.TryGetRelevantDocumentsEnumerators(GinExtended, searchVector, enumerators,
                     out var indexWithCounts, out var filteredTokensCount,
                     out var minRelevancyCount))
             {
@@ -76,7 +76,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         }
         finally
         {
-            TempStoragePool.TokenOffsetEnumeratorListsStorage.Return(enumerators);
+            TempStoragePool.OffsetEnumeratorCollections.Return(enumerators);
         }
     }
 
@@ -267,7 +267,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         {
             if (list.Count > 1)
             {
-                MergeAlgorithm.FindMin(list, out minI0, out min0, out min1);
+                MergeHelpers.FindTwoMinimumIds(list, out minI0, out min0, out min1);
                 min1Exists = true;
             }
             else
@@ -420,7 +420,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         {
             if (listExists.Count > 1)
             {
-                MergeAlgorithm.FindMin(list, listExists, out minI0, out min0, out min1);
+                MergeHelpers.FindTwoMinimumIdsFromSubset(list, listExists, out minI0, out min0, out min1);
                 min1Exists = true;
             }
             else

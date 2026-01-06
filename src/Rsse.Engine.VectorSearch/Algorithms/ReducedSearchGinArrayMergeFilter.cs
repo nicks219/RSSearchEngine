@@ -24,17 +24,17 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
     /// </summary>
     public required InvertedIndex InvertedIndex { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var sortedIds = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var sortedIds = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -73,7 +73,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(sortedIds);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(sortedIds);
         }
     }
 
@@ -107,7 +107,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
             _metricsCalculator = metricsCalculator;
             _invertedIndex = invertedIndex;
 
-            _list = _tempStoragePool.ListInternalEnumeratorListsStorage.Get();
+            _list = _tempStoragePool.InternalEnumeratorCollections.Get();
 
             for (var index = sortedIds.Count - 1; index >= filteredTokensCount; index--)
             {
@@ -123,7 +123,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
 
         public void Dispose()
         {
-            _tempStoragePool.ListInternalEnumeratorListsStorage.Return(_list);
+            _tempStoragePool.InternalEnumeratorCollections.Return(_list);
         }
 
         public void Accept(InternalDocumentId documentId, int score)
