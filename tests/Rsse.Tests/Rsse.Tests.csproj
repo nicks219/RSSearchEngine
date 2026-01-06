@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Rsse.Tests.Common\Rsse.Tests.Common.csproj" />
     <ProjectReference Include="..\..\src\Rsse.Service\Rsse.Service.csproj" />
+    <!-- <ProjectReference Include="..\..\src\RD.Rsse.Engine.VectorSearch\RD.Rsse.Engine.VectorSearch.csproj" /> -->
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,5 +1,5 @@
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Processor;
 

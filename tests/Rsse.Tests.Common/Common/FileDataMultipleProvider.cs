@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Entities;
@@ -6,7 +7,9 @@ namespace Rsse.Tests.Common;
 
 /// <summary>
 /// Компонент поставщика многократной копии данных из файла.
+/// Используется в бенчмарках.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class FileDataMultipleProvider(int initialDataMultiplier = Constants.InitialDataMultiplier) : IDataProvider<NoteEntity>
 {
     private List<NoteEntity>? _notes;

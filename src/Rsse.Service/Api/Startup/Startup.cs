@@ -64,10 +64,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             swaggerGenOptions.EnableAnnotations();
             swaggerGenOptions.SwaggerDoc(Constants.SwaggerDocNameSegment,
                 new Microsoft.OpenApi.OpenApiInfo
-            {
-                Title = Constants.SwaggerTitle,
-                Version = Constants.ApiVersion
-            });
+                {
+                    Title = Constants.SwaggerTitle,
+                    Version = Constants.ApiVersion
+                });
         });
 
         services.Configure<JsonOptions>(options =>

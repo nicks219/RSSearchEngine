@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Contracts;
 
@@ -9,8 +9,7 @@ namespace RsseEngine.Contracts;
 /// </summary>
 /// <typeparam name="TSearchType">Оптимизация для требуемого алгоритма поиска.</typeparam>
 /// <typeparam name="TSearchProcessor">Тип требуемого алгоритма поиска.</typeparam>
-public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor>
-    where TSearchType : Enum
+public interface ISearchAlgorithmSelector<in TSearchType, out TSearchProcessor> where TSearchType : Enum
 {
     /// <summary>
     /// Выполнить и посчитать метрики релевантности для поискового запроса.

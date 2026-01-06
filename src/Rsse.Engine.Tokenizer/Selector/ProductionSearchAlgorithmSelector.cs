@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.SearchType;
 
@@ -35,14 +35,14 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
-                case ExtendedSearchType.GinOffset:
-                case ExtendedSearchType.GinOffsetFilter:
-                case ExtendedSearchType.GinArrayDirectLs:
-                case ExtendedSearchType.GinArrayDirectFilterLs:
-                case ExtendedSearchType.GinArrayDirectBs:
-                case ExtendedSearchType.GinArrayDirectFilterBs:
-                case ExtendedSearchType.GinArrayDirectHs:
-                case ExtendedSearchType.GinArrayDirectFilterHs:
+                case ExtendedSearchType.Offset:
+                case ExtendedSearchType.OffsetFilter:
+                case ExtendedSearchType.DirectLinear:
+                case ExtendedSearchType.DirectFilterLinear:
+                case ExtendedSearchType.DirectBinary:
+                case ExtendedSearchType.DirectFilterBinary:
+                case ExtendedSearchType.DirectHash:
+                case ExtendedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(
@@ -82,11 +82,11 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
-                case ReducedSearchType.GinArrayDirect:
-                case ReducedSearchType.GinArrayMergeFilter:
-                case ReducedSearchType.GinArrayDirectFilterLs:
-                case ReducedSearchType.GinArrayDirectFilterBs:
-                case ReducedSearchType.GinArrayDirectFilterHs:
+                case ReducedSearchType.Direct:
+                case ReducedSearchType.MergeFilter:
+                case ReducedSearchType.DirectFilterLinear:
+                case ReducedSearchType.DirectFilterBinary:
+                case ReducedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(

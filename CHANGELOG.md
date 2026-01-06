@@ -195,24 +195,24 @@
     - неудовлетворительные результаты на деплое, подробности перенесены в [отчет](.common/.drafts/grafana.md).
 
 
-* `в разработке` `develop` `описание процесса`
-  * ✅ `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
-    - ✅ отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
-    - ✅ активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
-  * ✅ выделить поиск и токенайзер в отдельные проекты
-  * ✅ "освободить" **SearchEngine** для именования класса
+* `develop` `в 6.0.4`
+  * upd: `dev` избавиться от паразитного трафика (убрать шум в сигналах observability)
+    - отрезать весь трафик, кроме `notefinder.ru` (IP/silversword): остановить ингресс `rsse-app-ingress-http`
+    - активировать редирект http → https: поднять ресурсы из манифеста `ingress.traefik.ru.redirect.yml`
+  * upd: выделить поиск и токенайзер в отдельные проекты
+  * upd: "освободить" **SearchEngine** для именования класса
   * `.` `research` подумать над компоновкой библиотек токенайзера и связанного функционала
     - в **CommonBaseOptions** используются типы из **Rsse.Engine**
-  * ✅ выделить `Tests.Common`
-  * ✅ получить метрики от кубера
-    * ✅ для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
-    * ✅ добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
-    * ✅ настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
+  * upd: выделить `Tests.Common`
+  * upd: получить метрики от кубера `описание процесса`  
+    * для проверки метрик от cadvisor добавить SA, дающий права на запрос метрик k3s (уже был в манифесте otel)
+    * добавить в манифест коллектора `disk`, `processes` и `network` (~15 метрик) в hostmetrics: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver
+    * настроить сбор метрик по контейнерам и ресурсам /metrics/cadvisor (~80 метрик) [с токеном из SA в коллектор](.common/.drafts/cadvisor.metrics.md)
 	  - под дебагом в otel виден ответ 403: добавил в ClusterRole `resources: nodes/metrics` вместе и `nonResourceURLs` и `hostNetwork`
 	  - использовал под `debug-curl` для проверки смонтированного токена и чека авторизации на запросе метрики
       - манифесты: [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml) | [debug-shell.yaml](.k3s/debug-shell.yaml)
       - потребление cpu нодой выросло на 0.1 ядро
-  * ✅ `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)  
+  * upd: `cadvisor` сокращено количество метрик, см. [otel.collector.otlp.v3.yml](.k3s/otel.collector.otlp.v3.yml)  
 
 
 #### v6.0.4 `6.0.4` `testing`
@@ -227,9 +227,14 @@
   * fix: исправлена ошибка в инвертированном индексе
 
 
-* `develop`
+* `develop` `в разработке`
   * 2026: плановое обновление k3s до `v1.34.3+k3s1` и SSL
+  * полная версия `Engine.VectorSearch` перенесена в проект `RD.Engine.VectorSearch` (Research & Development)
+  * в копии проводятся переименования, добавляется документации и тесты, устраняются недочеты
+  * fix: в IndexPoint исправлено падение на пустом массиве для SortedArrayStorage
+  * fix: в IndexPoint исправлены методы ContainsKey и TryGetValue для сжатых массивов
   * ...
+
 
 ---
 #### Эпик разработки поискового движка

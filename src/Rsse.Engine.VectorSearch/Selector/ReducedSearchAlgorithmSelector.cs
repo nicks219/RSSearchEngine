@@ -3,8 +3,8 @@ using System.Threading;
 using Rsse.Domain.Service.Configuration;
 using RsseEngine.Algorithms;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
-using RsseEngine.Dto.Offsets;
+using RsseEngine.Dto.Common;
+using RsseEngine.Dto.Inverted;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
@@ -15,35 +15,35 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
 /// </summary>
-public sealed class ReducedSearchAlgorithmSelector
-    : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
+[Obsolete("R&D only")]
+public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    private readonly GinRelevanceFilter _relevanceFilter;
+    private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndex _generalDirectIndex;
+    private readonly DirectIndex _generalDirectIndexLegacy;
 
-    private readonly InvertedIndexPartitions _partitions = new(DocumentDataPoint.DocumentDataPointSearchType.BinaryTree);
+    private readonly InvertedIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(DocumentDataPoint.DocumentDataPointSearchType.HashMap);
+    private readonly InvertedIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndex">Общий индекс.</param>
+    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности</param>
     public ReducedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndex generalDirectIndex, double relevancyThreshold)
+        DirectIndex generalDirectIndexLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ReducedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndex = generalDirectIndex;
+        _generalDirectIndexLegacy = generalDirectIndexLegacy;
 
-        _relevanceFilter = new GinRelevanceFilter
+        _relevanceFilter = new RelevanceFilter
         {
             Threshold = relevancyThreshold
         };
@@ -53,36 +53,41 @@ public sealed class ReducedSearchAlgorithmSelector
     public void Find(ReducedSearchType searchType, TokenVector searchVector,
         IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
     {
+        // todo: именования состоят из набора параметров для алгоритмов ("как" а не "что") - можно добавить атрибуты
+        // Offset в нейминге означает использование InvertedOffsetIndex, иначе InvertedIndex (UsesIndex)
+        // Filter в нейминге означает использование GinRelevanceFilter (UsesFilter)
+        // Linear - Binary - Hash в нейминге означают тип поиска в позициях токена (PositionSearchType)
+
         switch (searchType)
         {
             case ReducedSearchType.Legacy:
                 {
-                    FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
+                    RunLegacySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.GinArrayDirect:
+            case ReducedSearchType.Direct:
                 {
-                    FindReducedGinArrayDirect(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.GinArrayMergeFilter:
+            case ReducedSearchType.MergeFilter:
                 {
-                    FindReducedGinArrayMergeFilter(searchVector, metricsCalculator, cancellationToken);
+                    RunMergeFilterSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.GinArrayDirectFilterLs:
+            case ReducedSearchType.DirectFilterLinear:
                 {
-                    FindReducedGinArrayDirectFilterLs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.GinArrayDirectFilterBs:
+            case ReducedSearchType.DirectFilterBinary:
                 {
-                    FindReducedGinArrayDirectFilterBs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.GinArrayDirectFilterHs:
+            case ReducedSearchType.DirectFilterHash:
                 {
-                    FindReducedGinArrayDirectFilterHs(searchVector, metricsCalculator, cancellationToken);
+                    RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
             default:
@@ -120,18 +125,18 @@ public sealed class ReducedSearchAlgorithmSelector
         _partitionsHs.Clear();
     }
 
-    private void FindReducedLegacy(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         var reducedSearchLegacy = new ReducedSearchLegacy
         {
-            GeneralDirectIndex = _generalDirectIndex
+            GeneralDirectIndex = _generalDirectIndexLegacy
         };
 
         reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
     }
 
-    private void FindReducedGinArrayDirect(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -146,7 +151,7 @@ public sealed class ReducedSearchAlgorithmSelector
         }
     }
 
-    private void FindReducedGinArrayMergeFilter(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunMergeFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -162,7 +167,7 @@ public sealed class ReducedSearchAlgorithmSelector
         }
     }
 
-    private void FindReducedGinArrayDirectFilterLs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -179,7 +184,7 @@ public sealed class ReducedSearchAlgorithmSelector
         }
     }
 
-    private void FindReducedGinArrayDirectFilterBs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -196,7 +201,7 @@ public sealed class ReducedSearchAlgorithmSelector
         }
     }
 
-    private void FindReducedGinArrayDirectFilterHs(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndexHs in _partitionsHs.Indices)

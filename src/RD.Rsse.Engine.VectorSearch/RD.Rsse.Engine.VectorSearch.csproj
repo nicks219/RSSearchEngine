@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>RD.RsseEngine</RootNamespace>
+    <Configurations>Debug;Release</Configurations>
+    <IsRdProject>true</IsRdProject>
+    <DefineConstants>$(DefineConstants);IS_RD_PROJECT</DefineConstants>
+    <Description>RD Project: High-performance inverted index experiments</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
+
+</Project>

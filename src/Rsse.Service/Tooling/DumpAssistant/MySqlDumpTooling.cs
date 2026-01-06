@@ -31,7 +31,7 @@ internal class MySqlDumpTooling
     // ReSharper disable once MemberCanBePrivate.Global
     internal readonly Dictionary<string, string> NamingPattern = new()
     {
-        // не идемпотетно, также играет роль порядок применения совокупности правил: song>text, text>note
+        // не идемпотентно, также играет роль порядок применения совокупности правил: song>text, text>note
         // требуется проверка на пересечения key/value и алгоритм их сортировки
         // в начале расположены более длинные слова
 
