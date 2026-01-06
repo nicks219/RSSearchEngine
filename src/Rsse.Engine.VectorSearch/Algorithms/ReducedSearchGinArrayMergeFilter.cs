@@ -81,22 +81,22 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         IMetricsCalculator metricsCalculator, int filteredTokensCount,
         int minRelevancyCount, int emptyCount)
     {
-        using InternalDocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
+        using DocumentIdsScoringIterator documentReducedScoreIterator = new(TempStoragePool,
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
             searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount);
 
-        documentReducedScoreIterator.Iterate(metricsConsumer);
+        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
     }
 
-    private readonly ref struct MetricsConsumer : InternalDocumentReducedScoreIterator.IConsumer, IDisposable
+    private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable
     {
         private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
         private readonly InvertedIndex _invertedIndex;
-        private readonly List<InternalDocumentListEnumerator> _list;
+        private readonly List<DocumentIdsEnumerator> _list;
 
         public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
             IMetricsCalculator metricsCalculator, InvertedIndex invertedIndex,

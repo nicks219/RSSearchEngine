@@ -194,7 +194,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
     }
 
-    private void AppendMetric2(List<InternalDocumentListEnumerator> list, List<int> listExists, List<int> multi,
+    private void AppendMetric2(List<DocumentIdsEnumerator> list, List<int> listExists, List<int> multi,
         IMetricsCalculator metricsCalculator, TokenVector searchVector)
     {
         var index = listExists[0];

@@ -11,13 +11,13 @@ namespace RsseEngine.Pools;
 /// <param name="enable">Пул активирован.</param>
 public sealed class TempStoragePool(bool enable)
 {
-    internal readonly CollectionPool<List<InternalDocumentListEnumerator>, InternalDocumentListEnumerator> InternalEnumeratorCollections = new(enable);
+    internal readonly CollectionPool<List<DocumentIdsEnumerator>, DocumentIdsEnumerator> InternalEnumeratorCollections = new(enable);
 
     public readonly CollectionPool<List<int>, int> IntCollections = new(enable);
 
     internal readonly CollectionPool<Dictionary<InternalDocumentIds, int>, KeyValuePair<InternalDocumentIds, int>> InternalIdsStorage = new(enable);
 
-    internal readonly CollectionPool<List<TokenOffsetEnumerator>, TokenOffsetEnumerator> OffsetEnumeratorCollections = new(enable);
+    internal readonly CollectionPool<List<DocumentIdsExtendedEnumerator>, DocumentIdsExtendedEnumerator> OffsetEnumeratorCollections = new(enable);
 
     internal readonly CollectionPool<List<InternalDocumentIds>, InternalDocumentIds> InternalIdsCollections = new(enable);
 

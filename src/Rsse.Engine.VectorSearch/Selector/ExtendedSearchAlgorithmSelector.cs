@@ -15,6 +15,7 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам extended-поиска.
 /// </summary>
+[Obsolete("R&D only")]
 public sealed class ExtendedSearchAlgorithmSelector
     : ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
 {
@@ -24,11 +25,11 @@ public sealed class ExtendedSearchAlgorithmSelector
 
     private readonly DirectIndex _generalDirectIndexLegacy;
 
-    private readonly InvertedOffsetIndexPartitions _offsetPartitions = new();
+    private readonly InvertedOffsetIndexes _offsetPartitions = new();
 
-    private readonly InvertedIndexPartitions _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с extended-алгоритмами.

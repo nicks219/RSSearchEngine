@@ -84,17 +84,17 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         IMetricsCalculator metricsCalculator, int filteredTokensCount,
         int minRelevancyCount, int emptyCount)
     {
-        using InternalDocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
+        using DocumentIdsScoringIterator documentReducedScoreIterator = new(TempStoragePool,
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(
             searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount,
             PositionSearchType, minRelevancyCount, emptyCount);
 
-        documentReducedScoreIterator.Iterate(metricsConsumer);
+        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
     }
 
-    private readonly ref struct MetricsConsumer : InternalDocumentReducedScoreIterator.IConsumer, IDisposable
+    private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable
     {
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;

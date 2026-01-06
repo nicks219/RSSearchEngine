@@ -84,7 +84,7 @@ public sealed class RelevanceFilter
     public bool TryGetRelevantDocumentsEnumerators(
         InvertedOffsetIndex invertedOffsetIndex,
         TokenVector searchVector,
-        List<TokenOffsetEnumerator> enumerators,
+        List<DocumentIdsExtendedEnumerator> enumerators,
         out List<IndexWithCount> counts,
         out int filteredTokensCount,
         out int minRelevancyCount)
@@ -116,7 +116,7 @@ public sealed class RelevanceFilter
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new TokenOffsetEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
 
                 counts.Add(new IndexWithCount(index, documentIds.DocumentIds.Count));
 

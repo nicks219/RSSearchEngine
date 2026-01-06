@@ -15,6 +15,7 @@ namespace RsseEngine.Selector;
 /// <summary>
 /// Компонент, предоставляющий доступ к различным алгоритмам reduced-поиска.
 /// </summary>
+[Obsolete("R&D only")]
 public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
 {
     private readonly TempStoragePool _tempStoragePool;
@@ -23,9 +24,9 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 
     private readonly DirectIndex _generalDirectIndexLegacy;
 
-    private readonly InvertedIndexPartitions _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly InvertedIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexPartitions _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.

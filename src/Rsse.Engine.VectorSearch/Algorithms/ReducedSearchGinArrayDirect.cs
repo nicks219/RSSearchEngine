@@ -56,12 +56,12 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ReducedSearchGinArrayDirect));
 
-                        using InternalDocumentReducedScoreIterator documentReducedScoreIterator =
+                        using DocumentIdsScoringIterator documentReducedScoreIterator =
                             new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
                         MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, InvertedIndex);
 
-                        documentReducedScoreIterator.Iterate(in metricsConsumer);
+                        documentReducedScoreIterator.AppendReducedMetric(in metricsConsumer);
 
                         break;
                     }
@@ -74,7 +74,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     }
 
     private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        InvertedIndex invertedIndex) : InternalDocumentReducedScoreIterator.IConsumer
+        InvertedIndex invertedIndex) : DocumentIdsScoringIterator.IMetricsConsumer
     {
         public void Accept(InternalDocumentId documentId, int score)
         {

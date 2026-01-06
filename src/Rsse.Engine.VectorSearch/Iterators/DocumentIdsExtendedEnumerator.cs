@@ -5,17 +5,18 @@ using RsseEngine.Dto.Offsets;
 
 namespace RsseEngine.Iterators;
 
-public struct TokenOffsetEnumerator(DocumentIdsWithOffsets documentIdsWithOffsets,
-    InternalDocumentListEnumerator enumerator)
+public struct DocumentIdsExtendedEnumerator(
+    InternalDocumentIdsWithOffsets internalDocumentIdsWithOffsets,
+    DocumentIdsEnumerator enumerator)
     : IEnumerator<InternalDocumentId>
 {
-    private InternalDocumentListEnumerator _enumerator = enumerator;
+    private DocumentIdsEnumerator _enumerator = enumerator;
 
     public InternalDocumentId Current => _enumerator.Current;
 
     object IEnumerator.Current => Current;
 
-    public List<InternalDocumentId> List => _enumerator.List;
+    public List<InternalDocumentId> InternalDocumentIds => _enumerator.InternalDocumentIds;
 
     private int NextIndex => _enumerator.NextIndex;
 
@@ -28,7 +29,7 @@ public struct TokenOffsetEnumerator(DocumentIdsWithOffsets documentIdsWithOffset
     {
         var enumerator = (IEnumerator<InternalDocumentId>)_enumerator;
         enumerator.Reset();
-        _enumerator = (InternalDocumentListEnumerator)enumerator;
+        _enumerator = (DocumentIdsEnumerator)enumerator;
     }
 
     public void Dispose()
@@ -50,9 +51,9 @@ public struct TokenOffsetEnumerator(DocumentIdsWithOffsets documentIdsWithOffset
     {
         var currentIndex = _enumerator.NextIndex - 1;
 
-        var offsetInfo = documentIdsWithOffsets.OffsetInfos[currentIndex];
+        var offsetInfo = internalDocumentIdsWithOffsets.OffsetInfos[currentIndex];
 
-        return offsetInfo.TryFindNextPosition(documentIdsWithOffsets.Offsets, ref position);
+        return offsetInfo.TryFindNextPosition(internalDocumentIdsWithOffsets.Offsets, ref position);
     }
 
     public override string ToString()

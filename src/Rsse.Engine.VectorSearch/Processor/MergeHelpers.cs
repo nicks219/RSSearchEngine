@@ -8,21 +8,21 @@ namespace RsseEngine.Processor;
 public static class MergeHelpers
 {
     public static void FindTwoMinimumIds(
-        List<InternalDocumentListEnumerator> enumerators,
+        List<DocumentIdsEnumerator> enumerators,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIds<InternalDocumentId, InternalDocumentListEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIds<InternalDocumentId, DocumentIdsEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     public static void FindTwoMinimumIds(
-        List<TokenOffsetEnumerator> enumerators,
+        List<DocumentIdsExtendedEnumerator> enumerators,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIds<InternalDocumentId, TokenOffsetEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIds<InternalDocumentId, DocumentIdsExtendedEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     private static void FindTwoMinimumIds<TDocumentId, TDocumentIdEnumerator>(
@@ -64,23 +64,23 @@ public static class MergeHelpers
     }
 
     public static void FindTwoMinimumIdsFromSubset(
-        List<InternalDocumentListEnumerator> enumerators,
+        List<DocumentIdsEnumerator> enumerators,
         List<int> allowedIndices,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIdsFromSubset<InternalDocumentId, InternalDocumentListEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIdsFromSubset<InternalDocumentId, DocumentIdsEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     public static void FindTwoMinimumIdsFromSubset(
-        List<TokenOffsetEnumerator> enumerators,
+        List<DocumentIdsExtendedEnumerator> enumerators,
         List<int> allowedIndices,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIdsFromSubset<InternalDocumentId, TokenOffsetEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIdsFromSubset<InternalDocumentId, DocumentIdsExtendedEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     private static void FindTwoMinimumIdsFromSubset<TDocumentId, TDocumentIdEnumerator>(

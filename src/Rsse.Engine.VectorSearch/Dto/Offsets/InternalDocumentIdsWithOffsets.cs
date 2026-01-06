@@ -3,7 +3,7 @@ using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Dto.Offsets;
 
-public struct DocumentIdsWithOffsets(InternalDocumentIds internalDocumentIds, List<OffsetInfo> offsetInfos, List<int> offsets)
+public struct InternalDocumentIdsWithOffsets(InternalDocumentIds internalDocumentIds, List<OffsetInfo> offsetInfos, List<int> offsets)
 {
     public readonly InternalDocumentIds DocumentIds = internalDocumentIds;
 

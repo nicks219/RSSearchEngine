@@ -5,22 +5,15 @@ using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Iterators;
 
-public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
+public struct DocumentIdsEnumerator(List<InternalDocumentId> internalDocumentIds) : IEnumerator<InternalDocumentId>
 {
-    private readonly List<InternalDocumentId> _list;
-    private int _index;
-    private InternalDocumentId _current;
+    private int _nextIndex = 0;
+    private InternalDocumentId _current = default;
 
-    public InternalDocumentListEnumerator(List<InternalDocumentId> list)
-    {
-        _list = list;
-        _index = 0;
-        _current = default;
-    }
+    public List<InternalDocumentId> InternalDocumentIds => internalDocumentIds;
 
-    public List<InternalDocumentId> List => _list;
-
-    public int NextIndex => _index;
+    // todo: convert into auto-property
+    public int NextIndex => _nextIndex;
 
     public void Dispose()
     {
@@ -28,12 +21,12 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
 
     public bool MoveNextBinarySearch(InternalDocumentId item)
     {
-        var list = _list;
-
-        if ((uint)_index >= (uint)list.Count)
+        if ((uint)_nextIndex >= (uint)internalDocumentIds.Count)
+        {
             return MoveNextRare();
+        }
 
-        int itemIndex = list.BinarySearch(_index, list.Count - _index, item, null);
+        var itemIndex = internalDocumentIds.BinarySearch(_nextIndex, internalDocumentIds.Count - _nextIndex, item, null);
         if (itemIndex < 0)
         {
             // при побитовом дополнении значение будет указывать на следующий больший индекс
@@ -41,31 +34,33 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
             itemIndex = ~itemIndex;
         }
 
-        _index = itemIndex;
+        _nextIndex = itemIndex;
 
-        if ((uint)_index >= (uint)list.Count)
+        if ((uint)_nextIndex >= (uint)internalDocumentIds.Count)
+        {
             return MoveNextRare();
+        }
 
-        _current = list[_index];
-        ++_index;
+        _current = internalDocumentIds[_nextIndex];
+        ++_nextIndex;
         return true;
     }
 
     public bool MoveNext()
     {
-        var list = _list;
-
-        if ((uint)_index >= (uint)list.Count)
+        if ((uint)_nextIndex >= (uint)internalDocumentIds.Count)
+        {
             return MoveNextRare();
+        }
 
-        _current = list[_index];
-        ++_index;
+        _current = internalDocumentIds[_nextIndex];
+        ++_nextIndex;
         return true;
     }
 
     private bool MoveNextRare()
     {
-        _index = _list.Count + 1;
+        _nextIndex = internalDocumentIds.Count + 1;
         _current = default;
         return false;
     }
@@ -76,8 +71,10 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
     {
         get
         {
-            if (_index == 0 || _index == _list.Count + 1)
+            if (_nextIndex == 0 || _nextIndex == internalDocumentIds.Count + 1)
+            {
                 ThrowInvalidOperationException_InvalidOperation_EnumOpCantHappen();
+            }
 
             return Current;
         }
@@ -85,7 +82,7 @@ public struct InternalDocumentListEnumerator : IEnumerator<InternalDocumentId>
 
     void IEnumerator.Reset()
     {
-        _index = 0;
+        _nextIndex = 0;
         _current = default;
     }
 

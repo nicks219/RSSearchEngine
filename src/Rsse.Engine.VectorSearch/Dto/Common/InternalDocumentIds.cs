@@ -25,9 +25,9 @@ public readonly struct InternalDocumentIds(List<InternalDocumentId> list) : IEqu
     /// Получить перечислитель для вектора идентификаторов.
     /// </summary>
     /// <returns>Перечислитель.</returns>
-    public InternalDocumentListEnumerator CreateDocumentListEnumerator()
+    public DocumentIdsEnumerator CreateDocumentListEnumerator()
     {
-        return new InternalDocumentListEnumerator(_list);
+        return new DocumentIdsEnumerator(_list);
     }
 
     public bool Equals(InternalDocumentIds other) => _list.Equals(other._list);

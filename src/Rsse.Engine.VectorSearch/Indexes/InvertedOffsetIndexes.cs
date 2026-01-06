@@ -3,13 +3,13 @@ using RsseEngine.Dto.Common;
 
 namespace RsseEngine.Indexes;
 
-public sealed class InvertedOffsetIndexPartitions
+public sealed class InvertedOffsetIndexes
 {
-    public readonly List<InvertedOffsetIndex> Indices = new();
+    public readonly List<InvertedOffsetIndex> Indices = [];
 
     private InvertedOffsetIndex _currentIndex;
 
-    public InvertedOffsetIndexPartitions()
+    public InvertedOffsetIndexes()
     {
         _currentIndex = CreateIndex();
     }

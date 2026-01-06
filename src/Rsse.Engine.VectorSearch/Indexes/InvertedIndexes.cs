@@ -4,16 +4,15 @@ using RsseEngine.Dto.Inverted;
 
 namespace RsseEngine.Indexes;
 
-public sealed class InvertedIndexPartitions
+public sealed class InvertedIndexes
 {
-    public readonly List<InvertedIndex> Indices = new();
+    public readonly List<InvertedIndex> Indices = [];
 
     private readonly IndexPoint.DictionaryStorageType _searchType;
 
     private InvertedIndex _currentIndex;
 
-    public InvertedIndexPartitions(
-        IndexPoint.DictionaryStorageType searchType)
+    public InvertedIndexes(IndexPoint.DictionaryStorageType searchType)
     {
         _searchType = searchType;
 

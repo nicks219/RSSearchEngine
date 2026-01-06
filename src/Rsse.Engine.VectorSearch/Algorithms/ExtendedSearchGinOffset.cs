@@ -61,7 +61,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         }
     }
 
-    private void CreateEnumerators(TokenVector searchVector, List<TokenOffsetEnumerator> enumerators)
+    private void CreateEnumerators(TokenVector searchVector, List<DocumentIdsExtendedEnumerator> enumerators)
     {
         foreach (var token in searchVector)
         {
@@ -74,13 +74,13 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new TokenOffsetEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
             }
         }
     }
 
     private void ProcessSingle(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<TokenOffsetEnumerator> enumerators)
+        List<DocumentIdsExtendedEnumerator> enumerators)
     {
         var enumerator = enumerators[0];
 
@@ -98,7 +98,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     }
 
     private void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<TokenOffsetEnumerator> enumerators)
+        List<DocumentIdsExtendedEnumerator> enumerators)
     {
         while (enumerators.Count > 1)
         {
