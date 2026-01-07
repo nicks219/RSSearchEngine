@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -26,11 +26,11 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var idsFromGin = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
-            InvertedIndex.GetNonEmptyDocumentIdVectorsToList(searchVector, idsFromGin);
+            InvertedIndex.FillWithNonEmptyDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {
@@ -42,7 +42,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                     {
                         foreach (var documentId in idsFromGin[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -56,12 +56,12 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException(nameof(ReducedSearchGinArrayDirect));
 
-                        using InternalDocumentReducedScoreIterator documentReducedScoreIterator =
+                        using DocumentIdsScoringIterator documentReducedScoreIterator =
                             new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
                         MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, InvertedIndex);
 
-                        documentReducedScoreIterator.Iterate(in metricsConsumer);
+                        documentReducedScoreIterator.AppendReducedMetric(in metricsConsumer);
 
                         break;
                     }
@@ -69,16 +69,16 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(idsFromGin);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(idsFromGin);
         }
     }
 
     private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        InvertedIndex invertedIndex) : InternalDocumentReducedScoreIterator.IConsumer
+        InvertedIndex invertedIndex) : DocumentIdsScoringIterator.IMetricsConsumer
     {
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 metricsCalculator.AppendReducedMetric(score, searchVector, externalDocument);
             }

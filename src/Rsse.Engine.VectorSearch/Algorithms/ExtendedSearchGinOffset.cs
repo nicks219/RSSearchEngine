@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -28,7 +28,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var enumerators = TempStoragePool.TokenOffsetEnumeratorListsStorage.Get();
+        var enumerators = TempStoragePool.OffsetEnumeratorCollections.Get();
 
         try
         {
@@ -57,11 +57,11 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         }
         finally
         {
-            TempStoragePool.TokenOffsetEnumeratorListsStorage.Return(enumerators);
+            TempStoragePool.OffsetEnumeratorCollections.Return(enumerators);
         }
     }
 
-    private void CreateEnumerators(TokenVector searchVector, List<TokenOffsetEnumerator> enumerators)
+    private void CreateEnumerators(TokenVector searchVector, List<DocumentIdsExtendedEnumerator> enumerators)
     {
         foreach (var token in searchVector)
         {
@@ -74,13 +74,13 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new TokenOffsetEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
             }
         }
     }
 
     private void ProcessSingle(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<TokenOffsetEnumerator> enumerators)
+        List<DocumentIdsExtendedEnumerator> enumerators)
     {
         var enumerator = enumerators[0];
 
@@ -98,11 +98,11 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     }
 
     private void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<TokenOffsetEnumerator> enumerators)
+        List<DocumentIdsExtendedEnumerator> enumerators)
     {
         while (enumerators.Count > 1)
         {
-            MergeAlgorithm.FindMin(enumerators, out var minI0, out var docId0, out var docId1);
+            MergeHelpers.FindTwoMinimumIds(enumerators, out var minI0, out var docId0, out var docId1);
 
         START:
             if (docId0 < docId1)

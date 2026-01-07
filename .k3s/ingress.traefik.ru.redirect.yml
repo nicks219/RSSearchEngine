@@ -17,7 +17,8 @@ metadata:
   namespace: default
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
-    traefik.ingress.kubernetes.io/router.middlewares: redirect-to-https@kubernetescrd
+    # traefik.ingress.kubernetes.io/router.middlewares: redirect-to-https@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-to-https@kubernetescrd
 spec:
   rules:
     - host: notefinder.ru

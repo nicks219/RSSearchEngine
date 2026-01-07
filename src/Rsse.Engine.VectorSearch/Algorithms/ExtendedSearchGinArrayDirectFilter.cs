@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Pools;
 using RsseEngine.Processor;
@@ -26,7 +26,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     /// </summary>
     public required InvertedIndex InvertedIndex { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     public required PositionSearchType PositionSearchType { private get; init; }
 
@@ -34,12 +34,12 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.InternalDocumentIdListsStorage.Get();
-        var sortedIds = TempStoragePool.InternalDocumentIdListsStorage.Get();
+        var idsFromGin = TempStoragePool.InternalIdsCollections.Get();
+        var sortedIds = TempStoragePool.InternalIdsCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsExtended(InvertedIndex, searchVector, idsFromGin,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForExtendedSearch(InvertedIndex, searchVector, idsFromGin,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
@@ -57,7 +57,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 metricsCalculator.AppendExtendedMetric(1, searchVector, externalDocument);
                             }
@@ -78,8 +78,8 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsStorage.Return(sortedIds);
-            TempStoragePool.InternalDocumentIdListsStorage.Return(idsFromGin);
+            TempStoragePool.InternalIdsCollections.Return(sortedIds);
+            TempStoragePool.InternalIdsCollections.Return(idsFromGin);
         }
     }
 
@@ -93,11 +93,11 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<InternalDocumentIdList> sortedIds, int filteredTokensCount, int minRelevancyCount)
+        List<InternalDocumentIds> sortedIds, int filteredTokensCount, int minRelevancyCount)
     {
-        var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
-        var listExists = TempStoragePool.IntListsStorage.Get();
-        var dictionary = TempStoragePool.InternalDocumentIdListCountStorage.Get();
+        var list = TempStoragePool.InternalEnumeratorCollections.Get();
+        var listExists = TempStoragePool.IntCollections.Get();
+        var dictionary = TempStoragePool.InternalIdsStorage.Get();
 
         try
         {
@@ -140,7 +140,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
 
             while (listExists.Count > 1)
             {
-                MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                MergeHelpers.FindTwoMinimumIdsFromSubset(list, listExists, out var minI0, out var docId0, out var docId1);
 
             START:
                 if (docId0 < docId1)
@@ -196,9 +196,9 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListCountStorage.Return(dictionary);
-            TempStoragePool.IntListsStorage.Return(listExists);
-            TempStoragePool.ListInternalEnumeratorListsStorage.Return(list);
+            TempStoragePool.InternalIdsStorage.Return(dictionary);
+            TempStoragePool.IntCollections.Return(listExists);
+            TempStoragePool.InternalEnumeratorCollections.Return(list);
         }
     }
 
@@ -206,7 +206,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int minRelevancyCount)
     {
-        if (!InvertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+        if (!InvertedIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 
 namespace RsseEngine.Contracts;

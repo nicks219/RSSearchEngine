@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Dto.Offsets;
 
 namespace RsseEngine.Indexes;
@@ -13,13 +13,13 @@ public sealed class InvertedOffsetIndex
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
     /// </summary>
-    private readonly Dictionary<Token, DocumentIdsWithOffsets> _invertedIndex = new();
+    private readonly Dictionary<Token, InternalDocumentIdsWithOffsets> _invertedIndex = new();
 
-    private readonly List<ExternalDocumentIdWithSize> _internalDocumentIdToDocumentId = new();
+    private readonly List<ExternalDocumentIdWithSize> _externalDocumentIds = [];
 
-    private readonly Dictionary<DocumentId, InternalDocumentId> _documentIdToInternalDocumentId = new();
+    private readonly Dictionary<DocumentId, InternalDocumentId> _actualDocuments = new();
 
-    private readonly List<InternalDocumentId> _deletedDocuments = new();
+    private readonly List<InternalDocumentId> _deletedDocuments = [];
 
     /// <summary>
     /// Добавить в индекс вектор токенов и идентификатор соответствующей ему заметки
@@ -30,7 +30,7 @@ public sealed class InvertedOffsetIndex
     /// <returns>Признак добавлен ли документ. Если false - то партиция полностью заполнена.</returns>
     public bool AddOrUpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        var counter = _internalDocumentIdToDocumentId.Count;
+        var counter = _externalDocumentIds.Count;
 
         if (counter > ushort.MaxValue)
         {
@@ -41,8 +41,8 @@ public sealed class InvertedOffsetIndex
 
         RemoveVector(documentId);
 
-        _documentIdToInternalDocumentId[documentId] = internalDocumentId;
-        _internalDocumentIdToDocumentId.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));
+        _actualDocuments[documentId] = internalDocumentId;
+        _externalDocumentIds.Add(new ExternalDocumentIdWithSize(documentId, tokenVector.Count));
 
         AppendTokenVector(internalDocumentId, tokenVector);
 
@@ -55,7 +55,7 @@ public sealed class InvertedOffsetIndex
     /// <param name="documentId">Идентификатор заметки.</param>
     public void RemoveVector(DocumentId documentId)
     {
-        if (_documentIdToInternalDocumentId.Remove(documentId, out var oldInternalDocumentId))
+        if (_actualDocuments.Remove(documentId, out var oldInternalDocumentId))
         {
             _deletedDocuments.Add(oldInternalDocumentId);
         }
@@ -67,8 +67,8 @@ public sealed class InvertedOffsetIndex
     public void Clear()
     {
         _invertedIndex.Clear();
-        _internalDocumentIdToDocumentId.Clear();
-        _documentIdToInternalDocumentId.Clear();
+        _externalDocumentIds.Clear();
+        _actualDocuments.Clear();
         _deletedDocuments.Clear();
     }
 
@@ -76,17 +76,17 @@ public sealed class InvertedOffsetIndex
     /// Получить идентификаторы заметок, в которых присутствует токен.
     /// </summary>
     /// <param name="token">Токен.</param>
-    /// <param name="documentDocumentIdsVector">Вектор с идентификаторами заметок.</param>
+    /// <param name="internalDocumentIdsWithOffsets">Вектор с идентификаторами заметок.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetNonEmptyDocumentIdVector(Token token, out DocumentIdsWithOffsets documentDocumentIdsVector)
+    public bool TryGetNonEmptyDocumentIdVector(Token token, out InternalDocumentIdsWithOffsets internalDocumentIdsWithOffsets)
     {
         if (!_invertedIndex.TryGetValue(token, out var documentIds) || documentIds.DocumentIds.Count == 0)
         {
-            documentDocumentIdsVector = default;
+            internalDocumentIdsWithOffsets = default;
             return false;
         }
 
-        documentDocumentIdsVector = documentIds;
+        internalDocumentIdsWithOffsets = documentIds;
         return true;
     }
 
@@ -98,13 +98,13 @@ public sealed class InvertedOffsetIndex
             return false;
         }
 
-        externalDocument = _internalDocumentIdToDocumentId[documentId.Value];
+        externalDocument = _externalDocumentIds[documentId.Value];
         return true;
     }
 
     private void AppendTokenVector(InternalDocumentId internalDocumentId, TokenVector tokenVector)
     {
-        var dictionary = tokenVector.ToDictionary();
+        var dictionary = tokenVector.ToPositionVector();
 
         foreach (var (token, tokenOffsets) in dictionary)
         {
@@ -113,8 +113,8 @@ public sealed class InvertedOffsetIndex
 
             if (!exists)
             {
-                documentIdsWithOffsets = new DocumentIdsWithOffsets(
-                    new InternalDocumentIdList([]), new List<OffsetInfo>(), new List<int>());
+                documentIdsWithOffsets = new InternalDocumentIdsWithOffsets(
+                    new InternalDocumentIds([]), new List<OffsetInfo>(), new List<int>());
             }
 
             documentIdsWithOffsets.DocumentIds.Add(internalDocumentId);

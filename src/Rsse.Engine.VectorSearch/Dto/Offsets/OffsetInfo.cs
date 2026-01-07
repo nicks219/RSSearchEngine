@@ -12,7 +12,7 @@ public readonly struct OffsetInfo(int size, int offsetIndex)
         // Позиции в OffsetInfos храним как отрицательные,
         // если Size отрицательный или ноль - то это первая позиция,
         // если OffsetIndex отрицательный - то это вторая позиция,
-        // если Size больще ноля - позиции хранятся в Offsets.
+        // если Size больше ноля - позиции хранятся в Offsets.
 
         OffsetInfo offsetInfo;
 

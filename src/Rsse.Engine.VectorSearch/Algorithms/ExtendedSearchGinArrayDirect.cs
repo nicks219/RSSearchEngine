@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -33,11 +33,11 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var idsFromGin = TempStoragePool.InternalDocumentIdListsStorage.Get();
+        var idsFromGin = TempStoragePool.InternalIdsCollections.Get();
 
         try
         {
-            InvertedIndex.GetDocumentIdVectorsToList(searchVector, idsFromGin);
+            InvertedIndex.FillWithDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {
@@ -51,7 +51,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -73,7 +73,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsStorage.Return(idsFromGin);
+            TempStoragePool.InternalIdsCollections.Return(idsFromGin);
         }
     }
 
@@ -85,12 +85,12 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     /// <param name="idsFromGin"></param>
     /// <returns>Список векторов GIN.</returns>
     private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<InternalDocumentIdList> idsFromGin)
+        List<InternalDocumentIds> idsFromGin)
     {
-        var list = TempStoragePool.ListInternalEnumeratorListsStorage.Get();
-        var multi = TempStoragePool.IntListsStorage.Get();
-        var listExists = TempStoragePool.IntListsStorage.Get();
-        var dictionary = TempStoragePool.InternalDocumentIdListCountStorage.Get();
+        var list = TempStoragePool.InternalEnumeratorCollections.Get();
+        var multi = TempStoragePool.IntCollections.Get();
+        var listExists = TempStoragePool.IntCollections.Get();
+        var dictionary = TempStoragePool.InternalIdsStorage.Get();
 
         try
         {
@@ -116,7 +116,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
             while (listExists.Count > 1)
             {
-                MergeAlgorithm.FindMin(list, listExists, out var minI0, out var docId0, out var docId1);
+                MergeHelpers.FindTwoMinimumIdsFromSubset(list, listExists, out var minI0, out var docId0, out var docId1);
 
                 var isMulti = multi[minI0] > 0;
 
@@ -170,10 +170,10 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListCountStorage.Return(dictionary);
-            TempStoragePool.IntListsStorage.Return(listExists);
-            TempStoragePool.IntListsStorage.Return(multi);
-            TempStoragePool.ListInternalEnumeratorListsStorage.Return(list);
+            TempStoragePool.InternalIdsStorage.Return(dictionary);
+            TempStoragePool.IntCollections.Return(listExists);
+            TempStoragePool.IntCollections.Return(multi);
+            TempStoragePool.InternalEnumeratorCollections.Return(list);
         }
     }
 
@@ -186,7 +186,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         else
         {
-            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 const int metric = 1;
                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -194,7 +194,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
     }
 
-    private void AppendMetric2(List<InternalDocumentListEnumerator> list, List<int> listExists, List<int> multi,
+    private void AppendMetric2(List<DocumentIdsEnumerator> list, List<int> listExists, List<int> multi,
         IMetricsCalculator metricsCalculator, TokenVector searchVector)
     {
         var index = listExists[0];
@@ -213,7 +213,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
             do
             {
                 var documentId = enumerator.Current;
-                if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                 {
                     const int metric = 1;
                     metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -226,7 +226,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {
-        if (!InvertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+        if (!InvertedIndex.TryGetPositionVector(documentId, out var positionVector, out var externalDocument))
         {
             return;
         }
@@ -242,7 +242,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
                     {
                         var token = searchVector.ElementAt(i);
 
-                        if (offsetTokenVector.TryFindNextTokenPositionLinearScan(token, ref position))
+                        if (positionVector.TryFindNextTokenPositionLinearScan(token, ref position))
                         {
                             metric++;
                         }
@@ -261,7 +261,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
                     {
                         var token = searchVector.ElementAt(i);
 
-                        if (offsetTokenVector.TryFindNextTokenPositionBinarySearch(token, ref position))
+                        if (positionVector.TryFindNextTokenPositionBinarySearch(token, ref position))
                         {
                             metric++;
                         }

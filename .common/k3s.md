@@ -54,3 +54,33 @@ kubectl create secret tls secret-tls --key=/usr/share/ca-certificates/comodo/crt
 kubectl create secret tls secret-tls --key=~/.crt/crt-private --cert=~/.crt/nginx_bundle/nginx_bundle_a67352573a96.crt
 kubectl apply -f traefik.yml
 ```
+
+# обновляем k3s
+
+1) бэкап конфигов: kubectl get all -A -o yaml > backup.yaml
+kubectl get all,secrets,configmaps,ingress,service,serviceaccount,roles,rolebindings,persistentvolumeclaims,persistentvolumes -A -o yaml > cluster-backup.1.32.yaml
+2) [скорее всего нет необходимости] sudo systemctl stop k3s
+второй вариант проверен, ставит последнюю stable-версию и флаг для доступа по IP (пока всё на одном сервере):
+[ ] curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.35.0+k3s1 sh -
+[+] curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san 82.146.45.180" sh -
+[скорее всего нет необходимости] sudo systemctl start k3s
+k3s --version | kubectl get pods --all-namespaces | systemctl status k3s
+
+---
+было (пример): k3s version v1.32.3+k3s1 (079ffa8d)
+go version go1.23.6
+---
+default       mysql-646cf4b546-qjcrk                    1/1     Running     3 (181d ago)     2y6d
+default       otel-collector-858569986b-xhh95           1/1     Running     0                169d
+default       postgres-86f4955749-d8lbw                 1/1     Running     2 (181d ago)     253d
+default       rsse-app-deployment-74fc8f878b-qfr9t      1/1     Running     0                3d12h
+kube-system   coredns-5ccd4dbd47-f7wqt                  1/1     Running     75 (181d ago)    219d
+kube-system   helm-install-traefik-crd-g9vkd            0/1     Completed   1                253d
+kube-system   helm-install-traefik-dv5jv                0/1     Completed   3                253d
+kube-system   local-path-provisioner-774c6665dc-l8qn4   1/1     Running     2 (181d ago)     253d
+kube-system   svclb-traefik-32bcbd67-8zf7t              2/2     Running     4 (181d ago)     253d
+kube-system   traefik-67bfb46dcb-gjcp4                  1/1     Running     171 (181d ago)   253d
+---
+стало: k3s version v1.34.3+k3s1 (48ffa7b6)
+go version go1.24.11
+---

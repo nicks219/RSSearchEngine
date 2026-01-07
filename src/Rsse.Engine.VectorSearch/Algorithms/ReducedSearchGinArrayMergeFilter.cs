@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -24,17 +24,17 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
     /// </summary>
     public required InvertedIndex InvertedIndex { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var sortedIds = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var sortedIds = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -50,7 +50,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -73,7 +73,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(sortedIds);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(sortedIds);
         }
     }
 
@@ -81,22 +81,22 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         IMetricsCalculator metricsCalculator, int filteredTokensCount,
         int minRelevancyCount, int emptyCount)
     {
-        using InternalDocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
+        using DocumentIdsScoringIterator documentReducedScoreIterator = new(TempStoragePool,
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
             searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount);
 
-        documentReducedScoreIterator.Iterate(metricsConsumer);
+        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
     }
 
-    private readonly ref struct MetricsConsumer : InternalDocumentReducedScoreIterator.IConsumer, IDisposable
+    private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable
     {
         private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
         private readonly InvertedIndex _invertedIndex;
-        private readonly List<InternalDocumentListEnumerator> _list;
+        private readonly List<DocumentIdsEnumerator> _list;
 
         public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
             IMetricsCalculator metricsCalculator, InvertedIndex invertedIndex,
@@ -107,7 +107,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
             _metricsCalculator = metricsCalculator;
             _invertedIndex = invertedIndex;
 
-            _list = _tempStoragePool.ListInternalEnumeratorListsStorage.Get();
+            _list = _tempStoragePool.InternalEnumeratorCollections.Get();
 
             for (var index = sortedIds.Count - 1; index >= filteredTokensCount; index--)
             {
@@ -123,7 +123,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
 
         public void Dispose()
         {
-            _tempStoragePool.ListInternalEnumeratorListsStorage.Return(_list);
+            _tempStoragePool.InternalEnumeratorCollections.Return(_list);
         }
 
         public void Accept(InternalDocumentId documentId, int score)
@@ -176,7 +176,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                 counter++;
             }
 
-            if (_invertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+            if (_invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 _metricsCalculator.AppendReducedMetric(score, _searchVector, externalDocument);
             }

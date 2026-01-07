@@ -127,6 +127,11 @@ public class Program
             Log.ForContext<Program>().Information("Starting web host");
             var app = builder.Build();
             var lifeTime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            if (EnvironmentReporter.IsTesting())
+            {
+                ApplicationLifetime = lifeTime;
+            }
+
             await app.RunAsync(lifeTime.ApplicationStopping);
             return 0;
         }
@@ -143,4 +148,9 @@ public class Program
             Console.WriteLine($"Serilog closed for `{sw.Elapsed.TotalSeconds:F2}` sec...");
         }
     }
+
+    /// <summary>
+    /// Используется для остановки хоста в тестах.
+    /// </summary>
+    internal static IHostApplicationLifetime? ApplicationLifetime { get; private set; }
 }

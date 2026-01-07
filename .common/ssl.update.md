@@ -71,7 +71,7 @@ kubectl create secret tls secret-tls-ru --key=notefinder.key --cert=notefinder.c
 
 - III
 ```bash
-# создание и удаление рксурса по описанию
+# создание и удаление ресурса по описанию
 kubectl apply -f ingress.traefik.ru.yml
 kubectl delete -f ingress.traefik.ru.yml
 ```
@@ -146,3 +146,29 @@ ingressRoute:
 - на будущее стоит разобраться в работе helm
 
 ---------------------------------------------------------------------------------------------------------------------------
+
+# настройка доступа по ssl-сертификату 2026
+
+1) копируем из письма текст кросс-сертификата GlobalSign Cross Certificate R1-R6 (будет CR-LF, оставил) в cross.crt
+2) собираем бандл: cat notefinder_ru.crt "GlobalSign GCC R6 AlphaSSL CA 2025.crt" cross.crt > fullchain.crt
+Итог: tls.crt: fullchain.crt | tls.key: приватный ключ из заказа, скопировал с правами 644:-rw-r--r-- (лучше: chmod 600 notefinder.key)
+3) по-взрослому надо было делать так:
+* ssh-keygen -t ed25519 -f ~/.ssh/k3s_ssl_key
+* ssh-copy-id -i ~/.ssh/k3s_ssl_key.pub user@server_ip
+  (либо руками перенести ключ: cat ~/.ssh/k3s_ssl_key.pub | ssh user@server_ip "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys")
+* копируем по ssh: scp -i ~/.ssh/k3s_ssl_key domain_ru.crt "GlobalSign GCC R6 AlphaSSL CA 2025.crt" cross.crt user@server_ip:/tmp/
+
+4) можно забэкапить старый секрет в текст (чтоб не было конфликта со служебными полями копии): kubectl get secret secret-tls-ru -o yaml > backup-secret-tls-ru-2025.yaml
+5) проверим: openssl crl2pkcs7 -nocrl -certfile notefinder.26.crt | openssl pkcs7 -print_certs -noout
+6) kubectl create secret tls secret-tls-ru --key=ssl.2026/notefinder.26.key --cert=ssl.2026/notefinder.26.crt --dry-run=client -o yaml | kubectl apply -f -
+7) проверить SSL: https://globalsign.ssllabs.com/ (был и остался грейд А) неймспейс default
+...
+
+# чиним редирект: вместо редиректа переход по http отдает 404
+
+1) узнаем версию traefik (3.3.2): kubectl describe deployment traefik -n kube-system | grep "Image:" | grep -o ":[0-9.]*"
+2) проверяем его конфиг на отсутствие редиректа: kubectl get configmap chart-content-traefik -n kube-system -o yaml
+3) он установлен через rancher, смотрим описание аргументов пода: kubectl describe pod -n kube-system -l app.kubernetes.io/name=traefik | grep -A5 "Args:"
+4) посмотреть текущие аннотации: kubectl get ingress rsse-app-http -o yaml | grep middlewares
+5) редиректа нет, пробуем править аннотации на: traefik.ingress.kubernetes.io/router.middlewares: default-redirect-to-https@kubernetescrd
+6) nano ingress.traefik.ru.redirect.yml | kubectl apply -f ingress.traefik.ru.redirect.yml

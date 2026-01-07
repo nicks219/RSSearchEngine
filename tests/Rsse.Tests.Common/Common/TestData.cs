@@ -13,14 +13,14 @@ public abstract class TestData
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
     [
         ExtendedSearchType.Legacy,
-        ExtendedSearchType.GinOffset,
-        ExtendedSearchType.GinOffsetFilter,
-        ExtendedSearchType.GinArrayDirectLs,
-        ExtendedSearchType.GinArrayDirectFilterLs,
-        ExtendedSearchType.GinArrayDirectBs,
-        ExtendedSearchType.GinArrayDirectFilterBs,
-        ExtendedSearchType.GinArrayDirectHs,
-        ExtendedSearchType.GinArrayDirectFilterHs
+        ExtendedSearchType.Offset,
+        ExtendedSearchType.OffsetFilter,
+        ExtendedSearchType.DirectLinear,
+        ExtendedSearchType.DirectFilterLinear,
+        ExtendedSearchType.DirectBinary,
+        ExtendedSearchType.DirectFilterBinary,
+        ExtendedSearchType.DirectHash,
+        ExtendedSearchType.DirectFilterHash
     ];
 
     /// <summary>
@@ -29,11 +29,11 @@ public abstract class TestData
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
     [
         ReducedSearchType.Legacy,
-        ReducedSearchType.GinArrayDirect,
-        ReducedSearchType.GinArrayMergeFilter,
-        ReducedSearchType.GinArrayDirectFilterLs,
-        ReducedSearchType.GinArrayDirectFilterBs,
-        ReducedSearchType.GinArrayDirectFilterHs
+        ReducedSearchType.Direct,
+        ReducedSearchType.MergeFilter,
+        ReducedSearchType.DirectFilterLinear,
+        ReducedSearchType.DirectFilterBinary,
+        ReducedSearchType.DirectFilterHash
     ];
 
     /// <summary>

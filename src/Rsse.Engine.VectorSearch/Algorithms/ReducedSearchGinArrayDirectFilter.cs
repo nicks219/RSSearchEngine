@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using RsseEngine.Contracts;
-using RsseEngine.Dto;
+using RsseEngine.Dto.Common;
 using RsseEngine.Indexes;
 using RsseEngine.Iterators;
 using RsseEngine.Pools;
@@ -25,7 +25,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
     /// </summary>
     public required InvertedIndex InvertedIndex { private get; init; }
 
-    public required GinRelevanceFilter RelevanceFilter { private get; init; }
+    public required RelevanceFilter RelevanceFilter { private get; init; }
 
     public required PositionSearchType PositionSearchType { private get; init; }
 
@@ -33,11 +33,11 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
-        var sortedIds = TempStoragePool.InternalDocumentIdListsWithTokenStorage.Get();
+        var sortedIds = TempStoragePool.InternalIdsWithTokenCollections.Get();
 
         try
         {
-            if (!RelevanceFilter.FindFilteredDocumentsReducedMerge(InvertedIndex, searchVector,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(InvertedIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -53,7 +53,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetOffsetTokenVector(documentId, out _, out var externalDocument))
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -76,7 +76,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         }
         finally
         {
-            TempStoragePool.InternalDocumentIdListsWithTokenStorage.Return(sortedIds);
+            TempStoragePool.InternalIdsWithTokenCollections.Return(sortedIds);
         }
     }
 
@@ -84,17 +84,17 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         IMetricsCalculator metricsCalculator, int filteredTokensCount,
         int minRelevancyCount, int emptyCount)
     {
-        using InternalDocumentReducedScoreIterator documentReducedScoreIterator = new(TempStoragePool,
+        using DocumentIdsScoringIterator documentReducedScoreIterator = new(TempStoragePool,
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(
             searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount,
             PositionSearchType, minRelevancyCount, emptyCount);
 
-        documentReducedScoreIterator.Iterate(metricsConsumer);
+        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
     }
 
-    private readonly ref struct MetricsConsumer : InternalDocumentReducedScoreIterator.IConsumer, IDisposable
+    private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable
     {
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
@@ -129,7 +129,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (!_invertedIndex.TryGetOffsetTokenVector(documentId, out var offsetTokenVector, out var externalDocument))
+            if (!_invertedIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
             {
                 return;
             }
