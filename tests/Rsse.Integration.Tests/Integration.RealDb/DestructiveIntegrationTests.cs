@@ -158,7 +158,7 @@ public sealed class DestructiveIntegrationTests : TestInitializerBase, IDisposab
             Request.CreateRequest,
             Response.Validate(async message =>
             {
-                var response = await message.Content.ReadFromJsonAsync<NoteResponse>();
+                var response = await message.Content.ReadFromJsonAsync<NoteResponse>();// c3aca49 ci.failed: MySqlException: Duplicate entry '1' for key 'Users.PRIMARY'
                 var createdId = response.EnsureNotNull().NoteIdExchange;
                 var textResponse = response.Text;
                 createdId.Should().Be(2);
