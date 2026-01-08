@@ -143,7 +143,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     }
 
     /// <summary>
-    /// Настроить найплайн обработки запроса.
+    /// Настроить пайплайн обработки запроса.
     /// </summary>
     public void Configure(IApplicationBuilder app)
     {
@@ -152,7 +152,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         if (isDevelopment)
         {
-            // полный вывод деталей ошибки и всех хедеров также доступен в сваггере
+            // полный вывод деталей ошибки и всех хедеров также доступен в swagger
             app.UseDeveloperExceptionPage();
         }
 

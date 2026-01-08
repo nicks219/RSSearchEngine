@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RsseEngine.Dto.Inverted;
-using static RsseEngine.Dto.Inverted.IndexPoint;
+using SimpleEngine.Dto.Inverted;
+using static SimpleEngine.Dto.Inverted.IndexPoint;
 
 namespace Rsse.Tests.SearchEngine.Units;
 

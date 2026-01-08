@@ -1,0 +1,286 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading;
+using SimpleEngine.Contracts;
+using SimpleEngine.Dto.Common;
+using SimpleEngine.Indexes;
+using SimpleEngine.Iterators;
+using SimpleEngine.Pools;
+using SimpleEngine.Processor;
+using SimpleEngine.SearchType;
+
+namespace SimpleEngine.Algorithms;
+
+/// <summary>
+/// Класс с алгоритмом подсчёта расширенной метрики.
+/// Пространство поиска формируется с помощью GIN индекса, применены дополнительные оптимизации.
+/// </summary>
+public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcessor
+{
+    public required TempStoragePool TempStoragePool { private get; init; }
+
+    /// <summary>
+    /// Поддержка GIN-индекса.
+    /// </summary>
+    public required InvertedIndex InvertedIndex { private get; init; }
+
+    public required PositionSearchType PositionSearchType { private get; init; }
+
+    /// <inheritdoc/>
+    public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        var idsFromGin = TempStoragePool.InternalIdsCollections.Get();
+
+        try
+        {
+            InvertedIndex.FillWithDocumentIds(searchVector, idsFromGin);
+
+            switch (idsFromGin.Count(vector => vector.Count > 0))
+            {
+                case 0:
+                    {
+                        break;
+                    }
+                case 1:
+                    {
+                        var idFromGin = idsFromGin.First(vector => vector.Count > 0);
+
+                        foreach (var documentId in idFromGin)
+                        {
+                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                            {
+                                const int metric = 1;
+                                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+                            }
+                        }
+
+                        break;
+                    }
+                default:
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            throw new OperationCanceledException(nameof(ExtendedSearchGinArrayDirect));
+
+                        CreateExtendedSearchSpace(searchVector, metricsCalculator, idsFromGin);
+
+                        break;
+                    }
+            }
+        }
+        finally
+        {
+            TempStoragePool.InternalIdsCollections.Return(idsFromGin);
+        }
+    }
+
+    /// <summary>
+    /// Получить список с векторами из GIN на каждый токен вектора поискового запроса.
+    /// </summary>
+    /// <param name="searchVector">Вектор с поисковым запросом.</param>
+    /// <param name="metricsCalculator"></param>
+    /// <param name="idsFromGin"></param>
+    /// <returns>Список векторов GIN.</returns>
+    private void CreateExtendedSearchSpace(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        List<InternalDocumentIds> idsFromGin)
+    {
+        var list = TempStoragePool.InternalEnumeratorCollections.Get();
+        var multi = TempStoragePool.IntCollections.Get();
+        var listExists = TempStoragePool.IntCollections.Get();
+        var dictionary = TempStoragePool.InternalIdsStorage.Get();
+
+        try
+        {
+            for (var index = 0; index < idsFromGin.Count; index++)
+            {
+                var docIdVector = idsFromGin[index];
+
+                list.Add(docIdVector.CreateDocumentListEnumerator());
+                multi.Add(0);
+
+                if (dictionary.TryAdd(docIdVector, index))
+                {
+                    if (CollectionsMarshal.AsSpan(list)[index].MoveNext())
+                    {
+                        listExists.Add(index);
+                    }
+                }
+                else
+                {
+                    multi[dictionary[docIdVector]] = 1;
+                }
+            }
+
+            while (listExists.Count > 1)
+            {
+                MergeHelpers.FindTwoMinimumIdsFromSubset(list, listExists, out var minI0, out var docId0, out var docId1);
+
+                var isMulti = multi[minI0] > 0;
+
+            START:
+                if (docId0 < docId1)
+                {
+                    AppendMetric1(isMulti, searchVector, metricsCalculator, docId0, minI0);
+
+                    ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[minI0];
+                    if (!enumeratorI.MoveNext())
+                    {
+                        var i = listExists.IndexOf(minI0);
+                        SwapAndRemoveAt(listExists, i);
+                    }
+                    else
+                    {
+                        docId0 = enumeratorI.Current;
+                        goto START;
+                    }
+                }
+                else if (docId0 == docId1)
+                {
+                    var sIndex = int.MaxValue;
+
+                    for (var i = listExists.Count - 1; i >= 0; i--)
+                    {
+                        var index = listExists[i];
+
+                        ref var enumeratorI = ref CollectionsMarshal.AsSpan(list)[index];
+                        if (docId0 == enumeratorI.Current)
+                        {
+                            sIndex = Math.Min(sIndex, index);
+                            if (!enumeratorI.MoveNext())
+                            {
+                                SwapAndRemoveAt(listExists, i);
+                            }
+                        }
+                    }
+
+                    if (sIndex < int.MaxValue)
+                    {
+                        CalculateAndAppendMetric(metricsCalculator, searchVector, docId0, sIndex);
+                    }
+                }
+            }
+
+            if (listExists.Count == 1)
+            {
+                AppendMetric2(list, listExists, multi, metricsCalculator, searchVector);
+            }
+        }
+        finally
+        {
+            TempStoragePool.InternalIdsStorage.Return(dictionary);
+            TempStoragePool.IntCollections.Return(listExists);
+            TempStoragePool.IntCollections.Return(multi);
+            TempStoragePool.InternalEnumeratorCollections.Return(list);
+        }
+    }
+
+    private void AppendMetric1(bool isMulti, TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        InternalDocumentId documentId, int minI0)
+    {
+        if (isMulti)
+        {
+            CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, minI0);
+        }
+        else
+        {
+            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+            {
+                const int metric = 1;
+                metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+            }
+        }
+    }
+
+    private void AppendMetric2(List<DocumentIdsEnumerator> list, List<int> listExists, List<int> multi,
+        IMetricsCalculator metricsCalculator, TokenVector searchVector)
+    {
+        var index = listExists[0];
+        var enumerator = list[index];
+
+        if (multi[index] > 0)
+        {
+            do
+            {
+                var documentId = enumerator.Current;
+                CalculateAndAppendMetric(metricsCalculator, searchVector, documentId, index);
+            } while (enumerator.MoveNext());
+        }
+        else
+        {
+            do
+            {
+                var documentId = enumerator.Current;
+                if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                {
+                    const int metric = 1;
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+                }
+            } while (enumerator.MoveNext());
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
+        InternalDocumentId documentId, int sIndex)
+    {
+        if (!InvertedIndex.TryGetPositionVector(documentId, out var positionVector, out var externalDocument))
+        {
+            return;
+        }
+
+        switch (PositionSearchType)
+        {
+            case PositionSearchType.LinearScan:
+                {
+                    var position = -1;
+                    var metric = 0;
+
+                    for (var i = sIndex; i < searchVector.Count; i++)
+                    {
+                        var token = searchVector.ElementAt(i);
+
+                        if (positionVector.TryFindNextTokenPositionLinearScan(token, ref position))
+                        {
+                            metric++;
+                        }
+                    }
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
+                }
+            case PositionSearchType.BinarySearch:
+                {
+                    var position = -1;
+                    var metric = 0;
+
+                    for (var i = sIndex; i < searchVector.Count; i++)
+                    {
+                        var token = searchVector.ElementAt(i);
+
+                        if (positionVector.TryFindNextTokenPositionBinarySearch(token, ref position))
+                        {
+                            metric++;
+                        }
+                    }
+
+                    metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
+
+                    break;
+                }
+            default:
+                {
+                    throw new NotSupportedException($"PositionSearchType {PositionSearchType} not supported.");
+                }
+        }
+    }
+
+    private static void SwapAndRemoveAt(List<int> listExists, int i)
+    {
+        listExists[i] = listExists[listExists.Count - 1];
+        listExists.RemoveAt(listExists.Count - 1);
+    }
+}

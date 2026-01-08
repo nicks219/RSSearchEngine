@@ -124,11 +124,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Generator", "src\Rsse.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Integration.Tests", "tests\Rsse.Integration.Tests\Rsse.Integration.Tests.csproj", "{A2B19EB3-3C5A-4730-B6CE-4FA513B6E961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Benchmarks", "tests\Rsse.Benchmarks\Rsse.Benchmarks.csproj", "{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple.Benchmarks", "tests\Simple.Benchmarks\Simple.Benchmarks.csproj", "{A9D148B4-ACE5-45B3-9F86-0733497BBA0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.VectorSearch", "src\Rsse.Engine.VectorSearch\Rsse.Engine.VectorSearch.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple.Engine.VectorSearch", "src\Simple.Engine.VectorSearch\Simple.Engine.VectorSearch.csproj", "{DED7D097-237F-D021-A6BB-A6E7EDE56101}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Engine.Tokenizer", "src\Rsse.Engine.Tokenizer\Rsse.Engine.Tokenizer.csproj", "{30D48870-9CBB-4466-A78F-9FFF64318EE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple.Engine.Tokenizer", "src\Simple.Engine.Tokenizer\Simple.Engine.Tokenizer.csproj", "{30D48870-9CBB-4466-A78F-9FFF64318EE9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsse.Tests.Common", "tests\Rsse.Tests.Common\Rsse.Tests.Common.csproj", "{3EFEA2F0-663D-4DB7-B649-DA3A7E01CC0B}"
 EndProject

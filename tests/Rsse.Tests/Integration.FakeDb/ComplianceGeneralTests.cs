@@ -18,7 +18,7 @@ using Rsse.Tests.Common;
 using Rsse.Tests.Integration.FakeDb.Api;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Integration.FakeDb.Infra;
-using RsseEngine.Service;
+using SimpleEngine.Service;
 
 namespace Rsse.Tests.Integration.FakeDb;
 

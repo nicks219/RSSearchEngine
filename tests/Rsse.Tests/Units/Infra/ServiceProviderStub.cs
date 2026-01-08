@@ -5,7 +5,7 @@ using Rsse.Api.Services;
 using Rsse.Api.Startup;
 using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Service.Contracts;
-using RsseEngine.SearchType;
+using SimpleEngine.SearchType;
 
 namespace Rsse.Tests.Units.Infra;
 

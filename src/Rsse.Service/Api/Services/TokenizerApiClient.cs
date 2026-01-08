@@ -9,8 +9,8 @@ using Rsse.Domain.Data.Contracts;
 using Rsse.Domain.Data.Dto;
 using Rsse.Domain.Data.Entities;
 using Rsse.Domain.Service.Contracts;
-using RsseEngine.Indexes;
-using RsseEngine.Service;
+using SimpleEngine.Indexes;
+using SimpleEngine.Service;
 
 namespace Rsse.Api.Services;
 

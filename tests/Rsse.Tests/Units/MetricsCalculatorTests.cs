@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RsseEngine.Dto.Common;
-using RsseEngine.Service;
+using SimpleEngine.Dto.Common;
+using SimpleEngine.Service;
 
 namespace Rsse.Tests.Units;
 
