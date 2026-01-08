@@ -41,7 +41,7 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Общий индекс для всех токенизированных заметок.
     /// </summary>
-    private readonly DirectIndex _generalDirectIndex = new();
+    private readonly DirectIndexLegacy _generalDirectIndexLegacy = new();
 
     /// <summary>
     /// Инициализация требуемого типа алгоритма.
@@ -56,32 +56,32 @@ public sealed class SearchEngineManager
         if (EnvironmentReporter.IsProduction())
         {
             _extendedSearchAlgorithmSelector =
-                new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndex);
+                new ProductionSearchAlgorithmSelector.ExtendedLegacy(_generalDirectIndexLegacy);
 
             _reducedSearchAlgorithmSelector =
-                new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndex);
+                new ProductionSearchAlgorithmSelector.ReducedLegacy(_generalDirectIndexLegacy);
         }
         else
         {
             var tempStoragePool = new TempStoragePool(enableTempStoragePool);
 
             _extendedSearchAlgorithmSelector = new ExtendedSearchAlgorithmSelector(
-                tempStoragePool, _generalDirectIndex, MetricsCalculator.ExtendedCoefficient);
+                tempStoragePool, _generalDirectIndexLegacy, MetricsCalculator.ExtendedCoefficient);
 
             _reducedSearchAlgorithmSelector = new ReducedSearchAlgorithmSelector(
-                tempStoragePool, _generalDirectIndex, MetricsCalculator.ReducedCoefficient);
+                tempStoragePool, _generalDirectIndexLegacy, MetricsCalculator.ReducedCoefficient);
         }
     }
 
     /// <summary>
     /// Получить размер общего индекса.
     /// </summary>
-    public int DirectIndexCount => _generalDirectIndex.Count;
+    public int DirectIndexCount => _generalDirectIndexLegacy.Count;
 
     /// <summary>
     /// Получить общий индекс.
     /// </summary>
-    public DirectIndex GetDirectIndex() => _generalDirectIndex;
+    public DirectIndexLegacy GetDirectIndex() => _generalDirectIndexLegacy;
 
     /// <summary>
     /// Добавить в индексы идентификатор документа и его extended/reduced векторы.
@@ -91,7 +91,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryAdd(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_generalDirectIndex.TryAdd(documentId, tokenLine))
+        if (!_generalDirectIndexLegacy.TryAdd(documentId, tokenLine))
         {
             return false;
         }
@@ -110,7 +110,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
     {
-        if (!_generalDirectIndex.TryUpdate(documentId, tokenLine))
+        if (!_generalDirectIndexLegacy.TryUpdate(documentId, tokenLine))
         {
             return false;
         }
@@ -128,7 +128,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryRemove(DocumentId documentId)
     {
-        if (!_generalDirectIndex.TryRemove(documentId, out var tokenLine))
+        if (!_generalDirectIndexLegacy.TryRemove(documentId, out var tokenLine))
         {
             return false;
         }
@@ -144,7 +144,7 @@ public sealed class SearchEngineManager
     /// </summary>
     public void Clear()
     {
-        _generalDirectIndex.Clear();
+        _generalDirectIndexLegacy.Clear();
         _extendedSearchAlgorithmSelector.Clear();
         _reducedSearchAlgorithmSelector.Clear();
     }

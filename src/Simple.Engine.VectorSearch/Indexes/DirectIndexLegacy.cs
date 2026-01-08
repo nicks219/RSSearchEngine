@@ -7,9 +7,9 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего индекса "идентификатор-токены".
+/// Поддержка общего индекса "идентификатор-токены" для первоначальных алгоритмов.
 /// </summary>
-public sealed class DirectIndex
+public sealed class DirectIndexLegacy
 {
     private readonly ConcurrentDictionary<DocumentId, TokenLine> _directIndex = new();
 

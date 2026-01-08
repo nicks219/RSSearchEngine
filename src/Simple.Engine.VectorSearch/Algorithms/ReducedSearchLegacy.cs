@@ -15,7 +15,7 @@ public readonly ref struct ReducedSearchLegacy : IReducedSearchProcessor
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
+    public required DirectIndexLegacy GeneralDirectIndexLegacy { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator, CancellationToken cancellationToken)
@@ -24,7 +24,7 @@ public readonly ref struct ReducedSearchLegacy : IReducedSearchProcessor
             throw new OperationCanceledException(nameof(ReducedSearchLegacy));
 
         // поиск в векторе reduced
-        foreach (var (documentId, tokenLine) in GeneralDirectIndex)
+        foreach (var (documentId, tokenLine) in GeneralDirectIndexLegacy)
         {
             metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine);
         }

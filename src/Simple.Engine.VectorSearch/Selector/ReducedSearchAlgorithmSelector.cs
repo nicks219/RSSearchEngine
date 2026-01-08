@@ -22,26 +22,26 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 
     private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndex _generalDirectIndexLegacy;
+    private readonly DirectIndexLegacy _generalDirectIndexLegacyLegacy;
 
-    private readonly InvertedIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
+    /// <param name="generalDirectIndexLegacyLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности</param>
     public ReducedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndex generalDirectIndexLegacy, double relevancyThreshold)
+        DirectIndexLegacy generalDirectIndexLegacyLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ReducedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndexLegacy = generalDirectIndexLegacy;
+        _generalDirectIndexLegacyLegacy = generalDirectIndexLegacyLegacy;
 
         _relevanceFilter = new RelevanceFilter
         {
@@ -130,7 +130,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     {
         var reducedSearchLegacy = new ReducedSearchLegacy
         {
-            GeneralDirectIndex = _generalDirectIndexLegacy
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacyLegacy
         };
 
         reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
@@ -144,7 +144,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             var reducedSearchGinArrayDirect = new ReducedSearchGinArrayDirect
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
             };
 
             reducedSearchGinArrayDirect.FindReduced(searchVector, metricsCalculator, cancellationToken);
@@ -159,7 +159,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             var reducedSearchGinArrayMergeFilter = new ReducedSearchGinArrayMergeFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 RelevanceFilter = _relevanceFilter
             };
 
@@ -175,7 +175,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             var reducedSearchGinArrayDirectFilterLs = new ReducedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.LinearScan
             };
@@ -192,7 +192,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             var reducedSearchGinArrayDirectFilterBs = new ReducedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.BinarySearch
             };
@@ -209,7 +209,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             var reducedSearchGinArrayDirectFilterHs = new ReducedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndexHs,
+                CommonIndex = invertedIndexHs,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.LinearScan
             };

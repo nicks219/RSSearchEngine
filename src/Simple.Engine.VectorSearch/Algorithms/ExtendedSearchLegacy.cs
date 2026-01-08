@@ -15,7 +15,7 @@ public readonly ref struct ExtendedSearchLegacy : IExtendedSearchProcessor
     /// <summary>
     /// Общий индекс: идентификатор-вектор.
     /// </summary>
-    public required DirectIndex GeneralDirectIndex { private get; init; }
+    public required DirectIndexLegacy GeneralDirectIndexLegacy { private get; init; }
 
     /// <inheritdoc/>
     public void FindExtended(TokenVector searchVector, IMetricsCalculator metricsCalculator,
@@ -25,7 +25,7 @@ public readonly ref struct ExtendedSearchLegacy : IExtendedSearchProcessor
             throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
 
         // поиск в векторе extended
-        foreach (var (documentId, tokenLine) in GeneralDirectIndex)
+        foreach (var (documentId, tokenLine) in GeneralDirectIndexLegacy)
         {
             metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
         }

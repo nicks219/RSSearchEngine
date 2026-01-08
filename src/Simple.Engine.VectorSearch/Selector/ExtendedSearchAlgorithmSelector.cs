@@ -23,28 +23,28 @@ public sealed class ExtendedSearchAlgorithmSelector
 
     private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndex _generalDirectIndexLegacy;
+    private readonly DirectIndexLegacy _generalDirectIndexLegacyLegacy;
 
     private readonly InvertedOffsetIndexes _offsetPartitions = new();
 
-    private readonly InvertedIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
+    /// <param name="generalDirectIndexLegacyLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности.</param>
     public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndex generalDirectIndexLegacy, double relevancyThreshold)
+        DirectIndexLegacy generalDirectIndexLegacyLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ExtendedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndexLegacy = generalDirectIndexLegacy;
+        _generalDirectIndexLegacyLegacy = generalDirectIndexLegacyLegacy;
 
         _relevanceFilter = new RelevanceFilter
         {
@@ -152,7 +152,7 @@ public sealed class ExtendedSearchAlgorithmSelector
     {
         var extendedSearchLegacy = new ExtendedSearchLegacy
         {
-            GeneralDirectIndex = _generalDirectIndexLegacy
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacyLegacy
         };
 
         extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
@@ -197,7 +197,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectLs = new ExtendedSearchGinArrayDirect
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 PositionSearchType = PositionSearchType.LinearScan
             };
 
@@ -213,7 +213,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.LinearScan
             };
@@ -230,7 +230,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectBs = new ExtendedSearchGinArrayDirect
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 PositionSearchType = PositionSearchType.BinarySearch
             };
 
@@ -246,7 +246,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndex,
+                CommonIndex = invertedIndex,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.BinarySearch
             };
@@ -263,7 +263,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectHs = new ExtendedSearchGinArrayDirect
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndexHs,
+                CommonIndex = invertedIndexHs,
                 PositionSearchType = PositionSearchType.LinearScan
             };
 
@@ -279,7 +279,7 @@ public sealed class ExtendedSearchAlgorithmSelector
             var extendedSearchGinArrayDirectFilterHs = new ExtendedSearchGinArrayDirectFilter
             {
                 TempStoragePool = _tempStoragePool,
-                InvertedIndex = invertedIndexHs,
+                CommonIndex = invertedIndexHs,
                 RelevanceFilter = _relevanceFilter,
                 PositionSearchType = PositionSearchType.LinearScan
             };

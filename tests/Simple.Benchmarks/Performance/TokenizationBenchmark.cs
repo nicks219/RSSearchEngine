@@ -28,17 +28,17 @@ public class TokenizationBenchmark
 
     private readonly SearchEngineManager _searchEngineManager = new(true);
 
-    private readonly DirectIndex _generalDirectIndex = new();
+    private readonly DirectIndexLegacy _generalDirectIndexLegacy = new();
 
     private readonly InvertedOffsetIndexes _invertedOffsetIndexExtended = new();
 
-    private readonly InvertedIndexes _invertedIndexExtended = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndexes _commonIndexExtended = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _invertedIndexHsExtended = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndexes _commonIndexHsExtended = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
-    private readonly InvertedIndexes _invertedIndexReduced = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndexes _commonIndexReduced = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _invertedIndexHsReduced = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndexes _commonIndexHsReduced = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     public static List<IndexType> Parameters =>
     [
@@ -74,7 +74,7 @@ public class TokenizationBenchmark
         {
             case IndexType.GeneralDirect:
                 {
-                    _generalDirectIndex.Clear();
+                    _generalDirectIndexLegacy.Clear();
                     break;
                 }
             case IndexType.InvertedOffsetIndexExtended:
@@ -84,22 +84,22 @@ public class TokenizationBenchmark
                 }
             case IndexType.InvertedIndexExtended:
                 {
-                    _invertedIndexExtended.Clear();
+                    _commonIndexExtended.Clear();
                     break;
                 }
             case IndexType.InvertedIndexHsExtended:
                 {
-                    _invertedIndexHsExtended.Clear();
+                    _commonIndexHsExtended.Clear();
                     break;
                 }
             case IndexType.InvertedIndexReduced:
                 {
-                    _invertedIndexReduced.Clear();
+                    _commonIndexReduced.Clear();
                     break;
                 }
             case IndexType.InvertedIndexHsReduced:
                 {
-                    _invertedIndexHsReduced.Clear();
+                    _commonIndexHsReduced.Clear();
                     break;
                 }
             default:
@@ -120,7 +120,7 @@ public class TokenizationBenchmark
             {
                 case IndexType.GeneralDirect:
                     {
-                        _generalDirectIndex.TryAdd(documentId, tokenLine);
+                        _generalDirectIndexLegacy.TryAdd(documentId, tokenLine);
                         break;
                     }
                 case IndexType.InvertedOffsetIndexExtended:
@@ -130,22 +130,22 @@ public class TokenizationBenchmark
                     }
                 case IndexType.InvertedIndexExtended:
                     {
-                        _invertedIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        _commonIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
                         break;
                     }
                 case IndexType.InvertedIndexHsExtended:
                     {
-                        _invertedIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        _commonIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
                         break;
                     }
                 case IndexType.InvertedIndexReduced:
                     {
-                        _invertedIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        _commonIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
                         break;
                     }
                 case IndexType.InvertedIndexHsReduced:
                     {
-                        _invertedIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        _commonIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
                         break;
                     }
                 default:

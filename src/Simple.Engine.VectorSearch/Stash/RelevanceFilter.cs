@@ -12,14 +12,14 @@ namespace SimpleEngine.Processor;
 /// Фильтр релевантности.
 /// Оптимизация алгоритмов поиска.
 /// </summary>
-public sealed class RelevanceFilter
+public sealed class RelevanceFilter2
 {
     // I. фильтрация документов
 
     /// <summary>
     /// Попытаться найти идентификаторы документов, обеспечивающие релевантность для extended поиска.
     /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
+    /// <param name="commonIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">>Вектор с поисковым запросом.</param>
     /// <param name="idsFromGin">Идентификаторы докуметов для вектора с поисковым запросом.</param>
     /// <param name="sortedIds">Сортированый по размеру список векторов идентификаторов докуметов для вектора с поисковым запросом.</param>
@@ -27,7 +27,7 @@ public sealed class RelevanceFilter
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Флаг успеха и идентификаторы документов, обеспечивающие релевантность, не пустые.</returns>
     public bool TryGetRelevantDocumentsForExtendedSearch(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIds> idsFromGin,
         List<InternalDocumentIds> sortedIds,
@@ -35,7 +35,7 @@ public sealed class RelevanceFilter
         out int minRelevancyCount)
     {
         return TryGetDocumentsForExtendedInternal(
-            invertedIndex,
+            commonIndex,
             searchVector,
             idsFromGin,
             sortedIds,
@@ -46,7 +46,7 @@ public sealed class RelevanceFilter
     /// <summary>
     /// Попытаться найти идентификаторы документов, обеспечивающие релевантность для reduced поиска.
     /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
+    /// <param name="commonIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
     /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
@@ -54,7 +54,7 @@ public sealed class RelevanceFilter
     /// <param name="emptyCount">Количество пустых векторов.</param>
     /// <returns>Флаг успеха и идентификаторы документов, обеспечивающие релевантность, не пустые.</returns>
     public bool TryGetRelevantDocumentsForReducedSearch(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount,
@@ -62,7 +62,7 @@ public sealed class RelevanceFilter
         out int emptyCount)
     {
         return TryGetDocumentsForReducedInternal(
-            invertedIndex,
+            commonIndex,
             searchVector,
             sortedIds,
             out filteredTokensCount,
@@ -133,7 +133,7 @@ public sealed class RelevanceFilter
     }
 
     private bool TryGetDocumentsForExtendedInternal(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIds> idsFromGin,
         List<InternalDocumentIds> sortedIds,
@@ -148,7 +148,7 @@ public sealed class RelevanceFilter
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
+            if (commonIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 idsFromGin.Add(documentIds);
                 sortedIds.Add(documentIds);
@@ -174,7 +174,7 @@ public sealed class RelevanceFilter
     }
 
     private bool TryGetDocumentsForReducedInternal(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount,
@@ -187,7 +187,7 @@ public sealed class RelevanceFilter
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
+            if (commonIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 sortedIds.Add(new InternalDocumentIdsWithToken(documentIds, token));
             }

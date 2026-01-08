@@ -8,7 +8,7 @@ namespace SimpleEngine.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class InvertedOffsetIndex
+public sealed class InvertedOffsetIndex2
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.

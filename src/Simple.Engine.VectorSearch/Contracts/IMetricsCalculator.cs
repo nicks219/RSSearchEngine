@@ -45,9 +45,9 @@ public interface IMetricsCalculator
     /// <param name="comparisonScore">Баллы, полученные поисковым запросом.</param>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="documentId">Идентификатор, полученный при поиске.</param>
-    /// <param name="directIndex">Индекс по идентификаторам заметок.</param>
+    /// <param name="directIndexLegacy">Индекс по идентификаторам заметок.</param>
     void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndex directIndex);
+        DirectIndexLegacy directIndexLegacy);
 
     /// <summary>
     /// Очищает метрики.

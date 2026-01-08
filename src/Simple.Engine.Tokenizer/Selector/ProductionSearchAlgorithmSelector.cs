@@ -19,8 +19,8 @@ public abstract class ProductionSearchAlgorithmSelector
     /// <summary>
     /// Legacy-алгоритм расширенного поиска.
     /// </summary>
-    /// <param name="generalDirectIndex">Общий индекс идентификатор-вектор.</param>
-    public sealed class ExtendedLegacy(DirectIndex generalDirectIndex) :
+    /// <param name="generalDirectIndexLegacy">Общий индекс идентификатор-вектор.</param>
+    public sealed class ExtendedLegacy(DirectIndexLegacy generalDirectIndexLegacy) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
     {
@@ -56,7 +56,7 @@ public abstract class ProductionSearchAlgorithmSelector
         {
             var extendedSearchLegacy = new ExtendedSearchLegacy
             {
-                GeneralDirectIndex = generalDirectIndex
+                GeneralDirectIndexLegacy = generalDirectIndexLegacy
             };
 
             extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
@@ -66,8 +66,8 @@ public abstract class ProductionSearchAlgorithmSelector
     /// <summary>
     /// Legacy-алгоритм сокращенного поиска.
     /// </summary>
-    /// <param name="generalDirectIndex">Общий индекс идентификатор-вектор.</param>
-    public sealed class ReducedLegacy(DirectIndex generalDirectIndex) :
+    /// <param name="generalDirectIndexLegacy">Общий индекс идентификатор-вектор.</param>
+    public sealed class ReducedLegacy(DirectIndexLegacy generalDirectIndexLegacy) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
     {
@@ -100,7 +100,7 @@ public abstract class ProductionSearchAlgorithmSelector
         {
             var reducedSearchLegacy = new ReducedSearchLegacy
             {
-                GeneralDirectIndex = generalDirectIndex
+                GeneralDirectIndexLegacy = generalDirectIndexLegacy
             };
 
             reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);

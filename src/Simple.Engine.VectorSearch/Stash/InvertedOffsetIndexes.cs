@@ -3,7 +3,7 @@ using SimpleEngine.Dto.Common;
 
 namespace SimpleEngine.Indexes;
 
-public sealed class InvertedOffsetIndexes
+public sealed class InvertedOffsetIndexes2
 {
     public readonly List<InvertedOffsetIndex> Indices = [];
 

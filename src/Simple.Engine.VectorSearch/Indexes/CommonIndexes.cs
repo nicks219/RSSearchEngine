@@ -4,15 +4,15 @@ using SimpleEngine.Dto.Inverted;
 
 namespace SimpleEngine.Indexes;
 
-public sealed class InvertedIndexes
+public sealed class CommonIndexes
 {
-    public readonly List<InvertedIndex> Indices = [];
+    public readonly List<CommonIndex> Indices = [];
 
     private readonly IndexPoint.DictionaryStorageType _searchType;
 
-    private InvertedIndex _currentIndex;
+    private CommonIndex _currentIndex;
 
-    public InvertedIndexes(IndexPoint.DictionaryStorageType searchType)
+    public CommonIndexes(IndexPoint.DictionaryStorageType searchType)
     {
         _searchType = searchType;
 
@@ -52,9 +52,9 @@ public sealed class InvertedIndexes
         _currentIndex = CreateIndex();
     }
 
-    private InvertedIndex CreateIndex()
+    private CommonIndex CreateIndex()
     {
-        var current = new InvertedIndex(_searchType);
+        var current = new CommonIndex(_searchType);
         Indices.Add(current);
         return current;
     }

@@ -94,12 +94,12 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndex directIndex)
+        DirectIndexLegacy directIndexLegacy)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)
         {
-            var reducedTargetVector = directIndex[documentId].Reduced;
+            var reducedTargetVector = directIndexLegacy[documentId].Reduced;
             var metric = new KeyValuePair<DocumentId, double>(documentId, comparisonScore * (10D / reducedTargetVector.Count));
             AddMetric(ComplianceMetricsReduced, metric);
             return;
@@ -108,7 +108,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
         if (comparisonScore >= searchVector.Count * ReducedCoefficient)
         {
-            var reducedTargetVector = directIndex[documentId].Reduced;
+            var reducedTargetVector = directIndexLegacy[documentId].Reduced;
             var metric = new KeyValuePair<DocumentId, double>(documentId, comparisonScore * (1D / reducedTargetVector.Count));
             AddMetric(ComplianceMetricsReduced, metric);
         }
