@@ -5,6 +5,7 @@ using SimpleEngine.Iterators;
 
 namespace SimpleEngine.Processor;
 
+// используется в тч в extended direct search
 public static class MergeHelpers
 {
     public static void FindTwoMinimumIds(
@@ -17,12 +18,12 @@ public static class MergeHelpers
     }
 
     public static void FindTwoMinimumIds(
-        List<DocumentIdsExtendedEnumerator> enumerators,
+        List<DocumentIdsMergeEnumerator> enumerators,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIds<InternalDocumentId, DocumentIdsExtendedEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIds<InternalDocumentId, DocumentIdsMergeEnumerator>(enumerators, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     private static void FindTwoMinimumIds<TDocumentId, TDocumentIdEnumerator>(
@@ -74,13 +75,13 @@ public static class MergeHelpers
     }
 
     public static void FindTwoMinimumIdsFromSubset(
-        List<DocumentIdsExtendedEnumerator> enumerators,
+        List<DocumentIdsMergeEnumerator> enumerators,
         List<int> allowedIndices,
         out int firstMinIndex,
         out InternalDocumentId firstMinId,
         out InternalDocumentId secondMinId)
     {
-        FindTwoMinimumIdsFromSubset<InternalDocumentId, DocumentIdsExtendedEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
+        FindTwoMinimumIdsFromSubset<InternalDocumentId, DocumentIdsMergeEnumerator>(enumerators, allowedIndices, out firstMinIndex, out firstMinId, out secondMinId);
     }
 
     private static void FindTwoMinimumIdsFromSubset<TDocumentId, TDocumentIdEnumerator>(

@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 using SimpleEngine.Contracts;
 using SimpleEngine.Dto.Common;
 using SimpleEngine.Indexes;
@@ -20,7 +20,7 @@ public abstract class ProductionSearchAlgorithmSelector
     /// Legacy-алгоритм расширенного поиска.
     /// </summary>
     /// <param name="generalDirectIndexLegacy">Общий индекс идентификатор-вектор.</param>
-    public sealed class ExtendedLegacy(DirectIndexLegacy generalDirectIndexLegacy) :
+    public sealed class ExtendedLegacy(GeneralDirectIndexLegacy generalDirectIndexLegacy) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ExtendedSearchType, IExtendedSearchProcessor>
     {
@@ -35,14 +35,14 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
-                case ExtendedSearchType.Offset:
-                case ExtendedSearchType.OffsetFilter:
+                // case ExtendedSearchType.Offset:
+                // case ExtendedSearchType.OffsetFilter:
                 case ExtendedSearchType.DirectLinear:
-                case ExtendedSearchType.DirectFilterLinear:
+                // case ExtendedSearchType.DirectFilterLinear:
                 case ExtendedSearchType.DirectBinary:
-                case ExtendedSearchType.DirectFilterBinary:
+                // case ExtendedSearchType.DirectFilterBinary:
                 case ExtendedSearchType.DirectHash:
-                case ExtendedSearchType.DirectFilterHash:
+                // case ExtendedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(
@@ -67,7 +67,7 @@ public abstract class ProductionSearchAlgorithmSelector
     /// Legacy-алгоритм сокращенного поиска.
     /// </summary>
     /// <param name="generalDirectIndexLegacy">Общий индекс идентификатор-вектор.</param>
-    public sealed class ReducedLegacy(DirectIndexLegacy generalDirectIndexLegacy) :
+    public sealed class ReducedLegacy(GeneralDirectIndexLegacy generalDirectIndexLegacy) :
         ProductionSearchAlgorithmSelector,
         ISearchAlgorithmSelector<ReducedSearchType, IReducedSearchProcessor>
     {
@@ -83,10 +83,10 @@ public abstract class ProductionSearchAlgorithmSelector
                         break;
                     }
                 case ReducedSearchType.Direct:
-                case ReducedSearchType.MergeFilter:
-                case ReducedSearchType.DirectFilterLinear:
-                case ReducedSearchType.DirectFilterBinary:
-                case ReducedSearchType.DirectFilterHash:
+                // case ReducedSearchType.MergeFilter:
+                // case ReducedSearchType.DirectFilterLinear:
+                // case ReducedSearchType.DirectFilterBinary:
+                // case ReducedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(

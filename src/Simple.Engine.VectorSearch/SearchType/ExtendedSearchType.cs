@@ -1,4 +1,5 @@
 using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 
 namespace SimpleEngine.SearchType;
 
@@ -13,17 +14,19 @@ public enum ExtendedSearchType
     /// </summary>
     Legacy = 0,
 
+    SimpleLegacy = 2,
+
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffset"/>
     /// </summary>
-    Offset = 1,
+    //Offset = 1,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе.
     /// Используется алгоритм <see cref="ExtendedSearchGinOffsetFilter"/>
     /// </summary>
-    OffsetFilter = 2,
+    //OffsetFilter = 2,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе, линейный поиск.
@@ -35,7 +38,7 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе, линейный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    DirectFilterLinear = 4,
+    //DirectFilterLinear = 4,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе, бинарный поиск.
@@ -47,7 +50,7 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе, бинарный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    DirectFilterBinary = 6,
+    //DirectFilterBinary = 6,
 
     /// <summary>
     /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
@@ -59,5 +62,5 @@ public enum ExtendedSearchType
     /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
     /// </summary>
-    DirectFilterHash = 8
+    //DirectFilterHash = 8
 }

@@ -13,6 +13,8 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     // Токенизированная заметка.
     private readonly List<int> _tokens = tokens;
 
+    internal List<int> GetAsList() => _tokens;
+
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.
     /// </summary>
@@ -103,5 +105,10 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
         public bool MoveNext() => _enumerator.MoveNext();
 
         public Token Current => new(_enumerator.Current);
+    }
+
+    public object this[Range range]
+    {
+        get => throw new NotImplementedException();
     }
 }

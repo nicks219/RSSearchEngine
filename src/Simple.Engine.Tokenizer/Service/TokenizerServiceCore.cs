@@ -52,7 +52,7 @@ public sealed class TokenizerServiceCore : ITokenizerServiceCore, IAlgorithmConf
     }
 
     // Используется для тестов.
-    internal DirectIndexLegacy GetDirectIndex() => _searchEngineManager.GetDirectIndex();
+    internal GeneralDirectIndexLegacy GetDirectIndex() => _searchEngineManager.GetDirectIndex();
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(int id, CancellationToken stoppingToken)

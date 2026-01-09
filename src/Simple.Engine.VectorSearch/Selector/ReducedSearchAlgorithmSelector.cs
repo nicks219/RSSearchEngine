@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using Rsse.Domain.Service.Configuration;
 using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 using SimpleEngine.Contracts;
 using SimpleEngine.Dto.Common;
 using SimpleEngine.Dto.Inverted;
 using SimpleEngine.Indexes;
 using SimpleEngine.Pools;
-using SimpleEngine.Processor;
 using SimpleEngine.SearchType;
 
 namespace SimpleEngine.Selector;
@@ -20,33 +20,34 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    private readonly RelevanceFilter _relevanceFilter;
+    // private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndexLegacy _generalDirectIndexLegacyLegacy;
+    private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy;
 
-    private readonly CommonIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndices _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    // private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly InvertedIndexLegacy _invertedIndexLegacy = new();
 
     /// <summary>
     /// Компонент с reduced-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndexLegacyLegacy">Общий индекс, используется в legacy-алгоритме.</param>
+    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности</param>
     public ReducedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndexLegacy generalDirectIndexLegacyLegacy, double relevancyThreshold)
+        GeneralDirectIndexLegacy generalDirectIndexLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ReducedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndexLegacyLegacy = generalDirectIndexLegacyLegacy;
+        _generalDirectIndexLegacy = generalDirectIndexLegacy;
 
-        _relevanceFilter = new RelevanceFilter
+        /*_relevanceFilter = new RelevanceFilter
         {
             Threshold = relevancyThreshold
-        };
+        };*/
     }
 
     /// <inheritdoc/>
@@ -70,7 +71,12 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
                     RunDirectSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.MergeFilter:
+            case ReducedSearchType.SimpleLegacy:
+            {
+                RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
+                break;
+            }
+            /*case ReducedSearchType.MergeFilter:
                 {
                     RunMergeFilterSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
@@ -89,7 +95,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
                 {
                     RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
-                }
+                }*/
             default:
                 {
                     throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
@@ -101,28 +107,37 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        //_partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+
+        _invertedIndexLegacy.TryAdd(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.AddOrUpdateVector(documentId, tokenVector);
-        _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+        //_partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+
+        var oldTokenLine = _generalDirectIndexLegacy[documentId];
+        _invertedIndexLegacy.TryUpdate(documentId, tokenVector, oldTokenLine.Reduced);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.RemoveVector(documentId);
-        _partitionsHs.RemoveVector(documentId);
+        //_partitionsHs.RemoveVector(documentId);
+
+        _invertedIndexLegacy.TryRemoveDocumentId(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
         _partitions.Clear();
-        _partitionsHs.Clear();
+        //_partitionsHs.Clear();
+
+        _invertedIndexLegacy.Clear();
     }
 
     private void RunLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
@@ -130,7 +145,20 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     {
         var reducedSearchLegacy = new ReducedSearchLegacy
         {
-            GeneralDirectIndexLegacy = _generalDirectIndexLegacyLegacy
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacy
+        };
+
+        reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
+    }
+
+    private void RunSimpleLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        var reducedSearchLegacy = new ReducedSearchSimple
+        {
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacy,
+            InvertedIndexLegacy = _invertedIndexLegacy,
+            TempStoragePool = _tempStoragePool
         };
 
         reducedSearchLegacy.FindReduced(searchVector, metricsCalculator, cancellationToken);
@@ -151,7 +179,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
         }
     }
 
-    private void RunMergeFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    /*private void RunMergeFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -216,5 +244,5 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 
             reducedSearchGinArrayDirectFilterHs.FindReduced(searchVector, metricsCalculator, cancellationToken);
         }
-    }
+    }*/
 }

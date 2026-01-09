@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using SimpleEngine.Algorithms;
@@ -12,7 +14,7 @@ namespace SimpleEngine.Processor;
 /// Фильтр релевантности.
 /// Оптимизация алгоритмов поиска.
 /// </summary>
-public sealed class RelevanceFilter2
+public sealed class RelevanceFilter
 {
     // I. фильтрация документов
 
@@ -85,7 +87,7 @@ public sealed class RelevanceFilter2
     public bool TryGetRelevantDocumentsEnumerators(
         InvertedOffsetIndex invertedOffsetIndex,
         TokenVector searchVector,
-        List<DocumentIdsExtendedEnumerator> enumerators,
+        List<DocumentIdsMergeEnumerator> enumerators,
         out List<IndexWithCount> counts,
         out int filteredTokensCount,
         out int minRelevancyCount)
@@ -117,7 +119,7 @@ public sealed class RelevanceFilter2
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsMergeEnumerator(documentIds, enumerator));
 
                 counts.Add(new IndexWithCount(index, documentIds.DocumentIds.Count));
 
@@ -254,3 +256,5 @@ public sealed class RelevanceFilter2
         filteredTokensCount = minCount - emptyCount;
     }
 }
+
+#endif

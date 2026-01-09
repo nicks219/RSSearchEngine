@@ -1,9 +1,11 @@
+# if IS_RD_PROJECT
+
 using System.Collections.Generic;
 using SimpleEngine.Dto.Common;
 
 namespace SimpleEngine.Indexes;
 
-public sealed class InvertedOffsetIndexes2
+public sealed class InvertedOffsetIndexes
 {
     public readonly List<InvertedOffsetIndex> Indices = [];
 
@@ -54,3 +56,5 @@ public sealed class InvertedOffsetIndexes2
         return current;
     }
 }
+
+#endif

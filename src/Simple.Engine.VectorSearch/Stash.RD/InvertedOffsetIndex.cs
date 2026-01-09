@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using SimpleEngine.Dto.Common;
@@ -8,7 +10,7 @@ namespace SimpleEngine.Indexes;
 /// <summary>
 /// Поддержка общего инвертированного индекса "токен-идентификаторы.
 /// </summary>
-public sealed class InvertedOffsetIndex2
+public sealed class InvertedOffsetIndex
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
@@ -124,3 +126,5 @@ public sealed class InvertedOffsetIndex2
         }
     }
 }
+
+#endif

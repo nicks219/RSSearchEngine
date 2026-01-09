@@ -17,7 +17,7 @@ public sealed class TempStoragePool(bool enable)
 
     internal readonly CollectionPool<Dictionary<InternalDocumentIds, int>, KeyValuePair<InternalDocumentIds, int>> InternalIdsStorage = new(enable);
 
-    internal readonly CollectionPool<List<DocumentIdsExtendedEnumerator>, DocumentIdsExtendedEnumerator> OffsetEnumeratorCollections = new(enable);
+    // internal readonly CollectionPool<List<DocumentIdsMergeEnumerator>, DocumentIdsMergeEnumerator> OffsetEnumeratorCollections = new(enable);
 
     internal readonly CollectionPool<List<InternalDocumentIds>, InternalDocumentIds> InternalIdsCollections = new(enable);
 

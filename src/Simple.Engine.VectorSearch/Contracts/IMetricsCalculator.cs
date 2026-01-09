@@ -5,7 +5,7 @@ using SimpleEngine.Indexes;
 namespace SimpleEngine.Contracts;
 
 /// <summary>
-/// Контракт подсчёта метрик релевантности для результатов поискового запроса.
+/// Контракт подсчёта итоговых метрик релевантности документов поисковому запросу.
 /// </summary>
 public interface IMetricsCalculator
 {
@@ -47,7 +47,7 @@ public interface IMetricsCalculator
     /// <param name="documentId">Идентификатор, полученный при поиске.</param>
     /// <param name="directIndexLegacy">Индекс по идентификаторам заметок.</param>
     void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndexLegacy directIndexLegacy);
+        GeneralDirectIndexLegacy directIndexLegacy);
 
     /// <summary>
     /// Очищает метрики.

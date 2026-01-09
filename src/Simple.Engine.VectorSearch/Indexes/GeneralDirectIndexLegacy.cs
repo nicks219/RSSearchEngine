@@ -7,10 +7,13 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего индекса "идентификатор-токены" для первоначальных алгоритмов.
+/// Поддержка общего индекса "идентификатор - два вектора токенов", для первоначальных алгоритмов.
 /// </summary>
-public sealed class DirectIndexLegacy
+public sealed class GeneralDirectIndexLegacy
 {
+    /// <summary>
+    /// Значение представляет собой контейнер с extended/reduced векторами.
+    /// </summary>
     private readonly ConcurrentDictionary<DocumentId, TokenLine> _directIndex = new();
 
     /// <summary>
@@ -48,21 +51,16 @@ public sealed class DirectIndexLegacy
     /// Обновить документ в индексе.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
-    /// <param name="tokenLine">Вектора, соответствующие новому документу.</param>
+    /// <param name="newTokenLine">Вектора, соответствующие новому документу.</param>
     /// <returns>Признак успеха операции.</returns>
-    public bool TryUpdate(DocumentId documentId, TokenLine tokenLine)
+    public bool TryUpdate(DocumentId documentId, TokenLine newTokenLine)
     {
         if (!_directIndex.TryGetValue(documentId, out var oldTokenLine))
         {
             return false;
         }
 
-        if (!_directIndex.TryUpdate(documentId, tokenLine, oldTokenLine))
-        {
-            return false;
-        }
-
-        return true;
+        return _directIndex.TryUpdate(documentId, newTokenLine, oldTokenLine);
     }
 
     /// <summary>
@@ -71,7 +69,7 @@ public sealed class DirectIndexLegacy
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="oldTokenLine">Вектора, соответствующие удаленному документу.</param>
     /// <returns>Признак успеха операции.</returns>
-    public bool TryRemove(DocumentId documentId, [NotNullWhen(true)] out TokenLine? oldTokenLine)
+    public bool TryRemoveDocument(DocumentId documentId, [NotNullWhen(true)] out TokenLine? oldTokenLine)
     {
         return _directIndex.TryRemove(documentId, out oldTokenLine);
     }

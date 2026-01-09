@@ -20,12 +20,12 @@ public abstract class Constants
     /// <summary>
     /// Измеряемый алгоритм токенизатора.
     /// </summary>
-    internal const ExtendedSearchType TokenizerExtendedSearchType = ExtendedSearchType.DirectFilterLinear;
+    internal const ExtendedSearchType TokenizerExtendedSearchType = ExtendedSearchType.SimpleLegacy;
 
     /// <summary>
     /// Измеряемый алгоритм токенизатора.
     /// </summary>
-    internal const ReducedSearchType TokenizerReducedSearchType = ReducedSearchType.DirectFilterLinear;
+    internal const ReducedSearchType TokenizerReducedSearchType = ReducedSearchType.SimpleLegacy;
 
     /// <summary>
     /// Константа с поисковым запросом.

@@ -4,9 +4,9 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Processor;
 
 /// <summary>
-/// Вычисление метрики сравнения двух векторов для формирования результатов поиска.
+/// Расширения для функционала подсчёта релевантности документов поисковому запросу.
 /// </summary>
-public static class MetricsExtension
+public static class MetricsCalculatorExtension
 {
     /// <param name="metricsCalculator">Функционал подсчёта метрик релевантности.</param>
     extension(IMetricsCalculator metricsCalculator)
@@ -26,18 +26,16 @@ public static class MetricsExtension
         /// <param name="documentId">Идентификатор документа.</param>
         /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
         /// <param name="searchStartIndex"></param>
-        public void AppendExtendedMetric(TokenVector searchVector,
-            DocumentId documentId, TokenLine tokenLine, int searchStartIndex = 0)
+        public void AppendExtendedMetric(TokenVector searchVector, DocumentId documentId, TokenLine tokenLine, int searchStartIndex = 0)
         {
             var extendedTargetVector = tokenLine.Extended;
-            var comparisonScore = ScoreCalculator.ComputeOrdered(extendedTargetVector, searchVector, searchStartIndex);
+            var comparisonScore = TokenOverlapScorer.CountOrderedMatches(extendedTargetVector, searchVector, searchStartIndex);
 
             // Для расчета метрик необходимо учитывать размер оригинальной заметки.
             metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
         }
 
-        public void AppendReducedMetric(int comparisonScore,
-            TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
+        public void AppendReducedMetric(int comparisonScore, TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
         {
             metricsCalculator.AppendReduced(comparisonScore, searchVector, externalDocument.ExternalDocumentId,
                 externalDocument.Size);
@@ -50,11 +48,10 @@ public static class MetricsExtension
         /// <param name="searchVector">Вектор с поисковым запросом.</param>
         /// <param name="documentId">Идентификатор документа.</param>
         /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
-        public void AppendReducedMetric(TokenVector searchVector,
-            DocumentId documentId, TokenLine tokenLine)
+        public void AppendReducedMetric(TokenVector searchVector, DocumentId documentId, TokenLine tokenLine)
         {
             var reducedTargetVector = tokenLine.Reduced;
-            var comparisonScore = ScoreCalculator.ComputeUnordered(reducedTargetVector, searchVector);
+            var comparisonScore = TokenOverlapScorer.CountUnorderedMatches(reducedTargetVector, searchVector);
 
             // Для расчета метрик необходимо учитывать размер оригинальной заметки.
             metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);

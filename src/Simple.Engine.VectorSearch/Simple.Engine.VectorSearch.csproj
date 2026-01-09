@@ -11,8 +11,4 @@
     <ProjectReference Include="..\Rsse.Domain\Rsse.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Stash\" />
-  </ItemGroup>
-
 </Project>

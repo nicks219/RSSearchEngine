@@ -9,7 +9,8 @@ using SimpleEngine.Indexes;
 namespace SimpleEngine.Service;
 
 /// <summary>
-/// Функционал подсчёта метрик релевантности для результатов поискового запроса.
+/// Вычисление итоговых метрик релевантности документов поисковому запросу, по результатам оценки совпадений.
+/// Метрики являются ответом на поисковый запрос.
 /// </summary>
 public sealed class MetricsCalculator : IMetricsCalculator
 {
@@ -94,7 +95,7 @@ public sealed class MetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndexLegacy directIndexLegacy)
+        GeneralDirectIndexLegacy directIndexLegacy)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)

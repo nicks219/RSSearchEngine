@@ -82,7 +82,7 @@ public sealed class CommonIndex(IndexPoint.DictionaryStorageType dataPointSearch
     /// <param name="token">Токен.</param>
     /// <param name="documentIdsInternal">Вектор с идентификаторами заметок из индекса.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
+    private bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
     {
         return _invertedIndex.TryGetValue(token, out documentIdsInternal) && documentIdsInternal.Count > 0;
     }

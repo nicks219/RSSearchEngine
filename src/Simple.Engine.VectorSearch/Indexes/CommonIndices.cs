@@ -4,7 +4,7 @@ using SimpleEngine.Dto.Inverted;
 
 namespace SimpleEngine.Indexes;
 
-public sealed class CommonIndexes
+public sealed class CommonIndices
 {
     public readonly List<CommonIndex> Indices = [];
 
@@ -12,7 +12,7 @@ public sealed class CommonIndexes
 
     private CommonIndex _currentIndex;
 
-    public CommonIndexes(IndexPoint.DictionaryStorageType searchType)
+    public CommonIndices(IndexPoint.DictionaryStorageType searchType)
     {
         _searchType = searchType;
 

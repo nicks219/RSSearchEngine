@@ -3,19 +3,20 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Processor;
 
 /// <summary>
-/// Вычисление метрики сравнения двух векторов.
+/// Подсчет и оценка количества совпадающих токенов в двух векторах (поисковый запрос и документ).
+/// Набранные баллы используются для расчета итоговой метрики релевантности документа запросу.
 /// </summary>
-public static class ScoreCalculator
+public static class TokenOverlapScorer
 {
     /// <summary>
-    /// Вычислить метрику сравнения двух векторов, для эталонного вектора на основе расширенного набора.
+    /// Подсчитать количество совпадающих токенов в двух векторах, для эталонного вектора на основе расширенного набора.
     /// Учитывается последовательность токенов (т.е. "слов").
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
     /// <param name="searchStartIndex">Стартовая позиция для анализа внутри вектора с поисковым запросом.</param>
-    /// <returns>Метрика количества совпадений.</returns>
-    public static int ComputeOrdered(TokenVector targetVector, TokenVector searchVector, int searchStartIndex)
+    /// <returns>Оценка количества совпадений.</returns>
+    public static int CountOrderedMatches(TokenVector targetVector, TokenVector searchVector, int searchStartIndex)
     {
         // NB "облака лошадки без оглядки облака лошадки без оглядки" в 227 и 270 = 5
 
@@ -46,13 +47,13 @@ public static class ScoreCalculator
     }
 
     /// <summary>
-    /// Вычислить метрику сравнения двух векторов, для эталонного вектора на основе редуцированного набора.
+    /// Подсчитать количество совпадающих токенов в двух векторах, для эталонного вектора на основе редуцированного набора.
     /// Последовательность токенов (т.е. "слов") не учитывается.
     /// </summary>
     /// <param name="targetVector">Вектор, в котором ищем.</param>
     /// <param name="searchVector">Вектор, который ищем.</param>
-    /// <returns>Метрика количества совпадений.</returns>
-    public static int ComputeUnordered(TokenVector targetVector, TokenVector searchVector)
+    /// <returns>Оценка количества совпадений.</returns>
+    public static int CountUnorderedMatches(TokenVector targetVector, TokenVector searchVector)
     {
         // NB "я ты он она я ты он она я ты он она" будет найдено почти во всех заметках, необходимо обработать результат
 

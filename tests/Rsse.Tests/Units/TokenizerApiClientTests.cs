@@ -158,13 +158,13 @@ public class TokenizerApiClientTests
         // arrange:
         var options = Substitute.For<IOptions<CommonBaseOptions>>();
         options.Value.Returns(new CommonBaseOptions { TokenizerIsEnable = true });
-        var tokenizer = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
-        await CreateTestNote(tokenizer);
-        var tokenLines = tokenizer.GetDirectIndex();
+        var tokenizerApiClient = new TokenizerApiClient(options, new NoopLogger<TokenizerApiClient>());
+        await CreateTestNote(tokenizerApiClient);
+        var tokenLines = tokenizerApiClient.GetDirectIndex();
         var countBefore = tokenLines.Count;
 
         // act:
-        await tokenizer.Delete(1, _token);
+        await tokenizerApiClient.Delete(1, _token);
         var countAfter = tokenLines.Count;
 
         // assert:

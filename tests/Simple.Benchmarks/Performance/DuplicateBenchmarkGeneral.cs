@@ -26,7 +26,7 @@ public class DuplicateBenchmarkGeneral : IBenchmarkRunner
     public static IEnumerable<(ExtendedSearchType Extended, ReducedSearchType Reduced)> Parameters =>
     [
         (Extended: ExtendedSearchType.Legacy, Reduced: ReducedSearchType.Legacy),
-        (Extended: ExtendedSearchType.DirectFilterLinear, Reduced:ReducedSearchType.DirectFilterLinear)
+        (Extended: ExtendedSearchType.DirectLinear, Reduced:ReducedSearchType.Direct)
     ];
 
     [ParamsSource(nameof(Parameters))]

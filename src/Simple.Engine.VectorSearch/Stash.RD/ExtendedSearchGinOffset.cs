@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -61,7 +63,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         }
     }
 
-    private void CreateEnumerators(TokenVector searchVector, List<DocumentIdsExtendedEnumerator> enumerators)
+    private void CreateEnumerators(TokenVector searchVector, List<DocumentIdsMergeEnumerator> enumerators)
     {
         foreach (var token in searchVector)
         {
@@ -74,13 +76,13 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsMergeEnumerator(documentIds, enumerator));
             }
         }
     }
 
     private void ProcessSingle(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<DocumentIdsExtendedEnumerator> enumerators)
+        List<DocumentIdsMergeEnumerator> enumerators)
     {
         var enumerator = enumerators[0];
 
@@ -98,7 +100,7 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
     }
 
     private void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<DocumentIdsExtendedEnumerator> enumerators)
+        List<DocumentIdsMergeEnumerator> enumerators)
     {
         while (enumerators.Count > 1)
         {
@@ -178,3 +180,5 @@ public readonly ref struct ExtendedSearchGinOffset : IExtendedSearchProcessor
         }
     }
 }
+
+#endif

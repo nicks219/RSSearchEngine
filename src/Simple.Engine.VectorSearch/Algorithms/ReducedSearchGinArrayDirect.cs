@@ -61,7 +61,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
 
                         MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, CommonIndex);
 
-                        documentReducedScoreIterator.AppendReducedMetric(in metricsConsumer);
+                        documentReducedScoreIterator.IterateToObtainReducedMetric(in metricsConsumer);
 
                         break;
                     }

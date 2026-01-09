@@ -68,7 +68,7 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndexLegacy directIndexLegacy)
+        GeneralDirectIndexLegacy directIndexLegacy)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)

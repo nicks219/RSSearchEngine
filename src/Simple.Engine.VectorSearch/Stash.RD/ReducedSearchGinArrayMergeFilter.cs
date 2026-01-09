@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -183,3 +185,5 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         }
     }
 }
+
+#endif

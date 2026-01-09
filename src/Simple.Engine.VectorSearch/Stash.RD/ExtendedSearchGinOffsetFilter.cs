@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -81,7 +83,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
     }
 
     private void ProcessSingle(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        List<DocumentIdsExtendedEnumerator> enumerators)
+        List<DocumentIdsMergeEnumerator> enumerators)
     {
         var enumerator = enumerators[0];
 
@@ -98,7 +100,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         } while (enumerator.MoveNext());
     }
 
-    private static void CreateIndexWithLastList(List<DocumentIdsExtendedEnumerator> enumerators,
+    private static void CreateIndexWithLastList(List<DocumentIdsMergeEnumerator> enumerators,
         List<IndexWithLast> exList, Dictionary<List<InternalDocumentId>, int> dictionary, HashSet<int> set)
     {
         for (var i = 0; i < enumerators.Count; i++)
@@ -132,7 +134,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         public required InvertedOffsetIndex GinExtended { private get; init; }
 
         public void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-            List<DocumentIdsExtendedEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+            List<DocumentIdsMergeEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
             int filteredTokensCount, int minRelevancyCount)
         {
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
@@ -238,8 +240,8 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
             }
         }
 
-        private static List<DocumentIdsExtendedEnumerator> PrepareDocumentIdsWithOffsetsAndEnumerators(
-            List<DocumentIdsExtendedEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+        private static List<DocumentIdsMergeEnumerator> PrepareDocumentIdsWithOffsetsAndEnumerators(
+            List<DocumentIdsMergeEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
             int filteredTokensCount, out List<IndexWithLast> exList)
         {
             var dictionary = new Dictionary<List<InternalDocumentId>, int>();
@@ -249,7 +251,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
 
             CreateIndexWithLastList(enumerators, exList, dictionary, set);
 
-            var documentIdIterators = new List<DocumentIdsExtendedEnumerator>();
+            var documentIdIterators = new List<DocumentIdsMergeEnumerator>();
 
             for (var i = 0; i < filteredTokensCount; i++)
             {
@@ -262,7 +264,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
             return documentIdIterators;
         }
 
-        private static void FindMin(List<DocumentIdsExtendedEnumerator> list,
+        private static void FindMin(List<DocumentIdsMergeEnumerator> list,
             out int minI0, out InternalDocumentId min0, out InternalDocumentId min1, out bool min1Exists)
         {
             if (list.Count > 1)
@@ -285,7 +287,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         public required InvertedOffsetIndex GinExtended { private get; init; }
 
         public void ProcessMulti(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-            List<DocumentIdsExtendedEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+            List<DocumentIdsMergeEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
             int filteredTokensCount, int minRelevancyCount)
         {
             var docIdIterators = PrepareDocumentIdsWithOffsetsAndEnumerators(
@@ -386,7 +388,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         }
 
         private static List<int> PrepareDocumentIdsWithOffsetsAndEnumerators(
-            List<DocumentIdsExtendedEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
+            List<DocumentIdsMergeEnumerator> enumerators, List<IndexWithCount> indexWithCounts,
             int filteredTokensCount, out List<IndexWithLast> exList)
         {
             var dictionary = new Dictionary<List<InternalDocumentId>, int>();
@@ -415,7 +417,7 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
             return documentIdIterators;
         }
 
-        private static void FindMin(List<DocumentIdsExtendedEnumerator> list, List<int> listExists,
+        private static void FindMin(List<DocumentIdsMergeEnumerator> list, List<int> listExists,
             out int minI0, out InternalDocumentId min0, out InternalDocumentId min1, out bool min1Exists)
         {
             if (listExists.Count > 1)
@@ -433,3 +435,5 @@ public readonly ref struct ExtendedSearchGinOffsetFilter : IExtendedSearchProces
         }
     }
 }
+
+#endif

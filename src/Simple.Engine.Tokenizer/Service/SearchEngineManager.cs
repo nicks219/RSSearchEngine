@@ -41,7 +41,7 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Общий индекс для всех токенизированных заметок.
     /// </summary>
-    private readonly DirectIndexLegacy _generalDirectIndexLegacy = new();
+    private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy = new();
 
     /// <summary>
     /// Инициализация требуемого типа алгоритма.
@@ -81,7 +81,7 @@ public sealed class SearchEngineManager
     /// <summary>
     /// Получить общий индекс.
     /// </summary>
-    public DirectIndexLegacy GetDirectIndex() => _generalDirectIndexLegacy;
+    public GeneralDirectIndexLegacy GetDirectIndex() => _generalDirectIndexLegacy;
 
     /// <summary>
     /// Добавить в индексы идентификатор документа и его extended/reduced векторы.
@@ -128,7 +128,7 @@ public sealed class SearchEngineManager
     /// <returns>Признак успешного выполнения.</returns>
     public bool TryRemove(DocumentId documentId)
     {
-        if (!_generalDirectIndexLegacy.TryRemove(documentId, out var tokenLine))
+        if (!_generalDirectIndexLegacy.TryRemoveDocument(documentId, out var tokenLine))
         {
             return false;
         }

@@ -78,7 +78,7 @@ public static class DiagnosticsProgram
                 .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
-                    .WithIterationCount(10))
+                    .WithIterationCount(5))// 10
                 .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: false)))
                 .AddLogger(new ConsoleLogger(false, new Dictionary<LogKind, ConsoleColor>
                 {
@@ -95,18 +95,20 @@ public static class DiagnosticsProgram
 
         BenchmarkRunner.Run(
         [
-            /*typeof(TokenizationBenchmark),*/
-            /*typeof(QueryBenchmarkGeneral),
-            typeof(LuceneBenchmark),
-            typeof(DuplicateBenchmarkGeneral),*/
-            typeof(DuplicatesBenchmarkExtended),
+            // typeof(TokenizationBenchmark),
+            // typeof(QueryBenchmarkGeneral),
+            // typeof(LuceneBenchmark),
+            // typeof(DuplicateBenchmarkGeneral),
+
+            // typeof(DuplicatesBenchmarkExtended),
             typeof(QueryBenchmarkExtended),
-            typeof(DuplicatesBenchmarkReduced),
-            typeof(QueryBenchmarkReduced),
-            /*typeof(MtQueryBenchmarkExtended),
-            typeof(MtQueryBenchmarkReduced),*/
-            /*typeof(StQueryBenchmarkExtended),
-            typeof(StQueryBenchmarkReduced)*/
+            // typeof(DuplicatesBenchmarkReduced),
+            // typeof(QueryBenchmarkReduced),
+
+            // typeof(MtQueryBenchmarkExtended),
+            // typeof(MtQueryBenchmarkReduced),
+            // typeof(StQueryBenchmarkExtended),
+            // typeof(StQueryBenchmarkReduced)
         ], config);
     }
 
@@ -192,7 +194,7 @@ public static class DiagnosticsProgram
     {
         TokenizationBenchmark tokenizationBenchmark = new()
         {
-            IndexType = IndexType.GeneralDirect
+            IndexType = IndexType.GeneralDirectLegacy
         };
 
         Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] Starting..");

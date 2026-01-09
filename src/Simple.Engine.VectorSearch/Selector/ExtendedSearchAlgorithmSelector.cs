@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using Rsse.Domain.Service.Configuration;
 using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 using SimpleEngine.Contracts;
 using SimpleEngine.Dto.Common;
 using SimpleEngine.Dto.Inverted;
 using SimpleEngine.Indexes;
 using SimpleEngine.Pools;
-using SimpleEngine.Processor;
 using SimpleEngine.SearchType;
 
 namespace SimpleEngine.Selector;
@@ -21,35 +21,37 @@ public sealed class ExtendedSearchAlgorithmSelector
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    private readonly RelevanceFilter _relevanceFilter;
+    // private readonly RelevanceFilter _relevanceFilter;
 
-    private readonly DirectIndexLegacy _generalDirectIndexLegacyLegacy;
+    private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy;
 
-    private readonly InvertedOffsetIndexes _offsetPartitions = new();
+    // private readonly InvertedOffsetIndexes _offsetPartitions = new();
 
-    private readonly CommonIndexes _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndices _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndices _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+
+    private readonly InvertedIndexLegacy _invertedIndexLegacy = new();
 
     /// <summary>
     /// Компонент с extended-алгоритмами.
     /// </summary>
     /// <param name="tempStoragePool">Пул коллекций.</param>
-    /// <param name="generalDirectIndexLegacyLegacy">Общий индекс, используется в legacy-алгоритме.</param>
+    /// <param name="generalDirectIndexLegacy">Общий индекс, используется в legacy-алгоритме.</param>
     /// <param name="relevancyThreshold">Порог релевантности.</param>
     public ExtendedSearchAlgorithmSelector(TempStoragePool tempStoragePool,
-        DirectIndexLegacy generalDirectIndexLegacyLegacy, double relevancyThreshold)
+        GeneralDirectIndexLegacy generalDirectIndexLegacy, double relevancyThreshold)
     {
         // защита на случай изменения внешних проверок, до момента готовности алгоритмов
         EnvironmentReporter.ThrowIfProduction(nameof(ExtendedSearchAlgorithmSelector));
 
         _tempStoragePool = tempStoragePool;
-        _generalDirectIndexLegacyLegacy = generalDirectIndexLegacyLegacy;
+        _generalDirectIndexLegacy = generalDirectIndexLegacy;
 
-        _relevanceFilter = new RelevanceFilter
+        /*_relevanceFilter = new RelevanceFilter
         {
             Threshold = relevancyThreshold
-        };
+        };*/
     }
 
     /// <inheritdoc/>
@@ -68,7 +70,12 @@ public sealed class ExtendedSearchAlgorithmSelector
                     RunLegacySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.Offset:
+            case ExtendedSearchType.SimpleLegacy:
+            {
+                RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
+                break;
+            }
+            /*case ExtendedSearchType.Offset:
                 {
                     RunOffsetSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
@@ -77,37 +84,37 @@ public sealed class ExtendedSearchAlgorithmSelector
                 {
                     RunOffsetFilterSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
-                }
+                }*/
             case ExtendedSearchType.DirectLinear:
                 {
                     RunDirectLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.DirectFilterLinear:
+            /*case ExtendedSearchType.DirectFilterLinear:
                 {
                     RunDirectFilterLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
-                }
+                }*/
             case ExtendedSearchType.DirectBinary:
                 {
                     RunDirectBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.DirectFilterBinary:
+            /*case ExtendedSearchType.DirectFilterBinary:
                 {
                     RunDirectFilterBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
-                }
+                }*/
             case ExtendedSearchType.DirectHash:
                 {
                     RunDirectHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.DirectFilterHash:
+            /*case ExtendedSearchType.DirectFilterHash:
                 {
                     RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
-                }
+                }*/
             default:
                 {
                     throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
@@ -118,33 +125,42 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        //_offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
         _partitions.AddOrUpdateVector(documentId, tokenVector);
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+
+        _invertedIndexLegacy.TryAdd(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
+        //_offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
         _partitions.AddOrUpdateVector(documentId, tokenVector);
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
+
+        var oldTokenLine = _generalDirectIndexLegacy[documentId];
+        _invertedIndexLegacy.TryUpdate(documentId, tokenVector, oldTokenLine.Extended);
     }
 
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
-        _offsetPartitions.RemoveVector(documentId);
+        //_offsetPartitions.RemoveVector(documentId);
         _partitions.RemoveVector(documentId);
         _partitionsHs.RemoveVector(documentId);
+
+        _invertedIndexLegacy.TryRemoveDocumentId(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        _offsetPartitions.Clear();
+        //_offsetPartitions.Clear();
         _partitions.Clear();
         _partitionsHs.Clear();
+
+        _invertedIndexLegacy.Clear();
     }
 
     private void RunLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
@@ -152,13 +168,26 @@ public sealed class ExtendedSearchAlgorithmSelector
     {
         var extendedSearchLegacy = new ExtendedSearchLegacy
         {
-            GeneralDirectIndexLegacy = _generalDirectIndexLegacyLegacy
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacy
         };
 
         extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
     }
 
-    private void RunOffsetSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    private void RunSimpleLegacySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+        CancellationToken cancellationToken)
+    {
+        var extendedSearchLegacy = new ExtendedSearchSimple
+        {
+            GeneralDirectIndexLegacy = _generalDirectIndexLegacy,
+            InvertedIndexLegacy = _invertedIndexLegacy,
+            TempStoragePool = _tempStoragePool
+        };
+
+        extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
+    }
+
+    /*private void RunOffsetSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
@@ -187,7 +216,7 @@ public sealed class ExtendedSearchAlgorithmSelector
 
             extendedSearchGinOffsetFilter.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
-    }
+    }*/
 
     private void RunDirectLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
@@ -205,7 +234,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    /*private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -220,7 +249,7 @@ public sealed class ExtendedSearchAlgorithmSelector
 
             extendedSearchGinArrayDirectFilterLs.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
-    }
+    }*/
 
     private void RunDirectBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
@@ -238,7 +267,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    /*private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndex in _partitions.Indices)
@@ -253,7 +282,7 @@ public sealed class ExtendedSearchAlgorithmSelector
 
             extendedSearchGinArrayDirectFilterBs.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
-    }
+    }*/
 
     private void RunDirectHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
@@ -271,7 +300,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
+    /*private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
         foreach (var invertedIndexHs in _partitionsHs.Indices)
@@ -286,5 +315,5 @@ public sealed class ExtendedSearchAlgorithmSelector
 
             extendedSearchGinArrayDirectFilterHs.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
-    }
+    }*/
 }
