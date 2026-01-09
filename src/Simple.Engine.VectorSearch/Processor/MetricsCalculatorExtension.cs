@@ -56,5 +56,13 @@ public static class MetricsCalculatorExtension
             // Для расчета метрик необходимо учитывать размер оригинальной заметки.
             metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);
         }
+
+        public void AppendReducedMetric(TokenVector searchVector, DocumentId documentId, TokenLine tokenLine,int comparisonScore)
+        {
+            var reducedTargetVector = tokenLine.Reduced;
+
+            // Для расчета метрик необходимо учитывать размер оригинальной заметки.
+            metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);
+        }
     }
 }

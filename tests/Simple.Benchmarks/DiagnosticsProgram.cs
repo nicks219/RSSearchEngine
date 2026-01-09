@@ -101,9 +101,9 @@ public static class DiagnosticsProgram
             // typeof(DuplicateBenchmarkGeneral),
 
             // typeof(DuplicatesBenchmarkExtended),
-            typeof(QueryBenchmarkExtended),
+            // typeof(QueryBenchmarkExtended),
             // typeof(DuplicatesBenchmarkReduced),
-            // typeof(QueryBenchmarkReduced),
+            typeof(QueryBenchmarkReduced),
 
             // typeof(MtQueryBenchmarkExtended),
             // typeof(MtQueryBenchmarkReduced),

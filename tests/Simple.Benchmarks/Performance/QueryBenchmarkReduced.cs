@@ -25,7 +25,7 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
 
     public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
     [
-        new(ReducedSearchType.Legacy),
+        //new(ReducedSearchType.Legacy),
         new(ReducedSearchType.SimpleLegacy),
         new(ReducedSearchType.Direct),
         new(ReducedSearchType.Direct, true),

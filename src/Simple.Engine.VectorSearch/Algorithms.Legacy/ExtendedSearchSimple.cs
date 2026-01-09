@@ -53,7 +53,7 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
                 if (!searchSpace.TryAdd(id, 1))
                 {
                     searchSpace[id]++;
-                    // можно сразу посчитать максимум
+                    // todo: можно сразу посчитать максимум, оптимизируй
                 }
             }
         }

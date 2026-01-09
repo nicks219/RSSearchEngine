@@ -38,35 +38,71 @@ public readonly ref struct ReducedSearchSimple : IReducedSearchProcessor
             throw new OperationCanceledException(nameof(ReducedSearchLegacy));
         }
 
-        // создаём пространство поиска (без учета последовательности токенов)
-        // значение это по сути баллы, набранные запросом для конкретной заметки
-        // при "мусорных" токенах пространство поиска может быть практически равно общему индексу, поэтому считаем статистику
-        Dictionary<DocumentId, int> searchSpace = [];
-        var searchSpaceMax = new HashSet<DocumentId>();
-        var threshold = searchVector.Count * 0.6D;
-        foreach (Token token in searchVector)
-        {
-            if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
-            {
-                continue;
-            }
+        //Dictionary<DocumentId, int> searchSpace = [];
+        //var searchSpaceMax = new HashSet<DocumentId>();
+        Dictionary<DocumentId, int> searchSpace = TempStoragePool.DocumentIdDictionary.Get();
+        HashSet<DocumentId> searchSpaceMax = TempStoragePool.DocumentIdHashSet.Get();
 
-            foreach (var id in ids)
+        try
+        {
+            // создаём пространство поиска (без учета последовательности токенов)
+            // значение это по сути баллы, набранные запросом для конкретной заметки
+            // при "мусорных" токенах пространство поиска может быть практически равно общему индексу, поэтому считаем статистику
+            var threshold = searchVector.Count * 0.6D;
+            foreach (Token token in searchVector)
             {
-                if (!searchSpace.TryAdd(id, 1))
+                if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
                 {
-                    searchSpace[id]++;
-                    // можно сразу считать "максимум" (выигрыш в duplicates benchmark по времени)
-                    // TestData.ResponseLimitLarge = 147
-                    if (searchSpace[id] >= threshold && searchSpaceMax.Count < 147)
+                    continue;
+                }
+                
+                foreach (var id in ids)
+                {
+                    if (!searchSpace.TryAdd(id, 1))
                     {
-                        searchSpaceMax.Add(id);
+                        var score = ++searchSpace[id];
+                        // можно сразу считать "максимум" (выигрыш в duplicates benchmark по времени)
+                        // при этом подход как в extended не даст большого ускорения по query бенчмарку
+                        // TestData.ResponseLimitLarge = 147
+                        if (score >= threshold && searchSpaceMax.Count < 147)
+                        {
+                            searchSpaceMax.Add(id);
+                        }
                     }
                 }
             }
-        }
 
-        // можно сразу пересчитать скор (количество совпавших токенов) в метрику
+            // query: "приключится вдруг вот верный друг выручить"
+            // total:49K - search:21K - max:50
+            // dupl: 1K - search: 1K - max:1
+
+            // поиск в пространстве поиска reduced
+            // todo: баллы совпадений будут аналогично посчитаны повторно - лишняя работа, оптимизируй
+            /*foreach (var documentId in searchSpaceMax)
+            {
+                var tokenLine = GeneralDirectIndexLegacy[documentId];
+                metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine);
+            }*/
+            // не даёт большого ускорения по query бенчмарку
+            foreach (var documentId in searchSpaceMax)
+            {
+                var tokenLine = GeneralDirectIndexLegacy[documentId];
+                var comparisonScore = searchSpace[documentId];
+                metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine, comparisonScore);
+            }
+        }
+        finally
+        {
+            TempStoragePool.DocumentIdHashSet.Return(searchSpaceMax);
+            TempStoragePool.DocumentIdDictionary.Return(searchSpace);
+        }
+    }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+// можно сразу пересчитать скор (количество совпавших токенов) в метрику
 
         /*for (var i = 0; i < Math.Min(11, searchSpace.Count); i++)
         {
@@ -123,6 +159,8 @@ public readonly ref struct ReducedSearchSimple : IReducedSearchProcessor
 
         // выбираем результат(ы) с одинаковым максимальным рейтингом (у них не обязательно самая высокая релевантность):
         // UI отдает 10 результатов, данная сортировка - один результат:
+
+        // подход как в extended не даст большого ускорения по query бенчмарку
         /*var max = int.MinValue;
         var searchSpaceMax = new List<DocumentId>();
         foreach (var kv in searchSpace)
@@ -138,13 +176,3 @@ public readonly ref struct ReducedSearchSimple : IReducedSearchProcessor
                 searchSpaceMax.Add(kv.Key);// = kv.Value;
             }
         }*/
-
-        // поиск в пространстве поиска reduced
-        // баллы совпадений будут аналогично посчитаны повторно - лишняя работа
-        foreach (var documentId in searchSpaceMax)
-        {
-            var tokenLine = GeneralDirectIndexLegacy[documentId];
-            metricsCalculator.AppendReducedMetric(searchVector, documentId, tokenLine);
-        }
-    }
-}
