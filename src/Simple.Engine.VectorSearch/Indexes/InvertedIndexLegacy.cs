@@ -8,17 +8,21 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка оОбратного индекса "токен - идентификаторы документов" для наивных алгоритмов.
+/// Поддержка обратного индекса "токен - идентификаторы документов" для наивных алгоритмов.
+/// Содержит информацию в каких документах встречаются токены.
+/// Методы обновления и добавления оценивают и возвращают успешность попытки, прерываясь при конфликте.
+/// Метод добавления успех операции не отслеживает и выполняется до конца.
 /// </summary>
 public class InvertedIndexLegacy
 {
-    // extended: ~21K | reduced: 10.5K
+    // размеры для ~1K документов: extended: ~21K | reduced: 10.5K
+    // при использовании учитывай уникальность значений в коллекциях идентификаторов
     private readonly ConcurrentDictionary<Token, HashSet<DocumentId>> _invertedIndex = new();
 
     /// <summary>
-    /// Получить количество элементов в индексе.
+    /// Получить количество токенов в индексе.
     /// </summary>
-    public int Count => _invertedIndex.Count;
+    internal int TokenCount => _invertedIndex.Count;
 
     /// <summary>
     /// Получить перечислитель для индекса.
@@ -41,17 +45,15 @@ public class InvertedIndexLegacy
     /// <param name="token">Токен.</param>
     /// <param name="documentIds">Идентификаторы документов.</param>
     /// <returns>Признак успеха.</returns>
-    public bool TryGetValue(Token token, [NotNullWhen(true)] out HashSet<DocumentId>? documentIds) => _invertedIndex.TryGetValue(token, out documentIds);
+    public bool TryGetIds(Token token, [NotNullWhen(true)] out HashSet<DocumentId>? documentIds) => _invertedIndex.TryGetValue(token, out documentIds);
 
     /// <summary>
-    /// Добавить все токены из вектора в индекс.
+    /// Попытаться добавить все токены из вектора в индекс.
     /// </summary>
     /// <param name="documentId">Идентификатор документа.</param>
     /// <param name="tokenVector">Вектор, соответствующий документу.</param>
-    /// <returns>Признак успеха операции.</returns>
-    public bool TryAdd(DocumentId documentId, TokenVector tokenVector)
+    public void TryAddDocument(DocumentId documentId, TokenVector tokenVector)
     {
-        // 1. токены могут дублироваться в одном документе, в hashset это будет одно вхождение
         foreach (Token token in tokenVector)
         {
             if (!_invertedIndex.TryGetValue(token, out var documentIds))
@@ -63,8 +65,6 @@ public class InvertedIndexLegacy
                 documentIds.Add(documentId);
             }
         }
-
-        return true;
     }
 
     /// <summary>
@@ -74,23 +74,37 @@ public class InvertedIndexLegacy
     /// <param name="newTokenVector">Вектор, соответствующие новому документу.</param>
     /// <param name="oldTokenVector">Вектор, соответствовавшие обновляемому документу.</param>
     /// <returns>Признак успеха операции.</returns>
-    public bool TryUpdate(DocumentId documentId, TokenVector newTokenVector, TokenVector oldTokenVector)
+    public bool TryUpdateDocument(DocumentId documentId, TokenVector newTokenVector, TokenVector oldTokenVector)
     {
         // наивная реализация (удаление/добавление) old: 1 2 | new: 2 3 | common: 2
         // рассмотри вариант с версионированием записей (идентификаторов заметок)
+
+        // todo: методы для множеств аллоцируют хэш-таблицы для источников и используют IEnumerable<T>, оптимизировать
         var common = newTokenVector.GetAsList().Intersect(oldTokenVector.GetAsList()).ToList();
         var forAddition = newTokenVector.GetAsList().Except(common);
         var forDelete = oldTokenVector.GetAsList().Except(common);
+
         // удаляем:
         foreach (var tokenValue in forDelete)
         {
-            // подумать: у токена может остаться пустая коллекция
-            if (_invertedIndex[new Token(tokenValue)].Remove(documentId))
+            var token = new Token(tokenValue);
+            if (!_invertedIndex.TryGetValue(token, out var ids))
             {
-                continue;
+                // токен отсутствует в индексе
+                return false;
             }
 
-            throw new Exception($"{nameof(TryUpdate)}: failed on remove");
+            if (!ids.Remove(documentId))
+            {
+                // документ отсутствует в списке токена
+                return false;
+            }
+
+            // подумать: у токена может остаться пустая коллекция
+            if (ids.Count == 0)
+            {
+                TryRemoveToken(token, out _);
+            }
         }
 
         // добавляем:
@@ -104,7 +118,8 @@ public class InvertedIndexLegacy
             }
             else if (!_invertedIndex[token].Add(documentId))
             {
-                throw new Exception($"{nameof(TryUpdate)}: failed on addition");
+                // документ уже добавлен в список токена, возможна ошибка в логике либо конкурентный доступ
+                throw new Exception($"{nameof(TryUpdateDocument)}: failed on addition");
             }
         }
 
@@ -115,19 +130,23 @@ public class InvertedIndexLegacy
     /// Удалить идентификатор документ из индекса.
     /// </summary>
     /// <param name="documentId">Идентификатор удаляемого документа.</param>
-    /// <param name="oldTokenVector">Вектор, соответствовавшие удаляемому документу.</param>
+    /// <param name="oldTokenVector">Вектор, соответствующий удаляемому документу.</param>
     /// <returns>Признак успеха операции.</returns>
-    public bool TryRemoveDocumentId(DocumentId documentId, TokenVector oldTokenVector)
+    public bool TryRemoveDocument(DocumentId documentId, TokenVector oldTokenVector)
     {
         foreach (var token in oldTokenVector.DistinctAndGet())
         {
-            if (_invertedIndex[token].Remove(documentId))
+            if (!_invertedIndex.TryGetValue(token, out var ids))
             {
-                continue;
+                // токен отсутствует в индексе
+                return false;
             }
 
-            // в значениях не будет дубликатов, учитывать, если в заметке (extended) токены дублировались
-            throw new Exception($"{nameof(TryRemoveDocumentId)}: failed on delete document");
+            if (!ids.Remove(documentId))
+            {
+                // документ отсутствует в списке токена
+                return false;
+            }
         }
 
         return true;

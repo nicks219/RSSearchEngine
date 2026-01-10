@@ -7,13 +7,35 @@ namespace SimpleEngine.Dto.Common;
 /// <summary>
 /// Вектор из хэшей, представляющий собой токенизированную заметку.
 /// </summary>
-/// <param name="tokens">Токенизированная заметка.</param>
-public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
+public readonly struct TokenVector : IEquatable<TokenVector>
 {
-    // Токенизированная заметка.
-    private readonly List<int> _tokens = tokens;
+    /// <summary>
+    /// Статический экземпляр с пустым вектором.
+    /// </summary>
+    public static readonly TokenVector Empty = new([]);
 
-    internal List<int> GetAsList() => _tokens;
+    // Токенизированная заметка.
+    private readonly List<int> _tokens;
+
+    /// <summary>
+    /// Инициализировать экземпляр с вектором.
+    /// </summary>
+    /// <param name="tokens">Токенизированный документ.</param>
+    public TokenVector(List<int> tokens)
+    {
+        _tokens = tokens;
+    }
+
+    /// <summary>
+    /// Инициализировать экземпляр с пустым вектором.
+    /// </summary>
+    public TokenVector()
+    {
+        _tokens = [];
+    }
+
+    // todo: следует перенести в TokenVector всё, что использует данный метод.
+    internal List<int> GetAsList() => _tokens ?? throw new InvalidOperationException("Vector initialized without collection.");
 
     /// <summary>
     /// Получить количество токенов, содержащихся в векторе.

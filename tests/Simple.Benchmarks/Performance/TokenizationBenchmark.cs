@@ -127,7 +127,7 @@ public class TokenizationBenchmark
                     }
                 case IndexType.InvertedLegacy:
                     {
-                        _invertedIndexLegacyExtended.TryAdd(documentId, tokenLine.Extended);
+                        _invertedIndexLegacyExtended.TryAddDocument(documentId, tokenLine.Extended);
                         break;
                     }
                 case IndexType.InvertedExtended:

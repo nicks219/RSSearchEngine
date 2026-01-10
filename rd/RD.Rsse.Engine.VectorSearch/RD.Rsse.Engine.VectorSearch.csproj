@@ -5,9 +5,6 @@
     <Nullable>enable</Nullable>
     <RootNamespace>RD.RsseEngine</RootNamespace>
     <Configurations>Debug;Release</Configurations>
-    <IsRdProject>true</IsRdProject>
-    <DefineConstants>$(DefineConstants);IS_RD_PROJECT</DefineConstants>
-    <Description>RD Project: High-performance inverted index experiments</Description>
   </PropertyGroup>
 
   <ItemGroup>

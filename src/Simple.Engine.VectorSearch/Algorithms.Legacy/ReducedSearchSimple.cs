@@ -64,13 +64,15 @@ public readonly ref struct ReducedSearchSimple : IReducedSearchProcessor
             var tokensCanBeRejected = searchVector.Count - (int)minRelevanceScore;
             foreach (Token token in searchVector)
             {
-                if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
+                if (!InvertedIndexLegacy.TryGetIds(token, out var ids))
                 {
                     continue;
                 }
 
                 // необходимо оценивать токены по количеству идентификаторов и отфильтровывать самые частотные
-                // это оставит только максимумы в поисковой выдаче для низкорейтинговых запросов
+                // данный подход оставит только максимумы в поисковой выдаче для низкорейтинговых запросов (см юниты)
+                // костыль: сейчас мы пропускаем первые попавшиеся высокочастотные токены, это удачно совпадает с тестовыми данными
+                // полноценный метод см в DataProcessorPrototype.RemoveMostFrequentTokens
                 if (ids.Count > rejectThreshold && --tokensCanBeRejected > 0)
                 {
                     continue;

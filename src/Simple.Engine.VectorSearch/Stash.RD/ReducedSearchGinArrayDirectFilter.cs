@@ -93,7 +93,7 @@ public readonly ref struct ReducedSearchGinArrayDirectFilter : IReducedSearchPro
             searchVector, metricsCalculator, CommonIndex, sortedIds, filteredTokensCount,
             PositionSearchType, minRelevancyCount, emptyCount);
 
-        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
+        documentReducedScoreIterator.IterateToObtainReducedMetric(metricsConsumer);
     }
 
     private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable

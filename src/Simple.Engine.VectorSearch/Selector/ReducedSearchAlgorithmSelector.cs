@@ -80,7 +80,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     {
         _partitions.AddOrUpdateVector(documentId, tokenVector);
 
-        _invertedIndexLegacy.TryAdd(documentId, tokenVector);
+        _invertedIndexLegacy.TryAddDocument(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -89,7 +89,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
         _partitions.AddOrUpdateVector(documentId, tokenVector);
 
         var oldTokenLine = _generalDirectIndexLegacy[documentId];
-        _invertedIndexLegacy.TryUpdate(documentId, tokenVector, oldTokenLine.Reduced);
+        _invertedIndexLegacy.TryUpdateDocument(documentId, tokenVector, oldTokenLine.Reduced);
     }
 
     /// <inheritdoc/>
@@ -97,7 +97,7 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     {
         _partitions.RemoveVector(documentId);
 
-        _invertedIndexLegacy.TryRemoveDocumentId(documentId, tokenVector);
+        _invertedIndexLegacy.TryRemoveDocument(documentId, tokenVector);
     }
 
     /// <inheritdoc/>

@@ -94,7 +94,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _partitions.AddOrUpdateVector(documentId, tokenVector);
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
-        _invertedIndexLegacy.TryAdd(documentId, tokenVector);
+        _invertedIndexLegacy.TryAddDocument(documentId, tokenVector);
     }
 
     /// <inheritdoc/>
@@ -104,7 +104,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
         var oldTokenLine = _generalDirectIndexLegacy[documentId];
-        _invertedIndexLegacy.TryUpdate(documentId, tokenVector, oldTokenLine.Extended);
+        _invertedIndexLegacy.TryUpdateDocument(documentId, tokenVector, oldTokenLine.Extended);
     }
 
     /// <inheritdoc/>
@@ -113,7 +113,7 @@ public sealed class ExtendedSearchAlgorithmSelector
         _partitions.RemoveVector(documentId);
         _partitionsHs.RemoveVector(documentId);
 
-        _invertedIndexLegacy.TryRemoveDocumentId(documentId, tokenVector);
+        _invertedIndexLegacy.TryRemoveDocument(documentId, tokenVector);
     }
 
     /// <inheritdoc/>

@@ -48,7 +48,7 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
 
             foreach (Token token in searchVector)
             {
-                if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
+                if (!InvertedIndexLegacy.TryGetIds(token, out var ids))
                 {
                     continue;
                 }
@@ -64,18 +64,18 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
             }
 
             // выбираем результат(ы) с одинаковым максимальным рейтингом (у них не обязательно самая высокая релевантность):
-            var max = int.MinValue;
-            foreach (var kv in tokenOverlapCounts)
+            var maxScore = int.MinValue;
+            foreach (var kvp in tokenOverlapCounts)
             {
-                if (kv.Value > max)
+                if (kvp.Value > maxScore)
                 {
-                    max = kv.Value;
+                    maxScore = kvp.Value;
                     relevantDocumentIds.Clear();
-                    relevantDocumentIds.Add(kv.Key);
+                    relevantDocumentIds.Add(kvp.Key);
                 }
-                else if (kv.Value == max)
+                else if (kvp.Value == maxScore)
                 {
-                    relevantDocumentIds.Add(kv.Key);
+                    relevantDocumentIds.Add(kvp.Key);
                 }
             }
 

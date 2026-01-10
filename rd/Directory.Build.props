@@ -16,6 +16,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <Description>RD Project: High-performance inverted index experiments</Description>
+    <DefineConstants>$(DefineConstants);IS_RD_PROJECT</DefineConstants>
   </PropertyGroup>
 
 </Project>

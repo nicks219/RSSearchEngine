@@ -78,11 +78,12 @@ public sealed class CommonIndex(IndexPoint.DictionaryStorageType dataPointSearch
 
     /// <summary>
     /// Получить из индекса идентификаторы заметок, в которых присутствует токен.
+    /// Используется в RelevanceFilter.
     /// </summary>
     /// <param name="token">Токен.</param>
     /// <param name="documentIdsInternal">Вектор с идентификаторами заметок из индекса.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    private bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
+    public bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
     {
         return _invertedIndex.TryGetValue(token, out documentIdsInternal) && documentIdsInternal.Count > 0;
     }

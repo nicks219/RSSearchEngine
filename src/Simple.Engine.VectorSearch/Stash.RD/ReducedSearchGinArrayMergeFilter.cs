@@ -89,7 +89,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
             searchVector, metricsCalculator, CommonIndex, sortedIds, filteredTokensCount);
 
-        documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
+        documentReducedScoreIterator.IterateToObtainReducedMetric(metricsConsumer);
     }
 
     private readonly ref struct MetricsConsumer : DocumentIdsScoringIterator.IMetricsConsumer, IDisposable
