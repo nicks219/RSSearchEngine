@@ -98,7 +98,7 @@ public readonly struct TokenVector(List<int> tokens) : IEquatable<TokenVector>
     /// <summary>
     /// Перечислитель для вектора.
     /// </summary>
-    public struct Enumerator(List<int>.Enumerator enumerator)
+    public ref struct Enumerator(List<int>.Enumerator enumerator)
     {
         private List<int>.Enumerator _enumerator = enumerator;
 

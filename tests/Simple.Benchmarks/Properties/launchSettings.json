@@ -1,14 +1,29 @@
 {
   "profiles": {
 
-    "Benchmarks": {
+    "Benchmarks: DuplicatesBenchmarkExtended": {
       "commandName": "Project",
-      "commandLineArgs": "bench"
+      "commandLineArgs": "bench 1"
+    },
+
+    "Benchmarks: QueryBenchmarkExtended": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 2"
+    },
+
+    "Benchmarks: DuplicatesBenchmarkReduced": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 3"
+    },
+
+    "Benchmarks: QueryBenchmarkReduced": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 4"
     },
 
     "Profiling": {
       "commandName": "Project",
-      "commandLineArgs": "profile"
+      "commandLineArgs": "profile 1"
     }
   }
 }

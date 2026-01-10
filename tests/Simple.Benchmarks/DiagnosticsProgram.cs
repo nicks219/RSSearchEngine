@@ -34,19 +34,20 @@ public static class DiagnosticsProgram
             Environment.Exit(1);
         }
 
-        if (args.Length != 1)
+        if (args.Length != 2)
         {
             Console.WriteLine($"[{nameof(DiagnosticsProgram)}] invalid args, usage: <bench>|<profile>");
             Console.WriteLine("Run benchmarks...");
-            RunBenchmarks();
+            RunBenchmarks(string.Empty);
             Environment.Exit(0);
         }
 
-        var arg = args[0];
-        switch (arg)
+        var argFirst = args[0];
+        var argSecond = args[1];
+        switch (argFirst)
         {
             case "bench":
-                RunBenchmarks();
+                RunBenchmarks(argSecond);
                 break;
 
             case "profile":
@@ -54,7 +55,7 @@ public static class DiagnosticsProgram
                 break;
 
             default:
-                RunBenchmarks();
+                RunBenchmarks(argSecond);
                 break;
         }
     }
@@ -62,7 +63,7 @@ public static class DiagnosticsProgram
     /// <summary>
     /// Запустить бенчмарки.
     /// </summary>
-    private static void RunBenchmarks()
+    private static void RunBenchmarks(string arg)
     {
         Console.WriteLine($"[{nameof(RunBenchmarks)}] starting..");
 
@@ -93,8 +94,25 @@ public static class DiagnosticsProgram
                     { LogKind.Hint, ConsoleColor.DarkCyan }
                 }));
 
-        BenchmarkRunner.Run(
-        [
+        switch (arg)
+        {
+            case "1":
+                BenchmarkRunner.Run<DuplicatesBenchmarkExtended>(config);
+                break;
+            case "2":
+                BenchmarkRunner.Run<QueryBenchmarkExtended>(config);
+                break;
+            case "3":
+                BenchmarkRunner.Run<DuplicatesBenchmarkReduced>(config);
+                break;
+            case "4":
+            default:
+                BenchmarkRunner.Run<QueryBenchmarkReduced>(config);
+                break;
+        }
+
+        // BenchmarkRunner.Run(
+        // [
             // typeof(TokenizationBenchmark),
             // typeof(QueryBenchmarkGeneral),
             // typeof(LuceneBenchmark),
@@ -103,13 +121,13 @@ public static class DiagnosticsProgram
             // typeof(DuplicatesBenchmarkExtended),
             // typeof(QueryBenchmarkExtended),
             // typeof(DuplicatesBenchmarkReduced),
-            typeof(QueryBenchmarkReduced),
+            // typeof(QueryBenchmarkReduced),
 
             // typeof(MtQueryBenchmarkExtended),
             // typeof(MtQueryBenchmarkReduced),
             // typeof(StQueryBenchmarkExtended),
             // typeof(StQueryBenchmarkReduced)
-        ], config);
+        // ], config);
     }
 
     /// <summary>

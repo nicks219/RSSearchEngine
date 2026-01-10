@@ -79,11 +79,11 @@ public class TokenizationBenchmark
                     break;
                 }
             case IndexType.InvertedLegacy:
-            {
-                _invertedIndexLegacyExtended.Clear();
-                _invertedIndexLegacyReduced.Clear();
-                break;
-            }
+                {
+                    _invertedIndexLegacyExtended.Clear();
+                    _invertedIndexLegacyReduced.Clear();
+                    break;
+                }
             case IndexType.InvertedExtended:
                 {
                     _commonIndexExtended.Clear();
@@ -126,10 +126,10 @@ public class TokenizationBenchmark
                         break;
                     }
                 case IndexType.InvertedLegacy:
-                {
-                    _invertedIndexLegacyExtended.TryAdd(documentId, tokenLine.Extended);
-                    break;
-                }
+                    {
+                        _invertedIndexLegacyExtended.TryAdd(documentId, tokenLine.Extended);
+                        break;
+                    }
                 case IndexType.InvertedExtended:
                     {
                         _commonIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);

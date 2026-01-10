@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RD.RsseEngine.Dto;
-using Rsse.Domain.Data.Entities;
-using Rsse.Tests.Common;
 using RD.RsseEngine.SearchType;
 using RD.RsseEngine.Service;
+using Rsse.Domain.Data.Entities;
+using Rsse.Tests.Common;
 
 namespace RD.RsseEngine.Benchmarks.Validation;
 

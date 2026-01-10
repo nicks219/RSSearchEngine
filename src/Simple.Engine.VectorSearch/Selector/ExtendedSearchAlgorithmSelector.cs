@@ -21,11 +21,7 @@ public sealed class ExtendedSearchAlgorithmSelector
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    // private readonly RelevanceFilter _relevanceFilter;
-
     private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy;
-
-    // private readonly InvertedOffsetIndexes _offsetPartitions = new();
 
     private readonly CommonIndices _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
@@ -47,11 +43,6 @@ public sealed class ExtendedSearchAlgorithmSelector
 
         _tempStoragePool = tempStoragePool;
         _generalDirectIndexLegacy = generalDirectIndexLegacy;
-
-        /*_relevanceFilter = new RelevanceFilter
-        {
-            Threshold = relevancyThreshold
-        };*/
     }
 
     /// <inheritdoc/>
@@ -71,50 +62,25 @@ public sealed class ExtendedSearchAlgorithmSelector
                     break;
                 }
             case ExtendedSearchType.SimpleLegacy:
-            {
-                RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
-                break;
-            }
-            /*case ExtendedSearchType.Offset:
                 {
-                    RunOffsetSearch(searchVector, metricsCalculator, cancellationToken);
+                    RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ExtendedSearchType.OffsetFilter:
-                {
-                    RunOffsetFilterSearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }*/
             case ExtendedSearchType.DirectLinear:
                 {
                     RunDirectLinearSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            /*case ExtendedSearchType.DirectFilterLinear:
-                {
-                    RunDirectFilterLinearSearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }*/
             case ExtendedSearchType.DirectBinary:
                 {
                     RunDirectBinarySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            /*case ExtendedSearchType.DirectFilterBinary:
-                {
-                    RunDirectFilterBinarySearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }*/
             case ExtendedSearchType.DirectHash:
                 {
                     RunDirectHashSearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            /*case ExtendedSearchType.DirectFilterHash:
-                {
-                    RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }*/
             default:
                 {
                     throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
@@ -125,7 +91,6 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
-        //_offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
         _partitions.AddOrUpdateVector(documentId, tokenVector);
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
@@ -135,7 +100,6 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
-        //_offsetPartitions.AddOrUpdateVector(documentId, tokenVector);
         _partitions.AddOrUpdateVector(documentId, tokenVector);
         _partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
@@ -146,7 +110,6 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
-        //_offsetPartitions.RemoveVector(documentId);
         _partitions.RemoveVector(documentId);
         _partitionsHs.RemoveVector(documentId);
 
@@ -156,7 +119,6 @@ public sealed class ExtendedSearchAlgorithmSelector
     /// <inheritdoc/>
     public void Clear()
     {
-        //_offsetPartitions.Clear();
         _partitions.Clear();
         _partitionsHs.Clear();
 
@@ -187,37 +149,6 @@ public sealed class ExtendedSearchAlgorithmSelector
         extendedSearchLegacy.FindExtended(searchVector, metricsCalculator, cancellationToken);
     }
 
-    /*private void RunOffsetSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
-        {
-            var extendedSearchGinOffset = new ExtendedSearchGinOffset
-            {
-                TempStoragePool = _tempStoragePool,
-                GinExtended = invertedOffsetIndex
-            };
-
-            extendedSearchGinOffset.FindExtended(searchVector, metricsCalculator, cancellationToken);
-        }
-    }
-
-    private void RunOffsetFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedOffsetIndex in _offsetPartitions.Indices)
-        {
-            var extendedSearchGinOffsetFilter = new ExtendedSearchGinOffsetFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                GinExtended = invertedOffsetIndex,
-                RelevanceFilter = _relevanceFilter
-            };
-
-            extendedSearchGinOffsetFilter.FindExtended(searchVector, metricsCalculator, cancellationToken);
-        }
-    }*/
-
     private void RunDirectLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
@@ -233,23 +164,6 @@ public sealed class ExtendedSearchAlgorithmSelector
             extendedSearchGinArrayDirectLs.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
     }
-
-    /*private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndex in _partitions.Indices)
-        {
-            var extendedSearchGinArrayDirectFilterLs = new ExtendedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndex,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-
-            extendedSearchGinArrayDirectFilterLs.FindExtended(searchVector, metricsCalculator, cancellationToken);
-        }
-    }*/
 
     private void RunDirectBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
@@ -267,23 +181,6 @@ public sealed class ExtendedSearchAlgorithmSelector
         }
     }
 
-    /*private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndex in _partitions.Indices)
-        {
-            var extendedSearchGinArrayDirectFilterBs = new ExtendedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndex,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.BinarySearch
-            };
-
-            extendedSearchGinArrayDirectFilterBs.FindExtended(searchVector, metricsCalculator, cancellationToken);
-        }
-    }*/
-
     private void RunDirectHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
         CancellationToken cancellationToken)
     {
@@ -299,21 +196,4 @@ public sealed class ExtendedSearchAlgorithmSelector
             extendedSearchGinArrayDirectHs.FindExtended(searchVector, metricsCalculator, cancellationToken);
         }
     }
-
-    /*private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndexHs in _partitionsHs.Indices)
-        {
-            var extendedSearchGinArrayDirectFilterHs = new ExtendedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndexHs,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-
-            extendedSearchGinArrayDirectFilterHs.FindExtended(searchVector, metricsCalculator, cancellationToken);
-        }
-    }*/
 }

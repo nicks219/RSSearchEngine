@@ -6,10 +6,10 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using RD.RsseEngine.Benchmarks.Common;
+using RD.RsseEngine.SearchType;
 using RD.RsseEngine.Service;
 using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
-using RD.RsseEngine.SearchType;
 
 namespace RD.RsseEngine.Benchmarks.Performance;
 

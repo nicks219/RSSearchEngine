@@ -11,10 +11,22 @@ public static class MetricsCalculatorExtension
     /// <param name="metricsCalculator">Функционал подсчёта метрик релевантности.</param>
     extension(IMetricsCalculator metricsCalculator)
     {
-        public void AppendExtendedMetric(int comparisonScore,
-            TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
+        /// <summary>
+        /// Добавить результат в виде метрики релевантности для расширенного поиска.
+        /// Используется оптимизированными алгоритмами.
+        /// </summary>
+        /// <param name="comparisonScore">Баллы за совпавшие в обоих векторах токены.</param>
+        /// <param name="searchVector">Вектор с поисковым запросом.</param>
+        /// <param name="externalDocument">Контейнер с внешним идентификатором документа.</param>
+        public void AppendExtendedMetric(
+            int comparisonScore,
+            TokenVector searchVector,
+            ExternalDocumentIdWithSize externalDocument)
         {
-            metricsCalculator.AppendExtended(comparisonScore, searchVector, externalDocument.ExternalDocumentId,
+            metricsCalculator.AppendExtended(
+                comparisonScore,
+                searchVector,
+                externalDocument.ExternalDocumentId,
                 externalDocument.Size);
         }
 
@@ -26,7 +38,11 @@ public static class MetricsCalculatorExtension
         /// <param name="documentId">Идентификатор документа.</param>
         /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
         /// <param name="searchStartIndex"></param>
-        public void AppendExtendedMetric(TokenVector searchVector, DocumentId documentId, TokenLine tokenLine, int searchStartIndex = 0)
+        public void AppendExtendedMetric(
+            TokenVector searchVector,
+            DocumentId documentId,
+            TokenLine tokenLine,
+            int searchStartIndex = 0)
         {
             var extendedTargetVector = tokenLine.Extended;
             var comparisonScore = TokenOverlapScorer.CountOrderedMatches(extendedTargetVector, searchVector, searchStartIndex);
@@ -35,9 +51,22 @@ public static class MetricsCalculatorExtension
             metricsCalculator.AppendExtended(comparisonScore, searchVector, documentId, extendedTargetVector.Count);
         }
 
-        public void AppendReducedMetric(int comparisonScore, TokenVector searchVector, ExternalDocumentIdWithSize externalDocument)
+        /// <summary>
+        /// Добавить результат в виде метрики релевантности для нечеткого поиска.
+        /// Используется оптимизированными алгоритмами.
+        /// </summary>
+        /// <param name="comparisonScore">Баллы за совпавшие в обоих векторах токены.</param>
+        /// <param name="searchVector">Вектор с поисковым запросом.</param>
+        /// <param name="externalDocument">Контейнер с внешним идентификатором документа.</param>
+        public void AppendReducedMetric(
+            int comparisonScore,
+            TokenVector searchVector,
+            ExternalDocumentIdWithSize externalDocument)
         {
-            metricsCalculator.AppendReduced(comparisonScore, searchVector, externalDocument.ExternalDocumentId,
+            metricsCalculator.AppendReduced(
+                comparisonScore,
+                searchVector,
+                externalDocument.ExternalDocumentId,
                 externalDocument.Size);
         }
 
@@ -57,7 +86,19 @@ public static class MetricsCalculatorExtension
             metricsCalculator.AppendReduced(comparisonScore, searchVector, documentId, reducedTargetVector.Count);
         }
 
-        public void AppendReducedMetric(TokenVector searchVector, DocumentId documentId, TokenLine tokenLine,int comparisonScore)
+        /// <summary>
+        /// Добавить результат в виде метрики релевантности для нечеткого поиска.
+        /// Используется алгоритмом simple.
+        /// </summary>
+        /// <param name="searchVector">Вектор с поисковым запросом.</param>
+        /// <param name="documentId">Идентификатор документа.</param>
+        /// <param name="tokenLine">Контейнер с двумя векторами для документа.</param>
+        /// <param name="comparisonScore">Количество совпавших токенов в обоих векторах.</param>
+        public void AppendReducedMetric(
+            TokenVector searchVector,
+            DocumentId documentId,
+            TokenLine tokenLine,
+            int comparisonScore)
         {
             var reducedTargetVector = tokenLine.Reduced;
 

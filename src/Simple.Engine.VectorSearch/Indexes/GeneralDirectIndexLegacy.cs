@@ -7,7 +7,7 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего индекса "идентификатор - два вектора токенов", для первоначальных алгоритмов.
+/// Поддержка общего индекса "идентификатор - два вектора токенов", для наивных алгоритмов.
 /// </summary>
 public sealed class GeneralDirectIndexLegacy
 {

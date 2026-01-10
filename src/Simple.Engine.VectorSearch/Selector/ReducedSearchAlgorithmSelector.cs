@@ -20,13 +20,10 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 {
     private readonly TempStoragePool _tempStoragePool;
 
-    // private readonly RelevanceFilter _relevanceFilter;
-
     private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy;
 
     private readonly CommonIndices _partitions = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    // private readonly CommonIndexes _partitionsHs = new(IndexPoint.DictionaryStorageType.HashTableStorage);
     private readonly InvertedIndexLegacy _invertedIndexLegacy = new();
 
     /// <summary>
@@ -43,11 +40,6 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
 
         _tempStoragePool = tempStoragePool;
         _generalDirectIndexLegacy = generalDirectIndexLegacy;
-
-        /*_relevanceFilter = new RelevanceFilter
-        {
-            Threshold = relevancyThreshold
-        };*/
     }
 
     /// <inheritdoc/>
@@ -72,30 +64,10 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
                     break;
                 }
             case ReducedSearchType.SimpleLegacy:
-            {
-                RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
-                break;
-            }
-            /*case ReducedSearchType.MergeFilter:
                 {
-                    RunMergeFilterSearch(searchVector, metricsCalculator, cancellationToken);
+                    RunSimpleLegacySearch(searchVector, metricsCalculator, cancellationToken);
                     break;
                 }
-            case ReducedSearchType.DirectFilterLinear:
-                {
-                    RunDirectFilterLinearSearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }
-            case ReducedSearchType.DirectFilterBinary:
-                {
-                    RunDirectFilterBinarySearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }
-            case ReducedSearchType.DirectFilterHash:
-                {
-                    RunDirectFilterHashSearch(searchVector, metricsCalculator, cancellationToken);
-                    break;
-                }*/
             default:
                 {
                     throw new ArgumentOutOfRangeException(nameof(searchType), searchType, "unknown search type");
@@ -107,7 +79,6 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     public void AddVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.AddOrUpdateVector(documentId, tokenVector);
-        //_partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
         _invertedIndexLegacy.TryAdd(documentId, tokenVector);
     }
@@ -116,7 +87,6 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     public void UpdateVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.AddOrUpdateVector(documentId, tokenVector);
-        //_partitionsHs.AddOrUpdateVector(documentId, tokenVector);
 
         var oldTokenLine = _generalDirectIndexLegacy[documentId];
         _invertedIndexLegacy.TryUpdate(documentId, tokenVector, oldTokenLine.Reduced);
@@ -126,7 +96,6 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     public void RemoveVector(DocumentId documentId, TokenVector tokenVector)
     {
         _partitions.RemoveVector(documentId);
-        //_partitionsHs.RemoveVector(documentId);
 
         _invertedIndexLegacy.TryRemoveDocumentId(documentId, tokenVector);
     }
@@ -135,7 +104,6 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
     public void Clear()
     {
         _partitions.Clear();
-        //_partitionsHs.Clear();
 
         _invertedIndexLegacy.Clear();
     }
@@ -178,71 +146,4 @@ public sealed class ReducedSearchAlgorithmSelector : ISearchAlgorithmSelector<Re
             reducedSearchGinArrayDirect.FindReduced(searchVector, metricsCalculator, cancellationToken);
         }
     }
-
-    /*private void RunMergeFilterSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndex in _partitions.Indices)
-        {
-            var reducedSearchGinArrayMergeFilter = new ReducedSearchGinArrayMergeFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndex,
-                RelevanceFilter = _relevanceFilter
-            };
-
-            reducedSearchGinArrayMergeFilter.FindReduced(searchVector, metricsCalculator, cancellationToken);
-        }
-    }
-
-    private void RunDirectFilterLinearSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndex in _partitions.Indices)
-        {
-            var reducedSearchGinArrayDirectFilterLs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndex,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-
-            reducedSearchGinArrayDirectFilterLs.FindReduced(searchVector, metricsCalculator, cancellationToken);
-        }
-    }
-
-    private void RunDirectFilterBinarySearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndex in _partitions.Indices)
-        {
-            var reducedSearchGinArrayDirectFilterBs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndex,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.BinarySearch
-            };
-
-            reducedSearchGinArrayDirectFilterBs.FindReduced(searchVector, metricsCalculator, cancellationToken);
-        }
-    }
-
-    private void RunDirectFilterHashSearch(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        CancellationToken cancellationToken)
-    {
-        foreach (var invertedIndexHs in _partitionsHs.Indices)
-        {
-            var reducedSearchGinArrayDirectFilterHs = new ReducedSearchGinArrayDirectFilter
-            {
-                TempStoragePool = _tempStoragePool,
-                CommonIndex = invertedIndexHs,
-                RelevanceFilter = _relevanceFilter,
-                PositionSearchType = PositionSearchType.LinearScan
-            };
-
-            reducedSearchGinArrayDirectFilterHs.FindReduced(searchVector, metricsCalculator, cancellationToken);
-        }
-    }*/
 }

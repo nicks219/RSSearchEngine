@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +8,7 @@ using SimpleEngine.Dto.Common;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка оОбратного индекса "токен - идентификаторы документов" для первоначальных алгоритмов.
+/// Поддержка оОбратного индекса "токен - идентификаторы документов" для наивных алгоритмов.
 /// </summary>
 public class InvertedIndexLegacy
 {
@@ -19,19 +19,6 @@ public class InvertedIndexLegacy
     /// Получить количество элементов в индексе.
     /// </summary>
     public int Count => _invertedIndex.Count;
-
-    /*public /*FrozenDictionary<Token, HashSet<DocumentId>>#1# void Compact()
-    {
-        var sorted = _invertedIndex
-            //.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-            .OrderByDescending(x => x.Value.Count)
-            .ToList();
-        for (var i = 0; i < 10; i++)
-        {
-            Console.WriteLine(sorted[i].Key + " : " + sorted[i].Value.Count);
-        }
-        // _invertedIndex.ToFrozenDictionary();
-    }*/
 
     /// <summary>
     /// Получить перечислитель для индекса.
@@ -69,7 +56,6 @@ public class InvertedIndexLegacy
         {
             if (!_invertedIndex.TryGetValue(token, out var documentIds))
             {
-                // new HashSet<DocumentId>(32){documentId}
                 _invertedIndex[token] = [documentId];
             }
             else
@@ -105,7 +91,6 @@ public class InvertedIndexLegacy
             }
 
             throw new Exception($"{nameof(TryUpdate)}: failed on remove");
-            return false;
         }
 
         // добавляем:
@@ -120,7 +105,6 @@ public class InvertedIndexLegacy
             else if (!_invertedIndex[token].Add(documentId))
             {
                 throw new Exception($"{nameof(TryUpdate)}: failed on addition");
-                return false;
             }
         }
 
@@ -142,9 +126,8 @@ public class InvertedIndexLegacy
                 continue;
             }
 
-            // в значениях нет дубликатов, если в заметке (extended) токены дублировались
+            // в значениях не будет дубликатов, учитывать, если в заметке (extended) токены дублировались
             throw new Exception($"{nameof(TryRemoveDocumentId)}: failed on delete document");
-            return false;
         }
 
         return true;

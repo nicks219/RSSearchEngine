@@ -27,6 +27,7 @@ public class QueryBenchmarkReduced : IBenchmarkRunner
     [
         //new(ReducedSearchType.Legacy),
         new(ReducedSearchType.SimpleLegacy),
+        new(ReducedSearchType.SimpleLegacy, true),
         new(ReducedSearchType.Direct),
         new(ReducedSearchType.Direct, true),
         //new(ReducedSearchType.MergeFilter),

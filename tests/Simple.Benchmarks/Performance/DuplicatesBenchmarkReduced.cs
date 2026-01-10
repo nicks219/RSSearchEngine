@@ -28,10 +28,12 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
 
     public static List<BenchmarkParameter<ReducedSearchType>> Parameters =>
     [
-        new(ReducedSearchType.Legacy),
+        //new(ReducedSearchType.Legacy),
         new(ReducedSearchType.SimpleLegacy),
+        new(ReducedSearchType.SimpleLegacy, true),
         new(ReducedSearchType.Direct),
         new(ReducedSearchType.Direct, true),
+
         //new(ReducedSearchType.MergeFilter),
         //new(ReducedSearchType.MergeFilter, true),
         //new(ReducedSearchType.DirectFilterLinear),
@@ -91,13 +93,13 @@ public class DuplicatesBenchmarkReduced : IBenchmarkRunner
     /// <summary>
     /// Инициализировать RSSE токенайзер.
     /// </summary>
-    private async Task InitializeTokenizer(ReducedSearchType reducedSearchType, bool pool)
+    private async Task InitializeTokenizer(ReducedSearchType reducedSearchType, bool poolEnabled)
     {
         Console.WriteLine(
             $"[{nameof(DuplicatesBenchmarkReduced)}] reduced[{reducedSearchType}] initializing..");
 
         _tokenizer = new TokenizerServiceCore(MetricsCalculatorType.NoOpMetricsCalculator,
-            pool, ExtendedSearchType.Legacy, reducedSearchType);
+            poolEnabled, ExtendedSearchType.Legacy, reducedSearchType);
 
         Console.WriteLine(
             $"[{nameof(TokenizerServiceCore)}] reduced[{reducedSearchType}] initializing..");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using SimpleEngine.Contracts;
@@ -37,10 +37,11 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
             throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
         }
 
-        // создаём пространство поиска (без учета последовательности токенов)
-        // значение это по сути баллы, набранные запросом для конкретной заметке
-        // при "мусорных" токенах пространство поиска может быть практически равно общему индексу, поэтому считаем статистику
-        Dictionary<DocumentId, int> searchSpace = [];
+        // создаём пространство поиска (без учета последовательности токенов) и считаем количество токенов из запроса на идентификатор
+        // значение это по сути баллы, набранные запросом для конкретной заметки
+        // при "мусорных" токенах пространство поиска может быть практически равно общему индексу
+        Dictionary<DocumentId, int> tokenOverlapCounts = [];
+        var relevantDocumentIds = new List<DocumentId>();
         foreach (Token token in searchVector)
         {
             if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
@@ -50,36 +51,33 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
 
             foreach (var id in ids)
             {
-                if (!searchSpace.TryAdd(id, 1))
+                if (!tokenOverlapCounts.TryAdd(id, 1))
                 {
-                    searchSpace[id]++;
+                    tokenOverlapCounts[id]++;
                     // todo: можно сразу посчитать максимум, оптимизируй
                 }
             }
         }
 
-        // сортируем:
-        // var sortedSearchSpace = searchSpace.OrderByDescending(x => x.Value);
         // выбираем результат(ы) с одинаковым максимальным рейтингом (у них не обязательно самая высокая релевантность):
         var max = int.MinValue;
-        var searchSpaceMax = new List<DocumentId>();
-        foreach (var kv in searchSpace)
+        foreach (var kv in tokenOverlapCounts)
         {
             if (kv.Value > max)
             {
                 max = kv.Value;
-                searchSpaceMax.Clear();
-                searchSpaceMax.Add(kv.Key);// = kv.Value;
+                relevantDocumentIds.Clear();
+                relevantDocumentIds.Add(kv.Key);// = kv.Value;
             }
             else if (kv.Value == max)
             {
-                searchSpaceMax.Add(kv.Key);// = kv.Value;
+                relevantDocumentIds.Add(kv.Key);// = kv.Value;
             }
         }
 
         // поиск в пространстве поиска extended
         // баллы совпадений будут посчитаны повторно, но с учетом последовательности токенов
-        foreach (var documentId in searchSpaceMax)
+        foreach (var documentId in relevantDocumentIds)
         {
             var tokenLine = GeneralDirectIndexLegacy[documentId];
             metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
