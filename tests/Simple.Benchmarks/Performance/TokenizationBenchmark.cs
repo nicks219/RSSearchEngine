@@ -28,26 +28,27 @@ public class TokenizationBenchmark
 
     private readonly SearchEngineManager _searchEngineManager = new(true);
 
-    private readonly DirectIndex _generalDirectIndex = new();
+    private readonly GeneralDirectIndexLegacy _generalDirectIndexLegacy = new();
 
-    private readonly InvertedOffsetIndexes _invertedOffsetIndexExtended = new();
+    private readonly InvertedIndexLegacy _invertedIndexLegacyExtended = new();
+    private readonly InvertedIndexLegacy _invertedIndexLegacyReduced = new();
 
-    private readonly InvertedIndexes _invertedIndexExtended = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndices _commonIndexExtended = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _invertedIndexHsExtended = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndices _commonIndexHsExtended = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
-    private readonly InvertedIndexes _invertedIndexReduced = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
+    private readonly CommonIndices _commonIndexReduced = new(IndexPoint.DictionaryStorageType.SortedArrayStorage);
 
-    private readonly InvertedIndexes _invertedIndexHsReduced = new(IndexPoint.DictionaryStorageType.HashTableStorage);
+    private readonly CommonIndices _commonIndexHsReduced = new(IndexPoint.DictionaryStorageType.HashTableStorage);
 
     public static List<IndexType> Parameters =>
     [
-        IndexType.GeneralDirect,
-        IndexType.InvertedOffsetIndexExtended,
-        IndexType.InvertedIndexExtended,
-        IndexType.InvertedIndexHsExtended,
-        IndexType.InvertedIndexReduced,
-        IndexType.InvertedIndexHsReduced
+        // IndexType.GeneralDirectLegacy,
+        IndexType.InvertedLegacy,
+        IndexType.InvertedExtended,
+        // IndexType.InvertedIndexHsExtended,
+        // IndexType.InvertedIndexReduced,
+        // IndexType.InvertedIndexHsReduced
     ];
 
     [ParamsSource(nameof(Parameters))]
@@ -72,34 +73,35 @@ public class TokenizationBenchmark
     {
         switch (IndexType)
         {
-            case IndexType.GeneralDirect:
+            case IndexType.GeneralDirectLegacy:
                 {
-                    _generalDirectIndex.Clear();
+                    _generalDirectIndexLegacy.Clear();
                     break;
                 }
-            case IndexType.InvertedOffsetIndexExtended:
+            case IndexType.InvertedLegacy:
                 {
-                    _invertedOffsetIndexExtended.Clear();
+                    _invertedIndexLegacyExtended.Clear();
+                    _invertedIndexLegacyReduced.Clear();
                     break;
                 }
-            case IndexType.InvertedIndexExtended:
+            case IndexType.InvertedExtended:
                 {
-                    _invertedIndexExtended.Clear();
+                    _commonIndexExtended.Clear();
                     break;
                 }
-            case IndexType.InvertedIndexHsExtended:
+            case IndexType.InvertedExtendedHs:
                 {
-                    _invertedIndexHsExtended.Clear();
+                    _commonIndexHsExtended.Clear();
                     break;
                 }
-            case IndexType.InvertedIndexReduced:
+            case IndexType.InvertedReduced:
                 {
-                    _invertedIndexReduced.Clear();
+                    _commonIndexReduced.Clear();
                     break;
                 }
-            case IndexType.InvertedIndexHsReduced:
+            case IndexType.InvertedReducedHs:
                 {
-                    _invertedIndexHsReduced.Clear();
+                    _commonIndexHsReduced.Clear();
                     break;
                 }
             default:
@@ -118,34 +120,34 @@ public class TokenizationBenchmark
 
             switch (IndexType)
             {
-                case IndexType.GeneralDirect:
+                case IndexType.GeneralDirectLegacy:
                     {
-                        _generalDirectIndex.TryAdd(documentId, tokenLine);
+                        _generalDirectIndexLegacy.TryAdd(documentId, tokenLine);
                         break;
                     }
-                case IndexType.InvertedOffsetIndexExtended:
+                case IndexType.InvertedLegacy:
                     {
-                        _invertedOffsetIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        _invertedIndexLegacyExtended.TryAdd(documentId, tokenLine.Extended);
                         break;
                     }
-                case IndexType.InvertedIndexExtended:
+                case IndexType.InvertedExtended:
                     {
-                        _invertedIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        _commonIndexExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
                         break;
                     }
-                case IndexType.InvertedIndexHsExtended:
+                case IndexType.InvertedExtendedHs:
                     {
-                        _invertedIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
+                        _commonIndexHsExtended.AddOrUpdateVector(documentId, tokenLine.Extended);
                         break;
                     }
-                case IndexType.InvertedIndexReduced:
+                case IndexType.InvertedReduced:
                     {
-                        _invertedIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        _commonIndexReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
                         break;
                     }
-                case IndexType.InvertedIndexHsReduced:
+                case IndexType.InvertedReducedHs:
                     {
-                        _invertedIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
+                        _commonIndexHsReduced.AddOrUpdateVector(documentId, tokenLine.Reduced);
                         break;
                     }
                 default:
@@ -154,6 +156,14 @@ public class TokenizationBenchmark
                     }
             }
         }
+
+        /*if (IndexType == IndexType.InvertedLegacy)
+        {
+            _invertedIndexLegacyExtended.Compact();
+            Console.WriteLine($"Inverted legacy count: {_invertedIndexLegacyExtended.Count}");
+            _invertedIndexLegacyReduced.Compact();
+            Console.WriteLine($"Inverted legacy count: {_invertedIndexLegacyReduced.Count}");
+        }*/
     }
 
     private TokenLine CreateTokensLine(TextRequestDto note)

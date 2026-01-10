@@ -46,7 +46,7 @@ public readonly ref struct DocumentIdsScoringIterator : IDisposable
         _tempStoragePool.InternalEnumeratorCollections.Return(_enumerators);
     }
 
-    public void AppendReducedMetric<TConsumer>(in TConsumer consumer) where TConsumer : IMetricsConsumer, allows ref struct
+    public void IterateToObtainReducedMetric<TConsumer>(in TConsumer consumer) where TConsumer : IMetricsConsumer, allows ref struct
     {
         while (_enumerators.Count > 1)
         {

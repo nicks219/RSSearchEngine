@@ -2,15 +2,15 @@ namespace SimpleEngine.Benchmarks.Common;
 
 public enum IndexType
 {
-    GeneralDirect = 0,
+    GeneralDirectLegacy = 0,
 
-    InvertedOffsetIndexExtended = 1,
+    InvertedLegacy = 1,
 
-    InvertedIndexExtended = 2,
+    InvertedExtended = 2,
 
-    InvertedIndexHsExtended = 3,
+    InvertedExtendedHs = 3,
 
-    InvertedIndexReduced = 4,
+    InvertedReduced = 4,
 
-    InvertedIndexHsReduced = 5
+    InvertedReducedHs = 5
 }

@@ -4,10 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using RD.RsseEngine.SearchType;
 using RD.RsseEngine.Service;
 using Rsse.Domain.Data.Entities;
 using Rsse.Tests.Common;
-using RD.RsseEngine.SearchType;
 
 namespace RD.RsseEngine.Benchmarks.Performance;
 

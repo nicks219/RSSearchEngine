@@ -1,4 +1,5 @@
 using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 
 namespace SimpleEngine.SearchType;
 
@@ -14,32 +15,14 @@ public enum ReducedSearchType
     Legacy = 0,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
+    /// Оптимизированный алгоритм на инвертированном индексе.
     /// Используется алгоритм <see cref="ReducedSearchGinArrayDirect"/>
     /// </summary>
     Direct = 1,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ReducedSearchGinArrayMergeFilter"/>
+    /// Неоптимизированный алгоритм на инвертированном индексе.
+    /// Используется алгоритм <see cref="ReducedSearchSimple"/>
     /// </summary>
-    MergeFilter = 2,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, линейный поиск.
-    /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterLinear = 3,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, бинарный поиск.
-    /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterBinary = 4,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
-    /// Используется алгоритм <see cref="ReducedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterHash = 5
+    SimpleLegacy = 2,
 }

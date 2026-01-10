@@ -41,7 +41,7 @@ public sealed class TokenizerApiClient : ITokenizerApiClient, IDisposable
     }
 
     // Используется для тестов.
-    internal DirectIndex GetDirectIndex() => ((TokenizerServiceCore)_tokenizerServiceCore).GetDirectIndex();
+    internal GeneralDirectIndexLegacy GetDirectIndex() => ((TokenizerServiceCore)_tokenizerServiceCore).GetDirectIndex();
 
     /// <inheritdoc/>
     public async Task Delete(int id, CancellationToken stoppingToken)

@@ -7,9 +7,9 @@ using SimpleEngine.Dto.Inverted;
 namespace SimpleEngine.Indexes;
 
 /// <summary>
-/// Поддержка общего инвертированного индекса "токен-идентификаторы".
+/// Контейнер с поддержкой нескольких индексов (общего и обратного).
 /// </summary>
-public sealed class InvertedIndex(IndexPoint.DictionaryStorageType dataPointSearchType)
+public sealed class CommonIndex(IndexPoint.DictionaryStorageType dataPointSearchType)
 {
     /// <summary>
     /// Инвертированный индекс: токен в качестве ключа, набор идентификаторов заметок в качестве значения.
@@ -82,7 +82,7 @@ public sealed class InvertedIndex(IndexPoint.DictionaryStorageType dataPointSear
     /// <param name="token">Токен.</param>
     /// <param name="documentIdsInternal">Вектор с идентификаторами заметок из индекса.</param>
     /// <returns>Признак наличия токена в индексе.</returns>
-    public bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
+    private bool TryGetNonEmptyDocumentIds(Token token, out InternalDocumentIds documentIdsInternal)
     {
         return _invertedIndex.TryGetValue(token, out documentIdsInternal) && documentIdsInternal.Count > 0;
     }

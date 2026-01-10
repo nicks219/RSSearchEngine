@@ -1,4 +1,5 @@
 using SimpleEngine.Algorithms;
+using SimpleEngine.Algorithms.Legacy;
 
 namespace SimpleEngine.SearchType;
 
@@ -14,50 +15,26 @@ public enum ExtendedSearchType
     Legacy = 0,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ExtendedSearchGinOffset"/>
+    /// Неоптимизированный алгоритм на инвертированном индексе.
+    /// Используется алгоритм <see cref="ExtendedSearchSimple"/>
     /// </summary>
-    Offset = 1,
+    SimpleLegacy = 2,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе.
-    /// Используется алгоритм <see cref="ExtendedSearchGinOffsetFilter"/>
-    /// </summary>
-    OffsetFilter = 2,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, линейный поиск.
+    /// Оптимизированный алгоритм на инвертированном индексе, линейный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
     DirectLinear = 3,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе, линейный поиск.
-    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterLinear = 4,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, бинарный поиск.
+    /// Оптимизированный алгоритм на инвертированном индексе, бинарный поиск.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
     DirectBinary = 5,
 
     /// <summary>
-    /// Оптимизация на инвертированном индексе, бинарный поиск.
-    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterBinary = 6,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
+    /// Оптимизированный алгоритм на инвертированном индексе, поиск по хэш-таблице.
     /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirect"/>
     /// </summary>
     DirectHash = 7,
-
-    /// <summary>
-    /// Оптимизация на инвертированном индексе, поиск по хэш-таблице.
-    /// Используется алгоритм <see cref="ExtendedSearchGinArrayDirectFilter"/>
-    /// </summary>
-    DirectFilterHash = 8
 }

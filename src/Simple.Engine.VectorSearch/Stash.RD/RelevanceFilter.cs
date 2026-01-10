@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using SimpleEngine.Algorithms;
@@ -19,7 +21,7 @@ public sealed class RelevanceFilter
     /// <summary>
     /// Попытаться найти идентификаторы документов, обеспечивающие релевантность для extended поиска.
     /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
+    /// <param name="commonIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">>Вектор с поисковым запросом.</param>
     /// <param name="idsFromGin">Идентификаторы докуметов для вектора с поисковым запросом.</param>
     /// <param name="sortedIds">Сортированый по размеру список векторов идентификаторов докуметов для вектора с поисковым запросом.</param>
@@ -27,7 +29,7 @@ public sealed class RelevanceFilter
     /// <param name="minRelevancyCount">Количество векторов обеспечивающих релевантность.</param>
     /// <returns>Флаг успеха и идентификаторы документов, обеспечивающие релевантность, не пустые.</returns>
     public bool TryGetRelevantDocumentsForExtendedSearch(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIds> idsFromGin,
         List<InternalDocumentIds> sortedIds,
@@ -35,7 +37,7 @@ public sealed class RelevanceFilter
         out int minRelevancyCount)
     {
         return TryGetDocumentsForExtendedInternal(
-            invertedIndex,
+            commonIndex,
             searchVector,
             idsFromGin,
             sortedIds,
@@ -46,7 +48,7 @@ public sealed class RelevanceFilter
     /// <summary>
     /// Попытаться найти идентификаторы документов, обеспечивающие релевантность для reduced поиска.
     /// </summary>
-    /// <param name="invertedIndex">Инвертированный индекс.</param>
+    /// <param name="commonIndex">Инвертированный индекс.</param>
     /// <param name="searchVector">Вектор с поисковым запросом.</param>
     /// <param name="sortedIds">Идентификаторы докуметов для вектора с поисковым запросом</param>
     /// <param name="filteredTokensCount">Количество первых векторов из sortedIds использованых для построения comparisonScores</param>
@@ -54,7 +56,7 @@ public sealed class RelevanceFilter
     /// <param name="emptyCount">Количество пустых векторов.</param>
     /// <returns>Флаг успеха и идентификаторы документов, обеспечивающие релевантность, не пустые.</returns>
     public bool TryGetRelevantDocumentsForReducedSearch(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount,
@@ -62,7 +64,7 @@ public sealed class RelevanceFilter
         out int emptyCount)
     {
         return TryGetDocumentsForReducedInternal(
-            invertedIndex,
+            commonIndex,
             searchVector,
             sortedIds,
             out filteredTokensCount,
@@ -85,7 +87,7 @@ public sealed class RelevanceFilter
     public bool TryGetRelevantDocumentsEnumerators(
         InvertedOffsetIndex invertedOffsetIndex,
         TokenVector searchVector,
-        List<DocumentIdsExtendedEnumerator> enumerators,
+        List<DocumentIdsMergeEnumerator> enumerators,
         out List<IndexWithCount> counts,
         out int filteredTokensCount,
         out int minRelevancyCount)
@@ -117,7 +119,7 @@ public sealed class RelevanceFilter
 
             if (enumerator.MoveNext())
             {
-                enumerators.Add(new DocumentIdsExtendedEnumerator(documentIds, enumerator));
+                enumerators.Add(new DocumentIdsMergeEnumerator(documentIds, enumerator));
 
                 counts.Add(new IndexWithCount(index, documentIds.DocumentIds.Count));
 
@@ -133,7 +135,7 @@ public sealed class RelevanceFilter
     }
 
     private bool TryGetDocumentsForExtendedInternal(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIds> idsFromGin,
         List<InternalDocumentIds> sortedIds,
@@ -148,7 +150,7 @@ public sealed class RelevanceFilter
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
+            if (commonIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 idsFromGin.Add(documentIds);
                 sortedIds.Add(documentIds);
@@ -174,7 +176,7 @@ public sealed class RelevanceFilter
     }
 
     private bool TryGetDocumentsForReducedInternal(
-        InvertedIndex invertedIndex,
+        CommonIndex commonIndex,
         TokenVector searchVector,
         List<InternalDocumentIdsWithToken> sortedIds,
         out int filteredTokensCount,
@@ -187,7 +189,7 @@ public sealed class RelevanceFilter
 
         foreach (var token in searchVector)
         {
-            if (invertedIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
+            if (commonIndex.TryGetNonEmptyDocumentIds(token, out var documentIds))
             {
                 sortedIds.Add(new InternalDocumentIdsWithToken(documentIds, token));
             }
@@ -254,3 +256,5 @@ public sealed class RelevanceFilter
         filteredTokensCount = minCount - emptyCount;
     }
 }
+
+#endif

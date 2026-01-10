@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 namespace SimpleEngine.Dto.Offsets;
 
 public readonly struct IndexWithCount(int index, int count)
@@ -11,3 +13,6 @@ public readonly struct IndexWithCount(int index, int count)
         return $"index {Index} count {Count}";
     }
 }
+
+
+#endif

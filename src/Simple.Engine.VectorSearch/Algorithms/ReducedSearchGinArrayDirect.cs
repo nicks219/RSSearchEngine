@@ -20,7 +20,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex InvertedIndex { private get; init; }
+    public required CommonIndex CommonIndex { private get; init; }
 
     /// <inheritdoc/>
     public void FindReduced(TokenVector searchVector, IMetricsCalculator metricsCalculator,
@@ -30,7 +30,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
 
         try
         {
-            InvertedIndex.FillWithNonEmptyDocumentIds(searchVector, idsFromGin);
+            CommonIndex.FillWithNonEmptyDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count)
             {
@@ -42,7 +42,7 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                     {
                         foreach (var documentId in idsFromGin[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                            if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -59,9 +59,9 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
                         using DocumentIdsScoringIterator documentReducedScoreIterator =
                             new(TempStoragePool, idsFromGin, idsFromGin.Count);
 
-                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, InvertedIndex);
+                        MetricsConsumer metricsConsumer = new(searchVector, metricsCalculator, CommonIndex);
 
-                        documentReducedScoreIterator.AppendReducedMetric(in metricsConsumer);
+                        documentReducedScoreIterator.IterateToObtainReducedMetric(in metricsConsumer);
 
                         break;
                     }
@@ -74,11 +74,11 @@ public readonly ref struct ReducedSearchGinArrayDirect : IReducedSearchProcessor
     }
 
     private readonly ref struct MetricsConsumer(TokenVector searchVector, IMetricsCalculator metricsCalculator,
-        InvertedIndex invertedIndex) : DocumentIdsScoringIterator.IMetricsConsumer
+        CommonIndex commonIndex) : DocumentIdsScoringIterator.IMetricsConsumer
     {
         public void Accept(InternalDocumentId documentId, int score)
         {
-            if (invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+            if (commonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 metricsCalculator.AppendReducedMetric(score, searchVector, externalDocument);
             }

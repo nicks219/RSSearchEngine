@@ -68,12 +68,12 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
 
     /// <inheritdoc/>
     public void AppendReduced(int comparisonScore, TokenVector searchVector, DocumentId documentId,
-        DirectIndex directIndex)
+        GeneralDirectIndexLegacy directIndexLegacy)
     {
         // III. 100% совпадение по reduced
         if (comparisonScore == searchVector.Count)
         {
-            var reducedTargetVector = directIndex[documentId].Reduced;
+            var reducedTargetVector = directIndexLegacy[documentId].Reduced;
             DocumentId = documentId;
             Metric = comparisonScore * (10D / reducedTargetVector.Count);
             return;
@@ -82,7 +82,7 @@ internal sealed class NullMetricsCalculator : IMetricsCalculator
         // IV. reduced% совпадение - мы не можем наверняка оценить неточное совпадение
         if (comparisonScore >= searchVector.Count * MetricsCalculator.ReducedCoefficient)
         {
-            var reducedTargetVector = directIndex[documentId].Reduced;
+            var reducedTargetVector = directIndexLegacy[documentId].Reduced;
             DocumentId = documentId;
             Metric = comparisonScore * (1D / reducedTargetVector.Count);
         }

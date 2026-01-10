@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -22,7 +24,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex InvertedIndex { private get; init; }
+    public required CommonIndex CommonIndex { private get; init; }
 
     public required RelevanceFilter RelevanceFilter { private get; init; }
 
@@ -34,7 +36,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
 
         try
         {
-            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(InvertedIndex, searchVector,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForReducedSearch(CommonIndex, searchVector,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount, out var emptyCount))
             {
                 return;
@@ -50,7 +52,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                     {
                         foreach (var documentId in sortedIds[0].DocumentIds)
                         {
-                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                            if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendReducedMetric(metric, searchVector, externalDocument);
@@ -85,7 +87,7 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
             sortedIds, filteredTokensCount);
 
         using MetricsConsumer metricsConsumer = new(TempStoragePool,
-            searchVector, metricsCalculator, InvertedIndex, sortedIds, filteredTokensCount);
+            searchVector, metricsCalculator, CommonIndex, sortedIds, filteredTokensCount);
 
         documentReducedScoreIterator.AppendReducedMetric(metricsConsumer);
     }
@@ -95,17 +97,17 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
         private readonly TempStoragePool _tempStoragePool;
         private readonly TokenVector _searchVector;
         private readonly IMetricsCalculator _metricsCalculator;
-        private readonly InvertedIndex _invertedIndex;
+        private readonly CommonIndex _commonIndex;
         private readonly List<DocumentIdsEnumerator> _list;
 
         public MetricsConsumer(TempStoragePool tempStoragePool, TokenVector searchVector,
-            IMetricsCalculator metricsCalculator, InvertedIndex invertedIndex,
+            IMetricsCalculator metricsCalculator, CommonIndex commonIndex,
             List<InternalDocumentIdsWithToken> sortedIds, int filteredTokensCount)
         {
             _tempStoragePool = tempStoragePool;
             _searchVector = searchVector;
             _metricsCalculator = metricsCalculator;
-            _invertedIndex = invertedIndex;
+            _commonIndex = commonIndex;
 
             _list = _tempStoragePool.InternalEnumeratorCollections.Get();
 
@@ -176,10 +178,12 @@ public readonly ref struct ReducedSearchGinArrayMergeFilter : IReducedSearchProc
                 counter++;
             }
 
-            if (_invertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+            if (_commonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 _metricsCalculator.AppendReducedMetric(score, _searchVector, externalDocument);
             }
         }
     }
 }
+
+#endif

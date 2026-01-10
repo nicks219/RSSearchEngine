@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex InvertedIndex { private get; init; }
+    public required CommonIndex CommonIndex { private get; init; }
 
     public required RelevanceFilter RelevanceFilter { private get; init; }
 
@@ -39,7 +41,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
 
         try
         {
-            if (!RelevanceFilter.TryGetRelevantDocumentsForExtendedSearch(InvertedIndex, searchVector, idsFromGin,
+            if (!RelevanceFilter.TryGetRelevantDocumentsForExtendedSearch(CommonIndex, searchVector, idsFromGin,
                     sortedIds, out var filteredTokensCount, out var minRelevancyCount))
             {
                 return;
@@ -57,7 +59,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                            if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 metricsCalculator.AppendExtendedMetric(1, searchVector, externalDocument);
                             }
@@ -206,7 +208,7 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int minRelevancyCount)
     {
-        if (!InvertedIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
+        if (!CommonIndex.TryGetPositionVector(documentId, out var offsetTokenVector, out var externalDocument))
         {
             return;
         }
@@ -274,3 +276,5 @@ public readonly ref struct ExtendedSearchGinArrayDirectFilter : IExtendedSearchP
         listExists.RemoveAt(listExists.Count - 1);
     }
 }
+
+#endif

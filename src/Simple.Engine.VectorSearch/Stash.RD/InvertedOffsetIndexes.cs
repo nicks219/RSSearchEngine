@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System.Collections.Generic;
 using SimpleEngine.Dto.Common;
 
@@ -54,3 +56,5 @@ public sealed class InvertedOffsetIndexes
         return current;
     }
 }
+
+#endif

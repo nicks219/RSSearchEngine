@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 namespace SimpleEngine.Dto.Offsets;
 
 public readonly struct IndexWithLast(int index, bool last)
@@ -11,3 +13,6 @@ public readonly struct IndexWithLast(int index, bool last)
         return $"Index {Index} Last {Last}";
     }
 }
+
+
+#endif

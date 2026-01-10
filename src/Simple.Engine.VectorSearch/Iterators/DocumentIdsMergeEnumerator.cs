@@ -5,7 +5,7 @@ using SimpleEngine.Dto.Offsets;
 
 namespace SimpleEngine.Iterators;
 
-public struct DocumentIdsExtendedEnumerator(
+public struct DocumentIdsMergeEnumerator(
     InternalDocumentIdsWithOffsets internalDocumentIdsWithOffsets,
     DocumentIdsEnumerator enumerator)
     : IEnumerator<InternalDocumentId>

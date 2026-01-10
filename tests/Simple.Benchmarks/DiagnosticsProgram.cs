@@ -34,19 +34,20 @@ public static class DiagnosticsProgram
             Environment.Exit(1);
         }
 
-        if (args.Length != 1)
+        if (args.Length != 2)
         {
             Console.WriteLine($"[{nameof(DiagnosticsProgram)}] invalid args, usage: <bench>|<profile>");
             Console.WriteLine("Run benchmarks...");
-            RunBenchmarks();
+            RunBenchmarks(string.Empty);
             Environment.Exit(0);
         }
 
-        var arg = args[0];
-        switch (arg)
+        var argFirst = args[0];
+        var argSecond = args[1];
+        switch (argFirst)
         {
             case "bench":
-                RunBenchmarks();
+                RunBenchmarks(argSecond);
                 break;
 
             case "profile":
@@ -54,7 +55,7 @@ public static class DiagnosticsProgram
                 break;
 
             default:
-                RunBenchmarks();
+                RunBenchmarks(argSecond);
                 break;
         }
     }
@@ -62,7 +63,7 @@ public static class DiagnosticsProgram
     /// <summary>
     /// Запустить бенчмарки.
     /// </summary>
-    private static void RunBenchmarks()
+    private static void RunBenchmarks(string arg)
     {
         Console.WriteLine($"[{nameof(RunBenchmarks)}] starting..");
 
@@ -78,7 +79,7 @@ public static class DiagnosticsProgram
                 .AddJob(Job.VeryLongRun
                     .WithWarmupCount(1)
                     .WithLaunchCount(1)
-                    .WithIterationCount(10))
+                    .WithIterationCount(5))// 10
                 .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: false)))
                 .AddLogger(new ConsoleLogger(false, new Dictionary<LogKind, ConsoleColor>
                 {
@@ -93,21 +94,46 @@ public static class DiagnosticsProgram
                     { LogKind.Hint, ConsoleColor.DarkCyan }
                 }));
 
-        BenchmarkRunner.Run(
-        [
-            /*typeof(TokenizationBenchmark),*/
-            /*typeof(QueryBenchmarkGeneral),
-            typeof(LuceneBenchmark),
-            typeof(DuplicateBenchmarkGeneral),*/
-            typeof(DuplicatesBenchmarkExtended),
-            typeof(QueryBenchmarkExtended),
-            typeof(DuplicatesBenchmarkReduced),
-            typeof(QueryBenchmarkReduced),
-            /*typeof(MtQueryBenchmarkExtended),
-            typeof(MtQueryBenchmarkReduced),*/
-            /*typeof(StQueryBenchmarkExtended),
-            typeof(StQueryBenchmarkReduced)*/
-        ], config);
+        switch (arg)
+        {
+            case "1":
+                BenchmarkRunner.Run<DuplicatesBenchmarkExtended>(config);
+                break;
+            case "2":
+                BenchmarkRunner.Run<QueryBenchmarkExtended>(config);
+                break;
+            case "3":
+                BenchmarkRunner.Run<DuplicatesBenchmarkReduced>(config);
+                break;
+            case "4":
+                BenchmarkRunner.Run<QueryBenchmarkReduced>(config);
+                break;
+            case "5":
+                BenchmarkRunner.Run<MtQueryBenchmarkReduced>(config);
+                break;
+            case "6":
+            default:
+                BenchmarkRunner.Run<MtQueryBenchmarkExtended>(config);
+                break;
+        }
+
+        // BenchmarkRunner.Run(
+        // [
+            // typeof(TokenizationBenchmark),
+            // typeof(QueryBenchmarkGeneral),
+            // typeof(LuceneBenchmark),
+            // typeof(DuplicateBenchmarkGeneral),
+
+            // typeof(DuplicatesBenchmarkExtended),
+            // typeof(QueryBenchmarkExtended),
+            // typeof(DuplicatesBenchmarkReduced),
+            // typeof(QueryBenchmarkReduced),
+
+            // typeof(MtQueryBenchmarkExtended),
+            // typeof(MtQueryBenchmarkReduced),
+            // typeof(StQueryBenchmarkExtended),
+            // typeof(StQueryBenchmarkReduced)
+        // ], config);
     }
 
     /// <summary>
@@ -192,7 +218,7 @@ public static class DiagnosticsProgram
     {
         TokenizationBenchmark tokenizationBenchmark = new()
         {
-            IndexType = IndexType.GeneralDirect
+            IndexType = IndexType.GeneralDirectLegacy
         };
 
         Console.WriteLine($"[{nameof(RunTokenizationProfiling)}] Starting..");

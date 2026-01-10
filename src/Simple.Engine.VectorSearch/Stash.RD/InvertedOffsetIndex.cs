@@ -1,3 +1,5 @@
+# if IS_RD_PROJECT
+
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using SimpleEngine.Dto.Common;
@@ -124,3 +126,5 @@ public sealed class InvertedOffsetIndex
         }
     }
 }
+
+#endif

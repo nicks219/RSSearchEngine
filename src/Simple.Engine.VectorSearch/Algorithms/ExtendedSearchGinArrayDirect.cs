@@ -25,7 +25,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     /// <summary>
     /// Поддержка GIN-индекса.
     /// </summary>
-    public required InvertedIndex InvertedIndex { private get; init; }
+    public required CommonIndex CommonIndex { private get; init; }
 
     public required PositionSearchType PositionSearchType { private get; init; }
 
@@ -37,7 +37,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
         try
         {
-            InvertedIndex.FillWithDocumentIds(searchVector, idsFromGin);
+            CommonIndex.FillWithDocumentIds(searchVector, idsFromGin);
 
             switch (idsFromGin.Count(vector => vector.Count > 0))
             {
@@ -51,7 +51,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
 
                         foreach (var documentId in idFromGin)
                         {
-                            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                            if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                             {
                                 const int metric = 1;
                                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -186,7 +186,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
         }
         else
         {
-            if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+            if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
             {
                 const int metric = 1;
                 metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -213,7 +213,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
             do
             {
                 var documentId = enumerator.Current;
-                if (InvertedIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
+                if (CommonIndex.TryGetPositionVector(documentId, out _, out var externalDocument))
                 {
                     const int metric = 1;
                     metricsCalculator.AppendExtendedMetric(metric, searchVector, externalDocument);
@@ -226,7 +226,7 @@ public readonly ref struct ExtendedSearchGinArrayDirect : IExtendedSearchProcess
     private void CalculateAndAppendMetric(IMetricsCalculator metricsCalculator, TokenVector searchVector,
         InternalDocumentId documentId, int sIndex)
     {
-        if (!InvertedIndex.TryGetPositionVector(documentId, out var positionVector, out var externalDocument))
+        if (!CommonIndex.TryGetPositionVector(documentId, out var positionVector, out var externalDocument))
         {
             return;
         }
