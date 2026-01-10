@@ -30,6 +30,7 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
     [
         new(ExtendedSearchType.Legacy),
         new(ExtendedSearchType.SimpleLegacy),
+        new(ExtendedSearchType.SimpleLegacy, true),
         //new(ExtendedSearchType.Offset),
         //new(ExtendedSearchType.Offset, true),
         //new(ExtendedSearchType.OffsetFilter),
@@ -38,12 +39,12 @@ public class DuplicatesBenchmarkExtended : IBenchmarkRunner
         new(ExtendedSearchType.DirectLinear, true),
         //new(ExtendedSearchType.DirectFilterLinear),
         //new(ExtendedSearchType.DirectFilterLinear, true),
-        new(ExtendedSearchType.DirectBinary),
-        new(ExtendedSearchType.DirectBinary, true),
+        // new(ExtendedSearchType.DirectBinary),
+        // new(ExtendedSearchType.DirectBinary, true),
         //new(ExtendedSearchType.DirectFilterBinary),
         //new(ExtendedSearchType.DirectFilterBinary, true),
-        new(ExtendedSearchType.DirectHash),
-        new(ExtendedSearchType.DirectHash, true),
+        // new(ExtendedSearchType.DirectHash),
+        // new(ExtendedSearchType.DirectHash, true),
         //new(ExtendedSearchType.DirectFilterHash),
         //new(ExtendedSearchType.DirectFilterHash, true)
     ];

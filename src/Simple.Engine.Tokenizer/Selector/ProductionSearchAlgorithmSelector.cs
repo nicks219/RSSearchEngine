@@ -35,14 +35,10 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindExtendedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
-                // case ExtendedSearchType.Offset:
-                // case ExtendedSearchType.OffsetFilter:
+                case ExtendedSearchType.SimpleLegacy:
                 case ExtendedSearchType.DirectLinear:
-                // case ExtendedSearchType.DirectFilterLinear:
                 case ExtendedSearchType.DirectBinary:
-                // case ExtendedSearchType.DirectFilterBinary:
                 case ExtendedSearchType.DirectHash:
-                // case ExtendedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(
@@ -82,11 +78,8 @@ public abstract class ProductionSearchAlgorithmSelector
                         FindReducedLegacy(searchVector, metricsCalculator, cancellationToken);
                         break;
                     }
+                case ReducedSearchType.SimpleLegacy:
                 case ReducedSearchType.Direct:
-                // case ReducedSearchType.MergeFilter:
-                // case ReducedSearchType.DirectFilterLinear:
-                // case ReducedSearchType.DirectFilterBinary:
-                // case ReducedSearchType.DirectFilterHash:
                 default:
                     {
                         throw new NotSupportedException(

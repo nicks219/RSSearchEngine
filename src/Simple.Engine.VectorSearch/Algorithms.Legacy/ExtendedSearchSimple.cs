@@ -37,50 +37,60 @@ public readonly ref struct ExtendedSearchSimple : IExtendedSearchProcessor
             throw new OperationCanceledException(nameof(ExtendedSearchLegacy));
         }
 
-        // создаём пространство поиска (без учета последовательности токенов) и считаем количество токенов из запроса на идентификатор
-        // значение это по сути баллы, набранные запросом для конкретной заметки
-        // при "мусорных" токенах пространство поиска может быть практически равно общему индексу
-        Dictionary<DocumentId, int> tokenOverlapCounts = [];
-        var relevantDocumentIds = new List<DocumentId>();
-        foreach (Token token in searchVector)
-        {
-            if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
-            {
-                continue;
-            }
+        Dictionary<DocumentId, int> tokenOverlapCounts = TempStoragePool.TokenOverlapCounts.Get();
+        HashSet<DocumentId> relevantDocumentIds = TempStoragePool.RelevantDocumentIds.Get();
 
-            foreach (var id in ids)
+        try
+        {
+            // создаём пространство поиска (без учета последовательности токенов) и считаем количество токенов из запроса на идентификатор
+            // значение это по сути баллы, набранные запросом для конкретной заметки
+            // при "мусорных" токенах пространство поиска может быть практически равно общему индексу
+
+            foreach (Token token in searchVector)
             {
-                if (!tokenOverlapCounts.TryAdd(id, 1))
+                if (!InvertedIndexLegacy.TryGetValue(token, out var ids))
                 {
-                    tokenOverlapCounts[id]++;
-                    // todo: можно сразу посчитать максимум, оптимизируй
+                    continue;
+                }
+
+                foreach (var id in ids)
+                {
+                    if (!tokenOverlapCounts.TryAdd(id, 1))
+                    {
+                        tokenOverlapCounts[id]++;
+                        // todo: можно сразу считать максимум, но прироста не даёт, исследуй
+                    }
                 }
             }
-        }
 
-        // выбираем результат(ы) с одинаковым максимальным рейтингом (у них не обязательно самая высокая релевантность):
-        var max = int.MinValue;
-        foreach (var kv in tokenOverlapCounts)
-        {
-            if (kv.Value > max)
+            // выбираем результат(ы) с одинаковым максимальным рейтингом (у них не обязательно самая высокая релевантность):
+            var max = int.MinValue;
+            foreach (var kv in tokenOverlapCounts)
             {
-                max = kv.Value;
-                relevantDocumentIds.Clear();
-                relevantDocumentIds.Add(kv.Key);// = kv.Value;
+                if (kv.Value > max)
+                {
+                    max = kv.Value;
+                    relevantDocumentIds.Clear();
+                    relevantDocumentIds.Add(kv.Key);
+                }
+                else if (kv.Value == max)
+                {
+                    relevantDocumentIds.Add(kv.Key);
+                }
             }
-            else if (kv.Value == max)
+
+            // поиск в пространстве поиска extended
+            // баллы совпадений будут посчитаны повторно, но с учетом последовательности токенов
+            foreach (var documentId in relevantDocumentIds)
             {
-                relevantDocumentIds.Add(kv.Key);// = kv.Value;
+                var tokenLine = GeneralDirectIndexLegacy[documentId];
+                metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
             }
         }
-
-        // поиск в пространстве поиска extended
-        // баллы совпадений будут посчитаны повторно, но с учетом последовательности токенов
-        foreach (var documentId in relevantDocumentIds)
+        finally
         {
-            var tokenLine = GeneralDirectIndexLegacy[documentId];
-            metricsCalculator.AppendExtendedMetric(searchVector, documentId, tokenLine);
+            TempStoragePool.RelevantDocumentIds.Return(relevantDocumentIds);
+            TempStoragePool.TokenOverlapCounts.Return(tokenOverlapCounts);
         }
     }
 }

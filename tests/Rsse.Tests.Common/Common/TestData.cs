@@ -13,15 +13,10 @@ public abstract class TestData
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
     [
         ExtendedSearchType.Legacy,
-        //ExtendedSearchType.Offset,
-        //ExtendedSearchType.OffsetFilter,
         ExtendedSearchType.SimpleLegacy,
         ExtendedSearchType.DirectLinear,
-        //ExtendedSearchType.DirectFilterLinear,
         ExtendedSearchType.DirectBinary,
-        //ExtendedSearchType.DirectFilterBinary,
         ExtendedSearchType.DirectHash,
-        //ExtendedSearchType.DirectFilterHash
     ];
 
     /// <summary>
@@ -30,12 +25,8 @@ public abstract class TestData
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
     [
         ReducedSearchType.Legacy,
-        ReducedSearchType.SimpleLegacy,// < врёт
+        ReducedSearchType.SimpleLegacy,
         ReducedSearchType.Direct,
-        //ReducedSearchType.MergeFilter,
-        //ReducedSearchType.DirectFilterLinear,
-        //ReducedSearchType.DirectFilterBinary,
-        //ReducedSearchType.DirectFilterHash
     ];
 
     /// <summary>

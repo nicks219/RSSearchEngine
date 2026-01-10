@@ -106,8 +106,14 @@ public static class DiagnosticsProgram
                 BenchmarkRunner.Run<DuplicatesBenchmarkReduced>(config);
                 break;
             case "4":
-            default:
                 BenchmarkRunner.Run<QueryBenchmarkReduced>(config);
+                break;
+            case "5":
+                BenchmarkRunner.Run<MtQueryBenchmarkReduced>(config);
+                break;
+            case "6":
+            default:
+                BenchmarkRunner.Run<MtQueryBenchmarkExtended>(config);
                 break;
         }
 
