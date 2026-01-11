@@ -233,6 +233,10 @@
   * в копии проводятся переименования, добавляется документации и тесты, устраняются недочеты
   * fix: в IndexPoint исправлено падение на пустом массиве для SortedArrayStorage
   * fix: в IndexPoint исправлены методы ContainsKey и TryGetValue для сжатых массивов
+  * в RD дополнительно перенесены бенчмарки и токенизатор с оригинальным неймингом
+  * в основной проект (переименован в Simple) добавлен простой алгоритм поиска, [показывающий адекватные результаты](src/Simple.Engine.VectorSearch/benchmarks.md)
+  * security fix: обновлен react-router-dom до 17.12.0
+  * для `master` полностью разделены проекты поиска Simple и RD
   * ...
 
 
@@ -240,8 +244,8 @@
 #### Эпик разработки поискового движка
 `epic` `search.engine` `в разработке`
 * эпик по доработке поискового движка раскидан по коммитам ветки `develop`
-    * [список коммитов эпика](src/Rsse.Engine.VectorSearch/changelog.md)
-    * [бенчмарки на функционал токенизатора](src/Rsse.Engine.VectorSearch/docs/benchmarks.tokenization.md)
+    * [список коммитов эпика](rd/RD.Rsse.Engine.VectorSearch/changelog.md)
+    * [бенчмарки на функционал токенизатора](rd/RD.Rsse.Engine.VectorSearch/docs/benchmarks.tokenization.md)
 
 ---
 #### Эпик по оптимизации работы сервиса

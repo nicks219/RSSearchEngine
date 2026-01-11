@@ -12,7 +12,7 @@ using Rsse.Domain.Service.Contracts;
 using Rsse.Infrastructure.Repository;
 using Rsse.Tests.Integration.FakeDb.Extensions;
 using Rsse.Tests.Units.Infra;
-using RsseEngine.SearchType;
+using SimpleEngine.SearchType;
 
 namespace Rsse.Tests.Integration.FakeDb.Api;
 

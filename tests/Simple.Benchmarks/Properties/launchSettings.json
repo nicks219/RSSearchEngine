@@ -1,0 +1,39 @@
+{
+  "profiles": {
+
+    "Benchmarks: DuplicatesBenchmarkExtended": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 1"
+    },
+
+    "Benchmarks: QueryBenchmarkExtended": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 2"
+    },
+
+    "Benchmarks: DuplicatesBenchmarkReduced": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 3"
+    },
+
+    "Benchmarks: QueryBenchmarkReduced": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 4"
+    },
+
+    "Benchmarks: MtQueryBenchmarkReduced": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 5"
+    },
+
+    "Benchmarks: MtQueryBenchmarkExtended": {
+      "commandName": "Project",
+      "commandLineArgs": "bench 6"
+    },
+
+    "Profiling": {
+      "commandName": "Project",
+      "commandLineArgs": "profile 1"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-using RsseEngine.SearchType;
+using SimpleEngine.SearchType;
 
 namespace Rsse.Api.Configuration;
 

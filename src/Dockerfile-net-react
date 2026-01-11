@@ -23,8 +23,8 @@ COPY ./Rsse.Service/ ./Rsse.Service/
 COPY ./Rsse.Data/ ./Rsse.Data/
 COPY ./Rsse.Domain/ ./Rsse.Domain/
 # скопируем функционал токенизатора
-COPY ./Rsse.Engine.Tokenizer ./Rsse.Engine.Tokenizer
-COPY ./Rsse.Engine.VectorSearch ./Rsse.Engine.VectorSearch
+COPY ./Simple.Engine.Tokenizer ./Simple.Engine.Tokenizer
+COPY ./Simple.Engine.VectorSearch ./Simple.Engine.VectorSearch
 
 # JS: копируем папку с файлами фронта
 COPY --from=node-build-env /home/node/app/build/ ./Rsse.Service/ClientApp/build/

@@ -1,4 +1,4 @@
-using RsseEngine.SearchType;
+using SimpleEngine.SearchType;
 
 namespace Rsse.Tests.Common;
 
@@ -13,14 +13,10 @@ public abstract class TestData
     public static readonly List<ExtendedSearchType> ExtendedSearchTypes =
     [
         ExtendedSearchType.Legacy,
-        ExtendedSearchType.Offset,
-        ExtendedSearchType.OffsetFilter,
+        ExtendedSearchType.SimpleLegacy,
         ExtendedSearchType.DirectLinear,
-        ExtendedSearchType.DirectFilterLinear,
         ExtendedSearchType.DirectBinary,
-        ExtendedSearchType.DirectFilterBinary,
         ExtendedSearchType.DirectHash,
-        ExtendedSearchType.DirectFilterHash
     ];
 
     /// <summary>
@@ -29,11 +25,8 @@ public abstract class TestData
     public static readonly List<ReducedSearchType> ReducedSearchTypes =
     [
         ReducedSearchType.Legacy,
+        ReducedSearchType.SimpleLegacy,
         ReducedSearchType.Direct,
-        ReducedSearchType.MergeFilter,
-        ReducedSearchType.DirectFilterLinear,
-        ReducedSearchType.DirectFilterBinary,
-        ReducedSearchType.DirectFilterHash
     ];
 
     /// <summary>

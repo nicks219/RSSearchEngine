@@ -15,7 +15,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Rsse.Domain\Rsse.Domain.csproj" />
-      <ProjectReference Include="..\..\src\Rsse.Engine.VectorSearch\Rsse.Engine.VectorSearch.csproj" />
+      <ProjectReference Include="..\..\src\Simple.Engine.VectorSearch\Simple.Engine.VectorSearch.csproj" />
     </ItemGroup>
 
 </Project>

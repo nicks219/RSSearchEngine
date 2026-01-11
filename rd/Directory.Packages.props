@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+    <ExcludeFromBuild>true</ExcludeFromBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- BENCHMARK -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <!-- LUCENE -->
+    <PackageVersion Include="Lucene.Net" Version="4.8.0-beta00017" />
+    <PackageVersion Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
+  </ItemGroup>
+</Project>
